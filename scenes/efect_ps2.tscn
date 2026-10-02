@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://shaders/ps2_ecran.gdshader" id="1"]
+
+[sub_resource type="ShaderMaterial" id="mat_ecran"]
+shader = ExtResource("1")
+shader_parameter/nuante = 24.0
+shader_parameter/putere_dither = 1.0
+shader_parameter/vigneta = 0.5
+shader_parameter/graunte = 0.03
+
+[node name="EfectPS2" type="CanvasLayer"]
+layer = 1
+
+[node name="Filtru" type="ColorRect" parent="."]
+material = SubResource("mat_ecran")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
