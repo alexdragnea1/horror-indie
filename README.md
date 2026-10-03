@@ -23,7 +23,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 2. În bucătărie vorbești cu **Mom**: azi împlinești 16 ani și trebuie să devii vrăjitoare. Primești sarcina **„Meet with the coven.”** (o vezi oricând cu Tab).
 3. Abia acum se deschide ușa de la intrare. Ecranul se face negru, cobori scările blocului și ajungi afară, în fața blocului **M7, scara B**, la 11:57 PM.
 4. Pe bancă stă o **babă** care are câteva lucruri de spus despre mama ta.
-5. La 5 secunde după ce termini cu baba (sarcina: **„Catch the night bus.”**) apare din ceață **autobuzul de noapte 13** („13 PADURE”), frânează și oprește în stația din dreapta blocului. Ușile se deschid cu un șuierat; urci cu E.
+5. La 5 secunde după ce termini cu baba (sarcina: **„Catch the night bus.”**) apare din ceață **autobuzul de noapte 13** („13 Trivale”), frânează și oprește în stația din dreapta blocului. Ușile se deschid cu un șuierat; urci cu E.
 6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Te gândești la mama ta și la cum ai putea vinde iarbă în loc de vrăjitorie. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. O recunoști: e bunica, iar și-a uitat pastilele. Autobuzul oprește la capăt de linie, „Forest Road”.
 7. Urmează: pădurea și întâlnirea cu coven-ul (deocamdată, după autobuz scrie „To be continued...” și te întorci în meniu).
 

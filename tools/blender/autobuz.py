@@ -229,7 +229,7 @@ def autobuz(cale):
 			piese.append(cilindru("Rama far", 0.1, 0.1, 0.04, (s * dx, FY - 0.005, 0.72), METAL, laturi=10, rot=(1.5708, 0, 0)))
 			lumini.append(cilindru("Far", 0.08, 0.08, 0.03, (s * dx, FY - 0.02, 0.72), ALB, laturi=10, rot=(1.5708, 0, 0)))
 	# panoul cu linia: cifrele și destinația „aprinse”, la 1,5 cm în fața fundalului
-	panou = [text("Linia", "13  PADURE", (0, FY - 0.035, 2.68), 0.17, p("a56850"))]
+	panou = [text("Linia", "13 Trivale", (0, FY - 0.035, 2.68), 0.17, p("a56850"))]
 
 	# --- spatele: geam mic, grilele motorului, stopurile
 	SC = SY - G_CAP / 2
