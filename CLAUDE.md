@@ -109,9 +109,9 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dia
 2. ⏳ **Povestea**: premisa, personajele, 4–6 capitole de ~5 min (owner-ul o scrie, Claude ajută).
 3. ✅ Uși, chei, inventar (5 sloturi), sarcini, marcaje, tranziții între scene (`Tranzitie`).
 4. ⏳ Niveluri: ✅ casa, ✅ curtea blocului, ✅ stația și drumul cu autobuzul (cutscene), ✅ pădurea Trivale (platou + vale); urmează coven-ul. Modelele se fac din cod în Blender (`tools/blender/`), cu paleta owner-ului.
-5. ⏳ Sunet: ✅ ambianță, pași, uși, obiecte, interfață, voce dialog; urmează jumpscare-uri și muzică.
+5. ⏳ Sunet: ✅ ambianță, pași, uși, obiecte, interfață, voce dialog, volum unic (-20 LUFS); urmează jumpscare-uri și muzică.
 6. ⏳ Monstrul/urmăritorul (✅ prima apariție: creatura de pe lângă autobuz), jumpscare-uri, momentele de comedie.
-7. Meniu, salvare, final, credite.
+7. ⏳ ✅ Meniu și salvare (3 fișiere, autosalvare); urmează final, credite.
 8. Playtest, build.
 
 ## Texturi

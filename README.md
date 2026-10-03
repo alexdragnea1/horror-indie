@@ -26,7 +26,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 5. La 5 secunde după ce termini cu baba (sarcina: **„Catch the night bus.”**) apare din ceață **autobuzul de noapte 13** („13 Trivale”), frânează și oprește în stația din dreapta blocului. Ușile se deschid cu un șuierat; urci cu E.
 6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Te gândești la mama ta și la cum ai putea vinde iarbă în loc de vrăjitorie. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, fără alt sunet decât pașii ei grei și umezi, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. O recunoști: e bunica, iar și-a uitat pastilele.
 7. La 6 secunde după ce dispare, ecranul se întunecă și cobori la **stația de la marginea pădurii Trivale** (12:00 AM). Autobuzul închide ușile și pleacă. Rămâi singur pe șosea, cu sarcina „Find the coven in Trivale Forest.”
-8. Poteca trece pe lângă **bariera forestieră** (încuiată, dar o ocolești pe lângă stâlp) și urcă spre deal. La bifurcație, un indicator: **dreapta** („PLATOU”) urcă pe un platou în mijlocul pădurii, unde ceața se ridică și se văd stelele și luna; **stânga** (numele e zgâriat cu cuțitul) coboară într-o vale tot mai creepy: copacii mor, ceața devine roșie și grea, apar cruci și păpuși de paie atârnate de crăci, iar în fund e o vatră cu lumânări încă aprinse, într-un cerc de cruci.
+8. Poteca trece pe lângă **bariera forestieră** („NO ENTRY”, încuiată, dar o ocolești pe lângă stâlp; lângă ea, panoul verde cu mesajul pădurarului) și urcă spre deal. La bifurcație, un indicator: **dreapta** („PLATEAU”) urcă pe un platou în mijlocul pădurii, unde ceața se ridică și se văd stelele și luna; **stânga** (numele e zgâriat cu cuțitul) coboară într-o vale tot mai creepy: copacii mor, ceața devine roșie și grea, apar cruci și păpuși de paie atârnate de crăci, iar în fund e o vatră cu lumânări încă aprinse, într-un cerc de cruci.
 9. Urmează: coven-ul.
 
 ## Ce e unde
@@ -102,7 +102,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
 4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale; urmează coven-ul), modele low-poly făcute din cod
-5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață; urmează jumpscare-uri și muzică)
-6. Monstrul, jumpscare-uri, comedie
-7. Meniu, salvare, final
+5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum; urmează jumpscare-uri și muzică)
+6. ⏳ Monstrul (✅ prima apariție: creatura de lângă autobuz), jumpscare-uri, comedie
+7. ⏳ Meniu, salvare (✅), final
 8. Playtest și build
