@@ -1,0 +1,381 @@
+[gd_scene load_steps=80 format=3]
+
+[ext_resource type="Script" path="res://scripts/teren_padure.gd" id="1"]
+[ext_resource type="Shader" path="res://shaders/cer_noapte.gdshader" id="2"]
+[ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="3"]
+[ext_resource type="Script" path="res://scripts/vegetatie_padure.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/semne_vale.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/pe_pamant.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/atmosfera_padure.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/sunete_aleatorii.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="12"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://models/brad_1.glb" id="16"]
+[ext_resource type="PackedScene" path="res://models/brad_2.glb" id="17"]
+[ext_resource type="PackedScene" path="res://models/copac_1.glb" id="18"]
+[ext_resource type="PackedScene" path="res://models/copac_2.glb" id="19"]
+[ext_resource type="PackedScene" path="res://models/copac_3.glb" id="20"]
+[ext_resource type="PackedScene" path="res://models/copac_gol.glb" id="21"]
+[ext_resource type="PackedScene" path="res://models/copac_mort_1.glb" id="22"]
+[ext_resource type="PackedScene" path="res://models/copac_mort_2.glb" id="23"]
+[ext_resource type="PackedScene" path="res://models/piatra_1.glb" id="24"]
+[ext_resource type="PackedScene" path="res://models/piatra_2.glb" id="25"]
+[ext_resource type="PackedScene" path="res://models/trunchi_cazut.glb" id="26"]
+[ext_resource type="PackedScene" path="res://models/cruce.glb" id="27"]
+[ext_resource type="PackedScene" path="res://models/copac_craca.glb" id="28"]
+[ext_resource type="PackedScene" path="res://models/papusa.glb" id="29"]
+[ext_resource type="PackedScene" path="res://models/vatra.glb" id="30"]
+[ext_resource type="PackedScene" path="res://scenes/lumanare.tscn" id="31"]
+[ext_resource type="PackedScene" path="res://models/statie_rurala.glb" id="32"]
+[ext_resource type="PackedScene" path="res://models/bariera.glb" id="33"]
+[ext_resource type="PackedScene" path="res://models/panou_ocol.glb" id="34"]
+[ext_resource type="PackedScene" path="res://models/indicator.glb" id="35"]
+[ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="36"]
+[ext_resource type="AudioStream" path="res://sunete/greieri.ogg" id="37"]
+[ext_resource type="AudioStream" path="res://sunete/drone_padure.ogg" id="38"]
+[ext_resource type="AudioStream" path="res://sunete/bufnita.ogg" id="39"]
+[ext_resource type="AudioStream" path="res://sunete/ciocanit.ogg" id="40"]
+[ext_resource type="AudioStream" path="res://sunete/crengi.ogg" id="41"]
+[ext_resource type="AudioStream" path="res://sunete/fantoma.ogg" id="42"]
+[ext_resource type="AudioStream" path="res://sunete/creatura_pas_2.ogg" id="43"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_1.ogg" id="44"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_2.ogg" id="45"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_3.ogg" id="46"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_4.ogg" id="47"]
+
+[sub_resource type="ShaderMaterial" id="mat_cer"]
+shader = ExtResource("2")
+
+[sub_resource type="Sky" id="cer"]
+sky_material = SubResource("mat_cer")
+radiance_size = 0
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 2
+sky = SubResource("cer")
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.36, 0.48, 1)
+ambient_light_energy = 0.35
+reflected_light_source = 1
+fog_enabled = true
+fog_light_color = Color(0.15, 0.17, 0.2, 1)
+fog_density = 0.055
+fog_sky_affect = 0.97
+
+[sub_resource type="Gradient" id="pete"]
+colors = PackedColorArray(0.62, 0.62, 0.62, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="zgomot"]
+frequency = 0.12
+
+[sub_resource type="NoiseTexture2D" id="tex"]
+width = 64
+height = 64
+seamless = true
+color_ramp = SubResource("pete")
+noise = SubResource("zgomot")
+
+[sub_resource type="ShaderMaterial" id="mat_asfalt"]
+shader = ExtResource("3")
+shader_parameter/textura = SubResource("tex")
+shader_parameter/culoare = Color(0.369, 0.325, 0.337, 1)
+shader_parameter/repetare_uv = Vector2(0.5, 0.5)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_linie"]
+shader = ExtResource("3")
+shader_parameter/textura = SubResource("tex")
+shader_parameter/culoare = Color(0.494, 0.553, 0.529, 1)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="BoxMesh" id="asfalt"]
+material = SubResource("mat_asfalt")
+size = Vector3(180, 0.04, 7)
+
+[sub_resource type="BoxMesh" id="linie"]
+material = SubResource("mat_linie")
+size = Vector3(180, 0.01, 0.12)
+
+[sub_resource type="BoxShape3D" id="forma_sosea"]
+size = Vector3(180, 0.04, 7)
+
+[sub_resource type="BoxShape3D" id="forma_perete_statie"]
+size = Vector3(3, 2.4, 0.15)
+
+[sub_resource type="BoxShape3D" id="forma_lateral_statie"]
+size = Vector3(0.15, 2.4, 1.15)
+
+[sub_resource type="BoxShape3D" id="forma_banca"]
+size = Vector3(2.4, 0.55, 0.42)
+
+[sub_resource type="BoxShape3D" id="forma_placa"]
+size = Vector3(3.3, 0.1, 1.75)
+
+[sub_resource type="CylinderShape3D" id="forma_stalp_bariera"]
+height = 1.1
+radius = 0.08
+
+[sub_resource type="BoxShape3D" id="forma_bara"]
+size = Vector3(4.3, 0.12, 0.25)
+
+[sub_resource type="BoxShape3D" id="forma_panou"]
+size = Vector3(1.8, 1.2, 0.2)
+
+[sub_resource type="BoxShape3D" id="forma_indicator"]
+size = Vector3(0.3, 2.2, 0.3)
+
+[sub_resource type="BoxShape3D" id="forma_bustean"]
+size = Vector3(3.6, 0.6, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_perete_lung"]
+size = Vector3(1, 60, 200)
+
+[sub_resource type="BoxShape3D" id="forma_perete_lat"]
+size = Vector3(190, 60, 1)
+
+[node name="Padure" type="Node3D"]
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("9")
+marime_camera = 0.5
+amortizare = 0.7
+ecou = 0.08
+
+[node name="Luna" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30, 0)
+rotation = Vector3(-0.62, 2.6, 0)
+light_color = Color(0.62, 0.7, 0.95, 1)
+light_energy = 0.22
+shadow_enabled = true
+directional_shadow_max_distance = 45.0
+
+[node name="Teren" type="StaticBody3D" parent="."]
+script = ExtResource("1")
+
+[node name="Sosea" type="StaticBody3D" parent="."]
+
+[node name="Asfalt" type="MeshInstance3D" parent="Sosea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("asfalt")
+
+[node name="LinieMijloc" type="MeshInstance3D" parent="Sosea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+mesh = SubResource("linie")
+
+[node name="Forma" type="CollisionShape3D" parent="Sosea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+shape = SubResource("forma_sosea")
+
+[node name="Vegetatie" type="Node3D" parent="." node_paths=PackedStringArray("teren")]
+script = ExtResource("4")
+teren = NodePath("../Teren")
+copaci_vii = Array[PackedScene]([ExtResource("16"), ExtResource("17"), ExtResource("16"), ExtResource("17"), ExtResource("16"), ExtResource("18"), ExtResource("19"), ExtResource("20")])
+copaci_goi = Array[PackedScene]([ExtResource("21")])
+copaci_morti = Array[PackedScene]([ExtResource("22"), ExtResource("23")])
+pietre = Array[PackedScene]([ExtResource("24"), ExtResource("24"), ExtResource("25")])
+bustean = ExtResource("26")
+zone_libere = Array[Rect2]([Rect2(-12, -11, 24, 11), Rect2(-4, -18, 14, 8)])
+
+[node name="SemneVale" type="Node3D" parent="." node_paths=PackedStringArray("teren")]
+script = ExtResource("5")
+teren = NodePath("../Teren")
+cruce = ExtResource("27")
+copac_craca = ExtResource("28")
+papusa = ExtResource("29")
+vatra = ExtResource("30")
+lumanare = ExtResource("31")
+piatra = ExtResource("25")
+
+[node name="PePamant" type="Node3D" parent="." node_paths=PackedStringArray("teren")]
+script = ExtResource("6")
+teren = NodePath("../Teren")
+
+[node name="Statie" type="StaticBody3D" parent="PePamant"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -5.6)
+script = ExtResource("11")
+indiciu = "[E] Read the schedule"
+replici = PackedStringArray("Line 13. Next bus: 5:40 AM.", "You: Great. Five and a half hours.")
+
+[node name="Model" parent="PePamant/Statie" instance=ExtResource("32")]
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="Placa" type="CollisionShape3D" parent="PePamant/Statie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0.075)
+shape = SubResource("forma_placa")
+
+[node name="Spate" type="CollisionShape3D" parent="PePamant/Statie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, -0.725)
+shape = SubResource("forma_perete_statie")
+
+[node name="Stanga" type="CollisionShape3D" parent="PePamant/Statie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.425, 1.3, -0.075)
+shape = SubResource("forma_lateral_statie")
+
+[node name="Dreapta" type="CollisionShape3D" parent="PePamant/Statie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.425, 1.3, -0.075)
+shape = SubResource("forma_lateral_statie")
+
+[node name="Banca" type="CollisionShape3D" parent="PePamant/Statie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.45)
+shape = SubResource("forma_banca")
+
+[node name="Bariera" type="StaticBody3D" parent="PePamant"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -14)
+script = ExtResource("11")
+replici = PackedStringArray("Locked. Chained. Padlocked.", "You: Good thing I'm not a car.")
+
+[node name="Model" parent="PePamant/Bariera" instance=ExtResource("33")]
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="StalpBalama" type="CollisionShape3D" parent="PePamant/Bariera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0.55, 0)
+shape = SubResource("forma_stalp_bariera")
+
+[node name="StalpSprijin" type="CollisionShape3D" parent="PePamant/Bariera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.95, 0.55, 0)
+shape = SubResource("forma_stalp_bariera")
+
+[node name="Bara" type="CollisionShape3D" parent="PePamant/Bariera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 1.0, 0)
+shape = SubResource("forma_bara")
+
+[node name="PanouOcol" type="StaticBody3D" parent="PePamant"]
+transform = Transform3D(0.94, 0, -0.342, 0, 1, 0, 0.342, 0, 0.94, 7.2, 0, -12.6)
+script = ExtResource("11")
+indiciu = "[E] Read the sign"
+replici = PackedStringArray("TRIVALE FOREST DISTRICT. Property of the State. No fires.", "Someone added underneath, in marker: \"STAY ON THE RIGHT PATH.\"")
+
+[node name="Model" parent="PePamant/PanouOcol" instance=ExtResource("34")]
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="Forma" type="CollisionShape3D" parent="PePamant/PanouOcol"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+shape = SubResource("forma_panou")
+
+[node name="Indicator" type="StaticBody3D" parent="PePamant"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -49.5)
+script = ExtResource("11")
+indiciu = "[E] Read the signpost"
+replici = PackedStringArray("Right: PLATEAU.", "Left: somebody carved the name off with a knife. The scratches look fresh.")
+
+[node name="Model" parent="PePamant/Indicator" instance=ExtResource("35")]
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="Forma" type="CollisionShape3D" parent="PePamant/Indicator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("forma_indicator")
+
+[node name="BusteanPlatou" type="StaticBody3D" parent="PePamant"]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 27, -0.1, -99)
+script = ExtResource("11")
+replici = PackedStringArray("You: Nice. Stars. No coven, though.", "You: Maybe I'm early. Maybe I'm in the wrong place. Maybe both.")
+
+[node name="Model" parent="PePamant/BusteanPlatou" instance=ExtResource("26")]
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="Forma" type="CollisionShape3D" parent="PePamant/BusteanPlatou"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+shape = SubResource("forma_bustean")
+
+[node name="PiatraPlatou1" parent="PePamant" instance=ExtResource("25")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, -0.2, -89)
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="PiatraPlatou2" parent="PePamant" instance=ExtResource("24")]
+transform = Transform3D(0.5, 0, 0.866, 0, 1, 0, -0.866, 0, 0.5, 22, -0.1, -90)
+script = ExtResource("12")
+material = ExtResource("13")
+
+[node name="Autobuz" parent="." instance=ExtResource("15")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0.04, -1.75)
+
+[node name="PlecareAutobuz" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("8")
+autobuz = NodePath("../Autobuz")
+
+[node name="Jucator" parent="." instance=ExtResource("14")]
+transform = Transform3D(-0.9, 0, 0.435, 0, 1, 0, -0.435, 0, -0.9, -1.0, 0.15, -5.2)
+suprafata_implicita = "frunze"
+pasi_poteca = Array[AudioStream]([ExtResource("44"), ExtResource("45"), ExtResource("46"), ExtResource("47")])
+
+[node name="Vant" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("36")
+volume_db = -16.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Greieri" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("37")
+volume_db = -60.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Drone" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("38")
+volume_db = -60.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Bufnite" type="Node3D" parent="."]
+script = ExtResource("10")
+sunete = Array[AudioStream]([ExtResource("39")])
+pauza_minima = 18.0
+pauza_maxima = 45.0
+volum_db = -10.0
+variatie = 0.06
+in_jurul_jucatorului = true
+distanta_minima = 14.0
+distanta_maxima = 28.0
+
+[node name="SperieturiVale" type="Node3D" parent="."]
+script = ExtResource("10")
+sunete = Array[AudioStream]([ExtResource("40"), ExtResource("41"), ExtResource("42"), ExtResource("43"), ExtResource("43")])
+pauza_minima = 40.0
+pauza_maxima = 80.0
+volum_db = -40.0
+variatie = 0.12
+in_jurul_jucatorului = true
+distanta_minima = 6.0
+distanta_maxima = 15.0
+
+[node name="Atmosfera" type="Node" parent="." node_paths=PackedStringArray("teren", "mediu", "luna", "greieri", "drone", "vant", "sperieturi_vale")]
+script = ExtResource("7")
+teren = NodePath("../Teren")
+mediu = NodePath("../Mediu")
+luna = NodePath("../Luna")
+greieri = NodePath("../Greieri")
+drone = NodePath("../Drone")
+vant = NodePath("../Vant")
+sperieturi_vale = NodePath("../SperieturiVale")
+
+[node name="Limite" type="StaticBody3D" parent="."]
+
+[node name="Stanga" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -88, 0, -80)
+shape = SubResource("forma_perete_lung")
+
+[node name="Dreapta" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 88, 0, -80)
+shape = SubResource("forma_perete_lung")
+
+[node name="Sosea" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+shape = SubResource("forma_perete_lat")
+
+[node name="Fund" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -168)
+shape = SubResource("forma_perete_lat")

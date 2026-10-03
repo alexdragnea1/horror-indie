@@ -24,8 +24,10 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 3. Abia acum se deschide ușa de la intrare. Ecranul se face negru, cobori scările blocului și ajungi afară, în fața blocului **M7, scara B**, la 11:57 PM.
 4. Pe bancă stă o **babă** care are câteva lucruri de spus despre mama ta.
 5. La 5 secunde după ce termini cu baba (sarcina: **„Catch the night bus.”**) apare din ceață **autobuzul de noapte 13** („13 Trivale”), frânează și oprește în stația din dreapta blocului. Ușile se deschid cu un șuierat; urci cu E.
-6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Te gândești la mama ta și la cum ai putea vinde iarbă în loc de vrăjitorie. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. O recunoști: e bunica, iar și-a uitat pastilele. Autobuzul oprește la capăt de linie, „Forest Road”.
-7. Urmează: pădurea și întâlnirea cu coven-ul (deocamdată, după autobuz scrie „To be continued...” și te întorci în meniu).
+6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Te gândești la mama ta și la cum ai putea vinde iarbă în loc de vrăjitorie. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, fără alt sunet decât pașii ei grei și umezi, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. O recunoști: e bunica, iar și-a uitat pastilele.
+7. La 6 secunde după ce dispare, ecranul se întunecă și cobori la **stația de la marginea pădurii Trivale** (12:00 AM). Autobuzul închide ușile și pleacă. Rămâi singur pe șosea, cu sarcina „Find the coven in Trivale Forest.”
+8. Poteca trece pe lângă **bariera forestieră** (încuiată, dar o ocolești pe lângă stâlp) și urcă spre deal. La bifurcație, un indicator: **dreapta** („PLATOU”) urcă pe un platou în mijlocul pădurii, unde ceața se ridică și se văd stelele și luna; **stânga** (numele e zgâriat cu cuțitul) coboară într-o vale tot mai creepy: copacii mor, ceața devine roșie și grea, apar cruci și păpuși de paie atârnate de crăci, iar în fund e o vatră cu lumânări încă aprinse, într-un cerc de cruci.
+9. Urmează: coven-ul.
 
 ## Ce e unde
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
@@ -53,11 +55,16 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scenes/statie.tscn` – stația de autobuz: copertină, bancă, afiș, orarul (se poate citi), un geam spart, plăcuța liniei 13.
 - `scenes/autobuz.tscn` + `scripts/autobuz.gd` – autobuzul (un Ikarus vechi, cu salon mobilat și șofer). Îl muți din alt script și el se descurcă singur: roțile se învârt, motorul turează după viteză, caroseria se leagănă și se apleacă la frână. Ușile: `deschide_usi()` / `inchide_usi()`.
 - `scripts/sosire_autobuz.gd` – nodul `SosireAutobuz` din `afara_bloc.tscn`: când vine autobuzul (`intarziere`, implicit 5 s după baba), de unde vine, cât de repede merge și frânează, unde oprește.
-- `scenes/autobuz_drum.tscn` + `scripts/drum_autobuz.gd` – scena din autobuz: drumul prin pădure, creatura și dialogul. În Inspector: `viteza`, cât de deasă e pădurea, când apare creatura (`armare`, `momeala`, `fortat`), cât stă lângă geam (`timp_alaturi`), replicile (grupul „Replici”: le schimbi direct acolo; `intarziere_replici` = după câte secunde de la apariția creaturii zici replicile cu bunica, acum 2,5), și `scena_urmatoare` (când facem pădurea, o pui aici în loc de „To be continued”).
+- `scenes/autobuz_drum.tscn` + `scripts/drum_autobuz.gd` – scena din autobuz: drumul prin pădure, creatura și dialogul. În Inspector: `viteza`, cât de deasă e pădurea, când apare creatura (`armare`, `momeala`, `fortat`), cât stă lângă geam (`timp_alaturi`), replicile (grupul „Replici”: le schimbi direct acolo; `intarziere_replici` = după câte secunde de la apariția creaturii zici replicile cu bunica, acum 2,5), `dupa_disparitie` (după câte secunde de la dispariția creaturii ajungi în pădure, acum 6) și `scena_urmatoare` (pădurea). Pașii creaturii (cât de des, cât de tare) se reglează în `scenes/creatura.tscn`.
+- `scenes/padure.tscn` – pădurea Trivale: stația de la marginea pădurii, autobuzul care pleacă (`PlecareAutobuz`: cât așteaptă, cât de repede pleacă, ce sarcină primești), bariera, panoul ocolului silvic, indicatorul de la bifurcație, platoul și valea. Ce e pus de mână stă sub nodul `PePamant`: în editor muți obiectele doar pe orizontală, iar jocul le pune singur pe pământ.
+- `scripts/teren_padure.gd` (nodul `Teren`) – terenul, făcut din cod: cât de înalt e dealul, cât de adâncă e valea, unde sunt platoul și potecile (lista de puncte a fiecărei poteci), cât de lată e poteca. Schimbi o valoare în Inspector și la următoarea pornire terenul e altul.
+- `scripts/vegetatie_padure.gd` (nodul `Vegetatie`) – copacii: cât de deasă e pădurea, ce copaci cresc, unde nu crește nimic (`zone_libere`). Cu cât cobori în vale, cu atât sunt mai morți.
+- `scripts/semne_vale.gd` (nodul `SemneVale`) – crucile, păpușile și vatra din valea din stânga (lista `SEMNE` din script).
+- `scripts/atmosfera_padure.gd` (nodul `Atmosfera`) – cum se schimbă ceața, lumina, cerul și sunetele în pădure, pe platou și în vale (grupurile „Pădure”, „Platou”, „Vale” din Inspector).
 - `scripts/calator.gd` – tu, așezat: te uiți în jur cu mouse-ul, dar nu te miști. `scenes/creatura.tscn` + `scripts/creatura.gd` – arătarea care aleargă (cât de repede pășește, cât e de aplecată).
 
 ## Modele 3D
-Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py` (casa), `dormitor.py` (camera ta), `afara.py` (blocul, copacii și curtea), `bucatarie.py` (bucătăria, ramele tablourilor, cuierul) și `autobuz.py` (autobuzul, stația, șoferul, creatura, brazii și stâlpii de pe drum). Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:
+Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py` (casa), `dormitor.py` (camera ta), `afara.py` (blocul, copacii și curtea), `bucatarie.py` (bucătăria, ramele tablourilor, cuierul) , `autobuz.py` (autobuzul, stația, șoferul, creatura, brazii și stâlpii de pe drum) și `padure.py` (stația din pădure, bariera, panoul, indicatorul, copacii morți, crucile, păpușile, vatra). Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:
 ```
 "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python tools/blender/modele.py
 ```
@@ -75,6 +82,8 @@ Ce se aude acum:
 - **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău; în fața blocului, uneori, cineva fluieră departe în întuneric sau se aude o tablă lovită;
 - **tranziția** spre afară: pașii pe scara blocului, cu ecou, și ușa metalică a scării trântită;
 - **autobuzul**: motorul diesel (sintetizat; turează după viteză), scârțâitul frânei și „pfff”-ul frânei de aer, ușile pneumatice, huruitul drumului și zornăitul salonului; creatura: pași repezi prin frunze, un vâjâit când trece pe lângă geam, crengi rupte când intră în pădure;
+- **pădurea**: pașii pe potecă scrâșnesc a pietriș, iar prin frunze foșnesc; vânt și, din când în când, o bufniță; pe platou greieri; în vale vântul tace și crește un huruit jos, ca o inimă, peste care se aud ciocănituri, crengi rupte și... pași grei;
+- **creatura** din autobuz nu mai face niciun sunet în afară de pași: grei, umezi, în galop șchiop, cu oase care pocnesc;
 - în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, baba puțin mai subțire, tu subțire;
 - la meniul cu numele: clicuri și o lovitură dramatică la „Are you sure your name is little bitch?”.
 
@@ -92,7 +101,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 1. ✅ Baza: aspect PS2, jucător, dialog, obiecte interactive
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
-4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul; urmează pădurea), modele low-poly făcute din cod
+4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale; urmează coven-ul), modele low-poly făcute din cod
 5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață; urmează jumpscare-uri și muzică)
 6. Monstrul, jumpscare-uri, comedie
 7. Meniu, salvare, final

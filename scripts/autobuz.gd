@@ -89,6 +89,14 @@ func deschide_usi() -> void:
 		intrare.deschisa = true
 
 
+## Ușile deschise de la început, fără animație și fără sunet (autobuzul e deja în stație când apari).
+## Nu se poate urca (golurile nu devin folosibile).
+func usi_deschise_deja() -> void:
+	usi_deschise = true
+	for i in _foi.size():
+		_foi[i].rotation.y = deg_to_rad(unghi_usi) * _semne_foi[i]
+
+
 func inchide_usi() -> void:
 	if not usi_deschise:
 		return

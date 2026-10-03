@@ -14,14 +14,15 @@
 [ext_resource type="PackedScene" path="res://models/copac_3.glb" id="12"]
 [ext_resource type="PackedScene" path="res://models/stalpisor.glb" id="13"]
 [ext_resource type="PackedScene" path="res://models/stalp_lemn.glb" id="14"]
-[ext_resource type="AudioStream" path="res://sunete/vajait.ogg" id="15"]
 [ext_resource type="AudioStream" path="res://sunete/crengi.ogg" id="16"]
-[ext_resource type="AudioStream" path="res://sunete/ui_sting.ogg" id="17"]
 [ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="18"]
 [ext_resource type="AudioStream" path="res://sunete/tabla_lovita.ogg" id="19"]
 [ext_resource type="AudioStream" path="res://sunete/drum_rulare.ogg" id="20"]
 [ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="21"]
 [ext_resource type="AudioStream" path="res://sunete/ciocanit.ogg" id="22"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="23"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_1.ogg" id="24"]
+[ext_resource type="AudioStream" path="res://sunete/pas_poteca_3.ogg" id="25"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -114,10 +115,9 @@ copaci_padure = Array[PackedScene]([ExtResource("7"), ExtResource("8"), ExtResou
 copaci_camp = Array[PackedScene]([ExtResource("9"), ExtResource("9"), ExtResource("8"), ExtResource("11")])
 stalpisor = ExtResource("13")
 stalp_lemn = ExtResource("14")
-sunet_vajait = ExtResource("15")
 sunet_crengi = ExtResource("16")
-sunet_sperietura = ExtResource("17")
-sunet_frana = ExtResource("18")
+sunete_sosire = Array[AudioStream]([ExtResource("18"), ExtResource("23"), ExtResource("24"), ExtResource("25"), ExtResource("24")])
+scena_urmatoare = "res://scenes/padure.tscn"
 zornaieli = Array[AudioStream]([ExtResource("19"), ExtResource("22")])
 
 [node name="Mediu" type="WorldEnvironment" parent="."]

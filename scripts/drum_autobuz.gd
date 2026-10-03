@@ -2,8 +2,9 @@ extends Node3D
 ## Scena din autobuz (cutscene): stai pe scaun lângă geam și autobuzul merge noaptea pe lângă pădure.
 ## Când te uiți spre pădure (pe geamul din stânga), ceva aleargă foarte repede pe lângă autobuz,
 ## te depășește și dispare printre copaci. Dacă nu te uiți, întâi se aud crengi rupte în pădure,
-## iar până la urmă privirea se întoarce singură. Apoi un mic dialog, autobuzul oprește la capăt de linie
-## și scena se termină (`scena_urmatoare`, sau „To be continued...” și meniul, cât pădurea nu e gata).
+## iar până la urmă privirea se întoarce singură. Creatura n-are alt sunet decât pașii.
+## Replicile tale pornesc la `intarziere_replici` după ce o vezi; la `dupa_disparitie` secunde după ce
+## a dispărut, ecran negru și ești la stația din fața pădurii (`scena_urmatoare`).
 ##
 ## Autobuzul chiar merge (pe +Z); pădurea, stâlpii și liniile drumului sunt „bandă rulantă”:
 ## ce rămâne în urmă e mutat în față. Solul și asfaltul merg odată cu autobuzul, dar textura lor
@@ -17,8 +18,6 @@ extends Node3D
 
 ## Viteza autobuzului (m/s; 13 ≈ 47 km/h).
 @export var viteza := 13.0
-## Cât de tare frânează la capăt (m/s²).
-@export var decelerare := 2.8
 
 @export_group("Creatura")
 ## După câte secunde poate apărea (să ai timp să te așezi).
@@ -42,6 +41,8 @@ extends Node3D
 @export_multiline var replici_creatura: PackedStringArray = ["You: Why is grandma always doing this...", "You: Always forgets her meds and running naked through the forest."]
 ## La câte secunde după ce creatura apare pe ecran pornesc replicile de mai sus.
 @export var intarziere_replici := 2.5
+## După câte secunde de la dispariția creaturii ajungi la stația din fața pădurii.
+@export var dupa_disparitie := 6.0
 
 @export_group("Pădurea")
 @export var copaci_padure: Array[PackedScene] = []
@@ -54,13 +55,12 @@ extends Node3D
 @export_group("Final")
 ## Scena de după (pădurea). Gol = „To be continued...” și înapoi în meniu.
 @export_file("*.tscn") var scena_urmatoare := ""
-@export_multiline var titlu_urmator := "Forest Road\n12:00 AM"
+@export_multiline var titlu_urmator := "Trivale Forest\n12:00 AM"
 
 @export_group("Sunete")
-@export var sunet_vajait: AudioStream
 @export var sunet_crengi: AudioStream
-@export var sunet_sperietura: AudioStream
-@export var sunet_frana: AudioStream
+## Ce se aude pe negru, între autobuz și pădure (frâna, ușile, cobori).
+@export var sunete_sosire: Array[AudioStream] = []
 @export var zornaieli: Array[AudioStream] = []
 
 ## Cât din drum ține minte în spate și cât desenează în față (metri).
@@ -85,6 +85,7 @@ var _faza := 0
 var _rel := 0.0
 var _lateral := 0.0
 var _timp_faza := 0.0
+var _replici_in_curs := false
 ## Când a intrat creatura prima dată în cadru (-1 = încă nu).
 var _vazuta_la := -1.0
 
@@ -260,7 +261,6 @@ func _creatura_pas(delta: float) -> void:
 				_faza = 0
 				creatura.visible = false
 				creatura.alearga = false
-				Sunet.reda_la(sunet_crengi, creatura.global_position, -2.0, 0.05)
 	creatura.global_position = Vector3(_lateral, 0.0, z_bus + _rel)
 	if _vazuta_la < 0.0 and _camera.is_position_in_frustum(creatura.global_position + Vector3.UP * 1.4):
 		_vazuta_la = _timp
@@ -268,16 +268,7 @@ func _creatura_pas(delta: float) -> void:
 
 
 func _trece_pe_langa() -> void:
-	# exact când e în dreptul geamului: vâjâit, lumina clipește, tresari
-	var p := AudioStreamPlayer3D.new()
-	p.stream = sunet_vajait
-	p.volume_db = 2.0
-	p.unit_size = 4.0
-	p.bus = &"Efecte"
-	p.finished.connect(p.queue_free)
-	creatura.add_child(p)
-	p.play()
-	Sunet.reda(sunet_sperietura, -4.0)
+	# exact când e în dreptul geamului: lumina clipește și tresari. Fără sunet: se aud doar pașii ei.
 	calator.zguduie(1.0)
 	_clipeste_lumina()
 
@@ -315,43 +306,34 @@ func _scenariu() -> void:
 			await calator.priveste_spre(95.0, -4.0, 1.3)
 			_porneste_creatura()
 	# replicile pornesc la `intarziere_replici` după ce creatura intră în cadru
-	# (dacă n-a apucat să intre deloc, când dispare)
+	# (dacă n-a apucat să intre deloc, când dispare); merg în paralel cu restul
+	_replici_creatura()
+	while _faza != 0:
+		await get_tree().process_frame
+	# la `dupa_disparitie` secunde după ce a dispărut (și după ce ai terminat de vorbit):
+	# ești deja la stația din fața pădurii
+	var disparuta := _timp
+	while _timp < disparuta + dupa_disparitie or Dialog.activ or _replici_in_curs:
+		await get_tree().process_frame
+	Stare.marcheaza("a_ajuns_la_padure")
+	_final()
+
+
+func _replici_creatura() -> void:
+	_replici_in_curs = true
 	while _vazuta_la < 0.0 and _faza != 0:
 		await get_tree().process_frame
 	while _vazuta_la >= 0.0 and _timp < _vazuta_la + intarziere_replici:
 		await get_tree().process_frame
 	await _spune(replici_creatura)
-	while _faza != 0:
-		await get_tree().process_frame
-	await _asteapta(3.0)
-	await _franeaza()
-	await _asteapta(0.6)
-	await autobuz.deschide_usi()
-	await _asteapta(1.5)
-	Stare.marcheaza("a_ajuns_la_padure")
-	_final()
-
-
-func _franeaza() -> void:
-	if sunet_frana:
-		var p := AudioStreamPlayer3D.new()
-		p.stream = sunet_frana
-		p.unit_size = 5.0
-		p.bus = &"Efecte"
-		p.finished.connect(p.queue_free)
-		autobuz.add_child(p)
-		p.position = Vector3(0, 0.5, 2.0)
-		p.play()
-	while _v > 0.0:
-		_v = maxf(_v - decelerare * get_process_delta_time(), 0.0)
-		await get_tree().process_frame
-	calator.zguduie(0.4)
+	_replici_in_curs = false
 
 
 func _final() -> void:
 	if scena_urmatoare != "":
-		Tranzitie.mergi_la(scena_urmatoare, titlu_urmator)
+		Tranzitie.mergi_la(scena_urmatoare, titlu_urmator, sunete_sosire)
 		return
+	# fără scenă următoare: „To be continued...” și înapoi în meniu
 	var strat := CanvasLayer.new()
 	strat.layer = 19
 	add_child(strat)

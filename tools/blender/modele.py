@@ -218,3 +218,6 @@ bucatarie.toate(MODELE)
 
 import autobuz  # noqa: E402
 autobuz.toate(MODELE)
+
+import padure  # noqa: E402
+padure.toate(MODELE)

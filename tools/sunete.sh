@@ -151,6 +151,38 @@ ffmpeg -v error -y -i "$PACHET/Combat and Gore/crunch.wav" -i "$PACHET/Combat an
 unic crengi "$OUT/_crengi.wav"
 rm -f "$OUT/_crengi.wav"
 
+
+# --- creatura: pași grei și umezi, cu o încheietură care pocnește (în loc de vâjâit și „sting”)
+# iarbă încetinită (mai grea) + plescăit + un pocnet de os mic, toate înfundate
+for i in 1 2 3 4; do
+	ffmpeg -v error -y -i "$PACHET/Footsteps/digital/digital_footstep_grass_$i.wav" \
+		-i "$PACHET/Combat and Gore/squelching_$i.wav" -i "$PACHET/Combat and Gore/bone_snap.wav" -filter_complex \
+		"[0]asetrate=44100*0.68,aresample=44100[a];[1]atrim=end=0.25,afade=t=out:st=0.1:d=0.15,volume=-9dB[b];[2]asetrate=44100*(1.1+0.1*$i),aresample=44100,highpass=f=1500,adelay=$((20 + i * 15)),volume=-16dB[c];[a][b][c]amix=inputs=3:normalize=0,lowpass=f=3200" \
+		-ac 1 "$OUT/_cp.wav"
+	unic "creatura_pas_$i" "$OUT/_cp.wav"
+done
+rm -f "$OUT/_cp.wav"
+
+# --- pădurea Trivale
+# pași pe potecă (pietriș și pământ)
+for i in 1 2 3 4; do
+	unic "pas_poteca_$i" "Footsteps/foley_footstep_gravel_$i.wav" mono "lowpass=f=5000"
+done
+# greierii de pe platou: țârâit sintetizat (4,5 kHz, în rafale de câte 3), câțiva greieri decalați; buclă
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.25*sin(2*PI*4500*t)*gt(sin(2*PI*28*t)\,0.2)*gt(sin(2*PI*1.3*t)\,0.55)+0.18*sin(2*PI*4300*t)*gt(sin(2*PI*31*t)\,0.3)*gt(sin(2*PI*0.9*t+1.7)\,0.6)+0.12*sin(2*PI*4750*t)*gt(sin(2*PI*25*t)\,0.25)*gt(sin(2*PI*1.1*t+3.1)\,0.65):s=44100:d=12" \
+	-af "highpass=f=3000,lowpass=f=6500,aecho=0.6:0.5:60|130:0.25|0.15" -ac 2 "$OUT/_greieri.wav"
+bucla greieri "$OUT/_greieri.wav" 1.5 stereo
+# bufnița: „hu... hu-hu” (sinus de ~400 Hz alunecând în jos, cu un pic de aer), cu ecou de pădure
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.5*sin(2*PI*(420-60*t)*t)*(between(t\,0\,0.45)*sin(PI*t/0.45))+0.4*sin(2*PI*(400-40*(t-0.8))*t)*(between(t\,0.8\,1.05)*sin(PI*(t-0.8)/0.25))+0.45*sin(2*PI*(390-50*(t-1.15))*t)*(between(t\,1.15\,1.6)*sin(PI*(t-1.15)/0.45)):s=44100:d=2.4" \
+	-f lavfi -i "anoisesrc=c=pink:a=0.02:d=2.4:r=44100" -filter_complex "[0][1]amix=inputs=2:normalize=0,lowpass=f=1200,aecho=0.7:0.6:180|420:0.3|0.18" -ac 1 "$OUT/_bufnita.wav"
+unic bufnita "$OUT/_bufnita.wav"
+rm -f "$OUT/_greieri.wav" "$OUT/_bufnita.wav"
+# zona din stânga: un huruit jos care bate ca o inimă rară + fâșâit, tot mai tare cu cât cobori; buclă
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.3*sin(2*PI*41*t)*(0.6+0.4*sin(2*PI*t/7))+0.18*sin(2*PI*61.7*t)*(0.5+0.5*sin(2*PI*t/11))+0.25*sin(2*PI*36*t)*pow(max(sin(2*PI*0.75*t)\,0)\,12):s=44100:d=22" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.05:d=22:r=44100" -filter_complex "[0][1]amix=inputs=2:normalize=0,lowpass=f=500" -ac 2 "$OUT/_drone.wav"
+bucla drone_padure "$OUT/_drone.wav" 2 stereo anull tri
+rm -f "$OUT/_drone.wav"
+
 # --- muzica meniului principal: un drone grav (sintetizat) + cutia muzicală din pachet, încetinită,
 # cu ecou lung, de trei ori, de fiecare dată mai jos. 36 s, buclă fără cusătură (crossfade 3 s).
 CUTIE="$PACHET/Musical Effects/music_box_mystery.wav"

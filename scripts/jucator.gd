@@ -18,6 +18,8 @@ extends CharacterBody3D
 @export var pasi_covor: Array[AudioStream] = []
 @export var pasi_beton: Array[AudioStream] = []
 @export var pasi_frunze: Array[AudioStream] = []
+## Pe poteca din pădure (pământ bătătorit și pietriș).
+@export var pasi_poteca: Array[AudioStream] = []
 @export var volum_pasi_db := -9.0
 ## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
 @export var scartait_podea: AudioStream
@@ -28,7 +30,7 @@ extends CharacterBody3D
 ## Pe ce calci când nu ești într-o ZonaSuprafata ("lemn" în casă, "frunze" afară).
 @export var suprafata_implicita := "lemn"
 
-## Pe ce calci acum ("lemn", "covor", "beton", "frunze"). O schimbă ZonaSuprafata.
+## Pe ce calci acum ("lemn", "covor", "beton", "frunze", "poteca"). O schimbă ZonaSuprafata (în pădure, atmosfera_padure.gd).
 var suprafata := "lemn"
 
 @onready var _cap: Node3D = $Cap
@@ -143,6 +145,7 @@ func _pas(fuge: bool) -> void:
 		"covor": lista = pasi_covor
 		"beton": lista = pasi_beton
 		"frunze": lista = pasi_frunze
+		"poteca": lista = pasi_poteca
 	if lista.is_empty():
 		return
 	var sunet: AudioStream = lista.pick_random()

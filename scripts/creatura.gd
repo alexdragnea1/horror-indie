@@ -5,23 +5,26 @@ extends Node3D
 ## Modelul privește spre +Z: acolo aleargă.
 
 ## Câți pași pe secundă (cu cât mai mulți, cu atât pare mai grăbit și mai „greșit”).
-@export var pasi_pe_secunda := 7.5
+@export var pasi_pe_secunda := 5.0
 ## Cât de tare balansează picioarele și brațele (grade).
 @export var amplitudine_picioare := 55.0
 @export var amplitudine_brate := 70.0
 ## Cât de aplecat în față aleargă (grade).
 @export var aplecare := 28.0
-## Pașii pe frunze; se alege unul la întâmplare la fiecare pas.
+## Pașii (sunetele creatura_pas_*: grei, umezi, cu pocnet de oase); unul la întâmplare la fiecare bătaie.
 @export var pasi: Array[AudioStream] = []
+## Cât de tare se aud pașii (dB).
+@export var volum_pasi_db := 3.0
 
 var alearga := false
 
 @onready var _model: Node3D = $Model
-@onready var _sunet_pasi: AudioStreamPlayer3D = $Pasi
 var _brate: Array[Node3D] = []
 var _picioare: Array[Node3D] = []
 var _faza := 0.0
-var _pas_anterior := 0
+## Unde cad pașii într-un ciclu (0..1): două perechi, inegal, ca un galop șchiop.
+const BATAI: Array[float] = [0.0, 0.09, 0.5, 0.56]
+var _ultima_bataie: Array[float] = [-1.0, -1.0, -1.0, -1.0]
 
 
 func _ready() -> void:
@@ -48,10 +51,27 @@ func _process(delta: float) -> void:
 	# saltă la fiecare pas, cu capul smucit
 	_model.position.y = absf(cos(_faza)) * 0.12
 	_model.rotation.z = sin(_faza) * deg_to_rad(6.0)
-	var pas := int(_faza / PI)
-	if pas != _pas_anterior:
-		_pas_anterior = pas
-		if not pasi.is_empty():
-			_sunet_pasi.stream = pasi.pick_random()
-			_sunet_pasi.pitch_scale = randf_range(1.15, 1.4)
-			_sunet_pasi.play()
+	# pașii: nu un mers normal, ci un galop șchiop, pe patru „picioare” (tălpile și pumnii),
+	# în perechi apropiate — ta-tam ... ta-tam — grei, umezi, cu încheieturi care pocnesc
+	var ciclu := _faza / TAU
+	for i in BATAI.size():
+		var moment: float = floorf(ciclu - BATAI[i]) + BATAI[i]
+		if moment > _ultima_bataie[i] and ciclu >= moment:
+			_ultima_bataie[i] = moment
+			_pas(i)
+
+
+func _pas(i: int) -> void:
+	if pasi.is_empty():
+		return
+	var p := AudioStreamPlayer3D.new()
+	p.stream = pasi.pick_random()
+	# a doua bătaie din pereche e mai ușoară (pumnul), prima mai grea (talpa)
+	p.volume_db = volum_pasi_db - (4.0 if i % 2 == 1 else 0.0) + randf_range(-1.5, 1.5)
+	p.pitch_scale = randf_range(0.78, 0.95)
+	p.unit_size = 6.0
+	p.max_distance = 45.0
+	p.bus = &"Efecte"
+	p.finished.connect(p.queue_free)
+	add_child(p)
+	p.play()
