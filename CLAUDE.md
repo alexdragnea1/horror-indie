@@ -23,9 +23,13 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 | `scripts/interactabil.gd` | `class_name Interactabil` (StaticBody3D): `indiciu`, `replici`, `o_singura_data`, semnal `folosit`. Jucătorul îl găsește cu RayCast-ul. |
 | `scripts/jucator.gd` + `scenes/jucator.tscn` | FPS: CharacterBody3D → `Cap` → `Camera3D` → `Lanterna` (SpotLight) + `RazaInteractiune` (2,2 m). HUD (CanvasLayer 5): punct + `Indiciu`. Mouse-ul folosește `screen_relative` (nu `relative`, care e scalat de viewport-ul mic). |
 | `scripts/lumina_palpaie.gd` | OmniLight3D care pâlpâie. |
-| `scenes/nivel_test.tscn` | Scena principală deocamdată: cameră + hol făcute din CSG (`use_collision`), bilet și manechin interactive. Texturile sunt `NoiseTexture2D`, **înlocuitori** până vin texturi adevărate. |
+| `scripts/stare.gd` | Autoload `Stare` (CanvasLayer 6): inventar (`adauga_obiect/are_obiect/scoate_obiect`) + marcaje de poveste (`marcheaza/e_marcat`), mesaj „Ai luat: …”, lista pe **Tab** (acțiunea `inventar`). |
+| `scripts/obiect_luat.gd` | `class_name ObiectLuat` (extinde `Interactabil`): `id_obiect`, `nume_obiect`; la E intră în inventar și dispare. |
+| `scripts/usa.gd` | `class_name Usa` (extinde `Interactabil`): originea nodului = balamaua; `cheie_necesara`, `replici_incuiata`, `unghi_deschidere`. **Scris, încă nefolosit în nivel.** |
+| `scripts/declansator.gd` | `class_name Declansator` (Area3D): când intră un corp din grupul `jucator` → replici, `marcaj`, `de_aratat`/`de_ascuns`. **Scris, încă nefolosit în nivel.** |
+| `scenes/nivel_test.tscn` | Prima scenă, **casa**: cameră + hol din CSG (`use_collision`), bilet interactiv. Pereții și podeaua au texturile adevărate din `textures/`; masa și biletul au încă `NoiseTexture2D`. |
 
-Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 10 = dialog (HUD-ul și dialogul nu sunt dither-uite).
+Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dialog (HUD-ul și dialogul nu sunt dither-uite).
 
 ⚠️ În fișierele `.tscn` scrise de mână, `Transform3D(...)` primește bază pe **rânduri**, nu pe coloane. Pentru o rotație pe Y cu unghiul θ: `Transform3D(cosθ, 0, sinθ, 0, 1, 0, -sinθ, 0, cosθ, x, y, z)`.
 
@@ -46,3 +50,7 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 10 = dialog (HUD-ul și dialogul
 
 ## Texturi
 Surse recomandate: pachete „PSX textures” de pe itch.io, ambientCG / Poly Haven (CC0, micșorate la 128×128), poze proprii. **Verifică licența** (CC0 sau uz comercial permis), ca jocul să poată merge pe Steam. Se pun în `textures/` și se trag în parametrul `textura` al materialului, cu `culoare` albă.
+
+Owner-ul aduce texturi mari (4096 px). Le micșorăm la **256×256 PNG** cu ffmpeg (`-vf scale=256:256:flags=area`) și le dăm nume în română (`perete_casa.png`, `podea_casa.png`). Originalele merg în `textures/originale/`, care are `.gdignore` (Godot nu le importă) și e în `.gitignore`. ffmpeg: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_*\ffmpeg-*\bin\ffmpeg.exe` (nu e în PATH).
+
+Modele: de preferat `.glb`. Un `.obj` vine cu un `.mtl` (materialul) lângă el; fără el Godot dă eroare la import.

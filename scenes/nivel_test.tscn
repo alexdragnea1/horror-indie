@@ -1,9 +1,11 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/interactabil.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="4"]
+[ext_resource type="Texture2D" path="res://textures/perete_casa.png" id="5"]
+[ext_resource type="Texture2D" path="res://textures/podea_casa.png" id="6"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -26,8 +28,8 @@ noise = SubResource("zgomot_perete")
 
 [sub_resource type="ShaderMaterial" id="mat_perete"]
 shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_perete")
-shader_parameter/culoare = Color(0.62, 0.58, 0.45, 1)
+shader_parameter/textura = ExtResource("5")
+shader_parameter/culoare = Color(1, 1, 1, 1)
 shader_parameter/repetare_uv = Vector2(0.5, 0.5)
 shader_parameter/uv_din_lume = true
 
@@ -43,9 +45,9 @@ noise = SubResource("zgomot_podea")
 
 [sub_resource type="ShaderMaterial" id="mat_podea"]
 shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_podea")
-shader_parameter/culoare = Color(0.35, 0.25, 0.18, 1)
-shader_parameter/repetare_uv = Vector2(0.75, 0.75)
+shader_parameter/textura = ExtResource("6")
+shader_parameter/culoare = Color(1, 1, 1, 1)
+shader_parameter/repetare_uv = Vector2(0.5, 0.5)
 shader_parameter/uv_din_lume = true
 
 [sub_resource type="ShaderMaterial" id="mat_lemn"]
@@ -58,33 +60,11 @@ shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_perete")
 shader_parameter/culoare = Color(1, 0.97, 0.85, 1)
 
-[sub_resource type="ShaderMaterial" id="mat_manechin"]
-shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_perete")
-shader_parameter/culoare = Color(0.85, 0.75, 0.65, 1)
-
-[sub_resource type="ShaderMaterial" id="mat_ochelari"]
-shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_perete")
-shader_parameter/culoare = Color(0.02, 0.02, 0.02, 1)
-
 [sub_resource type="BoxMesh" id="mesh_nota"]
 size = Vector3(0.22, 0.01, 0.3)
 
 [sub_resource type="BoxShape3D" id="forma_nota"]
 size = Vector3(0.4, 0.15, 0.45)
-
-[sub_resource type="CapsuleMesh" id="mesh_manechin"]
-radius = 0.25
-height = 1.8
-radial_segments = 8
-rings = 3
-
-[sub_resource type="BoxMesh" id="mesh_ochelari"]
-size = Vector3(0.3, 0.06, 0.05)
-
-[sub_resource type="BoxShape3D" id="forma_manechin"]
-size = Vector3(0.6, 1.8, 0.6)
 
 [node name="NivelTest" type="Node3D"]
 
@@ -157,26 +137,6 @@ surface_material_override/0 = SubResource("mat_hartie")
 
 [node name="Coliziune" type="CollisionShape3D" parent="Nota"]
 shape = SubResource("forma_nota")
-
-[node name="Manechin" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -13.4)
-script = ExtResource("3")
-indiciu = "[E] Ce... e ăsta?"
-replici = PackedStringArray("Un manechin. Poartă ochelari de soare.", "Noaptea. În casă.", "Sunt 70% sigur că n-a fost aici ieri.")
-
-[node name="Corp" type="MeshInstance3D" parent="Manechin"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("mesh_manechin")
-surface_material_override/0 = SubResource("mat_manechin")
-
-[node name="Ochelari" type="MeshInstance3D" parent="Manechin"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0.23)
-mesh = SubResource("mesh_ochelari")
-surface_material_override/0 = SubResource("mat_ochelari")
-
-[node name="Coliziune" type="CollisionShape3D" parent="Manechin"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-shape = SubResource("forma_manechin")
 
 [node name="Jucator" parent="." instance=ExtResource("2")]
 transform = Transform3D(-0.6, 0, -0.8, 0, 1, 0, 0.8, 0, -0.6, -2.5, 0, -2)

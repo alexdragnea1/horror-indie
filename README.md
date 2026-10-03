@@ -14,6 +14,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | Mouse | privit |
 | E / click | interacționezi / treci la replica următoare |
 | F | lanterna |
+| Tab (ține apăsat) | inventarul |
 | Esc | eliberează mouse-ul |
 
 ## Ce e unde
@@ -24,10 +25,12 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/interactabil.gd` – pune-l pe un StaticBody3D, completezi `indiciu` și `replici` în Inspector și obiectul se poate examina.
 - `scripts/dialog.gd` – caseta de text de jos: `Dialog.spune(["replica 1", "replica 2"])`.
 - `scripts/lumina_palpaie.gd` – bec care pâlpâie.
-- `scenes/nivel_test.tscn` – camera de test (cameră + hol, bilet, manechin).
+- `scripts/stare.gd` – inventarul și „ce s-a întâmplat” în poveste (autoload `Stare`).
+- `scripts/obiect_luat.gd`, `scripts/usa.gd`, `scripts/declansator.gd` – obiect pe care îl iei, ușă (și încuiată, cu cheie), zonă care pornește o scenă când intri în ea.
+- `scenes/nivel_test.tscn` – prima scenă, casa (cameră + hol, bilet).
 
 ## Texturi
-Acum texturile sunt generate din „zgomot” (`NoiseTexture2D`), doar ca înlocuitori. Pentru texturi adevărate:
+Pereții și podeaua casei au texturi adevărate (`textures/perete_casa.png`, `textures/podea_casa.png`, micșorate la 256×256; originalele mari stau în `textures/originale/`, ignorate de Godot și de git). Restul obiectelor au încă texturi din „zgomot”. De unde iei altele:
 - caută **„PSX textures”** pe [itch.io](https://itch.io/game-assets/tag-psx);
 - [ambientCG](https://ambientcg.com) și [Poly Haven](https://polyhaven.com/textures) (gratuite, CC0);
 - pozele tale, tăiate pătrat și micșorate la 128×128.
