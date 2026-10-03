@@ -8,8 +8,6 @@ extends CanvasLayer
 
 signal ales(nume: String)
 
-const SUNET_PESTE := preload("res://sunete/ui_peste.ogg")
-const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
 const SUNET_STING := preload("res://sunete/ui_sting.ogg")
 const SUNET_TASTA := preload("res://sunete/dialog_voce.ogg")
 
@@ -40,7 +38,7 @@ func _ready() -> void:
 
 	var centru := CenterContainer.new()
 	centru.set_anchors_preset(Control.PRESET_FULL_RECT)
-	centru.theme = _tema()
+	centru.theme = TemaMeniu.creeaza()
 	add_child(centru)
 	var panou := PanelContainer.new()
 	centru.add_child(panou)
@@ -86,15 +84,7 @@ func _pas(parinte: Control, text: String) -> VBoxContainer:
 
 
 func _buton(parinte: Control, text: String, la_apasare: Callable) -> Button:
-	var buton := Button.new()
-	buton.text = text
-	buton.custom_minimum_size.x = 56
-	buton.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	buton.pressed.connect(func() -> void: Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata"))
-	buton.pressed.connect(la_apasare)
-	buton.mouse_entered.connect(func() -> void: Sunet.reda(SUNET_PESTE, -4.0, 0.05, &"Interfata"))
-	parinte.add_child(buton)
-	return buton
+	return TemaMeniu.buton(parinte, text, la_apasare)
 
 
 func _nume_curat() -> String:
@@ -115,40 +105,6 @@ func _termina() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	ales.emit(_nume_curat())
 	queue_free()
-
-
-## Culorile meniului, toate din paleta jocului.
-func _tema() -> Theme:
-	var tema := Theme.new()
-	tema.default_font_size = 12
-	var text := Color("83b3b0")
-	var accent := Color("a18463")
-	tema.set_color("font_color", "Label", text)
-	tema.set_color("font_color", "Button", text)
-	for stare_buton in ["font_hover_color", "font_focus_color", "font_pressed_color", "font_hover_pressed_color"]:
-		tema.set_color(stare_buton, "Button", accent)
-	tema.set_color("font_disabled_color", "Button", Color("5e5356"))
-	tema.set_color("font_color", "LineEdit", text)
-	tema.set_color("font_placeholder_color", "LineEdit", Color("5e5356"))
-	tema.set_color("caret_color", "LineEdit", accent)
-	tema.set_stylebox("panel", "PanelContainer", _cutie(Color("262d2f"), accent, 10))
-	tema.set_stylebox("normal", "LineEdit", _cutie(Color("2a3c3d"), Color("5e5356"), 4))
-	tema.set_stylebox("focus", "LineEdit", _cutie(Color(0, 0, 0, 0), accent, 4))
-	tema.set_stylebox("normal", "Button", _cutie(Color("48313b"), Color("5e5356"), 3))
-	tema.set_stylebox("hover", "Button", _cutie(Color("655269"), accent, 3))
-	tema.set_stylebox("pressed", "Button", _cutie(Color("553e4d"), accent, 3))
-	tema.set_stylebox("focus", "Button", _cutie(Color(0, 0, 0, 0), accent, 3))
-	tema.set_stylebox("disabled", "Button", _cutie(Color("262d2f"), Color("48313b"), 3))
-	return tema
-
-
-func _cutie(fundal: Color, margine: Color, spatiu: int) -> StyleBoxFlat:
-	var cutie := StyleBoxFlat.new()
-	cutie.bg_color = fundal
-	cutie.border_color = margine
-	cutie.set_border_width_all(1)
-	cutie.set_content_margin_all(spatiu)
-	return cutie
 
 
 func _scris(_text: String) -> void:

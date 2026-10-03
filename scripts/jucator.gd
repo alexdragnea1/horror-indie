@@ -48,6 +48,7 @@ var _decalaj_treapta := 0.0
 func _ready() -> void:
 	suprafata = suprafata_implicita
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Salvare.jucator_pregatit(self)
 
 
 func _unhandled_input(event: InputEvent) -> void:

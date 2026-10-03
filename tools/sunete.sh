@@ -111,4 +111,19 @@ rm -f "$OUT/_usa.wav"
 # sperieturi de afară: cineva fluieră departe în întuneric, o tablă lovită
 unic fluierat "Human/whistle.wav" mono "lowpass=f=1800,asetrate=44100*0.9,aresample=44100"
 unic tabla_lovita "Materials/metal_blunt_tap.wav" mono "lowpass=f=2500"
+
+# --- muzica meniului principal: un drone grav (sintetizat) + cutia muzicală din pachet, încetinită,
+# cu ecou lung, de trei ori, de fiecare dată mai jos. 36 s, buclă fără cusătură (crossfade 3 s).
+CUTIE="$PACHET/Musical Effects/music_box_mystery.wav"
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.16*sin(2*PI*55*t)*(0.7+0.3*sin(2*PI*t/9))+0.10*sin(2*PI*82.41*t)*(0.6+0.4*sin(2*PI*t/18))+0.05*sin(2*PI*110.7*t)+0.025*sin(2*PI*164.8*t)*(0.5+0.5*sin(2*PI*t/36)):s=44100:d=36" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.03:d=36:r=44100" \
+	-i "$CUTIE" -i "$CUTIE" -i "$CUTIE" -filter_complex \
+	"[0][1]amix=inputs=2:normalize=0,lowpass=f=700[d];\
+[2]asetrate=44100*0.72,aresample=44100,adelay=2500|2500[c1];\
+[3]asetrate=44100*0.64,aresample=44100,adelay=14000|14000[c2];\
+[4]asetrate=44100*0.68,aresample=44100,adelay=25000|25000,volume=-3dB[c3];\
+[c1][c2][c3]amix=inputs=3:normalize=0,aecho=0.8:0.7:420|900:0.45|0.3,lowpass=f=3500,volume=-4dB[c];\
+[d][c]amix=inputs=2:normalize=0,atrim=end=36" -ac 2 "$OUT/_meniu.wav"
+bucla muzica_meniu "$OUT/_meniu.wav" 3 stereo
+rm -f "$OUT/_meniu.wav"
 echo "Gata."

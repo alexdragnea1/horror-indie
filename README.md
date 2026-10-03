@@ -4,7 +4,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 
 ## Cum îl pornești
 1. Deschide Godot 4.7 → **Import** → alege `project.godot` din folderul ăsta.
-2. Apasă **F5**.
+2. Apasă **F5**. Pornește meniul principal: Start / Continue, Select Save File (3 fișiere), Settings (ecran complet, volum Music și Effects, taste), Quit.
 
 ## Controale
 | Tastă | Ce face |
@@ -15,7 +15,8 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | E / click | interacționezi / treci la replica următoare |
 | F | lanterna |
 | Tab | deschide / închide inventarul (5 sloturi + sarcina curentă) |
-| Esc | închide inventarul / eliberează mouse-ul |
+| Esc | închide inventarul / eliberează mouse-ul / în meniul principal: înapoi |
+| F11 | ecran complet (merge oriunde) |
 
 ## Povestea până acum
 1. Te trezești în camera ta de vrăjitoare. Când încerci să ieși, îți alegi numele... și jocul te întreabă dacă nu cumva te cheamă „little bitch”.
@@ -37,6 +38,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/personaj.gd` – personaj cu care vorbești (ex. Mom, baba de pe bancă). În `replici` scrii `NUME: text`, iar numele apare deasupra casetei. Debifează `se_intoarce` la cei care stau jos: atunci se uită după tine doar cu capul.
 - `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
 - `scenes/dormitor.tscn` – camera ta, de vrăjitoare: pat, ceaun, raft cu cărți de vrăji, covor cu pentagramă și lumânări, glob de cristal, mătură. Mută lucrurile din ea cu mouse-ul în editor.
+- `scripts/meniu_principal.gd` – meniul principal (în spate e curtea blocului, cu baba pe bancă). Tastele, volumul și ecranul complet le ține `scripts/setari.gd`, iar salvările `scripts/salvare.gd`: jocul se salvează singur (când intri într-un loc, când se întâmplă ceva în poveste, la fiecare minut și când închizi), în fișierul ales din meniu. Fișierele stau în `%APPDATA%Godotpp_userdataHorror Indie`.
 - `scripts/meniu_nume.gd` – meniul în care îți scrii numele (apare prima dată când încerci să ieși din cameră). Textele lui se schimbă din `@export`-urile de sus.
 - `scripts/inventar.gd` – fereastra de inventar (Tab). `Stare.seteaza_sarcina("...")` schimbă sarcina curentă și o arată sus 5 secunde.
 - `scenes/usa_intrare.tscn` – ușa de la intrare. În Inspector, la `Usa`: `marcaj_necesar` = ce trebuie să se fi întâmplat ca să se deschidă (acum `a_vorbit_cu_mom`), `replici_fara_marcaj` = ce zici până atunci.

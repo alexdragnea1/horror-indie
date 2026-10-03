@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Horror Indie"
-run/main_scene="res://scenes/nivel_test.tscn"
+run/main_scene="res://scenes/meniu_principal.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
@@ -21,6 +21,8 @@ Dialog="*res://scripts/dialog.gd"
 Stare="*res://scripts/stare.gd"
 Sunet="*res://scripts/sunet.gd"
 Tranzitie="*res://scripts/tranzitie.gd"
+Setari="*res://scripts/setari.gd"
+Salvare="*res://scripts/salvare.gd"
 
 [display]
 

@@ -63,6 +63,29 @@ func _eticheta() -> Label:
 	return e
 
 
+## Joc nou: inventar gol, niciun marcaj, nicio sarcină.
+func reseteaza() -> void:
+	obiecte = {}
+	marcaje = {}
+	sarcina = ""
+	nume_jucator = ""
+	meniu_deschis = false
+	_inventar.hide()
+	_mesaj.show()
+
+
+## Ce intră în fișierul de salvare (vezi salvare.gd).
+func exporta() -> Dictionary:
+	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator}
+
+
+func importa(date: Dictionary) -> void:
+	obiecte = date.get("obiecte", {})
+	marcaje = date.get("marcaje", {})
+	sarcina = date.get("sarcina", "")
+	nume_jucator = date.get("nume_jucator", "")
+
+
 func adauga_obiect(id: String, nume: String) -> bool:
 	if obiecte.size() >= LOCURI_INVENTAR and not obiecte.has(id):
 		_arata_mesaj("Inventory full")
