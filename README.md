@@ -29,7 +29,9 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/obiect_luat.gd`, `scripts/usa.gd`, `scripts/declansator.gd` – obiect pe care îl iei, ușă (și încuiată, cu cheie), zonă care pornește o scenă când intri în ea.
 - `scripts/personaj.gd` – personaj cu care vorbești (ex. Mom). În `replici` scrii `NUME: text`, iar numele apare deasupra casetei.
 - `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
-- `scenes/nivel_test.tscn` – prima scenă, casa: bucătăria cu Mom, frigiderul și becul, plus holul.
+- `scenes/dormitor.tscn` – camera ta, de vrăjitoare: pat, ceaun, raft cu cărți de vrăji, covor cu pentagramă și lumânări, glob de cristal, mătură. Mută lucrurile din ea cu mouse-ul în editor.
+- `scripts/meniu_nume.gd` – meniul în care îți scrii numele (apare prima dată când încerci să ieși din cameră). Textele lui se schimbă din `@export`-urile de sus.
+- `scenes/nivel_test.tscn` – prima scenă, casa: camera ta, holul, bucătăria cu Mom, frigiderul și becurile. Începi în camera ta.
 
 ## Modele 3D
 Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:

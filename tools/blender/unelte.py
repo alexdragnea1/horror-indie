@@ -74,13 +74,66 @@ def os_intre(nume, a, b, raza, culoare, laturi=6):
 	return cilindru(nume, raza, raza * 0.9, d.length, (a + b) / 2, culoare, laturi, rot)
 
 
+def sfera_deschisa(nume, raza, loc, culoare, z_taiere, grosime=0.03, scara=None, segmente=10, inele=8):
+	"""Sferă cu capacul tăiat deasupra lui z_taiere și cu pereți groși (ceaun, vas).
+	Grosimea face și fețele dinăuntru, altfel shader-ul (cull_back) nu le desenează."""
+	import bmesh
+	bpy.ops.mesh.primitive_uv_sphere_add(segments=segmente, ring_count=inele, radius=raza, location=loc)
+	ob = bpy.context.active_object
+	ob.name = nume
+	if scara:
+		ob.scale = scara
+	bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+	bm = bmesh.new()
+	bm.from_mesh(ob.data)
+	bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > z_taiere], context='VERTS')
+	bm.to_mesh(ob.data)
+	bm.free()
+	mod = ob.modifiers.new("grosime", 'SOLIDIFY')
+	mod.thickness = grosime
+	bpy.ops.object.modifier_apply(modifier=mod.name)
+	_coloreaza(ob, culoare)
+	return ob
+
+
+def inel(nume, raza, grosime, loc, culoare, segmente=12):
+	"""Inel (tor) culcat: buza ceaunului, banda pălăriei."""
+	bpy.ops.mesh.primitive_torus_add(major_segments=segmente, minor_segments=4,
+		major_radius=raza, minor_radius=grosime, location=loc)
+	return _termina(bpy.context.active_object, nume, culoare)
+
+
+def linie(nume, a, b, latime, grosime, z, culoare):
+	"""Bandă plată pe orizontală de la a=(x,y) la b=(x,y) (liniile pentagramei)."""
+	import math
+	dx, dy = b[0] - a[0], b[1] - a[1]
+	return cub(nume, (math.hypot(dx, dy), latime, grosime), ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, z),
+		culoare, rot=(0, 0, math.atan2(dy, dx)))
+
+
+def text(nume, continut, loc, marime, culoare, rot=(1.5708, 0, 0)):
+	"""Text 3D subțire. Implicit stă în picioare, cu fața spre -Y (fața modelului)."""
+	bpy.ops.object.text_add(location=loc, rotation=rot)
+	ob = bpy.context.active_object
+	ob.data.body = continut
+	ob.data.size = marime
+	ob.data.extrude = 0.002
+	ob.data.resolution_u = 1
+	ob.data.align_x = 'CENTER'
+	ob.data.align_y = 'CENTER'
+	bpy.ops.object.convert(target='MESH')
+	ob = bpy.context.active_object
+	return _termina(ob, nume, culoare)
+
+
 def uneste(piese, nume, origine=(0, 0, 0)):
 	"""Lipește piesele într-un singur obiect. Originea = punctul în jurul căruia se rotește în joc."""
 	bpy.ops.object.select_all(action='DESELECT')
 	for p in piese:
 		p.select_set(True)
 	bpy.context.view_layer.objects.active = piese[0]
-	bpy.ops.object.join()
+	if len(piese) > 1:
+		bpy.ops.object.join()
 	ob = bpy.context.active_object
 	ob.name = nume
 	ob.data.name = nume

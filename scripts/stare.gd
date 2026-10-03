@@ -13,6 +13,10 @@ const DURATA_MESAJ := 2.5
 ## id -> numele afișat
 var obiecte: Dictionary = {}
 var marcaje: Dictionary = {}
+## Numele scris de jucător în meniul de la ușa camerei.
+var nume_jucator := ""
+## Cât e deschis un meniu (ex. MeniuNume), jucătorul nu se mișcă și nu se uită în jur.
+var meniu_deschis := false
 
 var _mesaj: Label
 var _lista: Label

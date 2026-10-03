@@ -153,3 +153,6 @@ def mama():
 frigider()
 bec()
 mama()
+
+import dormitor  # noqa: E402
+dormitor.toate(MODELE)

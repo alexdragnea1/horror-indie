@@ -25,19 +25,19 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		if Dialog.activ:
+		if _ocupat():
 			return
 		# screen_relative = mișcarea în pixeli reali (nu în rezoluția mică a jocului)
 		rotate_y(-event.screen_relative.x * sensibilitate_mouse)
 		_cap.rotate_x(-event.screen_relative.y * sensibilitate_mouse)
 		_cap.rotation.x = clamp(_cap.rotation.x, deg_to_rad(-85), deg_to_rad(85))
-	elif event is InputEventMouseButton and event.pressed:
+	elif event is InputEventMouseButton and event.pressed and not Stare.meniu_deschis:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("lanterna"):
 		_lanterna.visible = not _lanterna.visible
-	elif event.is_action_pressed("interact") and not Dialog.activ:
+	elif event.is_action_pressed("interact") and not _ocupat():
 		var tinta := _tinta_privita()
 		if tinta:
 			tinta.interactioneaza()
@@ -48,7 +48,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= _gravitatie * delta
 
 	var intrare := Vector2.ZERO
-	if not Dialog.activ:
+	if not _ocupat():
 		intrare = Input.get_vector("stanga", "dreapta", "inainte", "inapoi")
 	var directie := (transform.basis * Vector3(intrare.x, 0, intrare.y)).normalized()
 	var viteza := viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers
@@ -63,7 +63,12 @@ func _physics_process(delta: float) -> void:
 	_camera.position.x = cos(_distanta_mersa * balans_frecventa * 0.5) * balans_amplitudine
 
 	var tinta := _tinta_privita()
-	_indiciu.text = tinta.indiciu if tinta and not Dialog.activ else ""
+	_indiciu.text = tinta.indiciu if tinta and not _ocupat() else ""
+
+
+## Adevărat cât rulează un dialog sau e deschis un meniu: jucătorul stă pe loc.
+func _ocupat() -> bool:
+	return Dialog.activ or Stare.meniu_deschis
 
 
 func _tinta_privita() -> Interactabil:

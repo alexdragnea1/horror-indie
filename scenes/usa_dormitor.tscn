@@ -1,0 +1,28 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://models/toc_usa.glb" id="1"]
+[ext_resource type="PackedScene" path="res://models/usa_dormitor.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/usa_dormitor.gd" id="5"]
+
+[sub_resource type="BoxShape3D" id="forma"]
+size = Vector3(0.9, 2.05, 0.06)
+
+[node name="UsaDormitor" type="Node3D"]
+
+[node name="Toc" parent="." instance=ExtResource("1")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Usa" type="StaticBody3D" parent="."]
+script = ExtResource("5")
+unghi_deschidere = 95.0
+
+[node name="Model" parent="Usa" instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Usa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.025, 0)
+shape = SubResource("forma")

@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://models/lumanare.glb" id="1"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="3"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="4"]
+
+[node name="Lumanare" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1")]
+script = ExtResource("2")
+material = ExtResource("3")
+umbre = false
+
+[node name="Lumina" type="OmniLight3D" parent="." node_paths=PackedStringArray("sticla")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+light_color = Color(1, 0.68, 0.4, 1)
+light_energy = 0.6
+omni_range = 2.5
+script = ExtResource("4")
+energie_normala = 0.6
+sansa_stingere = 0.02
+sticla = NodePath("../Model/Flacara")
+stralucire_sticla = 4.0
