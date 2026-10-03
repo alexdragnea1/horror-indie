@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/sunete_aleatorii.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="11"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="12"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="14"]
@@ -123,7 +124,7 @@ radius = 0.08
 size = Vector3(4.3, 0.12, 0.25)
 
 [sub_resource type="BoxShape3D" id="forma_panou"]
-size = Vector3(1.8, 1.2, 0.2)
+size = Vector3(2.5, 1.5, 0.2)
 
 [sub_resource type="BoxShape3D" id="forma_indicator"]
 size = Vector3(0.3, 2.2, 0.3)
@@ -245,13 +246,16 @@ shape = SubResource("forma_bara")
 
 [node name="PanouOcol" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(0.94, 0, -0.342, 0, 1, 0, 0.342, 0, 0.94, 7.2, 0, -12.6)
+script = ExtResource("11")
+indiciu = "[E] Read the sign"
+replici = PackedStringArray("You: I'll just rip it off me I guess...")
 
 [node name="Model" parent="PePamant/PanouOcol" instance=ExtResource("34")]
 script = ExtResource("12")
 material = ExtResource("13")
 
 [node name="Forma" type="CollisionShape3D" parent="PePamant/PanouOcol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
 shape = SubResource("forma_panou")
 
 [node name="Indicator" type="StaticBody3D" parent="PePamant"]

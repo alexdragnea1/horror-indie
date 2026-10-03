@@ -94,7 +94,7 @@ def statie_rurala(cale):
 def bariera(cale):
 	"""Bariera forestieră de la intrarea pe potecă: doi stâlpi de țeavă, bara vopsită roșu-alb (`Bara`,
 	separată, originea în balama), contragreutatea de beton, lanțul cu lacăt de pe stâlpul din dreapta
-	și plăcuța „ACCES INTERZIS”. Bara e pe X, poteca trece pe Y. Pe lângă stâlpul din stânga rămâne loc
+	și plăcuța „NO ENTRY”. Bara e pe X, poteca trece pe Y. Pe lângă stâlpul din stânga rămâne loc
 	de trecut pe jos."""
 	curata()
 	piese = [
@@ -120,36 +120,39 @@ def bariera(cale):
 		cub("Brat contragreutate", (0.3, 0.06, 0.06), (-1.9, 0, 1.0), METAL_INCHIS),
 		cub("Placuta", (0.42, 0.02, 0.26), (0.15, -0.06, 0.82), ALB),
 		cub("Placuta chenar", (0.46, 0.02, 0.3), (0.15, -0.04, 0.82), ROSU),
-		text("Acces", "ACCES", (0.15, -0.085, 0.87), 0.07, ROSU),
-		text("Interzis", "INTERZIS", (0.15, -0.085, 0.78), 0.06, ROSU),
+		text("Acces", "NO", (0.15, -0.085, 0.87), 0.08, ROSU),
+		text("Interzis", "ENTRY", (0.15, -0.085, 0.78), 0.07, ROSU),
 	]
 	uneste(bara, "Bara", (-1.8, 0, 1.0))
 	exporta(os.path.join(cale, "bariera.glb"))
 
 
 def panou_ocol(cale):
-	"""Panoul de lemn al ocolului silvic de lângă barieră: două picioare, acoperiș mic, tabla verde."""
+	"""Panoul de lemn de lângă barieră: două picioare, acoperiș mic, tabla verde, mare (2,2 × 1,3 m),
+	ca textul să se poată citi la rezoluția jocului. Textul l-a scris owner-ul (nu-l corecta)."""
 	curata()
 	piese = [
-		cub("Picior", (0.1, 0.1, 2.0), (-0.8, 0, 1.0), LEMN),
-		cub("Picior", (0.1, 0.1, 2.0), (0.8, 0, 1.0), LEMN),
-		cub("Panou", (1.5, 0.05, 0.9), (0, 0, 1.45), VERDE),
-		cub("Rama", (1.6, 0.04, 0.06), (0, -0.01, 1.93), LEMN_DESCHIS),
-		cub("Rama", (1.6, 0.04, 0.06), (0, -0.01, 0.97), LEMN_DESCHIS),
-		cub("Acoperis panou", (1.8, 0.4, 0.05), (0, 0.05, 2.08), LEMN_VECHI, rot=(0.25, 0, 0)),
-		text("Titlu", "OCOLUL SILVIC", (0, -0.04, 1.72), 0.11, ALB),
-		text("Titlu", "TRIVALE", (0, -0.04, 1.56), 0.14, ALB),
-		cub("Linie", (1.2, 0.012, 0.02), (0, -0.031, 1.45), ALB),
-		text("Text", "PADUREA E PROPRIETATEA STATULUI", (0, -0.04, 1.33), 0.05, ALB),
-		text("Text", "FOCUL INTERZIS", (0, -0.04, 1.2), 0.06, p("a18463")),
-		cub("Rugina", (0.25, 0.012, 0.3), (0.55, -0.031, 1.15), RUGINA),
+		cub("Picior", (0.12, 0.12, 2.5), (-1.15, 0, 1.25), LEMN),
+		cub("Picior", (0.12, 0.12, 2.5), (1.15, 0, 1.25), LEMN),
+		cub("Panou", (2.2, 0.05, 1.3), (0, 0, 1.65), VERDE),
+		cub("Rama", (2.3, 0.04, 0.06), (0, -0.01, 2.33), LEMN_DESCHIS),
+		cub("Rama", (2.3, 0.04, 0.06), (0, -0.01, 0.97), LEMN_DESCHIS),
+		cub("Acoperis panou", (2.5, 0.45, 0.05), (0, 0.05, 2.5), LEMN_VECHI, rot=(0.25, 0, 0)),
+		# rândurile sunt rupte ca să încapă pe tablă
+		text("Text", "If I bite your neck and", (0, -0.04, 2.15), 0.13, ALB),
+		text("Text", "stick my dick in your ass,", (0, -0.04, 1.95), 0.13, ALB),
+		text("Text", "how do you get the", (0, -0.04, 1.75), 0.13, ALB),
+		text("Text", "t-shirt out?", (0, -0.04, 1.55), 0.13, ALB),
+		cub("Linie", (1.5, 0.012, 0.02), (0, -0.031, 1.4), ALB),
+		text("Semnatura", "- Signed by the forest ranger", (0, -0.04, 1.24), 0.09, p("a18463")),
+		cub("Rugina", (0.18, 0.012, 0.14), (0.9, -0.031, 1.1), RUGINA),
 	]
 	uneste(piese, "PanouOcol")
 	exporta(os.path.join(cale, "panou_ocol.glb"))
 
 
 def indicator(cale):
-	"""Stâlpul indicator de la bifurcație: săgeata din dreapta scrie PLATOU, cea din stânga e zgâriată
+	"""Stâlpul indicator de la bifurcație: săgeata din dreapta scrie PLATEAU, cea din stânga e zgâriată
 	până la lemn. Fața spre -Y (spre cine urcă poteca)."""
 	curata()
 	piese = [
@@ -158,7 +161,7 @@ def indicator(cale):
 		# săgeata spre dreapta (+X)
 		cub("Sageata", (0.8, 0.04, 0.2), (0.46, -0.08, 1.85), LEMN_DESCHIS),
 		cub("Varf", (0.14, 0.04, 0.14), (0.86, -0.08, 1.85), LEMN_DESCHIS, rot=(0, 0.785, 0)),
-		text("Platou", "PLATOU", (0.42, -0.115, 1.85), 0.1, NEGRU),
+		text("Platou", "PLATEAU", (0.42, -0.115, 1.85), 0.09, NEGRU),
 		# săgeata spre stânga (-X), puțin strâmbă, zgâriată
 		cub("Sageata", (0.8, 0.04, 0.2), (-0.46, -0.08, 1.55), LEMN_DESCHIS, rot=(0, 0.06, 0)),
 		cub("Varf", (0.14, 0.04, 0.14), (-0.86, -0.08, 1.5), LEMN_DESCHIS, rot=(0, 0.845, 0)),
