@@ -3,3 +3,4 @@
 /export/
 # originalele mari (4096 px) ale texturilor; în joc folosim copiile de 256 px
 /textures/originale/
+__pycache__/

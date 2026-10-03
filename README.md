@@ -27,7 +27,16 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/lumina_palpaie.gd` – bec care pâlpâie.
 - `scripts/stare.gd` – inventarul și „ce s-a întâmplat” în poveste (autoload `Stare`).
 - `scripts/obiect_luat.gd`, `scripts/usa.gd`, `scripts/declansator.gd` – obiect pe care îl iei, ușă (și încuiată, cu cheie), zonă care pornește o scenă când intri în ea.
-- `scenes/nivel_test.tscn` – prima scenă, casa (cameră + hol, bilet).
+- `scripts/personaj.gd` – personaj cu care vorbești (ex. Mom). În `replici` scrii `NUME: text`, iar numele apare deasupra casetei.
+- `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
+- `scenes/nivel_test.tscn` – prima scenă, casa: bucătăria cu Mom, frigiderul și becul, plus holul.
+
+## Modele 3D
+Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Ca să schimbi o culoare sau o mărime, editezi numărul acolo și rulezi:
+```
+"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python tools/blender/modele.py
+```
+Godot reimportă singur modelele când revii în editor.
 
 ## Texturi
 Pereții și podeaua casei au texturi adevărate (`textures/perete_casa.png`, `textures/podea_casa.png`, micșorate la 256×256; originalele mari stau în `textures/originale/`, ignorate de Godot și de git). Restul obiectelor au încă texturi din „zgomot”. De unde iei altele:

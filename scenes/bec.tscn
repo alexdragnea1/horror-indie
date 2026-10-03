@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/pendul.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/bec.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="5"]
+
+[node name="Bec" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="Lumina" type="OmniLight3D" parent="." node_paths=PackedStringArray("sticla")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+light_color = Color(1, 0.8, 0.55, 1)
+light_energy = 1.2
+shadow_enabled = true
+omni_range = 7.0
+script = ExtResource("5")
+sticla = NodePath("../Model/Sticla")

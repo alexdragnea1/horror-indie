@@ -2,10 +2,14 @@ extends CanvasLayer
 ## Caseta de text de jos (autoload "Dialog").
 ## Oriunde în joc: Dialog.spune(["Prima replică.", "A doua."])
 ## Apeși E (sau click) ca să treci mai departe.
+## Dacă replica începe cu un nume și două puncte ("MOM: Salut!"), numele apare
+## într-o etichetă separată deasupra casetei.
 
 signal terminat
 
 const LITERE_PE_SECUNDA := 45.0
+## Numele care înseamnă „personajul nostru” (eticheta lor e albăstruie, a celorlalți roșiatică).
+const NUME_JUCATOR := ["You", "Tu", "Eu"]
 
 var activ := false
 
@@ -13,7 +17,10 @@ var _replici: PackedStringArray = []
 var _index := 0
 var _panou: PanelContainer
 var _text: Label
+var _eticheta: PanelContainer
+var _nume: Label
 var _tween: Tween
+var _regex_nume := RegEx.create_from_string("^([^:\"]{1,14}):\\s+(.*)$")
 
 
 func _ready() -> void:
@@ -41,6 +48,20 @@ func _ready() -> void:
 	add_child(_panou)
 	_panou.hide()
 
+	# eticheta cu numele celui care vorbește, lipită de colțul din stânga sus al casetei
+	_eticheta = PanelContainer.new()
+	_eticheta.anchor_top = 1.0
+	_eticheta.anchor_bottom = 1.0
+	_eticheta.offset_left = 22
+	_eticheta.offset_top = -79
+	_eticheta.offset_bottom = -64
+	_eticheta.add_theme_stylebox_override("panel", stil.duplicate())
+	_nume = Label.new()
+	_nume.add_theme_font_size_override("font_size", 10)
+	_eticheta.add_child(_nume)
+	add_child(_eticheta)
+	_eticheta.hide()
+
 
 func spune(replici: PackedStringArray) -> void:
 	if replici.is_empty():
@@ -53,7 +74,18 @@ func spune(replici: PackedStringArray) -> void:
 
 
 func _arata_replica() -> void:
-	_text.text = _replici[_index]
+	var replica := _replici[_index]
+	var gasit := _regex_nume.search(replica)
+	if gasit:
+		var nume := gasit.get_string(1).strip_edges()
+		replica = gasit.get_string(2)
+		_nume.text = nume
+		var e_jucator := nume in NUME_JUCATOR
+		_nume.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0) if e_jucator else Color(1.0, 0.55, 0.6))
+		_eticheta.show()
+	else:
+		_eticheta.hide()
+	_text.text = replica
 	_text.visible_ratio = 0.0
 	if _tween:
 		_tween.kill()
@@ -78,5 +110,6 @@ func _input(event: InputEvent) -> void:
 		_arata_replica()
 	else:
 		_panou.hide()
+		_eticheta.hide()
 		activ = false
 		terminat.emit()

@@ -19,6 +19,10 @@ uniform float rezolutie_tremur = 0.0;
 // 0 = texturi stabile, 1 = deformate ca pe PS1 (pe pereții mari din CSG arată foarte rău).
 uniform float deformare_textura : hint_range(0.0, 1.0) = 0.0;
 
+// Cât de tare „arde” obiectul singur (sticla becului). Se schimbă din cod, separat pe fiecare
+// obiect, cu set_instance_shader_parameter("stralucire", ...). 0 = deloc.
+instance uniform float stralucire = 0.0;
+
 varying vec3 uv_afin;
 
 void vertex() {
@@ -40,5 +44,7 @@ void vertex() {
 
 void fragment() {
 	vec2 uv = mix(UV, uv_afin.xy / uv_afin.z, deformare_textura);
-	ALBEDO = texture(textura, uv).rgb * culoare.rgb;
+	// COLOR = culorile vârfurilor din modelele făcute în Blender (albe la pereții din CSG).
+	ALBEDO = texture(textura, uv).rgb * culoare.rgb * COLOR.rgb;
+	EMISSION = ALBEDO * stralucire;
 }

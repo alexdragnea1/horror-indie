@@ -1,9 +1,10 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
-[ext_resource type="Script" path="res://scripts/interactabil.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/frigider.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/bec.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/mama.tscn" id="7"]
 [ext_resource type="Texture2D" path="res://textures/perete_casa.png" id="5"]
 [ext_resource type="Texture2D" path="res://textures/podea_casa.png" id="6"]
 
@@ -16,15 +17,6 @@ ambient_light_energy = 0.35
 fog_enabled = true
 fog_light_color = Color(0.02, 0.02, 0.035, 1)
 fog_density = 0.1
-
-[sub_resource type="FastNoiseLite" id="zgomot_perete"]
-frequency = 0.06
-
-[sub_resource type="NoiseTexture2D" id="tex_perete"]
-width = 64
-height = 64
-seamless = true
-noise = SubResource("zgomot_perete")
 
 [sub_resource type="ShaderMaterial" id="mat_perete"]
 shader = ExtResource("1")
@@ -54,17 +46,6 @@ shader_parameter/uv_din_lume = true
 shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_podea")
 shader_parameter/culoare = Color(0.45, 0.3, 0.18, 1)
-
-[sub_resource type="ShaderMaterial" id="mat_hartie"]
-shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_perete")
-shader_parameter/culoare = Color(1, 0.97, 0.85, 1)
-
-[sub_resource type="BoxMesh" id="mesh_nota"]
-size = Vector3(0.22, 0.01, 0.3)
-
-[sub_resource type="BoxShape3D" id="forma_nota"]
-size = Vector3(0.4, 0.15, 0.45)
 
 [node name="NivelTest" type="Node3D"]
 
@@ -117,26 +98,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.4, 1.5)
 size = Vector3(1.4, 0.8, 0.8)
 material = SubResource("mat_lemn")
 
-[node name="Bec" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0.5)
-light_color = Color(1, 0.8, 0.55, 1)
-light_energy = 1.2
-shadow_enabled = true
-omni_range = 7.0
-script = ExtResource("4")
+[node name="Bec" parent="." instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.5)
 
-[node name="Nota" type="StaticBody3D" parent="."]
-transform = Transform3D(0.94, 0, 0.34, 0, 1, 0, -0.34, 0, 0.94, 2.1, 0.81, 1.45)
-script = ExtResource("3")
-indiciu = "[E] Citește biletul"
-replici = PackedStringArray("Un bilet scris de mână: \"Dacă citești asta, ai uitat IAR să plătești curentul.\"", "\"Semnat: Tu, de ieri.\"", "...Scrisul meu chiar e atât de urât?")
+[node name="Frigider" parent="." instance=ExtResource("3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3.58, 0, -2.6)
 
-[node name="Mesh" type="MeshInstance3D" parent="Nota"]
-mesh = SubResource("mesh_nota")
-surface_material_override/0 = SubResource("mat_hartie")
-
-[node name="Coliziune" type="CollisionShape3D" parent="Nota"]
-shape = SubResource("forma_nota")
+[node name="Mama" parent="." instance=ExtResource("7")]
+transform = Transform3D(-0.786, 0, -0.619, 0, 1, 0, 0.619, 0, -0.786, 0.6, 0, 2.3)
 
 [node name="Jucator" parent="." instance=ExtResource("2")]
 transform = Transform3D(-0.6, 0, -0.8, 0, 1, 0, 0.8, 0, -0.6, -2.5, 0, -2)

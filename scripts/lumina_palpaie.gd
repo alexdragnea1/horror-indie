@@ -1,9 +1,14 @@
 extends OmniLight3D
 ## Bec care pâlpâie. Pune-l pe orice OmniLight3D.
+## Dacă îi dai și "sticla" (mesh-ul becului), sticla se aprinde și se stinge odată cu lumina.
 
 @export var energie_normala := 1.2
 ## Cât de des se stinge de tot (0 = niciodată, 1 = mereu).
 @export_range(0.0, 1.0) var sansa_stingere := 0.12
+## Mesh-ul care strălucește odată cu lumina (opțional).
+@export var sticla: GeometryInstance3D
+## Cât de tare strălucește sticla când becul arde normal.
+@export var stralucire_sticla := 3.0
 
 var _pana_la_schimbare := 0.0
 
@@ -18,3 +23,5 @@ func _process(delta: float) -> void:
 	else:
 		light_energy = energie_normala * randf_range(0.8, 1.05)
 		_pana_la_schimbare = randf_range(0.05, 0.4)
+	if sticla:
+		sticla.set_instance_shader_parameter("stralucire", light_energy / energie_normala * stralucire_sticla)

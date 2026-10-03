@@ -22,12 +22,27 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 | `scripts/dialog.gd` | Autoload `Dialog` (CanvasLayer 10). `Dialog.spune(PackedStringArray)`, `Dialog.activ`, semnal `terminat`. Avansează cu E/click și consumă input-ul. |
 | `scripts/interactabil.gd` | `class_name Interactabil` (StaticBody3D): `indiciu`, `replici`, `o_singura_data`, semnal `folosit`. Jucătorul îl găsește cu RayCast-ul. |
 | `scripts/jucator.gd` + `scenes/jucator.tscn` | FPS: CharacterBody3D → `Cap` → `Camera3D` → `Lanterna` (SpotLight) + `RazaInteractiune` (2,2 m). HUD (CanvasLayer 5): punct + `Indiciu`. Mouse-ul folosește `screen_relative` (nu `relative`, care e scalat de viewport-ul mic). |
-| `scripts/lumina_palpaie.gd` | OmniLight3D care pâlpâie. |
+| `scripts/lumina_palpaie.gd` | OmniLight3D care pâlpâie; opțional `sticla` (mesh) care strălucește odată cu lumina, prin `instance uniform stralucire` din `ps2.gdshader`. |
+| `scripts/pendul.gd` | Leagănă ușor nodul în jurul originii (becul de pe fir). |
+| `scripts/model_ps2.gd` | `class_name ModelPS2`: pus pe rădăcina unui `.glb` instanțiat, dă `material_override` = `shaders/material_model.tres` tuturor mesh-urilor (`umbre = false` la bec). |
+| `scripts/personaj.gd` | `class_name Personaj` (extinde `Interactabil`): la E se întoarce spre jucător (modelele privesc spre **+Z**) și spune replicile; capul (`cap`) urmărește jucătorul; respiră (scale Y pe `Model`). |
+| `scripts/frigider.gd` | Extinde `Interactabil`: deschide `usa` (tween pe rotation.y), aprinde `lumina`, spune replicile, închide după `Dialog.terminat`. |
+| `scenes/bec.tscn`, `scenes/frigider.tscn`, `scenes/mama.tscn` | Modelele gata de pus în nivel (fiecare cu `Model` = `.glb` + `ModelPS2`). |
+| `tools/blender/modele.py` + `unelte.py` | **Sursa modelelor** `models/*.glb`. Folderul `tools/` are `.gdignore`. |
 | `scripts/stare.gd` | Autoload `Stare` (CanvasLayer 6): inventar (`adauga_obiect/are_obiect/scoate_obiect`) + marcaje de poveste (`marcheaza/e_marcat`), mesaj „Ai luat: …”, lista pe **Tab** (acțiunea `inventar`). |
 | `scripts/obiect_luat.gd` | `class_name ObiectLuat` (extinde `Interactabil`): `id_obiect`, `nume_obiect`; la E intră în inventar și dispare. |
 | `scripts/usa.gd` | `class_name Usa` (extinde `Interactabil`): originea nodului = balamaua; `cheie_necesara`, `replici_incuiata`, `unghi_deschidere`. **Scris, încă nefolosit în nivel.** |
 | `scripts/declansator.gd` | `class_name Declansator` (Area3D): când intră un corp din grupul `jucator` → replici, `marcaj`, `de_aratat`/`de_ascuns`. **Scris, încă nefolosit în nivel.** |
-| `scenes/nivel_test.tscn` | Prima scenă, **casa**: cameră + hol din CSG (`use_collision`), bilet interactiv. Pereții și podeaua au texturile adevărate din `textures/`; masa și biletul au încă `NoiseTexture2D`. |
+| `scenes/nivel_test.tscn` | Prima scenă, **casa** (camera e bucătăria): cameră + hol din CSG (`use_collision`), bec care pâlpâie, frigider, **Mom** (primul dialog al poveștii). Pereții și podeaua au texturile adevărate din `textures/`; masa are încă `NoiseTexture2D`. |
+
+`Dialog`: o replică de forma `"NUME: text"` (nume de max. 14 caractere, fără `:` sau `"`) afișează numele într-o etichetă deasupra casetei; `NUME_JUCATOR` (`You/Tu/Eu`) e albăstrui, restul roșiatic. Replicile lui Mom sunt în engleză, cum le-a scris owner-ul; nu le traduce și nu le „corecta” (`gaf`, `allat`, `kirkenuinly` sunt intenționate).
+
+## Modele 3D (Blender)
+Blender 5.2: `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`. Modelele se fac **din cod** în `tools/blender/modele.py` (cuburi, cilindri, sfere cu helper-ele din `unelte.py`), apoi:
+`"<blender>" --background --factory-startup --python tools/blender/modele.py` → `models/*.glb`, apoi `--import` în Godot.
+- Fiecare piesă are o culoare în **culorile vârfurilor** (atribut `Col`, exportat `COLOR_0`); `ps2.gdshader` face `ALBEDO = textură × culoare × COLOR`, iar textura din `material_model.tres` dă doar murdăria.
+- Blender: Z în sus, fața modelului spre **-Y** (în Godot devine +Z). Piesele care se mișcă sunt obiecte separate, cu originea în pivot (`uneste(..., origine)`): `UsaFrigider`/`UsaCongelator` (balamaua), `Cap` la Mom (gâtul), `Sticla` la bec.
+- Ce iese bine: mobilă, obiecte, personaje rigide stil PS1. Personaje detaliate / animate → modele gata făcute.
 
 Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dialog (HUD-ul și dialogul nu sunt dither-uite).
 

@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/personaj.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/mama.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+
+[sub_resource type="CapsuleShape3D" id="forma"]
+radius = 0.35
+height = 1.8
+
+[node name="Mama" type="StaticBody3D" node_paths=PackedStringArray("cap")]
+script = ExtResource("1")
+cap = NodePath("Model/Cap")
+indiciu = "[E] Vorbește cu Mom"
+replici = PackedStringArray("MOM: Today is your 16th birthday, little bitch!", "MOM: That means you will become a witch!", "You: I don't really gaf about allat...", "MOM: You WILL become a witch!", "MOM: At midnight you need to meet the coven in the woods.", "You: You might be kirkenuinly a bad mother...")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma")
