@@ -35,6 +35,14 @@ extends Node3D
 @export var viteza_creatura := 11.0
 @export var distanta_creatura := 3.7
 
+@export_group("Replici")
+## Ce zici după ce te așezi, înainte să apară creatura (le-a scris owner-ul).
+@export_multiline var replici_inainte: PackedStringArray = ["You: Why is my mom such a bitch..", "You: I should be selling weed instead of this witch bullshit.."]
+## Ce zici când o vezi (le-a scris owner-ul).
+@export_multiline var replici_creatura: PackedStringArray = ["You: Why is grandma always doing this...", "You: Always forgets her meds and running naked through the forest."]
+## La câte secunde după ce creatura apare pe ecran pornesc replicile de mai sus.
+@export var intarziere_replici := 1.0
+
 @export_group("Pădurea")
 @export var copaci_padure: Array[PackedScene] = []
 @export var copaci_camp: Array[PackedScene] = []
@@ -69,24 +77,26 @@ var _momeala_data := false
 var _banda: Array[Dictionary] = []  # {nod, pas (m), x_min, x_max}
 var _rng := RandomNumberGenerator.new()
 var _pana_la_zornait := 3.0
-var _cap_sofer: Node3D
 var _lumini: Array[OmniLight3D] = []
 var _neon: GeometryInstance3D
+var _camera: Camera3D
 ## Creatura: 0 = ascunsă, 1 = aleargă pe lângă, 2 = cotește în pădure.
 var _faza := 0
 var _rel := 0.0
 var _lateral := 0.0
 var _timp_faza := 0.0
+## Când a intrat creatura prima dată în cadru (-1 = încă nu).
+var _vazuta_la := -1.0
 
 
 func _ready() -> void:
 	_rng.seed = 13
 	_v = viteza
-	_cap_sofer = autobuz.get_node_or_null("Sofer/Model/Cap")
 	for nume in ["NeonFata", "NeonMijloc"]:
 		_lumini.append(autobuz.get_node(nume) as OmniLight3D)
 	_neon = autobuz.get_node("Model").find_child("Lumini") as GeometryInstance3D
 	creatura.visible = false
+	_camera = calator.get_node("Camera3D")
 	_construieste_drumul()
 	_scenariu()
 
@@ -252,6 +262,8 @@ func _creatura_pas(delta: float) -> void:
 				creatura.alearga = false
 				Sunet.reda_la(sunet_crengi, creatura.global_position, -2.0, 0.05)
 	creatura.global_position = Vector3(_lateral, 0.0, z_bus + _rel)
+	if _vazuta_la < 0.0 and _camera.is_position_in_frustum(creatura.global_position + Vector3.UP * 1.4):
+		_vazuta_la = _timp
 	creatura.rotation.y = lerp_angle(creatura.rotation.y, atan2(directie.x, directie.z), 1.0 - exp(-delta * 12.0))
 
 
@@ -289,7 +301,7 @@ func _aprinde(aprins: bool) -> void:
 
 func _scenariu() -> void:
 	await _asteapta(4.5)
-	await _spune(["You: Last bus of the night.", "You: Just me, the driver... and that smell."])
+	await _spune(replici_inainte)
 	# până apare creatura: momeala, apoi privirea forțată
 	var start := _timp
 	while not _a_aparut:
@@ -302,21 +314,20 @@ func _scenariu() -> void:
 		if trecut > fortat and not Dialog.activ:
 			await calator.priveste_spre(95.0, -4.0, 1.3)
 			_porneste_creatura()
+	# replicile pornesc la `intarziere_replici` după ce creatura intră în cadru
+	# (dacă n-a apucat să intre deloc, când dispare)
+	while _vazuta_la < 0.0 and _faza != 0:
+		await get_tree().process_frame
+	while _vazuta_la >= 0.0 and _timp < _vazuta_la + intarziere_replici:
+		await get_tree().process_frame
+	await _spune(replici_creatura)
 	while _faza != 0:
 		await get_tree().process_frame
-	await _asteapta(1.0)
-	await _spune(["You: WHAT THE HELL WAS THAT?!", "You: Hey! Did you see that?!"])
-	await _intoarce_capul_soferului(true)
-	await _spune(["Driver: No."])
-	_intoarce_capul_soferului(false)
-	await _asteapta(0.8)
-	await _spune(["You: ...", "You: (I'm never sitting by the window again.)"])
 	await _asteapta(3.0)
 	await _franeaza()
 	await _asteapta(0.6)
 	await autobuz.deschide_usi()
-	await _spune(["Driver: Forest Road. Last stop.", "Driver: Mind the step. And whatever else is out there."])
-	await _asteapta(0.8)
+	await _asteapta(1.5)
 	Stare.marcheaza("a_ajuns_la_padure")
 	_final()
 
@@ -335,18 +346,6 @@ func _franeaza() -> void:
 		_v = maxf(_v - decelerare * get_process_delta_time(), 0.0)
 		await get_tree().process_frame
 	calator.zguduie(0.4)
-
-
-func _intoarce_capul_soferului(spre_tine: bool) -> void:
-	if _cap_sofer == null:
-		return
-	var tween := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	# tu stai în spatele lui, în stânga: se uită peste umăr, încet
-	tween.tween_property(_cap_sofer, "rotation", Vector3(-0.15, 1.75, 0.0) if spre_tine else Vector3.ZERO,
-		1.4 if spre_tine else 0.9)
-	await tween.finished
-	if spre_tine:
-		await _asteapta(0.6)
 
 
 func _final() -> void:
@@ -380,8 +379,8 @@ func _final() -> void:
 	Tranzitie.mergi_la("res://scenes/meniu_principal.tscn")
 
 
-func _spune(replici: Array) -> void:
-	Dialog.spune(PackedStringArray(replici))
+func _spune(replici: PackedStringArray) -> void:
+	Dialog.spune(replici)
 	if Dialog.activ:
 		await Dialog.terminat
 

@@ -18,6 +18,7 @@ var activa := false
 
 var _negru: ColorRect
 var _titlu: Label
+var _tween_titlu: Tween
 
 
 func _ready() -> void:
@@ -81,11 +82,23 @@ func mergi_la(cale: String, titlu := "", sunete: Array[AudioStream] = []) -> voi
 
 
 func _arata_titlu(text: String) -> void:
+	if Dialog.activ:
+		return  # a început deja o conversație: numele locului nu mai apare
 	_titlu.text = text
-	var tween := create_tween()
-	tween.tween_property(_titlu, "modulate:a", 1.0, 1.0)
-	tween.tween_interval(DURATA_TITLU)
-	tween.tween_property(_titlu, "modulate:a", 0.0, 1.5)
+	_tween_titlu = create_tween()
+	_tween_titlu.tween_property(_titlu, "modulate:a", 1.0, 1.0)
+	_tween_titlu.tween_interval(DURATA_TITLU)
+	_tween_titlu.tween_property(_titlu, "modulate:a", 0.0, 1.5)
+
+
+func _process(_delta: float) -> void:
+	# o conversație începută cât e pe ecran numele locului îl face să dispară pe loc,
+	# altfel textele se suprapun
+	if Dialog.activ and _titlu.modulate.a > 0.0:
+		if _tween_titlu:
+			_tween_titlu.kill()
+			_tween_titlu = null
+		_titlu.modulate.a = 0.0
 
 
 func _asteapta(secunde: float) -> void:

@@ -24,7 +24,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 3. Abia acum se deschide ușa de la intrare. Ecranul se face negru, cobori scările blocului și ajungi afară, în fața blocului **M7, scara B**, la 11:57 PM.
 4. Pe bancă stă o **babă** care are câteva lucruri de spus despre mama ta.
 5. La 5 secunde după ce termini cu baba (sarcina: **„Catch the night bus.”**) apare din ceață **autobuzul de noapte 13** („13 PADURE”), frânează și oprește în stația din dreapta blocului. Ușile se deschid cu un șuierat; urci cu E.
-6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. Șoferul n-a văzut nimic („No.”). Autobuzul oprește la capăt de linie: „Forest Road. Last stop.”
+6. În autobuz stai pe scaun, la geam, și te poți uita în jur. Te gândești la mama ta și la cum ai putea vinde iarbă în loc de vrăjitorie. Afară e pădurea. Când te uiți spre pădure, o **arătare palidă și slabă** aleargă pe lângă autobuz, ține pasul o clipă chiar sub geamul tău și se uită la tine, apoi țâșnește și dispare printre copaci. O recunoști: e bunica, iar și-a uitat pastilele. Autobuzul oprește la capăt de linie, „Forest Road”.
 7. Urmează: pădurea și întâlnirea cu coven-ul (deocamdată, după autobuz scrie „To be continued...” și te întorci în meniu).
 
 ## Ce e unde
@@ -53,7 +53,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scenes/statie.tscn` – stația de autobuz: copertină, bancă, afiș, orarul (se poate citi), un geam spart, plăcuța liniei 13.
 - `scenes/autobuz.tscn` + `scripts/autobuz.gd` – autobuzul (un Ikarus vechi, cu salon mobilat și șofer). Îl muți din alt script și el se descurcă singur: roțile se învârt, motorul turează după viteză, caroseria se leagănă și se apleacă la frână. Ușile: `deschide_usi()` / `inchide_usi()`.
 - `scripts/sosire_autobuz.gd` – nodul `SosireAutobuz` din `afara_bloc.tscn`: când vine autobuzul (`intarziere`, implicit 5 s după baba), de unde vine, cât de repede merge și frânează, unde oprește.
-- `scenes/autobuz_drum.tscn` + `scripts/drum_autobuz.gd` – scena din autobuz: drumul prin pădure, creatura și dialogul. În Inspector: `viteza`, cât de deasă e pădurea, când apare creatura (`armare`, `momeala`, `fortat`), cât stă lângă geam (`timp_alaturi`), și `scena_urmatoare` (când facem pădurea, o pui aici în loc de „To be continued”).
+- `scenes/autobuz_drum.tscn` + `scripts/drum_autobuz.gd` – scena din autobuz: drumul prin pădure, creatura și dialogul. În Inspector: `viteza`, cât de deasă e pădurea, când apare creatura (`armare`, `momeala`, `fortat`), cât stă lângă geam (`timp_alaturi`), replicile (grupul „Replici”: le schimbi direct acolo), și `scena_urmatoare` (când facem pădurea, o pui aici în loc de „To be continued”).
 - `scripts/calator.gd` – tu, așezat: te uiți în jur cu mouse-ul, dar nu te miști. `scenes/creatura.tscn` + `scripts/creatura.gd` – arătarea care aleargă (cât de repede pășește, cât e de aplecată).
 
 ## Modele 3D
