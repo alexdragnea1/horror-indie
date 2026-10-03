@@ -12,6 +12,11 @@ extends Node3D
 @export var stralucitoare: PackedStringArray = []
 ## Cât de tare strălucesc bucățile de mai sus.
 @export var stralucire := 1.0
+## Bucățile de sticlă: cele al căror nume începe cu asta (ex. "Geam") devin transparente.
+## Gol = nicio bucată de sticlă.
+@export var sticla := ""
+
+const MATERIAL_STICLA := preload("res://shaders/material_sticla.tres")
 
 
 func _ready() -> void:
@@ -23,3 +28,6 @@ func _ready() -> void:
 			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		if mesh.name in stralucitoare:
 			mesh.set_instance_shader_parameter("stralucire", stralucire)
+		if sticla != "" and String(mesh.name).begins_with(sticla):
+			mesh.material_override = MATERIAL_STICLA
+			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

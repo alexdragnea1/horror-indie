@@ -31,12 +31,14 @@ unic() {
 # coada sunetului se topește în începutul lui, deci sfârșitul se leagă perfect de început.
 bucla() {
 	local nume="$1" sursa="$2" d="$3" canale="${4:-mono}" extra="${5:-anull}"
+	# curba crossfade-ului: qsin pentru zgomot; tri pentru sunete periodice (motorul), altfel se adună peste 0 dB și pocnește
+	local curba="${6:-qsin}"
 	local ac=1; [ "$canale" = stereo ] && ac=2
 	local tmp="$OUT/_tmp.wav"
 	ffmpeg -v error -y -i "$sursa" -af "$extra" -ac $ac "$tmp"
 	local g; g=$(castig "$tmp" "anull")
 	ffmpeg -v error -y -i "$tmp" -filter_complex \
-		"[0]atrim=start=$d,asetpts=PTS-STARTPTS[a];[0]atrim=end=$d,asetpts=PTS-STARTPTS[b];[a][b]acrossfade=d=$d:c1=qsin:c2=qsin,volume=${g}dB" \
+		"[0]atrim=start=$d,asetpts=PTS-STARTPTS[a];[0]atrim=end=$d,asetpts=PTS-STARTPTS[b];[a][b]acrossfade=d=$d:c1=$curba:c2=$curba,volume=${g}dB" \
 		-c:a libvorbis -q:a 5 "$OUT/$nume.ogg"
 	rm -f "$tmp"
 	echo "$nume.ogg  (buclă)"
@@ -111,6 +113,43 @@ rm -f "$OUT/_usa.wav"
 # sperieturi de afară: cineva fluieră departe în întuneric, o tablă lovită
 unic fluierat "Human/whistle.wav" mono "lowpass=f=1800,asetrate=44100*0.9,aresample=44100"
 unic tabla_lovita "Materials/metal_blunt_tap.wav" mono "lowpass=f=2500"
+
+
+# --- autobuzul de noapte (linia 13)
+# motorul: diesel sintetizat (aprinderile la 35 Hz + armonice, „ciocănitul” = zgomot tăiat în ritmul
+# aprinderilor) peste zgomot maro. Buclă de 4 s (35 Hz × 4 s = cicluri întregi). În joc pitch_scale = turația.
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.30*sin(2*PI*35*t)+0.24*sin(2*PI*70*t)+0.16*sin(2*PI*105*t)+0.1*sin(2*PI*140*t)+0.06*sin(2*PI*210*t)+0.08*sin(2*PI*17.5*t):s=44100:d=8" \
+	-f lavfi -i "anoisesrc=c=white:a=0.5:d=8:r=44100" -f lavfi -i "aevalsrc=pow(0.5+0.5*sin(2*PI*35*t)\,10):s=44100:d=8" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.12:d=8:r=44100" -filter_complex \
+	"[1]highpass=f=700,lowpass=f=2600[z];[z][2]amultiply,volume=0.35[c];[0][c][3]amix=inputs=3:normalize=0,lowpass=f=1800,highpass=f=25" \
+	-ac 1 "$OUT/_motor.wav"
+bucla motor_autobuz "$OUT/_motor.wav" 1.0 mono anull tri
+# drumul simțit din salon: huruit grav + zgomotul roților pe asfalt vechi
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=0.4:d=8:r=44100" -f lavfi -i "anoisesrc=c=pink:a=0.08:d=8:r=44100" \
+	-filter_complex "[0]lowpass=f=180[a];[1]bandpass=f=900:w=600[b];[a][b]amix=inputs=2:normalize=0,volume=1.5" -ac 2 "$OUT/_drum.wav"
+bucla drum_rulare "$OUT/_drum.wav" 1.5 stereo
+rm -f "$OUT/_motor.wav" "$OUT/_drum.wav"
+# ușile pneumatice: șuierul aerului + pistonul, la închidere și bufnitura foilor
+ffmpeg -v error -y -i "$PACHET/Environment/air_burst.wav" -i "$PACHET/Machines/hydraulic_down.wav" \
+	-filter_complex "[0]lowpass=f=5000,asetrate=44100*0.8,aresample=44100[a];[1]adelay=120,volume=-4dB[b];[a][b]amix=inputs=2:normalize=0" -ac 1 "$OUT/_usi.wav"
+unic usi_autobuz_deschise "$OUT/_usi.wav"
+ffmpeg -v error -y -i "$PACHET/Environment/air_burst.wav" -i "$PACHET/Machines/hydraulic_up.wav" -i "$PACHET/Materials/metal_clang.wav" \
+	-filter_complex "[0]lowpass=f=5000,asetrate=44100*0.75,aresample=44100[a];[1]adelay=100,volume=-4dB[b];[2]adelay=900,lowpass=f=1500,volume=-10dB[c];[a][b][c]amix=inputs=3:normalize=0" -ac 1 "$OUT/_usi.wav"
+unic usi_autobuz_inchise "$OUT/_usi.wav"
+rm -f "$OUT/_usi.wav"
+# frâna: scârțâitul saboților (sintetizat, tremură) și „pfff”-ul frânei de aer la oprire
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.25*sin(2*PI*2350*t+3*sin(2*PI*9*t))+0.12*sin(2*PI*4700*t+5*sin(2*PI*9*t)):s=44100:d=1.8" \
+	-i "$PACHET/Environment/air_burst.wav" -filter_complex \
+	"[0]afade=t=in:d=0.25,afade=t=out:st=1.2:d=0.6,volume=-6dB[s];[1]asetrate=44100*0.7,aresample=44100,lowpass=f=4000,adelay=1700[a];[s][a]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_frana.wav"
+unic frana_autobuz "$OUT/_frana.wav"
+rm -f "$OUT/_frana.wav"
+# creatura: vâjâitul când trece pe lângă geam și crengile rupte când intră în pădure
+unic vajait "Other/whoosh_2.wav" mono "lowpass=f=3500,asetrate=44100*0.85,aresample=44100"
+ffmpeg -v error -y -i "$PACHET/Combat and Gore/crunch.wav" -i "$PACHET/Combat and Gore/crunch_quick.wav" \
+	-filter_complex "[0]asetrate=44100*0.7,aresample=44100[a];[1]asetrate=44100*0.8,aresample=44100,adelay=250[b];[a][b]amix=inputs=2:normalize=0,lowpass=f=3000" -ac 1 "$OUT/_crengi.wav"
+unic crengi "$OUT/_crengi.wav"
+rm -f "$OUT/_crengi.wav"
 
 # --- muzica meniului principal: un drone grav (sintetizat) + cutia muzicală din pachet, încetinită,
 # cu ecou lung, de trei ori, de fiecare dată mai jos. 36 s, buclă fără cusătură (crossfade 3 s).

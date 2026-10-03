@@ -1,4 +1,4 @@
-[gd_scene load_steps=60 format=3]
+[gd_scene load_steps=66 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -17,7 +17,6 @@
 [ext_resource type="PackedScene" path="res://models/banca.glb" id="15"]
 [ext_resource type="PackedScene" path="res://models/tomberon.glb" id="16"]
 [ext_resource type="PackedScene" path="res://models/batator.glb" id="17"]
-[ext_resource type="PackedScene" path="res://models/masina.glb" id="18"]
 [ext_resource type="Script" path="res://scripts/interactabil.gd" id="19"]
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="20"]
 [ext_resource type="Script" path="res://scripts/sunete_aleatorii.gd" id="21"]
@@ -29,6 +28,13 @@
 [ext_resource type="AudioStream" path="res://sunete/fantoma.ogg" id="27"]
 [ext_resource type="AudioStream" path="res://sunete/usa_incuiata.ogg" id="28"]
 [ext_resource type="PackedScene" path="res://scenes/baba.tscn" id="29"]
+[ext_resource type="PackedScene" path="res://scenes/statie.tscn" id="30"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="31"]
+[ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="32"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="33"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="34"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="35"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="36"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -106,14 +112,14 @@ size = Vector3(1.6, 1.3, 0.95)
 [sub_resource type="BoxShape3D" id="forma_batator"]
 size = Vector3(2.7, 2, 0.25)
 
-[sub_resource type="BoxShape3D" id="forma_masina"]
-size = Vector3(1.7, 1.4, 4.4)
-
 [sub_resource type="BoxShape3D" id="forma_trotuar"]
 size = Vector3(27, 1, 3.2)
 
 [sub_resource type="BoxShape3D" id="forma_alee"]
 size = Vector3(1.8, 1, 11)
+
+[sub_resource type="BoxShape3D" id="forma_platforma"]
+size = Vector3(4.8, 1, 1.6)
 
 [sub_resource type="BoxShape3D" id="forma_strada"]
 size = Vector3(120, 1, 10)
@@ -185,7 +191,7 @@ use_collision = true
 
 [node name="Sol" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 10)
-size = Vector3(120, 0.2, 120)
+size = Vector3(240, 0.2, 120)
 material = SubResource("mat_iarba")
 
 [node name="Trotuar" type="CSGBox3D" parent="Teren"]
@@ -200,27 +206,32 @@ material = SubResource("mat_beton")
 
 [node name="TrotuarStrada" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 14.6)
-size = Vector3(120, 0.1, 1.2)
+size = Vector3(240, 0.1, 1.2)
+material = SubResource("mat_beton")
+
+[node name="PlatformaStatie" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0.05, 13.25)
+size = Vector3(4.8, 0.1, 1.5)
 material = SubResource("mat_beton")
 
 [node name="Bordura" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 15.25)
-size = Vector3(120, 0.14, 0.15)
+size = Vector3(240, 0.14, 0.15)
 material = SubResource("mat_bordura")
 
 [node name="Strada" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 18.75)
-size = Vector3(120, 0.02, 7)
+size = Vector3(240, 0.02, 7)
 material = SubResource("mat_asfalt")
 
 [node name="BorduraVizavi" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 22.3)
-size = Vector3(120, 0.14, 0.15)
+size = Vector3(240, 0.14, 0.15)
 material = SubResource("mat_bordura")
 
 [node name="TrotuarVizavi" type="CSGBox3D" parent="Teren"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 23.2)
-size = Vector3(120, 0.1, 1.8)
+size = Vector3(240, 0.1, 1.8)
 material = SubResource("mat_beton")
 
 [node name="Bloc" type="StaticBody3D" parent="."]
@@ -405,12 +416,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 13.9)
 [node name="Fata6" parent="Gard" instance=ExtResource("10")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 13.9)
 
-[node name="Fata7" parent="Gard" instance=ExtResource("10")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 13.9)
-
-[node name="Fata8" parent="Gard" instance=ExtResource("10")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 13.9)
-
 [node name="Stanga1" parent="Gard" instance=ExtResource("10")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13, 0, 13.9)
 
@@ -448,6 +453,8 @@ shape = SubResource("forma_banca")
 
 [node name="Baba" parent="." instance=ExtResource("29")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.75, 0, 7.15)
+marcaj_dupa = "a_vorbit_cu_baba"
+sarcina_noua = "Catch the night bus."
 
 [node name="Tomberon" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0.06, 2.4)
@@ -475,18 +482,17 @@ material = ExtResource("4")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = SubResource("forma_batator")
 
-[node name="Masina" type="StaticBody3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -6, 0, 16.6)
-script = ExtResource("19")
-replici = PackedStringArray("Mr. Ionescu's car. It hasn't moved since 1989.")
+[node name="Statie" parent="." instance=ExtResource("30")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0.1, 13.35)
 
-[node name="Model" parent="Masina" instance=ExtResource("18")]
-script = ExtResource("3")
-material = ExtResource("4")
+[node name="Autobuz" parent="." instance=ExtResource("31")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 200, 0, 16.9)
 
-[node name="Coliziune" type="CollisionShape3D" parent="Masina"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
-shape = SubResource("forma_masina")
+[node name="SosireAutobuz" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("32")
+autobuz = NodePath("../Autobuz")
+sunete_urcare = Array[AudioStream]([ExtResource("34"), ExtResource("35"), ExtResource("34"), ExtResource("36")])
+sunet_frana = ExtResource("33")
 
 [node name="Beton" type="Area3D" parent="."]
 script = ExtResource("20")
@@ -499,6 +505,10 @@ shape = SubResource("forma_trotuar")
 [node name="Alee" type="CollisionShape3D" parent="Beton"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 8.7)
 shape = SubResource("forma_alee")
+
+[node name="Platforma" type="CollisionShape3D" parent="Beton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0.5, 13.25)
+shape = SubResource("forma_platforma")
 
 [node name="Strada" type="CollisionShape3D" parent="Beton"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 19.2)

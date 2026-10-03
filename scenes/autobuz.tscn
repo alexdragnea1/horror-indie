@@ -1,0 +1,140 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/autobuz.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/autobuz.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/sofer.glb" id="5"]
+[ext_resource type="Script" path="res://scripts/intrare_autobuz.gd" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/motor_autobuz.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/bec_bazait.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="10"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="11"]
+
+[sub_resource type="BoxShape3D" id="forma_caroserie"]
+size = Vector3(2.5, 2.55, 11)
+
+[sub_resource type="BoxShape3D" id="forma_intrare"]
+size = Vector3(0.12, 2, 1.2)
+
+[node name="Autobuz" type="AnimatableBody3D"]
+sync_to_physics = false
+script = ExtResource("1")
+sunet_usi_deschise = ExtResource("9")
+sunet_usi_inchise = ExtResource("10")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Lumini", "Panou")
+stralucire = 1.6
+sticla = "Geam"
+
+[node name="Caroserie" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+shape = SubResource("forma_caroserie")
+
+[node name="Sofer" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 1.57, 4.35)
+
+[node name="Model" parent="Sofer" instance=ExtResource("5")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="FarStanga" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.83, 0.75, 5.6)
+rotation = Vector3(-0.1, 3.14159, 0)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 4.0
+light_volumetric_fog_energy = 0.6
+spot_range = 32.0
+spot_attenuation = 0.8
+spot_angle = 28.0
+
+[node name="FarDreapta" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.83, 0.75, 5.6)
+rotation = Vector3(-0.1, 3.14159, 0)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 4.0
+light_volumetric_fog_energy = 0.6
+spot_range = 32.0
+spot_attenuation = 0.8
+spot_angle = 28.0
+
+[node name="NeonFata" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 3.2)
+light_color = Color(0.78, 0.95, 0.88, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="NeonMijloc" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
+light_color = Color(0.78, 0.95, 0.88, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="NeonSpate" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, -3.2)
+light_color = Color(0.78, 0.95, 0.88, 1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 5.0
+script = ExtResource("11")
+energie_normala = 0.8
+sansa_stingere = 0.05
+
+[node name="Bazait" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+stream = ExtResource("8")
+volume_db = -26.0
+pitch_scale = 1.15
+unit_size = 2.0
+max_distance = 12.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Motor" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.8)
+stream = ExtResource("7")
+volume_db = -3.0
+unit_size = 6.0
+max_distance = 90.0
+autoplay = true
+bus = &"Efecte"
+
+[node name="IntrareFata" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 1.4, 4.55)
+script = ExtResource("6")
+indiciu = "[E] Get on the bus"
+
+[node name="Forma" type="CollisionShape3D" parent="IntrareFata"]
+shape = SubResource("forma_intrare")
+
+[node name="IntrareMijloc" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 1.4, 0)
+script = ExtResource("6")
+indiciu = "[E] Get on the bus"
+
+[node name="Forma" type="CollisionShape3D" parent="IntrareMijloc"]
+shape = SubResource("forma_intrare")
+
+[node name="IntrareSpate" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3, 1.4, -4.2)
+script = ExtResource("6")
+indiciu = "[E] Get on the bus"
+
+[node name="Forma" type="CollisionShape3D" parent="IntrareSpate"]
+shape = SubResource("forma_intrare")
+
+[node name="LuminaBord" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 2.0, 5.0)
+light_color = Color(0.55, 0.9, 0.72, 1)
+light_energy = 0.7
+light_volumetric_fog_energy = 0.0
+omni_range = 1.8

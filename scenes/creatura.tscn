@@ -1,0 +1,27 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/creatura.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/creatura.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="8"]
+
+[node name="Creatura" type="Node3D"]
+script = ExtResource("1")
+pasi = Array[AudioStream]([ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8")])
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 3.0
+
+[node name="Pasi" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5")
+volume_db = -4.0
+unit_size = 5.0
+max_distance = 40.0
+bus = &"Efecte"

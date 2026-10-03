@@ -1,0 +1,208 @@
+[gd_scene load_steps=40 format=3]
+
+[ext_resource type="Script" path="res://scripts/drum_autobuz.gd" id="1"]
+[ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/calator.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/creatura.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="6"]
+[ext_resource type="PackedScene" path="res://models/brad_1.glb" id="7"]
+[ext_resource type="PackedScene" path="res://models/brad_2.glb" id="8"]
+[ext_resource type="PackedScene" path="res://models/copac_gol.glb" id="9"]
+[ext_resource type="PackedScene" path="res://models/copac_1.glb" id="10"]
+[ext_resource type="PackedScene" path="res://models/copac_2.glb" id="11"]
+[ext_resource type="PackedScene" path="res://models/copac_3.glb" id="12"]
+[ext_resource type="PackedScene" path="res://models/stalpisor.glb" id="13"]
+[ext_resource type="PackedScene" path="res://models/stalp_lemn.glb" id="14"]
+[ext_resource type="AudioStream" path="res://sunete/vajait.ogg" id="15"]
+[ext_resource type="AudioStream" path="res://sunete/crengi.ogg" id="16"]
+[ext_resource type="AudioStream" path="res://sunete/ui_sting.ogg" id="17"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="18"]
+[ext_resource type="AudioStream" path="res://sunete/tabla_lovita.ogg" id="19"]
+[ext_resource type="AudioStream" path="res://sunete/drum_rulare.ogg" id="20"]
+[ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="21"]
+[ext_resource type="AudioStream" path="res://sunete/ciocanit.ogg" id="22"]
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 1
+background_color = Color(0.24, 0.27, 0.31, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.36, 0.48, 1)
+ambient_light_energy = 0.4
+fog_enabled = true
+fog_light_color = Color(0.24, 0.27, 0.31, 1)
+fog_density = 0.055
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.015
+volumetric_fog_albedo = Color(0.55, 0.6, 0.65, 1)
+volumetric_fog_length = 32.0
+
+[sub_resource type="Gradient" id="pete"]
+colors = PackedColorArray(0.62, 0.62, 0.62, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="zgomot"]
+frequency = 0.12
+
+[sub_resource type="NoiseTexture2D" id="tex_sol"]
+width = 64
+height = 64
+seamless = true
+color_ramp = SubResource("pete")
+noise = SubResource("zgomot")
+
+[sub_resource type="ShaderMaterial" id="mat_sol"]
+shader = ExtResource("2")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.282, 0.192, 0.231, 1)
+shader_parameter/repetare_uv = Vector2(0.4, 0.4)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_asfalt"]
+shader = ExtResource("2")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.369, 0.325, 0.337, 1)
+shader_parameter/repetare_uv = Vector2(0.5, 0.5)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_pietris"]
+shader = ExtResource("2")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.439, 0.439, 0.431, 1)
+shader_parameter/repetare_uv = Vector2(1.5, 1.5)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_linie"]
+shader = ExtResource("2")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.494, 0.553, 0.529, 1)
+shader_parameter/repetare_uv = Vector2(1, 1)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_fir"]
+shader = ExtResource("2")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.149, 0.176, 0.184, 1)
+shader_parameter/repetare_uv = Vector2(1, 1)
+
+[sub_resource type="BoxMesh" id="sol"]
+material = SubResource("mat_sol")
+size = Vector3(300, 0.2, 260)
+
+[sub_resource type="BoxMesh" id="asfalt"]
+material = SubResource("mat_asfalt")
+size = Vector3(7, 0.04, 260)
+
+[sub_resource type="BoxMesh" id="acostament"]
+material = SubResource("mat_pietris")
+size = Vector3(1.4, 0.03, 260)
+
+[sub_resource type="BoxMesh" id="linie_margine"]
+material = SubResource("mat_linie")
+size = Vector3(0.12, 0.01, 260)
+
+[sub_resource type="BoxMesh" id="fir"]
+material = SubResource("mat_fir")
+size = Vector3(0.025, 0.025, 260)
+
+[node name="DrumAutobuz" type="Node3D" node_paths=PackedStringArray("autobuz", "calator", "creatura", "teren")]
+script = ExtResource("1")
+autobuz = NodePath("Autobuz")
+calator = NodePath("Autobuz/Calator")
+creatura = NodePath("Creatura")
+teren = NodePath("Teren")
+copaci_padure = Array[PackedScene]([ExtResource("7"), ExtResource("8"), ExtResource("7"), ExtResource("8"), ExtResource("7"), ExtResource("9"), ExtResource("10"), ExtResource("12")])
+copaci_camp = Array[PackedScene]([ExtResource("9"), ExtResource("9"), ExtResource("8"), ExtResource("11")])
+stalpisor = ExtResource("13")
+stalp_lemn = ExtResource("14")
+sunet_vajait = ExtResource("15")
+sunet_crengi = ExtResource("16")
+sunet_sperietura = ExtResource("17")
+sunet_frana = ExtResource("18")
+zornaieli = Array[AudioStream]([ExtResource("19"), ExtResource("22")])
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("6")
+marime_camera = 0.18
+amortizare = 0.75
+ecou = 0.06
+
+[node name="Luna" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0.3536, -0.3536, 0, 0.7071, 0.7071, 0.5, -0.6124, 0.6124, 0, 20, 0)
+light_color = Color(0.62, 0.7, 0.95, 1)
+light_energy = 0.2
+light_volumetric_fog_energy = 0.3
+shadow_enabled = true
+directional_shadow_max_distance = 45.0
+
+[node name="Teren" type="Node3D" parent="."]
+
+[node name="Sol" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 45)
+mesh = SubResource("sol")
+
+[node name="Asfalt" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 45)
+mesh = SubResource("asfalt")
+
+[node name="AcostamentStanga" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 0.012, 45)
+mesh = SubResource("acostament")
+
+[node name="AcostamentDreapta" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 0.012, 45)
+mesh = SubResource("acostament")
+
+[node name="MargineStanga" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3, 0.045, 45)
+mesh = SubResource("linie_margine")
+
+[node name="MargineDreapta" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3, 0.045, 45)
+mesh = SubResource("linie_margine")
+
+[node name="Fir1" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 7.45, 45)
+mesh = SubResource("fir")
+
+[node name="Fir2" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 7.45, 45)
+mesh = SubResource("fir")
+
+[node name="Fir3" type="MeshInstance3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 7.45, 45)
+mesh = SubResource("fir")
+
+[node name="Autobuz" parent="." instance=ExtResource("3")]
+
+[node name="Calator" type="Node3D" parent="Autobuz"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.92, 2.12, -0.05)
+script = ExtResource("4")
+
+[node name="Camera3D" type="Camera3D" parent="Autobuz/Calator"]
+near = 0.05
+fov = 72.0
+
+[node name="LuminaGeamuri" type="OmniLight3D" parent="Autobuz"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 1.8, 0)
+light_color = Color(0.7, 0.9, 0.85, 1)
+light_energy = 1.3
+light_volumetric_fog_energy = 0.0
+omni_range = 6.5
+
+[node name="Creatura" parent="." instance=ExtResource("5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 0, -30)
+
+[node name="DrumRulare" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("20")
+volume_db = -12.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Vant" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("21")
+volume_db = -26.0
+autoplay = true
+bus = &"Ambianta"

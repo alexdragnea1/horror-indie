@@ -215,3 +215,6 @@ afara.toate(MODELE)
 
 import bucatarie  # noqa: E402
 bucatarie.toate(MODELE)
+
+import autobuz  # noqa: E402
+autobuz.toate(MODELE)
