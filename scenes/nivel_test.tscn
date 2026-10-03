@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -16,6 +16,18 @@
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="16"]
 [ext_resource type="Texture2D" path="res://textures/perete_casa.png" id="5"]
 [ext_resource type="Texture2D" path="res://textures/podea_casa.png" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/bucatarie.tscn" id="20"]
+[ext_resource type="Script" path="res://scripts/tablou.gd" id="21"]
+[ext_resource type="PackedScene" path="res://models/rama_aurie.glb" id="22"]
+[ext_resource type="PackedScene" path="res://models/rama_lemn.glb" id="23"]
+[ext_resource type="PackedScene" path="res://models/rama_alba.glb" id="24"]
+[ext_resource type="Texture2D" path="res://textures/tablou_biserica.png" id="25"]
+[ext_resource type="Texture2D" path="res://textures/tablou_parc.png" id="26"]
+[ext_resource type="Texture2D" path="res://textures/tablou_strada.png" id="27"]
+[ext_resource type="PackedScene" path="res://models/cuier.glb" id="28"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="29"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="30"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="31"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -51,11 +63,6 @@ shader_parameter/culoare = Color(1, 1, 1, 1)
 shader_parameter/repetare_uv = Vector2(0.5, 0.5)
 shader_parameter/uv_din_lume = true
 
-[sub_resource type="ShaderMaterial" id="mat_lemn"]
-shader = ExtResource("1")
-shader_parameter/textura = SubResource("tex_podea")
-shader_parameter/culoare = Color(0.565, 0.29, 0.251, 1)
-
 [sub_resource type="ShaderMaterial" id="mat_tavan"]
 shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_podea")
@@ -69,6 +76,15 @@ shader_parameter/textura = SubResource("tex_podea")
 shader_parameter/culoare = Color(0.196, 0.271, 0.231, 1)
 shader_parameter/repetare_uv = Vector2(0.4, 0.4)
 shader_parameter/uv_din_lume = true
+
+[sub_resource type="BoxShape3D" id="forma_tablou_patrat"]
+size = Vector3(0.75, 0.75, 0.06)
+
+[sub_resource type="BoxShape3D" id="forma_tablou_lat"]
+size = Vector3(0.86, 0.6, 0.06)
+
+[sub_resource type="BoxShape3D" id="forma_cuier"]
+size = Vector3(0.95, 1.8, 0.32)
 
 [node name="NivelTest" type="Node3D"]
 
@@ -162,11 +178,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7, 3.06, -11.7)
 size = Vector3(5, 0.2, 4.6)
 material = SubResource("mat_tavan")
 
-[node name="Masa" type="CSGBox3D" parent="Casa"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.4, 1.5)
-size = Vector3(1.4, 0.8, 0.8)
-material = SubResource("mat_lemn")
-
 [node name="Bec" parent="." instance=ExtResource("4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0.5)
 
@@ -187,6 +198,69 @@ transform = Transform3D(0.51, 0, -0.86, 0, 1, 0, 0.86, 0, 0.51, 2.2, 0, -10.2)
 
 [node name="Ceas" parent="." instance=ExtResource("9")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3.975, 2.1, 1)
+
+[node name="Bucatarie" parent="." instance=ExtResource("20")]
+
+[node name="TablouStrada" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1, 1.55, -5.8)
+script = ExtResource("21")
+imagine = ExtResource("27")
+marime = Vector2(0.74, 0.475)
+indiciu = "[E] Look at the painting"
+replici = PackedStringArray("A street with one single car on it. Grandpa says it was his car.", "It wasn't.")
+
+[node name="Model" parent="TablouStrada" instance=ExtResource("24")]
+script = ExtResource("29")
+material = ExtResource("30")
+
+[node name="Coliziune" type="CollisionShape3D" parent="TablouStrada"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+shape = SubResource("forma_tablou_lat")
+
+[node name="TablouBiserica" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1, 1.6, -8.1)
+script = ExtResource("21")
+imagine = ExtResource("25")
+marime = Vector2(0.55, 0.55)
+indiciu = "[E] Look at the painting"
+replici = PackedStringArray("An old photo of the town. Grandma says it was better back then.", "Better for who, she never says.")
+
+[node name="Model" parent="TablouBiserica" instance=ExtResource("22")]
+script = ExtResource("29")
+material = ExtResource("30")
+
+[node name="Coliziune" type="CollisionShape3D" parent="TablouBiserica"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+shape = SubResource("forma_tablou_patrat")
+
+[node name="TablouParc" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0.06994, 0.99755, 0, -0.99755, 0.06994, 0, -1, 1.55, -10.4)
+script = ExtResource("21")
+imagine = ExtResource("26")
+marime = Vector2(0.74, 0.48)
+indiciu = "[E] Look at the painting"
+replici = PackedStringArray("Two old men on two benches, ignoring each other.", "It's crooked again. You straightened it yesterday.")
+
+[node name="Model" parent="TablouParc" instance=ExtResource("23")]
+script = ExtResource("29")
+material = ExtResource("30")
+
+[node name="Coliziune" type="CollisionShape3D" parent="TablouParc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+shape = SubResource("forma_tablou_lat")
+
+[node name="Cuier" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1, 0.02, -13.2)
+script = ExtResource("31")
+replici = PackedStringArray("Mom's coat and the guest slippers.", "No guest has ever worn the guest slippers. No guest has ever come.")
+
+[node name="Model" parent="Cuier" instance=ExtResource("28")]
+script = ExtResource("29")
+material = ExtResource("30")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Cuier"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0.16)
+shape = SubResource("forma_cuier")
 
 [node name="Vant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("11")

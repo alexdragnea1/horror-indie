@@ -1,0 +1,293 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/capac_oala.gd" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/ceaun_fierbe.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/tabla_lovita.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/bec_bazait.ogg" id="9"]
+[ext_resource type="PackedScene" path="res://models/mobila_bucatarie.glb" id="10"]
+[ext_resource type="PackedScene" path="res://models/aragaz.glb" id="11"]
+[ext_resource type="PackedScene" path="res://models/masa_bucatarie.glb" id="12"]
+[ext_resource type="PackedScene" path="res://models/taburet.glb" id="13"]
+[ext_resource type="PackedScene" path="res://models/cutie_biscuiti.glb" id="14"]
+[ext_resource type="PackedScene" path="res://models/icoana.glb" id="15"]
+[ext_resource type="PackedScene" path="res://models/punga_pungi.glb" id="16"]
+[ext_resource type="PackedScene" path="res://models/raft_borcane.glb" id="17"]
+[ext_resource type="PackedScene" path="res://models/colt_camara.glb" id="18"]
+[ext_resource type="PackedScene" path="res://models/calendar.glb" id="19"]
+[ext_resource type="PackedScene" path="res://models/deasupra_frigiderului.glb" id="20"]
+[ext_resource type="PackedScene" path="res://models/pres.glb" id="21"]
+
+[sub_resource type="BoxShape3D" id="forma_mobila"]
+size = Vector3(2.6, 0.9, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_aragaz"]
+size = Vector3(0.6, 1.1, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_masa"]
+size = Vector3(1.2, 0.8, 0.75)
+
+[sub_resource type="CylinderShape3D" id="forma_taburet"]
+height = 0.48
+radius = 0.17
+
+[sub_resource type="CylinderShape3D" id="forma_cutie"]
+height = 0.1
+radius = 0.11
+
+[sub_resource type="BoxShape3D" id="forma_icoana"]
+size = Vector3(0.5, 0.75, 0.2)
+
+[sub_resource type="BoxShape3D" id="forma_punga"]
+size = Vector3(0.36, 0.55, 0.28)
+
+[sub_resource type="BoxShape3D" id="forma_raft"]
+size = Vector3(1.6, 0.36, 0.26)
+
+[sub_resource type="BoxShape3D" id="forma_colt"]
+size = Vector3(1.0, 0.6, 0.85)
+
+[sub_resource type="BoxShape3D" id="forma_calendar"]
+size = Vector3(0.32, 0.5, 0.06)
+
+[sub_resource type="BoxShape3D" id="forma_pres"]
+size = Vector3(1.3, 0.4, 0.65)
+
+[node name="Bucatarie" type="Node3D"]
+
+[node name="Mobila" type="StaticBody3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.75, 0.02, 4)
+
+[node name="Model" parent="Mobila" instance=ExtResource("10")]
+script = ExtResource("1")
+material = ExtResource("2")
+stralucitoare = PackedStringArray("Neon")
+stralucire = 2.0
+
+[node name="Coliziune" type="CollisionShape3D" parent="Mobila"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9, 0.45, 0.3)
+shape = SubResource("forma_mobila")
+
+[node name="Neon" type="OmniLight3D" parent="Mobila" node_paths=PackedStringArray("sticla", "bazait")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 1.5, 0.35)
+light_color = Color(0.82, 0.95, 1, 1)
+light_energy = 0.9
+omni_range = 3.8
+shadow_enabled = true
+script = ExtResource("5")
+energie_normala = 0.9
+sansa_stingere = 0.03
+sticla = NodePath("../Model/Neon")
+stralucire_sticla = 2.0
+bazait = NodePath("../BazaitNeon")
+
+[node name="BazaitNeon" type="AudioStreamPlayer3D" parent="Mobila"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 1.56, 0.27)
+stream = ExtResource("9")
+volume_db = -20.0
+pitch_scale = 0.8
+unit_size = 1.2
+max_distance = 7.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Aragaz" type="StaticBody3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.05, 0.02, 4)
+script = ExtResource("3")
+indiciu = "[E] Look in the pot"
+replici = PackedStringArray("Sarmale. Again.", "Mom has been making sarmale since Tuesday. Nobody knows who they're for.")
+
+[node name="Model" parent="Aragaz" instance=ExtResource("11")]
+script = ExtResource("1")
+material = ExtResource("2")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.5
+
+[node name="Coliziune" type="CollisionShape3D" parent="Aragaz"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0.3)
+shape = SubResource("forma_aragaz")
+
+[node name="Capac" type="Node" parent="Aragaz" node_paths=PackedStringArray("capac")]
+script = ExtResource("6")
+capac = NodePath("../Model/Capac")
+sunet = ExtResource("8")
+
+[node name="Flacara" type="OmniLight3D" parent="Aragaz"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 0.93, 0.42)
+light_color = Color(0.45, 0.65, 1, 1)
+light_energy = 0.25
+omni_range = 0.9
+script = ExtResource("5")
+energie_normala = 0.25
+sansa_stingere = 0.0
+
+[node name="Fierbe" type="AudioStreamPlayer3D" parent="Aragaz"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.05, 0.42)
+stream = ExtResource("7")
+volume_db = -22.0
+pitch_scale = 1.3
+unit_size = 1.2
+max_distance = 7.0
+autoplay = true
+bus = &"Efecte"
+
+[node name="Masa" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.02, 1.5)
+
+[node name="Model" parent="Masa" instance=ExtResource("12")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Masa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("forma_masa")
+
+[node name="CutieBiscuiti" type="StaticBody3D" parent="."]
+transform = Transform3D(0.96, 0, 0.28, 0, 1, 0, -0.28, 0, 0.96, 2.6, 0.804, 1.72)
+script = ExtResource("3")
+indiciu = "[E] Open the cookie tin"
+replici = PackedStringArray("Danish butter cookies!", "...It's needles and thread. It's always needles and thread.")
+
+[node name="Model" parent="CutieBiscuiti" instance=ExtResource("14")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="CutieBiscuiti"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+shape = SubResource("forma_cutie")
+
+[node name="Taburet1" type="StaticBody3D" parent="."]
+transform = Transform3D(0.92, 0, 0.39, 0, 1, 0, -0.39, 0, 0.92, 1.8, 0.02, 2.1)
+
+[node name="Model" parent="Taburet1" instance=ExtResource("13")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Taburet1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+shape = SubResource("forma_taburet")
+
+[node name="Taburet2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.65, 0.02, 2.05)
+
+[node name="Model" parent="Taburet2" instance=ExtResource("13")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Taburet2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+shape = SubResource("forma_taburet")
+
+[node name="Taburet3" type="StaticBody3D" parent="."]
+transform = Transform3D(0.8, 0, -0.6, 0, 1, 0, 0.6, 0, 0.8, 2.3, 0.02, 0.85)
+
+[node name="Model" parent="Taburet3" instance=ExtResource("13")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Taburet3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+shape = SubResource("forma_taburet")
+
+[node name="Icoana" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 1.95, -2.2)
+script = ExtResource("3")
+indiciu = "[E] Look at the icon"
+replici = PackedStringArray("A saint. His eyes follow you around the kitchen.", "He knows what you are.")
+
+[node name="Model" parent="Icoana" instance=ExtResource("15")]
+script = ExtResource("1")
+material = ExtResource("2")
+umbre = false
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 4.0
+
+[node name="Coliziune" type="CollisionShape3D" parent="Icoana"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0.1)
+shape = SubResource("forma_icoana")
+
+[node name="Candela" type="OmniLight3D" parent="Icoana" node_paths=PackedStringArray("sticla")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0.2)
+light_color = Color(1, 0.42, 0.3, 1)
+light_energy = 0.35
+omni_range = 1.8
+script = ExtResource("5")
+energie_normala = 0.35
+sansa_stingere = 0.01
+sticla = NodePath("../Model/Flacara")
+stralucire_sticla = 4.0
+
+[node name="PungaPungi" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.5, -4)
+script = ExtResource("3")
+indiciu = "[E] Look at the bag"
+replici = PackedStringArray("The bag with bags. Every bag this family ever got lives in here.", "Throwing one away is a sin. Mom said so.")
+
+[node name="Model" parent="PungaPungi" instance=ExtResource("16")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="PungaPungi"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.26, 0.14)
+shape = SubResource("forma_punga")
+
+[node name="RaftBorcane" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 1.55, -4)
+script = ExtResource("3")
+indiciu = "[E] Look at the jars"
+replici = PackedStringArray("Pickles, zacusca, cherry compote. Enough for a nuclear winter.", "One jar has been here since before you were born. Nobody opens that one.")
+
+[node name="Model" parent="RaftBorcane" instance=ExtResource("17")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="RaftBorcane"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0.13)
+shape = SubResource("forma_raft")
+
+[node name="ColtCamara" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 0.02, 3.4)
+
+[node name="Model" parent="ColtCamara" instance=ExtResource("18")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="ColtCamara"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.3, 0.42)
+shape = SubResource("forma_colt")
+
+[node name="Calendar" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 1.75, 1.5)
+script = ExtResource("3")
+indiciu = "[E] Look at the calendar"
+replici = PackedStringArray("A church calendar from 2009. Nobody is allowed to take it down.", "One day is circled in red. Nobody remembers why.")
+
+[node name="Model" parent="Calendar" instance=ExtResource("19")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Calendar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0.03)
+shape = SubResource("forma_calendar")
+
+[node name="DeasupraFrigiderului" parent="." instance=ExtResource("20")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3.58, 1.78, -2.6)
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Pres" parent="." instance=ExtResource("21")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.02, 3.03)
+script = ExtResource("1")
+material = ExtResource("2")
+umbre = false
+
+[node name="ZonaPres" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.35, 0.2, 3.03)
+script = ExtResource("4")
+
+[node name="Forma" type="CollisionShape3D" parent="ZonaPres"]
+shape = SubResource("forma_pres")

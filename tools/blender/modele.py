@@ -212,3 +212,6 @@ dormitor.toate(MODELE)
 
 import afara  # noqa: E402
 afara.toate(MODELE)
+
+import bucatarie  # noqa: E402
+bucatarie.toate(MODELE)

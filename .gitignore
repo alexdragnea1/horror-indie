@@ -5,3 +5,5 @@
 /textures/originale/
 __pycache__/
 Sound/
+# pozele originale ale tablourilor (owner-ul); în joc intră textures/tablou_*.png
+/textures/Tablouri/
