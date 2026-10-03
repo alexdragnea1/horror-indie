@@ -8,6 +8,9 @@ extends CharacterBody3D
 ## Clătinarea capului când mergi. Un pas = o clătinare completă (pasul se aude când capul e jos).
 @export var balans_frecventa := 4.2
 @export var balans_amplitudine := 0.04
+## Cât de înaltă poate fi o treaptă pe care o urci fără să sari (bordura, pragul, rampa).
+## Fără asta, corpul (un cilindru) se oprește în orice muchie, oricât de joasă.
+@export var inaltime_treapta := 0.25
 
 @export_group("Sunete")
 ## Pașii pe fiecare suprafață. Se alege la întâmplare, niciodată același de două ori la rând.
@@ -38,6 +41,8 @@ var _gravitatie: float = ProjectSettings.get_setting("physics/3d/default_gravity
 var _distanta_mersa := 0.0
 var _numar_pas := 0
 var _ultimul_pas: AudioStream
+## Cât a sărit corpul la ultima treaptă; camera rămâne în urmă și ajunge din urmă lin.
+var _decalaj_treapta := 0.0
 
 
 func _ready() -> void:
@@ -77,12 +82,20 @@ func _physics_process(delta: float) -> void:
 	var viteza := viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers
 	velocity.x = move_toward(velocity.x, directie.x * viteza, viteza * 10.0 * delta)
 	velocity.z = move_toward(velocity.z, directie.z * viteza, viteza * 10.0 * delta)
+	var y_inainte := global_position.y
+	var era_pe_podea := is_on_floor()
+	_urca_treapta(delta)
 	move_and_slide()
+	# urcat sau coborât brusc o treaptă: corpul sare, dar camera rămâne în urmă și ajunge lin
+	var salt := global_position.y - y_inainte
+	if era_pe_podea and is_on_floor() and absf(salt) > 0.02:
+		_decalaj_treapta = clampf(_decalaj_treapta + salt, -0.3, 0.3)
+	_decalaj_treapta = move_toward(_decalaj_treapta, 0.0, delta * 1.2)
 
 	var viteza_orizontala := Vector2(velocity.x, velocity.z).length()
 	if is_on_floor() and viteza_orizontala > 0.1:
 		_distanta_mersa += viteza_orizontala * delta
-	_camera.position.y = sin(_distanta_mersa * balans_frecventa) * balans_amplitudine
+	_camera.position.y = sin(_distanta_mersa * balans_frecventa) * balans_amplitudine - _decalaj_treapta
 	_camera.position.x = cos(_distanta_mersa * balans_frecventa * 0.5) * balans_amplitudine
 	# un pas nou de fiecare dată când capul trece prin punctul cel mai de jos al clătinării
 	var pas := floori(_distanta_mersa * balans_frecventa / TAU + 0.25)
@@ -92,6 +105,35 @@ func _physics_process(delta: float) -> void:
 
 	var tinta := _tinta_privita()
 	_indiciu.text = tinta.indiciu if tinta and not _ocupat() else ""
+
+
+## Dacă în față e o muchie joasă (bordură, prag), ridică jucătorul pe ea.
+## Încearcă: sus cu inaltime_treapta, înainte cu cât ar merge cadrul ăsta, apoi jos până dă de podea.
+## Urcă doar dacă acolo sus e podea adevărată (nu perete, nu pantă prea abruptă).
+func _urca_treapta(delta: float) -> void:
+	var miscare := Vector3(velocity.x, 0, velocity.z) * delta
+	if not is_on_floor() or miscare.length() < 0.001:
+		return
+	var t := global_transform
+	if not test_move(t, miscare):
+		return  # nimic în față, merge normal
+	var sus := Vector3.UP * inaltime_treapta
+	var lovire := KinematicCollision3D.new()
+	if test_move(t, sus, lovire):
+		sus = lovire.get_travel()  # tavan jos: urcă doar cât se poate
+	t.origin += sus
+	if test_move(t, miscare):
+		return  # e perete, nu treaptă
+	t.origin += miscare
+	if not test_move(t, -sus, lovire):
+		return  # dincolo e gol, nu treaptă
+	if lovire.get_normal().angle_to(Vector3.UP) > floor_max_angle:
+		return
+	t.origin += lovire.get_travel()
+	if t.origin.y - global_position.y <= 0.01:
+		return
+	global_position = t.origin
+	velocity.y = 0.0
 
 
 func _pas(fuge: bool) -> void:

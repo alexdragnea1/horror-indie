@@ -21,12 +21,13 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="f3"]
 [ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="f4"]
 
-[sub_resource type="CapsuleShape3D" id="forma"]
+[sub_resource type="CylinderShape3D" id="forma"]
 radius = 0.3
 height = 1.7
 
 [node name="Jucator" type="CharacterBody3D" groups=["jucator"]]
 script = ExtResource("1")
+floor_snap_length = 0.3
 pasi_lemn = Array[AudioStream]([ExtResource("l1"), ExtResource("l2"), ExtResource("l3"), ExtResource("l4")])
 pasi_covor = Array[AudioStream]([ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4")])
 pasi_beton = Array[AudioStream]([ExtResource("b1"), ExtResource("b2"), ExtResource("b3"), ExtResource("b4")])
