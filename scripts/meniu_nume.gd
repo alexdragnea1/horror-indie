@@ -8,6 +8,11 @@ extends CanvasLayer
 
 signal ales(nume: String)
 
+const SUNET_PESTE := preload("res://sunete/ui_peste.ogg")
+const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
+const SUNET_STING := preload("res://sunete/ui_sting.ogg")
+const SUNET_TASTA := preload("res://sunete/dialog_voce.ogg")
+
 ## Titlul de la primul pas.
 @export var titlu := "WHAT IS YOUR NAME?"
 ## Textul gri din căsuța goală.
@@ -48,7 +53,7 @@ func _ready() -> void:
 	_casuta.placeholder_text = indiciu_casuta
 	_casuta.max_length = lungime_maxima
 	_casuta.custom_minimum_size.x = 170
-	_casuta.text_changed.connect(func(_t: String) -> void: _ok_nume.disabled = _nume_curat().is_empty())
+	_casuta.text_changed.connect(_scris)
 	_casuta.text_submitted.connect(func(_t: String) -> void: _confirma_nume())
 	_pas_nume.add_child(_casuta)
 	_ok_nume = _buton(_pas_nume, "OK", _confirma_nume)
@@ -85,7 +90,9 @@ func _buton(parinte: Control, text: String, la_apasare: Callable) -> Button:
 	buton.text = text
 	buton.custom_minimum_size.x = 56
 	buton.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	buton.pressed.connect(func() -> void: Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata"))
 	buton.pressed.connect(la_apasare)
+	buton.mouse_entered.connect(func() -> void: Sunet.reda(SUNET_PESTE, -4.0, 0.05, &"Interfata"))
 	parinte.add_child(buton)
 	return buton
 
@@ -99,6 +106,7 @@ func _confirma_nume() -> void:
 		return
 	_pas_nume.hide()
 	_pas_intrebare.show()
+	Sunet.reda(SUNET_STING, -3.0, 0.0, &"Interfata")
 	_pas_intrebare.get_child(1).get_child(0).grab_focus()
 
 
@@ -141,3 +149,8 @@ func _cutie(fundal: Color, margine: Color, spatiu: int) -> StyleBoxFlat:
 	cutie.set_border_width_all(1)
 	cutie.set_content_margin_all(spatiu)
 	return cutie
+
+
+func _scris(_text: String) -> void:
+	_ok_nume.disabled = _nume_curat().is_empty()
+	Sunet.reda(SUNET_TASTA, -16.0, 0.1, &"Interfata", 1.6)

@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 EfectPS2="*res://scenes/efect_ps2.tscn"
 Dialog="*res://scripts/dialog.gd"
 Stare="*res://scripts/stare.gd"
+Sunet="*res://scripts/sunet.gd"
 
 [display]
 

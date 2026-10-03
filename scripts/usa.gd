@@ -21,6 +21,10 @@ signal descuiata
 @export var durata := 0.7
 @export var indiciu_inchisa := "[E] Open"
 @export var indiciu_deschisa := "[E] Close"
+## Sunetul de la deschidere (scârțâit) și cel de la închidere (se aude când ușa ajunge la loc).
+@export var sunet_deschidere: AudioStream
+@export var sunet_inchidere: AudioStream
+@export var volum_db := -4.0
 
 var deschisa_acum := false
 
@@ -57,3 +61,7 @@ func _misca(deschide: bool) -> void:
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_tween.tween_property(self, "rotation_degrees:y", tinta, durata)
+	if deschide:
+		Sunet.reda_la(sunet_deschidere, global_position + Vector3.UP, volum_db, 0.05)
+	else:
+		_tween.finished.connect(func() -> void: Sunet.reda_la(sunet_inchidere, global_position + Vector3.UP, volum_db, 0.05))

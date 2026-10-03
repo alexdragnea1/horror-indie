@@ -4,6 +4,8 @@ import math
 import os
 import random
 
+from mathutils import Vector
+
 from unelte import p, curata, cub, cilindru, sfera, sfera_deschisa, inel, linie, text, os_intre, uneste, exporta
 
 LEMN = p("5e363e")
@@ -11,6 +13,32 @@ LEMN_INCHIS = p("48313b")
 NEGRU = p("262d2f")
 AUR = p("a18463")
 OS = p("83b3b0")  # cea mai deschisă culoare: os, sclipiri
+
+
+def palarie(hx, hy, hz):
+	"""Pălăria de vrăjitoare, așezată pe o suprafață la înălțimea hz: bor cu marginea răsucită,
+	con din trei bucăți cu vârful îndoit (spre +X), bandă și cataramă."""
+	negru, banda = NEGRU, p("655269")
+	piese = [
+		cilindru("Bor", 0.24, 0.24, 0.012, (hx, hy, hz + 0.006), negru, laturi=12),
+		inel("Margine bor", 0.235, 0.012, (hx, hy, hz + 0.012), negru, segmente=12),
+	]
+	# conul: puncte pe axă și razele în ele; fiecare bucată e un trunchi de con între două puncte
+	puncte = [(hx, hy, hz + 0.01), (hx + 0.005, hy, hz + 0.15), (hx + 0.05, hy, hz + 0.25), (hx + 0.13, hy, hz + 0.29)]
+	raze = [0.105, 0.07, 0.035, 0.0]
+	for i in range(3):
+		a, b = Vector(puncte[i]), Vector(puncte[i + 1])
+		d = b - a
+		rot = Vector((0, 0, 1)).rotation_difference(d.normalized()).to_euler()
+		piese.append(cilindru("Con", raze[i], raze[i + 1], d.length, (a + b) / 2, negru, laturi=8, rot=rot))
+		if 0 < i:  # încheietura dintre bucăți, ca să nu se vadă găuri la îndoitură
+			piese.append(sfera("Incheietura", raze[i], puncte[i], negru, segmente=8, inele=4))
+	piese += [
+		cilindru("Banda", 0.11, 0.1, 0.035, (hx, hy, hz + 0.03), banda, laturi=8),
+		cub("Catarama", (0.04, 0.008, 0.032), (hx, hy - 0.104, hz + 0.03), AUR),
+		cub("Gaura catarama", (0.02, 0.01, 0.014), (hx, hy - 0.106, hz + 0.03), negru),
+	]
+	return piese
 
 
 def pat(cale):
@@ -34,14 +62,7 @@ def pat(cale):
 	for _ in range(9):  # stele pe pătură
 		x, y = r.uniform(-0.85, 0.45), r.uniform(-0.45, 0.45)
 		piese.append(cub("Stea", (0.04, 0.04, 0.006), (x, y, 0.542), AUR, rot=(0, 0, 0.785)))
-	# pălăria de vrăjitoare, căzută pe pat
-	hx, hy, hz = -0.45, 0.12, 0.55
-	piese += [
-		cilindru("Bor", 0.22, 0.22, 0.015, (hx, hy, hz), p("2a3c3d"), laturi=12),
-		cilindru("Con", 0.11, 0.01, 0.32, (hx + 0.03, hy, hz + 0.16), p("2a3c3d"), laturi=8, rot=(0, -0.25, 0)),
-		cilindru("Banda", 0.113, 0.11, 0.035, (hx, hy, hz + 0.025), p("655269"), laturi=8),
-		cub("Catarama", (0.03, 0.006, 0.03), (hx, hy - 0.112, hz + 0.025), AUR),
-	]
+	piese += palarie(-0.45, 0.12, 0.54)
 	uneste(piese, "Pat")
 	exporta(os.path.join(cale, "pat.glb"))
 

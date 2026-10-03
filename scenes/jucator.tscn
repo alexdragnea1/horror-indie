@@ -1,6 +1,17 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/jucator.gd" id="1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="l1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_1.ogg" id="c1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="l2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="c2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_3.ogg" id="l3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_3.ogg" id="c3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_4.ogg" id="l4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_4.ogg" id="c4"]
+[ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="s1"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="s2"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="s3"]
 
 [sub_resource type="CapsuleShape3D" id="forma"]
 radius = 0.3
@@ -8,6 +19,11 @@ height = 1.7
 
 [node name="Jucator" type="CharacterBody3D" groups=["jucator"]]
 script = ExtResource("1")
+pasi_lemn = Array[AudioStream]([ExtResource("l1"), ExtResource("l2"), ExtResource("l3"), ExtResource("l4")])
+pasi_covor = Array[AudioStream]([ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4")])
+scartait_podea = ExtResource("s1")
+lanterna_pornita = ExtResource("s2")
+lanterna_oprita = ExtResource("s3")
 
 [node name="Coliziune" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)

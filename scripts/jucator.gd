@@ -5,9 +5,23 @@ extends CharacterBody3D
 @export var viteza_mers := 2.5
 @export var viteza_fuga := 4.5
 @export var sensibilitate_mouse := 0.0025
-## Clătinarea capului când mergi.
-@export var balans_frecventa := 2.4
+## Clătinarea capului când mergi. Un pas = o clătinare completă (pasul se aude când capul e jos).
+@export var balans_frecventa := 4.2
 @export var balans_amplitudine := 0.04
+
+@export_group("Sunete")
+## Pașii pe fiecare suprafață. Se alege la întâmplare, niciodată același de două ori la rând.
+@export var pasi_lemn: Array[AudioStream] = []
+@export var pasi_covor: Array[AudioStream] = []
+@export var volum_pasi_db := -9.0
+## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
+@export var scartait_podea: AudioStream
+@export_range(0.0, 1.0) var sansa_scartait := 0.07
+@export var lanterna_pornita: AudioStream
+@export var lanterna_oprita: AudioStream
+
+## Pe ce calci acum ("lemn", "covor"). O schimbă ZonaSuprafata.
+var suprafata := "lemn"
 
 @onready var _cap: Node3D = $Cap
 @onready var _camera: Camera3D = $Cap/Camera3D
@@ -17,6 +31,8 @@ extends CharacterBody3D
 
 var _gravitatie: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _distanta_mersa := 0.0
+var _numar_pas := 0
+var _ultimul_pas: AudioStream
 
 
 func _ready() -> void:
@@ -37,6 +53,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("lanterna"):
 		_lanterna.visible = not _lanterna.visible
+		Sunet.reda(lanterna_pornita if _lanterna.visible else lanterna_oprita, -10.0, 0.05)
 	elif event.is_action_pressed("interact") and not _ocupat():
 		var tinta := _tinta_privita()
 		if tinta:
@@ -61,9 +78,28 @@ func _physics_process(delta: float) -> void:
 		_distanta_mersa += viteza_orizontala * delta
 	_camera.position.y = sin(_distanta_mersa * balans_frecventa) * balans_amplitudine
 	_camera.position.x = cos(_distanta_mersa * balans_frecventa * 0.5) * balans_amplitudine
+	# un pas nou de fiecare dată când capul trece prin punctul cel mai de jos al clătinării
+	var pas := floori(_distanta_mersa * balans_frecventa / TAU + 0.25)
+	if pas != _numar_pas:
+		_numar_pas = pas
+		_pas(viteza_orizontala > viteza_mers + 0.5)
 
 	var tinta := _tinta_privita()
 	_indiciu.text = tinta.indiciu if tinta and not _ocupat() else ""
+
+
+func _pas(fuge: bool) -> void:
+	var lista: Array[AudioStream] = pasi_covor if suprafata == "covor" else pasi_lemn
+	if lista.is_empty():
+		return
+	var sunet: AudioStream = lista.pick_random()
+	while lista.size() > 1 and sunet == _ultimul_pas:
+		sunet = lista.pick_random()
+	_ultimul_pas = sunet
+	var volum := volum_pasi_db + (3.0 if fuge else 0.0)
+	Sunet.reda(sunet, volum, 0.07)
+	if suprafata == "lemn" and randf() < sansa_scartait:
+		Sunet.reda(scartait_podea, volum - 4.0, 0.15)
 
 
 ## Adevărat cât rulează un dialog sau e deschis un meniu: jucătorul stă pe loc.

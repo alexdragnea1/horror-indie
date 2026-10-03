@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/pendul.gd" id="1"]
 [ext_resource type="PackedScene" path="res://models/bec.glb" id="2"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
 [ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/bec_bazait.ogg" id="6"]
 
 [node name="Bec" type="Node3D"]
 script = ExtResource("1")
@@ -14,7 +15,7 @@ script = ExtResource("3")
 material = ExtResource("4")
 umbre = false
 
-[node name="Lumina" type="OmniLight3D" parent="." node_paths=PackedStringArray("sticla")]
+[node name="Lumina" type="OmniLight3D" parent="." node_paths=PackedStringArray("sticla", "bazait")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 light_color = Color(1, 0.8, 0.55, 1)
 light_energy = 1.2
@@ -22,3 +23,12 @@ shadow_enabled = true
 omni_range = 7.0
 script = ExtResource("5")
 sticla = NodePath("../Model/Sticla")
+bazait = NodePath("Bazait")
+
+[node name="Bazait" type="AudioStreamPlayer3D" parent="Lumina"]
+stream = ExtResource("6")
+volume_db = -22.0
+unit_size = 1.5
+max_distance = 9.0
+autoplay = true
+bus = &"Ambianta"

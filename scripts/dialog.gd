@@ -10,6 +10,15 @@ signal terminat
 const LITERE_PE_SECUNDA := 45.0
 ## Numele care înseamnă „personajul nostru” (eticheta lor e albăstruie, a celorlalți roșiatică).
 const NUME_JUCATOR := ["You", "Tu", "Eu"]
+## „Vocea”: un bip scurt la fiecare câteva litere, ca în jocurile vechi.
+const VOCE := preload("res://sunete/dialog_voce.ogg")
+## Înălțimea vocii pentru fiecare personaj (1 = normal, mai mic = mai gros).
+const INALTIME_VOCI := {"MOM": 0.62}
+const INALTIME_JUCATOR := 1.25
+## Pentru replicile fără nume (descrieri, naratorul).
+const INALTIME_FARA_NUME := 0.9
+const LITERE_INTRE_BIPURI := 4
+const VOLUM_VOCE_DB := -17.0
 
 var activ := false
 
@@ -20,6 +29,8 @@ var _text: Label
 var _eticheta: PanelContainer
 var _nume: Label
 var _tween: Tween
+var _inaltime_voce := 1.0
+var _litere_auzite := 0
 var _regex_nume := RegEx.create_from_string("^([^:\"]{1,14}):\\s+(.*)$")
 
 
@@ -83,14 +94,26 @@ func _arata_replica() -> void:
 		var e_jucator := nume in NUME_JUCATOR
 		_nume.add_theme_color_override("font_color", Color("61a19f") if e_jucator else Color("a56850"))
 		_eticheta.show()
+		_inaltime_voce = INALTIME_JUCATOR if e_jucator else INALTIME_VOCI.get(nume.to_upper(), 1.0)
 	else:
 		_eticheta.hide()
+		_inaltime_voce = INALTIME_FARA_NUME
+	_litere_auzite = 0
 	_text.text = replica
 	_text.visible_ratio = 0.0
 	if _tween:
 		_tween.kill()
 	_tween = create_tween()
 	_tween.tween_property(_text, "visible_ratio", 1.0, _text.text.length() / LITERE_PE_SECUNDA)
+
+
+func _process(_delta: float) -> void:
+	if not activ or _text.visible_ratio >= 1.0:
+		return
+	var litere := int(_text.visible_ratio * _text.text.length())
+	if litere - _litere_auzite >= LITERE_INTRE_BIPURI:
+		_litere_auzite = litere
+		Sunet.reda(VOCE, VOLUM_VOCE_DB, 0.06, &"Interfata", _inaltime_voce)
 
 
 func _input(event: InputEvent) -> void:

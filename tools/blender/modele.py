@@ -150,9 +150,34 @@ def mama():
 	exporta(os.path.join(MODELE, "mama.glb"))
 
 
+def ceas():
+	"""Ceas de perete. Limbile sunt separate, cu originea în centru, ca să se învârtă în joc
+	(toate arată în sus, spre ora 12; ora o pune scriptul ceas.gd)."""
+	import math
+	curata()
+	fata, rama = p("a18463"), p("48313b")
+	piese = [
+		cilindru("Rama", 0.17, 0.17, 0.05, (0, 0.0, 0), rama, laturi=16, rot=(1.5708, 0, 0)),
+		cilindru("Cadran", 0.15, 0.15, 0.01, (0, -0.026, 0), fata, laturi=16, rot=(1.5708, 0, 0)),
+		cilindru("Ax", 0.012, 0.012, 0.03, (0, -0.04, 0), NEGRU, laturi=6, rot=(1.5708, 0, 0)),
+	]
+	for i in range(12):
+		a = i * math.pi / 6
+		lung = 0.03 if i % 3 == 0 else 0.015
+		r = 0.135 - lung / 2
+		piese.append(cub("Gradatie", (0.008, 0.004, lung), (r * math.sin(a), -0.032, r * math.cos(a)), NEGRU,
+			rot=(0, a, 0)))
+	uneste(piese, "Ceas")
+	for nume, lung, lat, culoare, y in (("Orar", 0.075, 0.014, NEGRU, -0.034), ("Minutar", 0.115, 0.009, NEGRU, -0.038),
+			("Secundar", 0.125, 0.004, p("7b383a"), -0.042)):
+		uneste([cub(nume, (lat, 0.003, lung + 0.02), (0, y, lung / 2 - 0.01), culoare)], nume)
+	exporta(os.path.join(MODELE, "ceas.glb"))
+
+
 frigider()
 bec()
 mama()
+ceas()
 
 import dormitor  # noqa: E402
 dormitor.toate(MODELE)

@@ -9,6 +9,7 @@ signal schimbat
 
 ## Cât stă pe ecran mesajul „Ai luat: ...” (secunde).
 const DURATA_MESAJ := 2.5
+const SUNET_OBIECT := preload("res://sunete/obiect_luat.ogg")
 
 ## id -> numele afișat
 var obiecte: Dictionary = {}
@@ -44,6 +45,7 @@ func _eticheta(pozitie: Vector2) -> Label:
 func adauga_obiect(id: String, nume: String) -> void:
 	obiecte[id] = nume
 	_arata_mesaj("Picked up: " + nume)
+	Sunet.reda(SUNET_OBIECT, -6.0, 0.0, &"Interfata")
 	schimbat.emit()
 
 

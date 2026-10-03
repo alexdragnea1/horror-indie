@@ -40,6 +40,21 @@ Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender
 ```
 Godot reimportă singur modelele când revii în editor.
 
+## Sunet
+Pachetul tău de sunete stă în `Sound/Soundpack` (Godot și git îl ignoră). Sunetele alese de acolo, curățate și transformate în `.ogg`, sunt în `sunete/`. Le refaci cu:
+```
+bash tools/sunete.sh
+```
+Ce se aude acum:
+- **pași** pe podeaua de lemn (uneori scârțâie) și mai moi pe covorul cu pentagramă; clic la lanternă;
+- **bâzâit** la becuri, care tace când becul se stinge; **frigiderul** bâzâie, iar la deschidere și închidere se aud garnitura și borcanele;
+- **ușa camerei** scârțâie lung când o deschizi; **ceaunul** fierbe și gâlgâie din când în când; **ceasul** din bucătărie ticăie (e oprit la 11:55);
+- **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău;
+- în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, tu subțire;
+- la meniul cu numele: clicuri și o lovitură dramatică la „Are you sure your name is little bitch?”.
+
+Volumele se reglează din Inspector, la fiecare nod de sunet (`volume_db`), sau pe canale, în panoul **Audio** de jos (`Efecte`, `Ambianta`, `Interfata`). ⚠️ Pachetul e de pe Guru3D: verifică licența înainte de Steam.
+
 ## Texturi
 Pereții și podeaua casei au texturi adevărate (`textures/perete_casa.png`, `textures/podea_casa.png`, micșorate la 256×256; originalele mari stau în `textures/originale/`, ignorate de Godot și de git). Restul obiectelor au încă texturi din „zgomot”. De unde iei altele:
 - caută **„PSX textures”** pe [itch.io](https://itch.io/game-assets/tag-psx);
@@ -53,7 +68,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. Uși, chei, inventar, triggere de poveste
 4. Niveluri: blockout, apoi modele low-poly
-5. Sunet
+5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață; urmează jumpscare-uri și muzică)
 6. Monstrul, jumpscare-uri, comedie
 7. Meniu, salvare, final
 8. Playtest și build

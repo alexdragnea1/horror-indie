@@ -9,8 +9,16 @@ extends OmniLight3D
 @export var sticla: GeometryInstance3D
 ## Cât de tare strălucește sticla când becul arde normal.
 @export var stralucire_sticla := 3.0
+## Bâzâitul electric (opțional): tace când becul se stinge și se aude iar când se aprinde.
+@export var bazait: AudioStreamPlayer3D
 
 var _pana_la_schimbare := 0.0
+var _volum_bazait := 0.0
+
+
+func _ready() -> void:
+	if bazait:
+		_volum_bazait = bazait.volume_db
 
 
 func _process(delta: float) -> void:
@@ -25,3 +33,5 @@ func _process(delta: float) -> void:
 		_pana_la_schimbare = randf_range(0.05, 0.4)
 	if sticla:
 		sticla.set_instance_shader_parameter("stralucire", light_energy / energie_normala * stralucire_sticla)
+	if bazait:
+		bazait.volume_db = _volum_bazait + linear_to_db(maxf(light_energy / energie_normala, 0.001))

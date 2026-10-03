@@ -53,6 +53,17 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dia
 
 ⚠️ În fișierele `.tscn` scrise de mână, `Transform3D(...)` primește bază pe **rânduri**, nu pe coloane. Pentru o rotație pe Y cu unghiul θ: `Transform3D(cosθ, 0, sinθ, 0, 1, 0, -sinθ, 0, cosθ, x, y, z)`.
 
+## Sunet
+- **Pachetul brut** stă în `Sound/Soundpack` (~400 WAV, 87 MB, de pe Guru3D, licența neverificată): are `.gdignore` și e în `.gitignore`. În joc intră **doar** `sunete/*.ogg`, făcute de `bash tools/sunete.sh` (taie liniștea, vârf la -1 dB, mono pentru 3D, bucle fără cusătură prin crossfade coadă→început). Bâzâitul frigiderului și al becului e **sintetizat** acolo (nu există în pachet). După ce rulezi scriptul, buclele (`vant`, `ceaun_fierbe`, `ceas`, `frigider_bazait`, `bec_bazait`) au `loop=true` în `.ogg.import`; un `.ogg` nou nu are și trebuie pus de mână (apoi `--import`).
+- **Canale** (`default_bus_layout.tres`): `Efecte` (reverb de cameră mică), `Ambianta` (bucle), `Interfata` (meniu, voce dialog, obiect luat).
+- `scripts/sunet.gd` = autoload `Sunet`: `reda(stream, volum_db, variatie, bus, inaltime)` și `reda_la(stream, pozitie, ...)` (3D, `unit_size` 3). Playerele se șterg singure.
+- Pașii: `jucator.gd` → un pas la fiecare ciclu de clătinare (`balans_frecventa` 4,2 ⇒ un pas la 1,5 m), suprafața o schimbă `ZonaSuprafata` (`zona_suprafata.gd`, Area3D: covorul din cameră); pe lemn, uneori scârțâit. Lanterna face clic.
+- `Dialog`: bip `dialog_voce` la fiecare 4 litere, cu înălțimea din `INALTIME_VOCI` (`MOM` 0,62), jucătorul 1,25, fără nume 0,9.
+- `lumina_palpaie.gd` → `bazait` (volumul urmărește lumina, tace când se stinge). `frigider.gd` → bâzâit mai tare cât e deschis, garnitură la deschidere, borcane la închidere. `usa.gd` → `sunet_deschidere` (scârțâit) / `sunet_inchidere` (la capătul închiderii).
+- `sunete_aleatorii.gd`: sunete la întâmplare, la pauze aleatorii — gâlgâitul ceaunului (din locul lui), iar în nivel `Sperieturi` (scârțâit/ciocănit, 25–60 s) și `Fantoma` (120–240 s, foarte încet), din jurul jucătorului. `Vant` = ambianța de fundal.
+- `scenes/ceas.tscn` + `scripts/ceas.gd`: ceas de perete în bucătărie oprit la **11:55** (aproape de miezul nopții = întâlnirea cu coven-ul); secundarul sare sincron cu tic-tacul din buclă.
+- **Verificare audio:** `--write-movie x.avi --fixed-fps 30` înregistrează și sunetul; apoi `ffmpeg` (volumedetect, spectrogramă). Un log cu `Sunet.child_entered_tree` arată ce sunete pornesc și când.
+
 ## Rulare și verificare
 - Godot: `C:\Users\gheorghe dracu\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64_console.exe`
 - Import (după fișiere sau imagini noi): `"<godot>" --headless --path . --import`
@@ -63,7 +74,7 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dia
 2. ⏳ **Povestea**: premisa, personajele, 4–6 capitole de ~5 min (owner-ul o scrie, Claude ajută).
 3. Uși, chei, inventar mic, triggere de poveste.
 4. Niveluri: întâi blockout, apoi modele low-poly (PSX assets de pe itch.io / Kenney) cu `ps2.gdshader`.
-5. Sunet: ambianță, pași, jumpscare-uri.
+5. ⏳ Sunet: ✅ ambianță, pași, uși, obiecte, interfață, voce dialog; urmează jumpscare-uri și muzică.
 6. Monstrul/urmăritorul, jumpscare-uri, momentele de comedie.
 7. Meniu, salvare, final, credite.
 8. Playtest, build.

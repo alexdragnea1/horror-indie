@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ceas.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/ceas.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="AudioStream" path="res://sunete/ceas.ogg" id="5"]
+
+[node name="Ceas" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="TicTac" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("5")
+volume_db = -15.0
+unit_size = 1.5
+max_distance = 10.0
+autoplay = true
+bus = &"Efecte"
