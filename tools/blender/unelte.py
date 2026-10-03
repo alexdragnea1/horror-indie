@@ -148,3 +148,52 @@ def exporta(cale):
 	bpy.ops.export_scene.gltf(filepath=cale, export_format='GLB', use_selection=True,
 		export_apply=True, export_yup=True)
 	print("Exportat:", cale)
+
+
+def trunchi(nume, inele, culoare, laturi=8, ref=(1, 0, 0), faza=0.0, capete=True):
+	"""Formă organică din inele (lofting): inele = [(centru, rx, ry), ...], în ordine de-a lungul formei.
+	Fiecare inel stă perpendicular pe drum; rx merge pe direcția `ref` (proiectată pe inel), ry pe cealaltă.
+	Între inele direcția se „transportă” fără răsucire, deci drumul poate cotii (braț, baston, nas coroiat).
+	Un inel cu rx = ry = 0 devine vârf. Bun pentru trunchi, haine, membre, fețe, nasuri."""
+	import math
+	import bmesh
+	bm = bmesh.new()
+	n = len(inele)
+	centre = [Vector(i[0]) for i in inele]
+	randuri = []
+	u_prec = None
+	for i, (_, rx, ry) in enumerate(inele):
+		a, b = centre[max(i - 1, 0)], centre[min(i + 1, n - 1)]
+		t = (b - a).normalized()
+		u = Vector(ref) if u_prec is None else u_prec
+		u = u - t * u.dot(t)
+		if u.length < 1e-6:
+			u = Vector((0, 0, 1)) - t * t.z
+		u.normalize()
+		u_prec = u
+		v = t.cross(u)
+		if rx < 1e-6 and ry < 1e-6:
+			randuri.append([bm.verts.new(centre[i])])
+			continue
+		randuri.append([bm.verts.new(centre[i] + u * rx * math.cos(faza + 2 * math.pi * k / laturi)
+			+ v * ry * math.sin(faza + 2 * math.pi * k / laturi)) for k in range(laturi)])
+	for r0, r1 in zip(randuri, randuri[1:]):
+		for k in range(laturi):
+			if len(r0) == 1:
+				bm.faces.new((r0[0], r1[k], r1[(k + 1) % laturi]))
+			elif len(r1) == 1:
+				bm.faces.new((r0[k], r0[(k + 1) % laturi], r1[0]))
+			else:
+				bm.faces.new((r0[k], r0[(k + 1) % laturi], r1[(k + 1) % laturi], r1[k]))
+	if capete:
+		for r in (randuri[0], randuri[-1]):
+			if len(r) > 2:
+				bm.faces.new(r)
+	bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+	me = bpy.data.meshes.new(nume)
+	bm.to_mesh(me)
+	bm.free()
+	ob = bpy.data.objects.new(nume, me)
+	bpy.context.scene.collection.objects.link(ob)
+	_coloreaza(ob, culoare)
+	return ob

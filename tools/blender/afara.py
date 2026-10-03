@@ -8,7 +8,7 @@ import random
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, text, uneste, exporta  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, text, uneste, exporta, trunchi, inel  # noqa: E402
 
 NEGRU = p("262d2f")
 ALB = p("83b3b0")
@@ -419,81 +419,244 @@ def masina(cale):
 
 
 def baba(cale):
-	"""Baba de pe bancă: stă jos, cocoșată, cu ambele mâini pe baston; basma cu buline, ochelari groși,
-	negel pe nas, sacoșă lângă ea și coji de semințe la picioare. Originea = podeaua din fața băncii
-	(la mijlocul șezutului), fața spre -Y. Capul e separat (originea în gât), ca să te urmărească."""
+	"""Baba de pe bancă, făcută din forme „trase” prin inele (trunchi() din unelte.py), nu din cuburi:
+	stă jos, cocoșată, cu capul împins în față și ambele mâini pe baston. Basma roșie cu flori legată
+	sub bărbie, palton gros cu guler de blană, ciorapi groși, botoșei cu blană. În poală are un cornet
+	de ziar cu semințe, la picioare cojile și un porumbel care le ciugulește; lângă ea, sacoșa de rafie.
+	Originea = podeaua din fața băncii (la mijlocul șezutului, care e la z 0,46), fața spre -Y.
+	Capul e separat (originea în gât), ca să te urmărească."""
 	curata()
 	r = random.Random(77)
-	palton, ciorapi, papuci = p("553e4d"), p("5e5356"), p("445d46")
-	piele, basma = p("a56850"), p("7b383a")
+	palton, palton_umbra = p("553e4d"), p("48313b")
+	blana, ciorapi, botosi = p("70706e"), p("5e5356"), p("5e363e")
+	piele, piele_umbra = p("a56850"), p("904a40")
 	piese = []
+
+	# --- trunchiul: șolduri late pe bancă, spatele cocoșat, umerii căzuți, gâtul spre față
+	piese.append(trunchi("Trunchi", [
+		((0, 0.13, 0.47), 0.2, 0.16),
+		((0, 0.12, 0.58), 0.205, 0.165),
+		((0, 0.1, 0.7), 0.185, 0.15),
+		((0, 0.075, 0.81), 0.19, 0.155),
+		((0, 0.05, 0.9), 0.205, 0.15),
+		((0, 0.025, 0.965), 0.17, 0.12),
+		((0, 0.0, 1.0), 0.09, 0.075),
+	], palton, laturi=10))
+	piese += [
+		sfera("Cocoasa", 0.14, (0, 0.13, 0.9), palton, scara=(1.25, 0.75, 1.0), segmente=8, inele=6),
+		# gulerul de blană (ros pe alocuri) și reverele
+		inel("Guler", 0.098, 0.026, (0, 0.012, 0.975), blana, segmente=10),
+		cub("Rever", (0.06, 0.012, 0.16), (-0.06, -0.085, 0.89), palton_umbra, rot=(0.25, 0.3, 0)),
+		cub("Rever", (0.06, 0.012, 0.16), (0.06, -0.085, 0.89), palton_umbra, rot=(0.25, -0.3, 0)),
+		# vesta tricotată care se vede în deschizătura paltonului
+		cub("Vesta", (0.07, 0.01, 0.14), (0, -0.078, 0.89), p("445d46"), rot=(0.25, 0, 0)),
+	]
+	for z, y in ((0.85, -0.098), (0.75, -0.06), (0.65, -0.035)):  # nasturi mari, unul lipsă (al doilea are doar ața)
+		if z == 0.75:
+			piese.append(cub("Ata", (0.012, 0.006, 0.012), (0.0, y - 0.006, z), p("a18463")))
+			continue
+		piese.append(cilindru("Nasture", 0.02, 0.02, 0.012, (0.0, y - 0.006, z), p("2a3c3d"), laturi=6,
+			rot=(1.35, 0, 0)))
+	piese += [  # buzunarul cu batista
+		cub("Buzunar", (0.1, 0.01, 0.012), (0.13, -0.05, 0.66), palton_umbra, rot=(0.15, 0, 0.3)),
+		cub("Batista", (0.04, 0.006, 0.035), (0.135, -0.045, 0.675), ALB, rot=(0.15, 0.3, 0.6)),
+	]
+
+	# --- poala paltonului: peste coapse până la genunchi, apoi cade în față ca un clopot
+	piese.append(trunchi("Poala", [
+		((0, 0.12, 0.56), 0.21, 0.1),
+		((0, -0.08, 0.565), 0.205, 0.09),
+		((0, -0.26, 0.555), 0.2, 0.08),
+		((0, -0.32, 0.52), 0.19, 0.055),
+	], palton, laturi=8))
+	for s in (-1, 1):
+		piese.append(sfera("Genunchi", 0.075, (0.1 * s, -0.285, 0.545), palton, scara=(1, 1, 0.9),
+			segmente=8, inele=5))
+	piese.append(trunchi("Clopot", [
+		((0, -0.32, 0.53), 0.2, 0.055),
+		((0, -0.345, 0.42), 0.205, 0.045),
+		((0, -0.37, 0.3), 0.215, 0.04),
+		((0, -0.372, 0.285), 0.215, 0.04),
+	], palton, laturi=8, ref=(1, 0, 0)))
+	piese.append(trunchi("Tiv", [((0, -0.371, 0.305), 0.218, 0.043), ((0, -0.373, 0.282), 0.218, 0.043)],
+		palton_umbra, laturi=8))
+
+	# --- picioarele: gambe groase în ciorapi, glezne umflate, botoșei cu blană și pompon
 	for s in (-1, 1):
 		x = 0.1 * s
+		piese.append(trunchi("Gamba", [
+			((x, -0.33, 0.32), 0.05, 0.05),
+			((x * 1.1, -0.35, 0.2), 0.052, 0.05),
+			((x * 1.15, -0.36, 0.1), 0.05, 0.048),
+			((x * 1.15, -0.36, 0.07), 0.048, 0.046),
+		], ciorapi, laturi=8))
+		xb = x * 1.15
+		piese.append(trunchi("Botos", [
+			((xb, -0.31, 0.045), 0.0, 0.0),
+			((xb, -0.32, 0.045), 0.05, 0.042),
+			((xb + 0.008 * s, -0.4, 0.045), 0.058, 0.045),
+			((xb + 0.015 * s, -0.48, 0.035), 0.05, 0.033),
+			((xb + 0.02 * s, -0.53, 0.025), 0.0, 0.0),
+		], botosi, laturi=8, faza=0.39))
 		piese += [
-			os_intre("Coapsa", (x, 0.1, 0.55), (x, -0.28, 0.55), 0.075, palton),
-			sfera("Genunchi", 0.07, (x, -0.3, 0.54), palton, segmente=6, inele=4),
-			os_intre("Gamba", (x, -0.31, 0.5), (x * 1.1, -0.35, 0.1), 0.05, ciorapi),
-			cub("Papuc", (0.1, 0.22, 0.07), (x * 1.1, -0.4, 0.035), papuci),
-			cub("Pompon", (0.05, 0.03, 0.03), (x * 1.1, -0.51, 0.07), p("a18463")),
+			inel("Blana", 0.055, 0.02, (xb, -0.355, 0.085), p("7e8d87"), segmente=8),
+			cub("Talpa", (0.1, 0.2, 0.012), (xb + 0.008 * s, -0.42, 0.006), NEGRU),
+			sfera("Pompon", 0.02, (xb + 0.012 * s, -0.47, 0.072), p("7b383a"), segmente=6, inele=4),
 		]
-	piese += [
-		cub("Poala", (0.38, 0.05, 0.32), (0, -0.33, 0.38), palton, rot=(0.1, 0, 0)),
-		cilindru("Bust", 0.21, 0.16, 0.48, (0, 0.08, 0.76), palton, rot=(0.22, 0, 0), scara=(1, 0.8, 1)),
-		sfera("Cocoasa", 0.15, (0, 0.13, 0.9), palton, segmente=6, inele=4, scara=(1.1, 0.9, 0.9)),
-		cub("Nasturi", (0.03, 0.02, 0.3), (0, -0.07, 0.72), p("a18463"), rot=(0.22, 0, 0)),
-		cilindru("Guler", 0.11, 0.09, 0.06, (0, 0.0, 0.97), p("48313b"), laturi=6),
-	]
-	# brațele: ambele mâini sprijinite pe mânerul bastonului, între genunchi
+
+	# --- brațele: din umeri, coatele ies în lături, mâinile una peste alta pe mânerul bastonului
 	for s in (-1, 1):
-		umar, cot, mana = (0.19 * s, 0.06, 0.91), (0.21 * s, -0.16, 0.74), (0.045 * s, -0.4, 0.8)
-		piese += [
-			sfera("Umar", 0.07, umar, palton, segmente=6, inele=4),
-			os_intre("Brat", umar, cot, 0.055, palton),
-			os_intre("Antebrat", cot, mana, 0.05, palton),
-			sfera("Mana", 0.042, mana, piele, segmente=6, inele=4),
-		]
-	piese += [
-		os_intre("Baston", (0, -0.5, 0.0), (0, -0.42, 0.8), 0.018, p("48313b"), laturi=5),
-		os_intre("Maner baston", (0, -0.42, 0.8), (0.1, -0.43, 0.84), 0.02, p("48313b"), laturi=5),
-		# sacoșa de rafie de lângă ea, cu un praz care iese din ea
-		cub("Sacosa", (0.28, 0.14, 0.26), (0.45, -0.02, 0.6), p("438b88")),
-		cub("Dungi", (0.285, 0.145, 0.04), (0.45, -0.02, 0.64), ALB),
-		os_intre("Toarta", (0.33, -0.02, 0.73), (0.45, -0.02, 0.83), 0.01, p("438b88"), laturi=4),
-		os_intre("Toarta", (0.45, -0.02, 0.83), (0.57, -0.02, 0.73), 0.01, p("438b88"), laturi=4),
-		os_intre("Praz", (0.4, 0.0, 0.7), (0.36, 0.06, 0.98), 0.025, p("7a7b59"), laturi=5),
-	]
-	for _ in range(24):  # coji de semințe scuipate pe jos
-		piese.append(cub("Coaja", (0.012, 0.022, 0.004), (r.uniform(-0.35, 0.35), r.uniform(-0.75, -0.3), 0.002),
+		umar, cot, incheietura = (0.19 * s, 0.05, 0.925), (0.245 * s, -0.12, 0.74), (0.05 * s, -0.37, 0.8)
+		mijl1 = tuple((a + b) / 2 + d for a, b, d in zip(umar, cot, (0.02 * s, 0, 0)))
+		mijl2 = tuple((a + b) / 2 for a, b in zip(cot, incheietura))
+		piese.append(trunchi("Brat", [
+			(umar, 0.07, 0.07), (mijl1, 0.066, 0.062), (cot, 0.062, 0.058), (mijl2, 0.058, 0.054),
+			(incheietura, 0.054, 0.05)], palton, laturi=8, ref=(0, 0, 1)))
+		piese.append(sfera("Umar", 0.075, umar, palton, segmente=8, inele=5))
+		directie = tuple(b - a for a, b in zip(cot, incheietura))
+		lung = math.sqrt(sum(d * d for d in directie))
+		mansa = tuple(i - d / lung * 0.03 for i, d in zip(incheietura, directie))
+		piese.append(os_intre("Mansa", mansa, incheietura, 0.058, palton_umbra, laturi=8))
+	# mâinile: dreapta strânge mânerul, stânga stă peste ea; degete noduroase, verigheta
+	for nume, (x, y, z) in (("Mana dreapta", (0.015, -0.425, 0.835)), ("Mana stanga", (-0.01, -0.432, 0.872))):
+		piese.append(sfera(nume, 0.048, (x, y, z), piele, scara=(1.15, 0.85, 0.62), segmente=8, inele=5))
+		for k in range(4):
+			piese.append(cub("Nod deget", (0.017, 0.022, 0.02), (x - 0.03 + k * 0.02, y - 0.038, z - 0.006 - 0.004 * k),
+				piele_umbra, rot=(0.3, 0, 0)))
+		piese.append(os_intre("Deget mare", (x + 0.04, y - 0.005, z), (x + 0.03, y - 0.04, z + 0.012), 0.013, piele,
+			laturi=5))
+	piese.append(cub("Verigheta", (0.006, 0.024, 0.022), (0.035, -0.452, 0.866), p("a18463")))
+
+	# --- bastonul: lemn închis, cârja curbată în față, papuc de cauciuc jos
+	piese.append(os_intre("Baston", (0, -0.5, 0.02), (0.0, -0.425, 0.82), 0.016, palton_umbra, laturi=6))
+	piese.append(trunchi("Carja", [
+		((0, -0.425, 0.8), 0.017, 0.017), ((0, -0.425, 0.85), 0.017, 0.017), ((0, -0.45, 0.885), 0.017, 0.017),
+		((0, -0.49, 0.89), 0.017, 0.017), ((0, -0.525, 0.87), 0.017, 0.017), ((0, -0.535, 0.84), 0.015, 0.015),
+	], palton_umbra, laturi=6))
+	piese.append(cilindru("Talpa baston", 0.022, 0.02, 0.03, (0, -0.502, 0.015), NEGRU, laturi=6))
+
+	# --- în poală: cornetul de ziar cu semințe, câteva semințe scăpate pe palton
+	piese.append(trunchi("Cornet", [((-0.11, -0.2, 0.635), 0.0, 0.0), ((-0.06, -0.13, 0.64), 0.03, 0.03),
+		((-0.03, -0.09, 0.645), 0.045, 0.045)], p("7e8d87"), laturi=6, capete=False))
+	piese.append(cub("Scris ziar", (0.04, 0.002, 0.012), (-0.065, -0.145, 0.668), NEGRU, rot=(0.2, 0, 0.7)))
+	for k in range(6):
+		piese.append(cub("Saminta", (0.008, 0.014, 0.006), (-0.03 + r.uniform(-0.03, 0.03), -0.09 + r.uniform(-0.02, 0.02),
+			0.66 + r.uniform(0, 0.02)), NEGRU, rot=(0, 0, r.uniform(0, 3))))
+	for k in range(4):
+		piese.append(cub("Coaja", (0.008, 0.014, 0.004), (r.uniform(-0.15, 0.15), r.uniform(-0.28, -0.05), 0.612),
+			NEGRU, rot=(0, 0, r.uniform(0, 3))))
+	for _ in range(28):  # coji scuipate pe jos, mai dese în fața ei
+		piese.append(cub("Coaja", (0.012, 0.022, 0.004), (r.gauss(0, 0.2), r.uniform(-0.85, -0.45), 0.002),
 			NEGRU, rot=(0, 0, r.uniform(0, math.tau))))
+
+	# --- sacoșa de rafie în dungi, pe bancă lângă ea: praz și o pâine
+	sx = 0.45
+	for k, cul in enumerate((p("438b88"), ALB, p("438b88"), p("7b383a"), p("438b88"))):
+		z0 = 0.465 + k * 0.055
+		piese.append(trunchi("Sacosa", [((sx, -0.02, z0), 0.135 + k * 0.003, 0.07), ((sx, -0.02, z0 + 0.055), 0.138 + k * 0.003, 0.072)],
+			cul, laturi=4, faza=0.785))
+	for s in (-1, 1):
+		piese.append(trunchi("Toarta", [((sx - 0.07 * s, -0.02, 0.73), 0.008, 0.008), ((sx - 0.06 * s, -0.02, 0.81), 0.008, 0.008),
+			((sx, -0.02, 0.84), 0.008, 0.008)], p("438b88"), laturi=4))
+	piese += [
+		os_intre("Praz", (sx - 0.05, 0.0, 0.66), (sx - 0.11, 0.05, 0.98), 0.024, p("7e8d87"), laturi=6),
+		os_intre("Frunze praz", (sx - 0.11, 0.05, 0.98), (sx - 0.16, 0.08, 1.1), 0.03, p("5b6d4e"), laturi=5),
+		sfera("Paine", 0.07, (sx + 0.05, -0.02, 0.75), p("a18463"), scara=(1.3, 0.9, 0.7), segmente=8, inele=5),
+	]
+
+	# --- porumbelul care ciugulește cojile
+	px, py = 0.32, -0.72
+	piese += [
+		sfera("Porumbel", 0.09, (px, py, 0.075), p("778c96"), scara=(1.25, 0.7, 0.7), segmente=8, inele=6),
+		sfera("Gat porumbel", 0.04, (px - 0.08, py, 0.08), p("30716f"), segmente=6, inele=4),
+		sfera("Cap porumbel", 0.032, (px - 0.115, py, 0.04), p("778c96"), segmente=6, inele=4),
+		cub("Cioc", (0.025, 0.01, 0.01), (px - 0.145, py, 0.025), p("5e5356"), rot=(0, 0.6, 0)),
+		cub("Ochi porumbel", (0.008, 0.066, 0.008), (px - 0.12, py, 0.05), p("904a40")),
+		cub("Coada", (0.1, 0.07, 0.015), (px + 0.13, py, 0.1), p("6f6d7f"), rot=(0, -0.35, 0)),
+		cub("Dunga aripa", (0.05, 0.13, 0.012), (px + 0.03, py, 0.1), p("6f6d7f")),
+		cub("Dunga aripa", (0.04, 0.13, 0.012), (px + 0.08, py, 0.1), p("6f6d7f")),
+		cub("Picior porumbel", (0.008, 0.008, 0.04), (px, py - 0.02, 0.02), p("904a40")),
+		cub("Picior porumbel", (0.008, 0.008, 0.04), (px, py + 0.02, 0.02), p("904a40")),
+	]
 	uneste(piese, "Corp")
 
-	gat = (0, 0.0, 0.98)
-	cap = [
-		cilindru("Gat", 0.045, 0.045, 0.08, (0, -0.01, 1.0), piele, laturi=6),
-		sfera("Fata", 0.1, (0, -0.04, 1.1), piele, scara=(0.95, 1, 1.15)),
-		sfera("Basma", 0.12, (0, 0.025, 1.14), basma, scara=(1.08, 1.0, 1.1)),
-		sfera("Nod basma", 0.035, (0, -0.1, 0.98), basma, segmente=6, inele=4),
-		cub("Colt basma", (0.12, 0.03, 0.14), (0, 0.1, 1.04), basma, rot=(0.4, 0, 0)),
-		cub("Nas", (0.03, 0.05, 0.05), (0, -0.15, 1.09), p("904a40"), rot=(0.3, 0, 0)),
-		sfera("Negel", 0.009, (0.012, -0.175, 1.1), p("48313b"), segmente=5, inele=3),
-		cub("Gura", (0.05, 0.01, 0.01), (0, -0.135, 1.04), p("5e363e"), rot=(0, 0.25, 0)),
-		cub("Rid", (0.06, 0.008, 0.006), (0, -0.14, 1.025), p("904a40")),
+	# --- capul: fața trasă prin inele (bărbie ieșită, gură supta, pomeți, frunte), basma peste ea
+	gat = (0, -0.03, 1.0)
+	cap = [os_intre("Gat", (0, -0.02, 0.96), (0, -0.075, 1.07), 0.042, piele, laturi=6)]
+	fata = [  # (z, centru y, rx, ry)
+		(1.012, -0.125, 0.0, 0.0), (1.022, -0.12, 0.03, 0.03), (1.04, -0.112, 0.048, 0.05), (1.065, -0.098, 0.06, 0.068),
+		(1.1, -0.09, 0.076, 0.085), (1.14, -0.086, 0.076, 0.084), (1.18, -0.08, 0.071, 0.08), (1.22, -0.075, 0.052, 0.062),
+		(1.245, -0.07, 0.0, 0.0),
 	]
-	# fața iese din basma: o „gaură” desenată cu pielea puțin în față
-	cap.append(sfera("Obraji", 0.085, (0, -0.075, 1.08), piele, scara=(1, 0.7, 1.1)))
+	cap.append(trunchi("Fata", [((0, y, z), rx, ry) for z, y, rx, ry in fata], piele, laturi=10, faza=0.0))
+	# basmaua: aceeași formă, mai mare și trasă spre spate, ca fața să iasă prin ea ca printr-un oval
+	basma_inele = [
+		(0.985, -0.045, 0.0, 0.0), (0.995, -0.04, 0.05, 0.055), (1.03, -0.03, 0.08, 0.085), (1.08, -0.032, 0.098, 0.105),
+		(1.14, -0.036, 0.1, 0.112), (1.2, -0.046, 0.094, 0.1), (1.24, -0.06, 0.07, 0.077), (1.262, -0.062, 0.0, 0.0),
+	]
+	basma = p("2a3c3d")
+	cap.append(trunchi("Basma", [((0, y, z), rx, ry) for z, y, rx, ry in basma_inele], basma, laturi=12))
+	# florile de pe basma: doar pe laturi și pe spate (în față e fața)
+	for z, y, rx, ry in basma_inele[2:6]:
+		for k in range(12):
+			a = (k + (0.5 if z > 1.1 else 0)) * math.tau / 12
+			if -2.3 < (a if a <= math.pi else a - math.tau) < -0.85:
+				continue
+			fx, fy = rx * math.cos(a) * 1.01, y + ry * math.sin(a) * 1.01
+			cul = p("a18463") if k % 2 else p("7b383a")
+			cap.append(cub("Floare", (0.022, 0.006, 0.022), (fx, fy, z + 0.025), cul, rot=(0, 0.785, a + 1.5708)))
+			cap.append(cub("Mijloc", (0.01, 0.008, 0.01), (fx * 1.005, fy + (fy - y) * 0.005, z + 0.025), p("2a3c3d"),
+				rot=(0, 0, a + 1.5708)))
+	cap += [
+		# nodul de sub bărbie și cele două capete care atârnă
+		sfera("Nod", 0.028, (0.03, -0.12, 0.995), basma, scara=(1.2, 1, 0.8), segmente=6, inele=4),
+		cub("Capat basma", (0.04, 0.012, 0.08), (0.05, -0.125, 0.95), basma, rot=(0.2, -0.3, 0)),
+		cub("Capat basma", (0.035, 0.012, 0.065), (0.015, -0.13, 0.955), basma, rot=(0.25, 0.4, 0)),
+		# colțul basmalei, căzut pe ceafă și pe guler
+		trunchi("Colt basma", [((0, 0.03, 1.1), 0.08, 0.02), ((0, 0.07, 1.0), 0.05, 0.016), ((0, 0.085, 0.94), 0.0, 0.0)],
+			basma, laturi=4, faza=0.785),
+		# o șuviță de păr cărunt scăpată sub basma
+		cub("Suvita", (0.034, 0.012, 0.016), (-0.028, -0.152, 1.198), p("7e8d87"), rot=(0.3, 0, 0.35)),
+		cub("Suvita", (0.022, 0.012, 0.014), (0.018, -0.153, 1.196), p("70706e"), rot=(0.3, 0, -0.2)),
+	]
+	# nasul coroiat, mare și roșiatic, cu negel (și un fir de păr în el)
+	cap.append(trunchi("Nas", [((0, -0.16, 1.152), 0.014, 0.012), ((0, -0.192, 1.125), 0.021, 0.019),
+		((0, -0.212, 1.096), 0.022, 0.02), ((0, -0.205, 1.074), 0.017, 0.014), ((0, -0.18, 1.068), 0.0, 0.0)],
+		piele_umbra, laturi=6))
+	cap += [
+		sfera("Negel", 0.009, (0.016, -0.2, 1.112), p("48313b"), segmente=5, inele=3),
+		cub("Fir", (0.002, 0.002, 0.016), (0.019, -0.207, 1.12), NEGRU, rot=(0.4, 0.5, 0)),
+		cub("Nara", (0.008, 0.01, 0.005), (0.009, -0.192, 1.073), p("48313b")),
+		cub("Nara", (0.008, 0.01, 0.005), (-0.009, -0.192, 1.073), p("48313b")),
+	]
+	# gura supta (fără dinți, doar unul de aur), colțurile lăsate în jos, ridurile, firele de pe bărbie
+	cap += [
+		cub("Gura", (0.044, 0.008, 0.008), (0, -0.163, 1.056), p("5e363e")),
+		cub("Coltul gurii", (0.016, 0.008, 0.006), (0.026, -0.158, 1.051), p("5e363e"), rot=(0, 0.5, 0.3)),
+		cub("Coltul gurii", (0.016, 0.008, 0.006), (-0.026, -0.158, 1.051), p("5e363e"), rot=(0, -0.5, -0.3)),
+		cub("Dinte de aur", (0.008, 0.006, 0.007), (0.01, -0.167, 1.058), p("a18463")),
+		cub("Rid", (0.004, 0.006, 0.045), (0.034, -0.156, 1.08), piele_umbra, rot=(0, -0.35, 0.3)),
+		cub("Rid", (0.004, 0.006, 0.045), (-0.034, -0.156, 1.08), piele_umbra, rot=(0, 0.35, -0.3)),
+		cub("Rid barbie", (0.03, 0.006, 0.004), (0, -0.152, 1.034), piele_umbra),
+		cub("Fir barbie", (0.002, 0.004, 0.012), (0.012, -0.143, 1.022), NEGRU, rot=(0.3, 0, 0.3)),
+		cub("Fir barbie", (0.002, 0.004, 0.012), (0.006, -0.145, 1.02), NEGRU, rot=(0.2, 0, -0.2)),
+	]
+	# ochelarii groși: ochii par uriași prin lentile; o sprânceană ridicată a suspiciune
 	for s in (-1, 1):
-		x = 0.04 * s
+		x = 0.036 * s
 		cap += [
-			cub("Rama ochelari", (0.05, 0.008, 0.04), (x, -0.155, 1.12), NEGRU),
-			cub("Lentila", (0.04, 0.009, 0.03), (x, -0.157, 1.12), p("61a19f")),
-			cub("Ochi", (0.014, 0.01, 0.01), (x, -0.161, 1.12), NEGRU),
-			cub("Bratul ochelarilor", (0.006, 0.09, 0.006), (0.075 * s, -0.11, 1.125), NEGRU),
+			cub("Orbita", (0.042, 0.01, 0.028), (x, -0.162, 1.138), piele_umbra),
+			cilindru("Rama ochelari", 0.033, 0.033, 0.012, (x, -0.177, 1.138), NEGRU, laturi=8, rot=(1.5708, 0, 0)),
+			cilindru("Lentila", 0.026, 0.026, 0.014, (x, -0.18, 1.138), p("61a19f"), laturi=8, rot=(1.5708, 0, 0)),
+			cub("Ochi", (0.03, 0.004, 0.02), (x, -0.1878, 1.136), ALB),
+			cub("Pupila", (0.014, 0.004, 0.016), (x - 0.004 * s, -0.189, 1.134), NEGRU),
+			cub("Bratul ochelarilor", (0.006, 0.11, 0.006), (0.077 * s, -0.12, 1.142), NEGRU, rot=(0, 0, -0.08 * s)),
+			cub("Spranceana", (0.04, 0.012, 0.012), (x, -0.172, 1.178 + (0.012 if s > 0 else 0)), p("7e8d87"),
+				rot=(0, -0.35 * s if s > 0 else 0.2, 0)),
 		]
-		for i in range(4):  # bulinele de pe basma
-			u = i * 1.5 + (0.6 if s > 0 else 0)
-			cap.append(sfera("Bulina", 0.012, (0.12 * s * math.cos(u * 0.4), 0.03 * math.sin(u), 1.1 + 0.03 * i),
-				p("a18463"), segmente=4, inele=3))
-	cap.append(cub("Punte ochelari", (0.03, 0.008, 0.006), (0, -0.157, 1.125), NEGRU))
+	cap.append(cub("Punte ochelari", (0.016, 0.008, 0.008), (0, -0.181, 1.142), NEGRU))
+	cap.append(sfera("Obraz", 0.02, (0.052, -0.155, 1.095), p("904a40"), scara=(1, 0.4, 0.8), segmente=6, inele=4))
+	cap.append(sfera("Obraz", 0.02, (-0.052, -0.155, 1.095), p("904a40"), scara=(1, 0.4, 0.8), segmente=6, inele=4))
 	uneste(cap, "Cap", gat)
 	exporta(os.path.join(cale, "baba.glb"))
 
