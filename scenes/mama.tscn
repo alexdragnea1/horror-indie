@@ -13,6 +13,9 @@ height = 1.8
 script = ExtResource("1")
 cap = NodePath("Model/Cap")
 indiciu = "[E] Talk to Mom"
+marcaj_dupa = "a_vorbit_cu_mom"
+sarcina_noua = "Meet with the coven."
+replici_dupa = PackedStringArray("MOM: Why are you still here? The coven is waiting in the woods!")
 replici = PackedStringArray("MOM: Today is your 16th birthday, little bitch!", "MOM: That means you will become a witch!", "You: I don't really gaf about allat...", "MOM: You WILL become a witch!", "MOM: At midnight you need to meet the coven in the woods.", "You: You might be kirkenuinly a bad mother...")
 
 [node name="Model" parent="." instance=ExtResource("2")]

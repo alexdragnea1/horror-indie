@@ -14,6 +14,15 @@ extends Interactabil
 ## Cât de repede se întoarce spre tine când vorbiți (secunde).
 @export var durata_intoarcere := 0.5
 
+@export_group("După prima conversație")
+## Marcajul pus în Stare după prima conversație (ex. "a_vorbit_cu_mom"; gol = niciunul).
+@export var marcaj_dupa := ""
+## Sarcina pe care o primești după prima conversație (apare sus câteva secunde; gol = niciuna).
+@export var sarcina_noua := ""
+## Ce spune când vorbești cu el a doua oară (gol = repetă "replici").
+@export_multiline var replici_dupa: PackedStringArray = []
+
+var _a_vorbit := false
 var _vorbeste := false
 var _timp := 0.0
 var _model: Node3D
@@ -38,10 +47,16 @@ func interactioneaza() -> void:
 		var tinta := atan2(d.x, d.z)  # modelele privesc spre +Z
 		var tween := create_tween().set_trans(Tween.TRANS_SINE)
 		tween.tween_property(self, "rotation:y", rotation.y + angle_difference(rotation.y, tinta), durata_intoarcere)
-	Dialog.spune(replici)
+	Dialog.spune(replici_dupa if _a_vorbit and not replici_dupa.is_empty() else replici)
 	if Dialog.activ:
 		await Dialog.terminat
 	_vorbeste = false
+	if not _a_vorbit:
+		_a_vorbit = true
+		if marcaj_dupa != "":
+			Stare.marcheaza(marcaj_dupa)
+		if sarcina_noua != "":
+			Stare.seteaza_sarcina(sarcina_noua)
 
 
 func _process(delta: float) -> void:

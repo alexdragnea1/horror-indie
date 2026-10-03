@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -12,6 +12,7 @@
 [ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="12"]
 [ext_resource type="AudioStream" path="res://sunete/ciocanit.ogg" id="13"]
 [ext_resource type="AudioStream" path="res://sunete/fantoma.ogg" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/usa_intrare.tscn" id="15"]
 [ext_resource type="Texture2D" path="res://textures/perete_casa.png" id="5"]
 [ext_resource type="Texture2D" path="res://textures/podea_casa.png" id="6"]
 
@@ -53,6 +54,13 @@ shader_parameter/uv_din_lume = true
 shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_podea")
 shader_parameter/culoare = Color(0.565, 0.29, 0.251, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_pamant"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_podea")
+shader_parameter/culoare = Color(0.196, 0.271, 0.231, 1)
+shader_parameter/repetare_uv = Vector2(0.4, 0.4)
+shader_parameter/uv_din_lume = true
 
 [node name="NivelTest" type="Node3D"]
 
@@ -105,6 +113,12 @@ material = SubResource("mat_perete")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 1.05, -11.7)
 operation = 2
 size = Vector3(0.6, 2.1, 1)
+material = SubResource("mat_perete")
+
+[node name="UsaIntrareGol" type="CSGBox3D" parent="Casa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, -14.1)
+operation = 2
+size = Vector3(1, 2.1, 0.6)
 material = SubResource("mat_perete")
 
 [node name="PodeaCamera" type="CSGBox3D" parent="Casa"]
@@ -175,3 +189,12 @@ variatie = 0.05
 in_jurul_jucatorului = true
 distanta_minima = 6.0
 distanta_maxima = 10.0
+
+[node name="Curte" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -12)
+use_collision = true
+size = Vector3(60, 0.2, 60)
+material = SubResource("mat_pamant")
+
+[node name="UsaIntrare" parent="." instance=ExtResource("15")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.02, -14.1)

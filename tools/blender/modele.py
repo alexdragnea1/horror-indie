@@ -13,6 +13,7 @@ MODELE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.ab
 PIELE = p("a56850")
 NEGRU = p("262d2f")
 ALB = p("83b3b0")  # cea mai deschisă culoare din paletă
+AUR = p("a18463")
 
 
 def frigider():
@@ -174,10 +175,37 @@ def ceas():
 	exporta(os.path.join(MODELE, "ceas.glb"))
 
 
+def usa_intrare():
+	"""Ușa de la intrarea casei: roșie, cu geam mic sus, yală și vizor. Balamaua în origine,
+	ușa se întinde pe +X. Fața (-Y) e spre hol; mânerul e pe ambele părți. Se folosește cu toc_usa.glb."""
+	curata()
+	rosu, rosu_inchis, geam = p("7b383a"), p("5e363e"), p("2a3c3d")
+	piese = [cub("Usa", (0.9, 0.05, 2.05), (0.45, 0, 1.025), rosu)]
+	for s in (-1, 1):  # aceleași detalii pe ambele fețe
+		y = 0.028 * s
+		piese += [
+			cub("Panou", (0.3, 0.012, 0.75), (0.25, y, 0.55), rosu_inchis),
+			cub("Panou", (0.3, 0.012, 0.75), (0.65, y, 0.55), rosu_inchis),
+			cub("Rama geam", (0.62, 0.014, 0.36), (0.45, y, 1.6), rosu_inchis),
+			sfera("Clanta", 0.032, (0.8, 0.05 * s, 1.0), AUR, segmente=6, inele=4),
+			cilindru("Yala", 0.022, 0.022, 0.02, (0.8, 0.03 * s, 1.18), AUR, laturi=6, rot=(1.5708, 0, 0)),
+		]
+		for x in (0.27, 0.45, 0.63):  # trei ochiuri de geam închis la culoare
+			piese.append(cub("Geam", (0.15, 0.016, 0.28), (x, y, 1.6), geam))
+	piese += [
+		cub("Fanta posta", (0.26, 0.016, 0.05), (0.45, -0.03, 1.08), AUR),
+		cub("Fanta", (0.22, 0.02, 0.016), (0.45, -0.031, 1.08), NEGRU),
+		cilindru("Vizor", 0.012, 0.012, 0.06, (0.45, 0, 1.38), AUR, laturi=6, rot=(1.5708, 0, 0)),
+	]
+	uneste(piese, "UsaIntrare")
+	exporta(os.path.join(MODELE, "usa_intrare.glb"))
+
+
 frigider()
 bec()
 mama()
 ceas()
+usa_intrare()
 
 import dormitor  # noqa: E402
 dormitor.toate(MODELE)

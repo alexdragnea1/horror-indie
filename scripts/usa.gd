@@ -15,6 +15,13 @@ signal descuiata
 @export_multiline var replici_descuiere: PackedStringArray = []
 ## Dacă e bifat, cheia dispare din inventar după ce descuie ușa.
 @export var consuma_cheia := true
+## Ușa nu se deschide până nu s-a întâmplat ceva în poveste (un marcaj din Stare,
+## ex. "a_vorbit_cu_mom"). Gol = fără condiție.
+@export var marcaj_necesar := ""
+## Ce zice personajul cât timp marcajul de mai sus lipsește.
+@export_multiline var replici_fara_marcaj: PackedStringArray = []
+## Clanța care zornăie când ușa nu se deschide (încuiată sau blocată de poveste).
+@export var sunet_incuiata: AudioStream
 ## Cu cât se rotește ușa (grade). Semnul alege partea în care se deschide.
 @export var unghi_deschidere := 95.0
 ## Cât durează deschiderea (secunde).
@@ -38,8 +45,13 @@ func _ready() -> void:
 
 
 func interactioneaza() -> void:
+	if marcaj_necesar != "" and not Stare.e_marcat(marcaj_necesar):
+		Sunet.reda_la(sunet_incuiata, global_position + Vector3.UP, volum_db, 0.05)
+		Dialog.spune(replici_fara_marcaj)
+		return
 	if cheie_necesara != "":
 		if not Stare.are_obiect(cheie_necesara):
+			Sunet.reda_la(sunet_incuiata, global_position + Vector3.UP, volum_db, 0.05)
 			Dialog.spune(replici_incuiata)
 			return
 		if consuma_cheia:

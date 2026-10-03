@@ -14,8 +14,8 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | Mouse | privit |
 | E / click | interacționezi / treci la replica următoare |
 | F | lanterna |
-| Tab (ține apăsat) | inventarul |
-| Esc | eliberează mouse-ul |
+| Tab | deschide / închide inventarul (5 sloturi + sarcina curentă) |
+| Esc | închide inventarul / eliberează mouse-ul |
 
 ## Ce e unde
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
@@ -31,7 +31,9 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
 - `scenes/dormitor.tscn` – camera ta, de vrăjitoare: pat, ceaun, raft cu cărți de vrăji, covor cu pentagramă și lumânări, glob de cristal, mătură. Mută lucrurile din ea cu mouse-ul în editor.
 - `scripts/meniu_nume.gd` – meniul în care îți scrii numele (apare prima dată când încerci să ieși din cameră). Textele lui se schimbă din `@export`-urile de sus.
-- `scenes/nivel_test.tscn` – prima scenă, casa: camera ta, holul, bucătăria cu Mom, frigiderul și becurile. Începi în camera ta.
+- `scripts/inventar.gd` – fereastra de inventar (Tab). `Stare.seteaza_sarcina("...")` schimbă sarcina curentă și o arată sus 5 secunde.
+- `scenes/usa_intrare.tscn` – ușa de la intrare. În Inspector, la `Usa`: `marcaj_necesar` = ce trebuie să se fi întâmplat ca să se deschidă (acum `a_vorbit_cu_mom`), `replici_fara_marcaj` = ce zici până atunci.
+- `scenes/nivel_test.tscn` – prima scenă, casa: camera ta, holul cu ușa de la intrare, bucătăria cu Mom, frigiderul și becurile. Începi în camera ta.
 
 ## Modele 3D
 Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:

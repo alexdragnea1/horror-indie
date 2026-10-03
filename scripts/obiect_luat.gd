@@ -10,7 +10,8 @@ extends Interactabil
 
 
 func interactioneaza() -> void:
-	Stare.adauga_obiect(id_obiect, nume_obiect)
+	if not Stare.adauga_obiect(id_obiect, nume_obiect):
+		return  # inventarul e plin: obiectul rămâne pe loc
 	Dialog.spune(replici)
 	folosit.emit()
 	queue_free()

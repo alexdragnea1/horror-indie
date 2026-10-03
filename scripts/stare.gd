@@ -1,52 +1,77 @@
 extends CanvasLayer
 ## Autoload "Stare": ține minte ce are jucătorul și ce s-a întâmplat în poveste.
-##   Stare.adauga_obiect("cheie_hol", "Cheia de la hol")
+##   Stare.adauga_obiect("cheie_hol", "Hall key")   -> false dacă inventarul e plin
 ##   Stare.are_obiect("cheie_hol")  /  Stare.scoate_obiect("cheie_hol")
-##   Stare.marcheaza("a_citit_biletul")  /  Stare.e_marcat("a_citit_biletul")
-## Tab arată inventarul în colțul din stânga sus.
+##   Stare.marcheaza("a_vorbit_cu_mom")  /  Stare.e_marcat("a_vorbit_cu_mom")
+##   Stare.seteaza_sarcina("Meet with the coven.")  -> apare sus câteva secunde
+## Tab deschide / închide inventarul (sloturile + sarcina curentă).
 
 signal schimbat
 
-## Cât stă pe ecran mesajul „Ai luat: ...” (secunde).
+## Câte obiecte încap în inventar.
+const LOCURI_INVENTAR := 5
+## Cât stă pe ecran mesajul „Picked up: ...” (secunde).
 const DURATA_MESAJ := 2.5
+## Cât stă sus „Task: ...” când primești o sarcină nouă (secunde).
+const DURATA_SARCINA := 5.0
 const SUNET_OBIECT := preload("res://sunete/obiect_luat.ogg")
+const SUNET_SARCINA := preload("res://sunete/sarcina_noua.ogg")
+const SUNET_DESCHIDE := preload("res://sunete/inventar_deschis.ogg")
+const SUNET_INCHIDE := preload("res://sunete/inventar_inchis.ogg")
 
-## id -> numele afișat
+## id -> numele afișat, în ordinea în care le-ai luat.
 var obiecte: Dictionary = {}
 var marcaje: Dictionary = {}
+## Ce trebuie să faci acum ("" = nimic).
+var sarcina := ""
 ## Numele scris de jucător în meniul de la ușa camerei.
 var nume_jucator := ""
-## Cât e deschis un meniu (ex. MeniuNume), jucătorul nu se mișcă și nu se uită în jur.
+## Cât e deschis un meniu (MeniuNume, inventarul), jucătorul nu se mișcă și nu se uită în jur.
 var meniu_deschis := false
 
 var _mesaj: Label
-var _lista: Label
-var _tween: Tween
+var _sarcina_sus: Label
+var _inventar: Inventar
+var _tween_mesaj: Tween
+var _tween_sarcina: Tween
 
 
 func _ready() -> void:
 	layer = 6
-	_mesaj = _eticheta(Vector2(8, 6))
-	_lista = _eticheta(Vector2(8, 6))
-	_lista.hide()
+	_mesaj = _eticheta()
+	_mesaj.position = Vector2(8, 6)
+	_sarcina_sus = _eticheta()
+	_sarcina_sus.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_sarcina_sus.offset_top = 16
+	_sarcina_sus.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_sarcina_sus.add_theme_font_size_override("font_size", 13)
+	_sarcina_sus.add_theme_color_override("font_color", Color("a18463"))
+	_inventar = Inventar.new(LOCURI_INVENTAR)
+	add_child(_inventar)
+	_inventar.hide()
 
 
-func _eticheta(pozitie: Vector2) -> Label:
+func _eticheta() -> Label:
 	var e := Label.new()
-	e.position = pozitie
 	e.add_theme_font_size_override("font_size", 10)
 	e.add_theme_color_override("font_color", Color("83b3b0"))
 	e.add_theme_color_override("font_shadow_color", Color("262d2fe6"))
+	e.add_theme_constant_override("shadow_offset_x", 1)
+	e.add_theme_constant_override("shadow_offset_y", 1)
 	e.modulate.a = 0.0
 	add_child(e)
 	return e
 
 
-func adauga_obiect(id: String, nume: String) -> void:
+func adauga_obiect(id: String, nume: String) -> bool:
+	if obiecte.size() >= LOCURI_INVENTAR and not obiecte.has(id):
+		_arata_mesaj("Inventory full")
+		return false
 	obiecte[id] = nume
 	_arata_mesaj("Picked up: " + nume)
 	Sunet.reda(SUNET_OBIECT, -6.0, 0.0, &"Interfata")
 	schimbat.emit()
+	return true
 
 
 func are_obiect(id: String) -> bool:
@@ -67,27 +92,52 @@ func e_marcat(marcaj: String) -> bool:
 	return marcaje.has(marcaj)
 
 
+func seteaza_sarcina(text: String) -> void:
+	sarcina = text
+	schimbat.emit()
+	if text.is_empty():
+		return
+	_sarcina_sus.text = "Task: " + text
+	if _tween_sarcina:
+		_tween_sarcina.kill()
+	_tween_sarcina = create_tween()
+	_tween_sarcina.tween_property(_sarcina_sus, "modulate:a", 1.0, 0.4)
+	_tween_sarcina.tween_interval(DURATA_SARCINA)
+	_tween_sarcina.tween_property(_sarcina_sus, "modulate:a", 0.0, 0.8)
+	Sunet.reda(SUNET_SARCINA, -6.0, 0.0, &"Interfata")
+
+
 func _arata_mesaj(text: String) -> void:
 	_mesaj.text = text
-	if _tween:
-		_tween.kill()
+	if _tween_mesaj:
+		_tween_mesaj.kill()
 	_mesaj.modulate.a = 1.0
-	_tween = create_tween()
-	_tween.tween_interval(DURATA_MESAJ)
-	_tween.tween_property(_mesaj, "modulate:a", 0.0, 0.6)
+	_tween_mesaj = create_tween()
+	_tween_mesaj.tween_interval(DURATA_MESAJ)
+	_tween_mesaj.tween_property(_mesaj, "modulate:a", 0.0, 0.6)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("inventar"):
-		var text := "INVENTORY"
-		if obiecte.is_empty():
-			text += "\n  (empty)"
-		for nume in obiecte.values():
-			text += "\n  - " + str(nume)
-		_lista.text = text
-		_lista.modulate.a = 1.0
-		_lista.show()
-		_mesaj.hide()
-	elif event.is_action_released("inventar"):
-		_lista.hide()
-		_mesaj.show()
+# _input (nu _unhandled_input), ca Tab/Esc să ajungă aici înaintea jucătorului.
+func _input(event: InputEvent) -> void:
+	if _inventar.visible:
+		if event.is_action_pressed("inventar") or event.is_action_pressed("ui_cancel"):
+			_inchide_inventar()
+			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("inventar") and not meniu_deschis and not Dialog.activ:
+		_deschide_inventar()
+		get_viewport().set_input_as_handled()
+
+
+func _deschide_inventar() -> void:
+	_inventar.actualizeaza(obiecte, sarcina)
+	_inventar.show()
+	_mesaj.hide()
+	meniu_deschis = true
+	Sunet.reda(SUNET_DESCHIDE, -8.0, 0.05, &"Interfata")
+
+
+func _inchide_inventar() -> void:
+	_inventar.hide()
+	_mesaj.show()
+	meniu_deschis = false
+	Sunet.reda(SUNET_INCHIDE, -8.0, 0.05, &"Interfata")

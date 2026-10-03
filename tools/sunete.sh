@@ -51,6 +51,8 @@ unic scartait_podea "Footsteps/foley_creak_1.wav"
 # --- uși, frigider, obiecte
 unic usa_scartait "Environment/creaky_door_long.wav"
 unic usa_inchisa "Environment/door_close.wav"
+unic usa_incuiata "Environment/lock_quick.wav"
+unic usa_intrare "Environment/door_open.wav"
 unic frigider_deschis "Environment/air_burst.wav" mono "lowpass=f=2500"
 unic frigider_inchis "Materials/ceramic_jar_close.wav" mono "asetrate=44100*0.85,aresample=44100"
 unic obiect_luat "Items/item_equip.wav" stereo
@@ -61,6 +63,9 @@ unic lanterna_oprita "UI/toggle_off.wav" stereo
 unic ui_peste "UI/select_1.wav" stereo
 unic ui_clic "UI/pop_1.wav" stereo
 unic ui_sting "Musical Effects/horror_sting.wav" stereo
+unic sarcina_noua "Musical Effects/music_box_mystery.wav" stereo
+unic inventar_deschis "Environment/zipper_down.wav" stereo
+unic inventar_inchis "Environment/zipper_up.wav" stereo
 unic dialog_voce "Retro/menu_blip.wav" mono "lowpass=f=2200,afade=t=out:st=0.05:d=0.04"
 
 # --- sperieturi rare, din locuri la întâmplare
