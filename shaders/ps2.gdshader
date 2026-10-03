@@ -6,16 +6,18 @@
 shader_type spatial;
 render_mode blend_mix, cull_back, diffuse_lambert, specular_disabled;
 
-uniform sampler2D textura : source_color, filter_nearest, repeat_enable;
+// filter_nearest_mipmap: pixeli clari de aproape, dar de departe folosește versiuni
+// mai mici ale texturii, altfel podeaua "fâlfâie" (moiré) când te miști.
+uniform sampler2D textura : source_color, filter_nearest_mipmap, repeat_enable;
 uniform vec4 culoare : source_color = vec4(1.0);
 uniform vec2 repetare_uv = vec2(1.0);
 // Bifat = textura se pune după poziția în lume (bun pentru pereți/podele făcute din CSG,
 // altfel se întinde pe pereții lungi). repetare_uv înseamnă atunci "de câte ori pe metru".
 uniform bool uv_din_lume = false;
-// Cât de fină e grila pe care sar vârfurile. Mai mic = tremură mai tare.
-uniform float rezolutie_tremur = 160.0;
-// 0 = texturi corecte, 1 = deformate ca pe PS1. 0.3 e un compromis de PS2.
-uniform float deformare_textura : hint_range(0.0, 1.0) = 0.3;
+// Cât de fină e grila pe care sar vârfurile. Mai mic = tremură mai tare. 0 = deloc.
+uniform float rezolutie_tremur = 0.0;
+// 0 = texturi stabile, 1 = deformate ca pe PS1 (pe pereții mari din CSG arată foarte rău).
+uniform float deformare_textura : hint_range(0.0, 1.0) = 0.0;
 
 varying vec3 uv_afin;
 
@@ -28,8 +30,10 @@ void vertex() {
 	}
 	UV = UV * repetare_uv;
 	vec4 clip = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
-	vec2 grila = vec2(rezolutie_tremur, rezolutie_tremur * VIEWPORT_SIZE.y / VIEWPORT_SIZE.x);
-	clip.xy = round(clip.xy / clip.w * grila) / grila * clip.w;
+	if (rezolutie_tremur > 0.0) {
+		vec2 grila = vec2(rezolutie_tremur, rezolutie_tremur * VIEWPORT_SIZE.y / VIEWPORT_SIZE.x);
+		clip.xy = round(clip.xy / clip.w * grila) / grila * clip.w;
+	}
 	POSITION = clip;
 	uv_afin = vec3(UV * clip.w, clip.w);
 }

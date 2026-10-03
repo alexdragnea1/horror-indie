@@ -17,7 +17,7 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 | Fișier | Rol |
 |---|---|
 | `project.godot` | Viewport 480×270, stretch `viewport` (mărire pixelată), fereastră 1440×810, filtru nearest. Acțiuni: `inainte/inapoi/stanga/dreapta/alearga/interact/lanterna`. |
-| `shaders/ps2.gdshader` | Materialul pentru **orice** obiect 3D: vârfurile sar pe o grilă (`rezolutie_tremur`), texturi affine (`deformare_textura`), nearest. `uv_din_lume = true` pentru CSG/pereți lungi (altfel textura se întinde); `repetare_uv` = de câte ori pe metru. |
+| `shaders/ps2.gdshader` | Materialul pentru **orice** obiect 3D: textură nearest **cu mipmap-uri** (fără ele podeaua face moiré când te miști). Tremurul vârfurilor (`rezolutie_tremur`) și texturile affine (`deformare_textura`) sunt **oprite implicit (0)**, la cererea owner-ului: pe pereții mari din CSG texturile „fugeau” urât. `uv_din_lume = true` pentru CSG/pereți lungi (altfel textura se întinde); `repetare_uv` = de câte ori pe metru. |
 | `shaders/ps2_ecran.gdshader` + `scenes/efect_ps2.tscn` | Post-procesare (autoload `EfectPS2`, CanvasLayer 1): cuantizare culori + dithering Bayer 4×4, vignetă, grăunte. |
 | `scripts/dialog.gd` | Autoload `Dialog` (CanvasLayer 10). `Dialog.spune(PackedStringArray)`, `Dialog.activ`, semnal `terminat`. Avansează cu E/click și consumă input-ul. |
 | `scripts/interactabil.gd` | `class_name Interactabil` (StaticBody3D): `indiciu`, `replici`, `o_singura_data`, semnal `folosit`. Jucătorul îl găsește cu RayCast-ul. |
