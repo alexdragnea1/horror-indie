@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -54,6 +54,13 @@ shader_parameter/uv_din_lume = true
 shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_podea")
 shader_parameter/culoare = Color(0.565, 0.29, 0.251, 1)
+
+[sub_resource type="ShaderMaterial" id="mat_tavan"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_podea")
+shader_parameter/culoare = Color(0.631, 0.518, 0.388, 1)
+shader_parameter/repetare_uv = Vector2(0.3, 0.3)
+shader_parameter/uv_din_lume = true
 
 [sub_resource type="ShaderMaterial" id="mat_pamant"]
 shader = ExtResource("1")
@@ -135,6 +142,21 @@ material = SubResource("mat_podea")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7, -0.08, -11.7)
 size = Vector3(5.2, 0.2, 4.6)
 material = SubResource("mat_podea")
+
+[node name="TavanCamera" type="CSGBox3D" parent="Casa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.06, 0)
+size = Vector3(8, 0.2, 8)
+material = SubResource("mat_tavan")
+
+[node name="TavanHol" type="CSGBox3D" parent="Casa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.06, -9.1)
+size = Vector3(2, 0.2, 9.8)
+material = SubResource("mat_tavan")
+
+[node name="TavanDormitor" type="CSGBox3D" parent="Casa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7, 3.06, -11.7)
+size = Vector3(5, 0.2, 4.6)
+material = SubResource("mat_tavan")
 
 [node name="Masa" type="CSGBox3D" parent="Casa"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 0.4, 1.5)
