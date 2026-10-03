@@ -1,0 +1,27 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/personaj.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/baba.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+
+[sub_resource type="BoxShape3D" id="forma"]
+size = Vector3(0.5, 0.75, 0.55)
+
+[node name="Baba" type="StaticBody3D" node_paths=PackedStringArray("cap")]
+script = ExtResource("1")
+cap = NodePath("Model/Cap")
+distanta_privire = 7.0
+unghi_maxim_cap = 75.0
+se_intoarce = false
+indiciu = "[E] Talk to the old hag"
+replici_dupa = PackedStringArray("Old hag: Go on, go on. Say hi to your mother for me.")
+replici = PackedStringArray("Old hag: Hey, how is your mother?", "You: Eh, you know, good..I guess.", "Old hag: Does she still have that alcohol problem?", "Old hag: I couldn't get her to quit even when she was pregnant with you..", "You: Oh..I-I didn't know that..", "Old hag: Yeah, she was a real menace in the neighbourhood.", "Old hag: She must've been with all the men from here.", "You: Have a nice night...")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.82, -0.05)
+shape = SubResource("forma")

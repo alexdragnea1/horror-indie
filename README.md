@@ -27,14 +27,14 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/lumina_palpaie.gd` – bec care pâlpâie.
 - `scripts/stare.gd` – inventarul și „ce s-a întâmplat” în poveste (autoload `Stare`).
 - `scripts/obiect_luat.gd`, `scripts/usa.gd`, `scripts/declansator.gd` – obiect pe care îl iei, ușă (și încuiată, cu cheie), zonă care pornește o scenă când intri în ea.
-- `scripts/personaj.gd` – personaj cu care vorbești (ex. Mom). În `replici` scrii `NUME: text`, iar numele apare deasupra casetei.
+- `scripts/personaj.gd` – personaj cu care vorbești (ex. Mom, baba de pe bancă). În `replici` scrii `NUME: text`, iar numele apare deasupra casetei. Debifează `se_intoarce` la cei care stau jos: atunci se uită după tine doar cu capul.
 - `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
 - `scenes/dormitor.tscn` – camera ta, de vrăjitoare: pat, ceaun, raft cu cărți de vrăji, covor cu pentagramă și lumânări, glob de cristal, mătură. Mută lucrurile din ea cu mouse-ul în editor.
 - `scripts/meniu_nume.gd` – meniul în care îți scrii numele (apare prima dată când încerci să ieși din cameră). Textele lui se schimbă din `@export`-urile de sus.
 - `scripts/inventar.gd` – fereastra de inventar (Tab). `Stare.seteaza_sarcina("...")` schimbă sarcina curentă și o arată sus 5 secunde.
 - `scenes/usa_intrare.tscn` – ușa de la intrare. În Inspector, la `Usa`: `marcaj_necesar` = ce trebuie să se fi întâmplat ca să se deschidă (acum `a_vorbit_cu_mom`), `replici_fara_marcaj` = ce zici până atunci.
 - `scenes/nivel_test.tscn` – prima scenă, casa: camera ta, holul cu ușa de la intrare, bucătăria cu Mom, frigiderul și becurile. Începi în camera ta.
-- `scenes/afara_bloc.tscn` – afară, în fața blocului tău (BL. M7, scara B), noaptea: grădină cu copaci de toamnă, frunze care cad, ceață, felinare care pâlpâie, banca, tomberonul, bătătorul cu covor, mașina vecinului. Ajungi aici când deschizi ușa de la intrare, printr-un ecran negru în care auzi cum cobori scările și ușa blocului trântindu-se.
+- `scenes/afara_bloc.tscn` – afară, în fața blocului tău (BL. M7, scara B), noaptea: grădină cu copaci de toamnă, frunze care cad, ceață, felinare care pâlpâie, o babă pe bancă (vorbește cu tine despre mama ta), tomberonul, bătătorul cu covor, mașina vecinului. Ajungi aici când deschizi ușa de la intrare, printr-un ecran negru în care auzi cum cobori scările și ușa blocului trântindu-se.
 - `scripts/tranzitie.gd` – trecerea dintre scene prin ecran negru: `Tranzitie.mergi_la("res://scenes/...tscn", "Numele locului", [sunete])`. La orice ușă (`usa.gd`) completezi în Inspector, la „Iesire din scena”: `scena_urmatoare`, `titlu_locatie` și `sunete_tranzitie`.
 - `scripts/acustica.gd` – pune câte unul în fiecare nivel: cât ecou au sunetele acolo (în casă puțin, afară aproape deloc).
 

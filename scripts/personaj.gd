@@ -11,6 +11,8 @@ extends Interactabil
 @export var distanta_privire := 5.0
 ## Cât de mult își poate întoarce capul (grade).
 @export var unghi_maxim_cap := 70.0
+## Debifează la personajele care stau jos (ex. baba de pe bancă): atunci se uită doar cu capul.
+@export var se_intoarce := true
 ## Cât de repede se întoarce spre tine când vorbiți (secunde).
 @export var durata_intoarcere := 0.5
 
@@ -42,7 +44,7 @@ func interactioneaza() -> void:
 	_vorbeste = true
 	folosit.emit()
 	var jucator := _jucator()
-	if jucator:
+	if jucator and se_intoarce:
 		var d := jucator.global_position - global_position
 		var tinta := atan2(d.x, d.z)  # modelele privesc spre +Z
 		var tween := create_tween().set_trans(Tween.TRANS_SINE)

@@ -418,6 +418,86 @@ def masina(cale):
 	exporta(os.path.join(cale, "masina.glb"))
 
 
+def baba(cale):
+	"""Baba de pe bancă: stă jos, cocoșată, cu ambele mâini pe baston; basma cu buline, ochelari groși,
+	negel pe nas, sacoșă lângă ea și coji de semințe la picioare. Originea = podeaua din fața băncii
+	(la mijlocul șezutului), fața spre -Y. Capul e separat (originea în gât), ca să te urmărească."""
+	curata()
+	r = random.Random(77)
+	palton, ciorapi, papuci = p("553e4d"), p("5e5356"), p("445d46")
+	piele, basma = p("a56850"), p("7b383a")
+	piese = []
+	for s in (-1, 1):
+		x = 0.1 * s
+		piese += [
+			os_intre("Coapsa", (x, 0.1, 0.55), (x, -0.28, 0.55), 0.075, palton),
+			sfera("Genunchi", 0.07, (x, -0.3, 0.54), palton, segmente=6, inele=4),
+			os_intre("Gamba", (x, -0.31, 0.5), (x * 1.1, -0.35, 0.1), 0.05, ciorapi),
+			cub("Papuc", (0.1, 0.22, 0.07), (x * 1.1, -0.4, 0.035), papuci),
+			cub("Pompon", (0.05, 0.03, 0.03), (x * 1.1, -0.51, 0.07), p("a18463")),
+		]
+	piese += [
+		cub("Poala", (0.38, 0.05, 0.32), (0, -0.33, 0.38), palton, rot=(0.1, 0, 0)),
+		cilindru("Bust", 0.21, 0.16, 0.48, (0, 0.08, 0.76), palton, rot=(0.22, 0, 0), scara=(1, 0.8, 1)),
+		sfera("Cocoasa", 0.15, (0, 0.13, 0.9), palton, segmente=6, inele=4, scara=(1.1, 0.9, 0.9)),
+		cub("Nasturi", (0.03, 0.02, 0.3), (0, -0.07, 0.72), p("a18463"), rot=(0.22, 0, 0)),
+		cilindru("Guler", 0.11, 0.09, 0.06, (0, 0.0, 0.97), p("48313b"), laturi=6),
+	]
+	# brațele: ambele mâini sprijinite pe mânerul bastonului, între genunchi
+	for s in (-1, 1):
+		umar, cot, mana = (0.19 * s, 0.06, 0.91), (0.21 * s, -0.16, 0.74), (0.045 * s, -0.4, 0.8)
+		piese += [
+			sfera("Umar", 0.07, umar, palton, segmente=6, inele=4),
+			os_intre("Brat", umar, cot, 0.055, palton),
+			os_intre("Antebrat", cot, mana, 0.05, palton),
+			sfera("Mana", 0.042, mana, piele, segmente=6, inele=4),
+		]
+	piese += [
+		os_intre("Baston", (0, -0.5, 0.0), (0, -0.42, 0.8), 0.018, p("48313b"), laturi=5),
+		os_intre("Maner baston", (0, -0.42, 0.8), (0.1, -0.43, 0.84), 0.02, p("48313b"), laturi=5),
+		# sacoșa de rafie de lângă ea, cu un praz care iese din ea
+		cub("Sacosa", (0.28, 0.14, 0.26), (0.45, -0.02, 0.6), p("438b88")),
+		cub("Dungi", (0.285, 0.145, 0.04), (0.45, -0.02, 0.64), ALB),
+		os_intre("Toarta", (0.33, -0.02, 0.73), (0.45, -0.02, 0.83), 0.01, p("438b88"), laturi=4),
+		os_intre("Toarta", (0.45, -0.02, 0.83), (0.57, -0.02, 0.73), 0.01, p("438b88"), laturi=4),
+		os_intre("Praz", (0.4, 0.0, 0.7), (0.36, 0.06, 0.98), 0.025, p("7a7b59"), laturi=5),
+	]
+	for _ in range(24):  # coji de semințe scuipate pe jos
+		piese.append(cub("Coaja", (0.012, 0.022, 0.004), (r.uniform(-0.35, 0.35), r.uniform(-0.75, -0.3), 0.002),
+			NEGRU, rot=(0, 0, r.uniform(0, math.tau))))
+	uneste(piese, "Corp")
+
+	gat = (0, 0.0, 0.98)
+	cap = [
+		cilindru("Gat", 0.045, 0.045, 0.08, (0, -0.01, 1.0), piele, laturi=6),
+		sfera("Fata", 0.1, (0, -0.04, 1.1), piele, scara=(0.95, 1, 1.15)),
+		sfera("Basma", 0.12, (0, 0.025, 1.14), basma, scara=(1.08, 1.0, 1.1)),
+		sfera("Nod basma", 0.035, (0, -0.1, 0.98), basma, segmente=6, inele=4),
+		cub("Colt basma", (0.12, 0.03, 0.14), (0, 0.1, 1.04), basma, rot=(0.4, 0, 0)),
+		cub("Nas", (0.03, 0.05, 0.05), (0, -0.15, 1.09), p("904a40"), rot=(0.3, 0, 0)),
+		sfera("Negel", 0.009, (0.012, -0.175, 1.1), p("48313b"), segmente=5, inele=3),
+		cub("Gura", (0.05, 0.01, 0.01), (0, -0.135, 1.04), p("5e363e"), rot=(0, 0.25, 0)),
+		cub("Rid", (0.06, 0.008, 0.006), (0, -0.14, 1.025), p("904a40")),
+	]
+	# fața iese din basma: o „gaură” desenată cu pielea puțin în față
+	cap.append(sfera("Obraji", 0.085, (0, -0.075, 1.08), piele, scara=(1, 0.7, 1.1)))
+	for s in (-1, 1):
+		x = 0.04 * s
+		cap += [
+			cub("Rama ochelari", (0.05, 0.008, 0.04), (x, -0.155, 1.12), NEGRU),
+			cub("Lentila", (0.04, 0.009, 0.03), (x, -0.157, 1.12), p("61a19f")),
+			cub("Ochi", (0.014, 0.01, 0.01), (x, -0.161, 1.12), NEGRU),
+			cub("Bratul ochelarilor", (0.006, 0.09, 0.006), (0.075 * s, -0.11, 1.125), NEGRU),
+		]
+		for i in range(4):  # bulinele de pe basma
+			u = i * 1.5 + (0.6 if s > 0 else 0)
+			cap.append(sfera("Bulina", 0.012, (0.12 * s * math.cos(u * 0.4), 0.03 * math.sin(u), 1.1 + 0.03 * i),
+				p("a18463"), segmente=4, inele=3))
+	cap.append(cub("Punte ochelari", (0.03, 0.008, 0.006), (0, -0.157, 1.125), NEGRU))
+	uneste(cap, "Cap", gat)
+	exporta(os.path.join(cale, "baba.glb"))
+
+
 def toate(cale):
 	bloc(cale)
 	copac(cale, "copac_1", 21, 6.5, [p("904a40"), p("a56850"), p("7b383a")])
@@ -433,6 +513,7 @@ def toate(cale):
 	batator(cale)
 	gard(cale)
 	masina(cale)
+	baba(cale)
 
 
 if __name__ == "__main__":
