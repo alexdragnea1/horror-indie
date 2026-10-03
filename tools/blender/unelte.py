@@ -128,6 +128,7 @@ def text(nume, continut, loc, marime, culoare, rot=(1.5708, 0, 0)):
 
 def uneste(piese, nume, origine=(0, 0, 0)):
 	"""Lipește piesele într-un singur obiect. Originea = punctul în jurul căruia se rotește în joc."""
+	verifica_fete(piese, nume)
 	bpy.ops.object.select_all(action='DESELECT')
 	for p in piese:
 		p.select_set(True)
@@ -197,3 +198,47 @@ def trunchi(nume, inele, culoare, laturi=8, ref=(1, 0, 0), faza=0.0, capete=True
 	bpy.context.scene.collection.objects.link(ob)
 	_coloreaza(ob, culoare)
 	return ob
+
+
+# Sub atâta (metri), două fețe paralele care se acoperă „se bat” pe ecran (z-fighting): textura pâlpâie
+# și se rupe, mai ales de departe. Un detaliu lipit pe o suprafață (rugină, bandă, număr) trebuie să iasă
+# în față cel puțin atât.
+DISTANTA_MINIMA_FETE = 0.008
+
+
+def _cutie(ob):
+	"""(min, max) dacă piesa e o cutie aliniată pe axe (8 vârfuri, câte 2 valori pe axă), altfel None."""
+	v = [ob.matrix_world @ x.co for x in ob.data.vertices]
+	if len(v) != 8:
+		return None
+	mn, mx = [], []
+	for a in range(3):
+		valori = sorted({round(p[a], 5) for p in v})
+		if len(valori) != 2:
+			return None
+		mn.append(valori[0])
+		mx.append(valori[1])
+	return mn, mx
+
+
+def verifica_fete(piese, nume):
+	"""Caută perechi de cutii cu fețe paralele, cu aceeași orientare, la mai puțin de
+	DISTANTA_MINIMA_FETE una de alta și care se acoperă (z-fighting). Întoarce lista problemelor."""
+	cutii = [(p.name, c) for p in piese for c in [_cutie(p)] if c]
+	probleme = []
+	for i in range(len(cutii)):
+		na, (amn, amx) = cutii[i]
+		for j in range(i + 1, len(cutii)):
+			nb, (bmn, bmx) = cutii[j]
+			for a in range(3):
+				b1, b2 = [k for k in range(3) if k != a]
+				arie = (min(amx[b1], bmx[b1]) - max(amn[b1], bmn[b1])) * (min(amx[b2], bmx[b2]) - max(amn[b2], bmn[b2]))
+				if min(amx[b1], bmx[b1]) - max(amn[b1], bmn[b1]) <= 0.001 or min(amx[b2], bmx[b2]) - max(amn[b2], bmn[b2]) <= 0.001:
+					continue
+				for fa, fb, semn in ((amx[a], bmx[a], "+"), (amn[a], bmn[a], "-")):
+					if abs(fa - fb) < DISTANTA_MINIMA_FETE:
+						probleme.append("%s: %s / %s, fețele %s%s la %.1f mm (arie %.3f m²)"
+							% (nume, na, nb, semn, "xyz"[a], abs(fa - fb) * 1000, arie))
+	for pr in probleme:
+		print("FETE SUPRAPUSE", pr)
+	return probleme

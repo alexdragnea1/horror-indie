@@ -11,7 +11,7 @@ extends Node
 ## La câte secunde după conversație apare.
 @export var intarziere := 5.0
 ## Unde oprește (ușa din mijloc în dreptul stației).
-@export var loc_oprire := Vector3(9.5, 0, 16.9)
+@export var loc_oprire := Vector3(9.5, 0.02, 16.9)  # y = fața asfaltului (roțile stau pe el)
 ## De cât de departe vine (metri, din spatele locului de oprire).
 @export var distanta_start := 75.0
 ## Viteza de mers (m/s; 10 ≈ 36 km/h) și cât de tare frânează (m/s²).

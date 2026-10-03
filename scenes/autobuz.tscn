@@ -24,7 +24,8 @@ script = ExtResource("1")
 sunet_usi_deschise = ExtResource("9")
 sunet_usi_inchise = ExtResource("10")
 
-[node name="Model" parent="." instance=ExtResource("2")]
+[node name="Corp" type="Node3D" parent="."]
+[node name="Model" parent="Corp" instance=ExtResource("2")]
 script = ExtResource("3")
 material = ExtResource("4")
 stralucitoare = PackedStringArray("Lumini", "Panou")
@@ -35,14 +36,14 @@ sticla = "Geam"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
 shape = SubResource("forma_caroserie")
 
-[node name="Sofer" type="Node3D" parent="."]
+[node name="Sofer" type="Node3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.62, 1.57, 4.35)
 
-[node name="Model" parent="Sofer" instance=ExtResource("5")]
+[node name="Model" parent="Corp/Sofer" instance=ExtResource("5")]
 script = ExtResource("3")
 material = ExtResource("4")
 
-[node name="FarStanga" type="SpotLight3D" parent="."]
+[node name="FarStanga" type="SpotLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.83, 0.75, 5.6)
 rotation = Vector3(-0.1, 3.14159, 0)
 light_color = Color(1, 0.86, 0.62, 1)
@@ -52,7 +53,7 @@ spot_range = 32.0
 spot_attenuation = 0.8
 spot_angle = 28.0
 
-[node name="FarDreapta" type="SpotLight3D" parent="."]
+[node name="FarDreapta" type="SpotLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.83, 0.75, 5.6)
 rotation = Vector3(-0.1, 3.14159, 0)
 light_color = Color(1, 0.86, 0.62, 1)
@@ -62,7 +63,7 @@ spot_range = 32.0
 spot_attenuation = 0.8
 spot_angle = 28.0
 
-[node name="NeonFata" type="OmniLight3D" parent="."]
+[node name="NeonFata" type="OmniLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 3.2)
 light_color = Color(0.78, 0.95, 0.88, 1)
 light_energy = 0.9
@@ -70,7 +71,7 @@ light_volumetric_fog_energy = 0.0
 shadow_enabled = true
 omni_range = 5.0
 
-[node name="NeonMijloc" type="OmniLight3D" parent="."]
+[node name="NeonMijloc" type="OmniLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, 0)
 light_color = Color(0.78, 0.95, 0.88, 1)
 light_energy = 0.9
@@ -78,7 +79,7 @@ light_volumetric_fog_energy = 0.0
 shadow_enabled = true
 omni_range = 5.0
 
-[node name="NeonSpate" type="OmniLight3D" parent="."]
+[node name="NeonSpate" type="OmniLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, -3.2)
 light_color = Color(0.78, 0.95, 0.88, 1)
 light_energy = 0.8
@@ -89,7 +90,7 @@ script = ExtResource("11")
 energie_normala = 0.8
 sansa_stingere = 0.05
 
-[node name="Bazait" type="AudioStreamPlayer3D" parent="."]
+[node name="Bazait" type="AudioStreamPlayer3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
 stream = ExtResource("8")
 volume_db = -26.0
@@ -132,7 +133,7 @@ indiciu = "[E] Get on the bus"
 [node name="Forma" type="CollisionShape3D" parent="IntrareSpate"]
 shape = SubResource("forma_intrare")
 
-[node name="LuminaBord" type="OmniLight3D" parent="."]
+[node name="LuminaBord" type="OmniLight3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 2.0, 5.0)
 light_color = Color(0.55, 0.9, 0.72, 1)
 light_energy = 0.7

@@ -4,13 +4,16 @@ extends AnimatableBody3D
 ## roțile se învârt cât a mers, motorul turează după viteză, caroseria se leagănă pe drum
 ## și „se apleacă” în față la frână. Ușile: `await deschide_usi()` / `await inchide_usi()`.
 ## Fața lui e spre +Z local, ușile pe partea -X.
+## Tot ce se leagănă cu caroseria (modelul, șoferul, luminile, cine stă înăuntru) e copil al nodului `Corp`.
 
 signal urcare
 
 ## Cât se leagănă caroseria în mers (grade).
 @export var leganare := 0.6
 ## Cât se apleacă în față când frânează (grade la 1 m/s²).
-@export var aplecare_frana := 0.55
+@export var aplecare_frana := 0.45
+## Cât se poate apleca cel mult (grade).
+@export var aplecare_maxima := 1.5
 ## Turația motorului: pitch la ralanti și cât crește la fiecare m/s.
 @export var turatie_ralanti := 0.72
 @export var turatie_pe_viteza := 0.045
@@ -27,27 +30,31 @@ var viteza := 0.0
 var usi_deschise := false
 
 const RAZA_ROATA := 0.5
+## În jurul cărui punct se apleacă și se leagănă caroseria (centrul ei, nu solul).
+const PIVOT_CAROSERIE := Vector3(0, 1.1, 0)
 
-@onready var _model: Node3D = $Model
+@onready var _corp: Node3D = $Corp
+@onready var _model: Node3D = $Corp/Model
 @onready var _motor: AudioStreamPlayer3D = $Motor
 var _roti: Array[Node3D] = []
 var _foi: Array[Node3D] = []
 var _semne_foi: Array[float] = []
 var _intrari: Array[IntrareAutobuz] = []
 var _ultima_pozitie := Vector3.ZERO
-var _baza: Basis
+var _roti_repaus: Array[Transform3D] = []
+var _rotire_roti := 0.0
 var _timp := 0.0
 var _aplecare := 0.0
 var _viteza_neteda := 0.0
 
 
 func _ready() -> void:
-	_baza = transform.basis
 	_ultima_pozitie = global_position
 	for nume in ["RoataFS", "RoataFD", "RoataSS", "RoataSD"]:
 		var r := _model.find_child(nume) as Node3D
 		if r:
 			_roti.append(r)
+			_roti_repaus.append(r.transform)
 	for n in range(1, 4):
 		for litera in ["A", "B"]:
 			var foaie := _model.find_child("Usa%d%s" % [n, litera]) as Node3D
@@ -126,26 +133,31 @@ func _process(delta: float) -> void:
 	var mutare := global_position - _ultima_pozitie
 	_ultima_pozitie = global_position
 	var inainte := global_transform.basis.z.normalized()
-	var v_noua := mutare.dot(inainte) / delta
-	viteza = v_noua
+	viteza = mutare.dot(inainte) / delta
 	# accelerația din viteza netezită: cadrele au durate diferite, iar din viteza brută ar ieși zgomot
 	var viteza_inainte := _viteza_neteda
 	_viteza_neteda = lerpf(_viteza_neteda, viteza, 1.0 - exp(-delta * 6.0))
 	var acceleratie := (_viteza_neteda - viteza_inainte) / delta
 
-	for r in _roti:
-		r.rotation.x += mutare.dot(inainte) / RAZA_ROATA
-
-	# la frână se apleacă în față, apoi revine cu un mic balans (arcurile)
-	var tinta_aplecare := clampf(-acceleratie * aplecare_frana, -3.0, 3.0) if absf(acceleratie) < 40.0 else 0.0
+	# la frână caroseria se apleacă în față, apoi revine cu un mic balans (arcurile)
+	var tinta_aplecare := clampf(-acceleratie * aplecare_frana, -aplecare_maxima, aplecare_maxima) \
+		if absf(acceleratie) < 40.0 else 0.0
 	_aplecare = lerpf(_aplecare, tinta_aplecare, 1.0 - exp(-delta * 4.0))
 	var mers := clampf(absf(_viteza_neteda) / 10.0, 0.0, 1.0)
 	var ruliu := (sin(_timp * 1.3) * 0.6 + sin(_timp * 3.7) * 0.25 + sin(_timp * 9.0) * 0.1) * leganare * mers
 	var tangaj := _aplecare + (sin(_timp * 2.1) * 0.3 + sin(_timp * 7.3) * 0.12) * leganare * mers
-	# ralanti: motorul diesel scutură tot autobuzul, puțin
+	# ralanti: motorul diesel scutură caroseria, puțin
 	ruliu += sin(_timp * 70.0) * 0.04 * (1.0 - mers)
+	# se mișcă doar caroseria, pe suspensii, în jurul centrului ei (PIVOT_CAROSERIE);
+	# roțile rămân pe drum (altfel botul intra în asfalt la frână)
 	var rotire := Basis.from_euler(Vector3(deg_to_rad(tangaj), 0.0, deg_to_rad(ruliu)))
-	transform.basis = _baza * rotire
+	var corp := Transform3D(rotire, PIVOT_CAROSERIE - rotire * PIVOT_CAROSERIE)
+	_corp.transform = corp
+	var inapoi := corp.affine_inverse()
+	_rotire_roti += mutare.dot(inainte) / RAZA_ROATA
+	for i in _roti.size():
+		var repaus: Transform3D = _roti_repaus[i]
+		_roti[i].transform = inapoi * Transform3D(repaus.basis * Basis(Vector3.RIGHT, _rotire_roti), repaus.origin)
 
 	if _motor:
 		_motor.pitch_scale = turatie_ralanti + absf(_viteza_neteda) * turatie_pe_viteza

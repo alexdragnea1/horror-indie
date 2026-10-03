@@ -107,7 +107,7 @@ size = Vector3(0.025, 0.025, 260)
 [node name="DrumAutobuz" type="Node3D" node_paths=PackedStringArray("autobuz", "calator", "creatura", "teren")]
 script = ExtResource("1")
 autobuz = NodePath("Autobuz")
-calator = NodePath("Autobuz/Calator")
+calator = NodePath("Autobuz/Corp/Calator")
 creatura = NodePath("Creatura")
 teren = NodePath("Teren")
 copaci_padure = Array[PackedScene]([ExtResource("7"), ExtResource("8"), ExtResource("7"), ExtResource("8"), ExtResource("7"), ExtResource("9"), ExtResource("10"), ExtResource("12")])
@@ -176,12 +176,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 7.45, 45)
 mesh = SubResource("fir")
 
 [node name="Autobuz" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
 
-[node name="Calator" type="Node3D" parent="Autobuz"]
+[node name="Calator" type="Node3D" parent="Autobuz/Corp"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.92, 2.12, -0.05)
 script = ExtResource("4")
 
-[node name="Camera3D" type="Camera3D" parent="Autobuz/Calator"]
+[node name="Camera3D" type="Camera3D" parent="Autobuz/Corp/Calator"]
 near = 0.05
 fov = 72.0
 

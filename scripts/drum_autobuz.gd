@@ -41,7 +41,7 @@ extends Node3D
 ## Ce zici când o vezi (le-a scris owner-ul).
 @export_multiline var replici_creatura: PackedStringArray = ["You: Why is grandma always doing this...", "You: Always forgets her meds and running naked through the forest."]
 ## La câte secunde după ce creatura apare pe ecran pornesc replicile de mai sus.
-@export var intarziere_replici := 1.0
+@export var intarziere_replici := 2.5
 
 @export_group("Pădurea")
 @export var copaci_padure: Array[PackedScene] = []
@@ -93,8 +93,8 @@ func _ready() -> void:
 	_rng.seed = 13
 	_v = viteza
 	for nume in ["NeonFata", "NeonMijloc"]:
-		_lumini.append(autobuz.get_node(nume) as OmniLight3D)
-	_neon = autobuz.get_node("Model").find_child("Lumini") as GeometryInstance3D
+		_lumini.append(autobuz.get_node("Corp/" + nume) as OmniLight3D)
+	_neon = autobuz.get_node("Corp/Model").find_child("Lumini") as GeometryInstance3D
 	creatura.visible = false
 	_camera = calator.get_node("Camera3D")
 	_construieste_drumul()
