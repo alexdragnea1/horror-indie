@@ -30,8 +30,8 @@ func _eticheta(pozitie: Vector2) -> Label:
 	var e := Label.new()
 	e.position = pozitie
 	e.add_theme_font_size_override("font_size", 10)
-	e.add_theme_color_override("font_color", Color(0.92, 0.88, 0.78))
-	e.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	e.add_theme_color_override("font_color", Color("83b3b0"))
+	e.add_theme_color_override("font_shadow_color", Color("262d2fe6"))
 	e.modulate.a = 0.0
 	add_child(e)
 	return e

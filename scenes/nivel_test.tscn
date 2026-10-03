@@ -45,7 +45,7 @@ shader_parameter/uv_din_lume = true
 [sub_resource type="ShaderMaterial" id="mat_lemn"]
 shader = ExtResource("1")
 shader_parameter/textura = SubResource("tex_podea")
-shader_parameter/culoare = Color(0.45, 0.3, 0.18, 1)
+shader_parameter/culoare = Color(0.565, 0.29, 0.251, 1)
 
 [node name="NivelTest" type="Node3D"]
 

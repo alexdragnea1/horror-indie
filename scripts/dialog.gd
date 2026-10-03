@@ -35,15 +35,15 @@ func _ready() -> void:
 	_panou.offset_top = -64
 	_panou.offset_bottom = -10
 	var stil := StyleBoxFlat.new()
-	stil.bg_color = Color(0, 0, 0, 0.85)
-	stil.border_color = Color(0.6, 0.55, 0.45)
+	stil.bg_color = Color("262d2fe0")
+	stil.border_color = Color("a18463")
 	stil.set_border_width_all(1)
 	stil.set_content_margin_all(6)
 	_panou.add_theme_stylebox_override("panel", stil)
 	_text = Label.new()
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_text.add_theme_font_size_override("font_size", 12)
-	_text.add_theme_color_override("font_color", Color(0.92, 0.88, 0.78))
+	_text.add_theme_color_override("font_color", Color("83b3b0"))
 	_panou.add_child(_text)
 	add_child(_panou)
 	_panou.hide()
@@ -81,7 +81,7 @@ func _arata_replica() -> void:
 		replica = gasit.get_string(2)
 		_nume.text = nume
 		var e_jucator := nume in NUME_JUCATOR
-		_nume.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0) if e_jucator else Color(1.0, 0.55, 0.6))
+		_nume.add_theme_color_override("font_color", Color("61a19f") if e_jucator else Color("a56850"))
 		_eticheta.show()
 	else:
 		_eticheta.hide()

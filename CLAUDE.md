@@ -41,6 +41,7 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 Blender 5.2: `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`. Modelele se fac **din cod** în `tools/blender/modele.py` (cuburi, cilindri, sfere cu helper-ele din `unelte.py`), apoi:
 `"<blender>" --background --factory-startup --python tools/blender/modele.py` → `models/*.glb`, apoi `--import` în Godot.
 - Fiecare piesă are o culoare în **culorile vârfurilor** (atribut `Col`, exportat `COLOR_0`); `ps2.gdshader` face `ALBEDO = textură × culoare × COLOR`, iar textura din `material_model.tres` dă doar murdăria.
+- **Paleta:** `textures/paleta culori.hex` (24 de culori, aleasă de owner). În `modele.py` culorile se scriu **doar** ca `p("7b383a")`; `unelte.py` oprește exportul dacă o piesă are o culoare din afara paletei. Și interfața (dialog, inventar, indiciu, punctul de țintire) și masa folosesc culori din paletă. Excepții: luminile, ceața și texturile owner-ului (pereți, podea).
 - Blender: Z în sus, fața modelului spre **-Y** (în Godot devine +Z). Piesele care se mișcă sunt obiecte separate, cu originea în pivot (`uneste(..., origine)`): `UsaFrigider`/`UsaCongelator` (balamaua), `Cap` la Mom (gâtul), `Sticla` la bec.
 - Ce iese bine: mobilă, obiecte, personaje rigide stil PS1. Personaje detaliate / animate → modele gata făcute.
 

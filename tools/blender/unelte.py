@@ -2,8 +2,24 @@
 # Fiecare piesă primește o singură culoare, pusă în "culorile vârfurilor" (atributul Col).
 # În Godot, shader-ul ps2 înmulțește textura cu culoarea asta.
 # Axe Blender: Z în sus, fața modelului spre -Y (în Godot devine +Z).
+import os
+
 import bpy
 from mathutils import Vector
+
+# Paleta jocului (owner-ul a ales-o): toate culorile modelelor vin DOAR de aici.
+PALETA_CALE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+	"textures", "paleta culori.hex")
+with open(PALETA_CALE, encoding="utf-8") as f:
+	PALETA = [r.strip().lower().lstrip("#") for r in f if r.strip()]
+
+
+def p(cod):
+	"""Culoare din paletă după codul hex ("7b383a"). Dacă nu e în paletă, oprește scriptul."""
+	cod = cod.lower()
+	if cod not in PALETA:
+		raise ValueError("Culoarea %s nu e în paleta din %s" % (cod, PALETA_CALE))
+	return tuple(int(cod[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
 
 
 def curata():
@@ -11,6 +27,9 @@ def curata():
 
 
 def _coloreaza(ob, culoare):
+	cod = "".join("%02x" % round(c * 255) for c in culoare[:3])
+	if cod not in PALETA:
+		raise ValueError("Piesa %s are culoarea %s, care nu e în paletă. Folosește p(\"...\")." % (ob.name, cod))
 	me = ob.data
 	attr = me.color_attributes.new(name="Col", type='BYTE_COLOR', domain='CORNER')
 	for d in attr.data:

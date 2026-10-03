@@ -3,7 +3,7 @@
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 
 [sub_resource type="Gradient" id="gradient"]
-colors = PackedColorArray(0.62, 0.6, 0.58, 1, 1, 1, 1, 1)
+colors = PackedColorArray(0.82, 0.82, 0.82, 1, 1, 1, 1, 1)
 
 [sub_resource type="FastNoiseLite" id="zgomot"]
 frequency = 0.09

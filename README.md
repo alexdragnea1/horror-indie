@@ -32,7 +32,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scenes/nivel_test.tscn` – prima scenă, casa: bucătăria cu Mom, frigiderul și becul, plus holul.
 
 ## Modele 3D
-Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Ca să schimbi o culoare sau o mărime, editezi numărul acolo și rulezi:
+Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:
 ```
 "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python tools/blender/modele.py
 ```
