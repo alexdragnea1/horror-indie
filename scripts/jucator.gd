@@ -13,6 +13,8 @@ extends CharacterBody3D
 ## Pașii pe fiecare suprafață. Se alege la întâmplare, niciodată același de două ori la rând.
 @export var pasi_lemn: Array[AudioStream] = []
 @export var pasi_covor: Array[AudioStream] = []
+@export var pasi_beton: Array[AudioStream] = []
+@export var pasi_frunze: Array[AudioStream] = []
 @export var volum_pasi_db := -9.0
 ## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
 @export var scartait_podea: AudioStream
@@ -20,7 +22,10 @@ extends CharacterBody3D
 @export var lanterna_pornita: AudioStream
 @export var lanterna_oprita: AudioStream
 
-## Pe ce calci acum ("lemn", "covor"). O schimbă ZonaSuprafata.
+## Pe ce calci când nu ești într-o ZonaSuprafata ("lemn" în casă, "frunze" afară).
+@export var suprafata_implicita := "lemn"
+
+## Pe ce calci acum ("lemn", "covor", "beton", "frunze"). O schimbă ZonaSuprafata.
 var suprafata := "lemn"
 
 @onready var _cap: Node3D = $Cap
@@ -36,6 +41,7 @@ var _ultimul_pas: AudioStream
 
 
 func _ready() -> void:
+	suprafata = suprafata_implicita
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
@@ -89,7 +95,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _pas(fuge: bool) -> void:
-	var lista: Array[AudioStream] = pasi_covor if suprafata == "covor" else pasi_lemn
+	var lista: Array[AudioStream] = pasi_lemn
+	match suprafata:
+		"covor": lista = pasi_covor
+		"beton": lista = pasi_beton
+		"frunze": lista = pasi_frunze
 	if lista.is_empty():
 		return
 	var sunet: AudioStream = lista.pick_random()
@@ -102,9 +112,9 @@ func _pas(fuge: bool) -> void:
 		Sunet.reda(scartait_podea, volum - 4.0, 0.15)
 
 
-## Adevărat cât rulează un dialog sau e deschis un meniu: jucătorul stă pe loc.
+## Adevărat cât rulează un dialog, e deschis un meniu sau e ecranul negru: jucătorul stă pe loc.
 func _ocupat() -> bool:
-	return Dialog.activ or Stare.meniu_deschis
+	return Dialog.activ or Stare.meniu_deschis or Tranzitie.activa
 
 
 func _tinta_privita() -> Interactabil:

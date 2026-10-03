@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="PackedScene" path="res://models/toc_usa.glb" id="1"]
 [ext_resource type="PackedScene" path="res://models/usa_intrare.glb" id="2"]
@@ -9,6 +9,11 @@
 [ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="7"]
 [ext_resource type="AudioStream" path="res://sunete/usa_incuiata.ogg" id="8"]
 [ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="b1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_2.ogg" id="b2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="b3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="b4"]
+[ext_resource type="AudioStream" path="res://sunete/usa_bloc.ogg" id="u1"]
 
 [sub_resource type="BoxShape3D" id="forma"]
 size = Vector3(0.9, 2.05, 0.06)
@@ -29,6 +34,10 @@ unghi_deschidere = -95.0
 durata = 1.0
 sunet_deschidere = ExtResource("6")
 sunet_inchidere = ExtResource("7")
+scena_urmatoare = "res://scenes/afara_bloc.tscn"
+titlu_locatie = "Block M7, Entrance B
+11:57 PM"
+sunete_tranzitie = Array[AudioStream]([ExtResource("b1"), ExtResource("b2"), ExtResource("b3"), ExtResource("b4"), ExtResource("b1"), ExtResource("b2"), ExtResource("b3"), ExtResource("u1")])
 
 [node name="Model" parent="Usa" instance=ExtResource("2")]
 script = ExtResource("3")

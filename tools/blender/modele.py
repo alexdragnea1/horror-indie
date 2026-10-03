@@ -209,3 +209,6 @@ usa_intrare()
 
 import dormitor  # noqa: E402
 dormitor.toate(MODELE)
+
+import afara  # noqa: E402
+afara.toate(MODELE)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/jucator.gd" id="1"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="l1"]
@@ -12,6 +12,14 @@
 [ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="s1"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="s2"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="s3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="b1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_2.ogg" id="b2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="b3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="b4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="f1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="f2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="f3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="f4"]
 
 [sub_resource type="CapsuleShape3D" id="forma"]
 radius = 0.3
@@ -21,6 +29,8 @@ height = 1.7
 script = ExtResource("1")
 pasi_lemn = Array[AudioStream]([ExtResource("l1"), ExtResource("l2"), ExtResource("l3"), ExtResource("l4")])
 pasi_covor = Array[AudioStream]([ExtResource("c1"), ExtResource("c2"), ExtResource("c3"), ExtResource("c4")])
+pasi_beton = Array[AudioStream]([ExtResource("b1"), ExtResource("b2"), ExtResource("b3"), ExtResource("b4")])
+pasi_frunze = Array[AudioStream]([ExtResource("f1"), ExtResource("f2"), ExtResource("f3"), ExtResource("f4")])
 scartait_podea = ExtResource("s1")
 lanterna_pornita = ExtResource("s2")
 lanterna_oprita = ExtResource("s3")

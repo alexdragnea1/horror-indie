@@ -123,7 +123,7 @@ func _input(event: InputEvent) -> void:
 		if event.is_action_pressed("inventar") or event.is_action_pressed("ui_cancel"):
 			_inchide_inventar()
 			get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("inventar") and not meniu_deschis and not Dialog.activ:
+	elif event.is_action_pressed("inventar") and not meniu_deschis and not Dialog.activ and not Tranzitie.activa:
 		_deschide_inventar()
 		get_viewport().set_input_as_handled()
 

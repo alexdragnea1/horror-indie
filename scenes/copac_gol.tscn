@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://models/copac_gol.glb" id="1"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="3"]
+
+[sub_resource type="CylinderShape3D" id="trunchi"]
+height = 3.0
+radius = 0.25
+
+[node name="Copac" type="StaticBody3D"]
+
+[node name="Model" parent="." instance=ExtResource("1")]
+script = ExtResource("2")
+material = ExtResource("3")
+
+[node name="Coliziune" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("trunchi")

@@ -1,0 +1,553 @@
+[gd_scene load_steps=60 format=3]
+
+[ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/bloc.glb" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/copac_1.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/copac_2.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/copac_3.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/copac_gol.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/gard.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/stalp.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://models/frunze_jos.glb" id="12"]
+[ext_resource type="PackedScene" path="res://models/frunze_jos_mic.glb" id="13"]
+[ext_resource type="PackedScene" path="res://models/gramada_frunze.glb" id="14"]
+[ext_resource type="PackedScene" path="res://models/banca.glb" id="15"]
+[ext_resource type="PackedScene" path="res://models/tomberon.glb" id="16"]
+[ext_resource type="PackedScene" path="res://models/batator.glb" id="17"]
+[ext_resource type="PackedScene" path="res://models/masina.glb" id="18"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="19"]
+[ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/sunete_aleatorii.gd" id="21"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="22"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="23"]
+[ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="24"]
+[ext_resource type="AudioStream" path="res://sunete/fluierat.ogg" id="25"]
+[ext_resource type="AudioStream" path="res://sunete/tabla_lovita.ogg" id="26"]
+[ext_resource type="AudioStream" path="res://sunete/fantoma.ogg" id="27"]
+[ext_resource type="AudioStream" path="res://sunete/usa_incuiata.ogg" id="28"]
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 1
+background_color = Color(0.149, 0.176, 0.184, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.36, 0.4, 0.52, 1)
+ambient_light_energy = 0.55
+fog_enabled = true
+fog_light_color = Color(0.2, 0.22, 0.26, 1)
+fog_density = 0.035
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.02
+volumetric_fog_albedo = Color(0.62, 0.64, 0.7, 1)
+volumetric_fog_length = 40.0
+
+[sub_resource type="Gradient" id="pete"]
+colors = PackedColorArray(0.68, 0.68, 0.68, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="zgomot"]
+frequency = 0.12
+
+[sub_resource type="NoiseTexture2D" id="tex_sol"]
+width = 64
+height = 64
+seamless = true
+color_ramp = SubResource("pete")
+noise = SubResource("zgomot")
+
+[sub_resource type="ShaderMaterial" id="mat_iarba"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.357, 0.427, 0.306, 1)
+shader_parameter/repetare_uv = Vector2(0.35, 0.35)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_beton"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.439, 0.439, 0.431, 1)
+shader_parameter/repetare_uv = Vector2(0.6, 0.6)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_asfalt"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.369, 0.325, 0.337, 1)
+shader_parameter/repetare_uv = Vector2(0.5, 0.5)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="ShaderMaterial" id="mat_bordura"]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("tex_sol")
+shader_parameter/culoare = Color(0.494, 0.553, 0.529, 1)
+shader_parameter/repetare_uv = Vector2(1, 1)
+shader_parameter/uv_din_lume = true
+
+[sub_resource type="BoxShape3D" id="forma_corp"]
+size = Vector3(24.2, 15, 10.2)
+
+[sub_resource type="BoxShape3D" id="forma_podest"]
+size = Vector3(2.8, 0.45, 1.4)
+
+[sub_resource type="BoxShape3D" id="forma_rampa"]
+size = Vector3(2.8, 0.1, 0.95)
+
+[sub_resource type="BoxShape3D" id="forma_usa_bloc"]
+size = Vector3(1.5, 2.2, 0.12)
+
+[sub_resource type="BoxShape3D" id="forma_banca"]
+size = Vector3(1.8, 0.9, 0.7)
+
+[sub_resource type="BoxShape3D" id="forma_tomberon"]
+size = Vector3(1.6, 1.3, 0.95)
+
+[sub_resource type="BoxShape3D" id="forma_batator"]
+size = Vector3(2.7, 2, 0.25)
+
+[sub_resource type="BoxShape3D" id="forma_masina"]
+size = Vector3(1.7, 1.4, 4.4)
+
+[sub_resource type="BoxShape3D" id="forma_trotuar"]
+size = Vector3(27, 1, 3.2)
+
+[sub_resource type="BoxShape3D" id="forma_alee"]
+size = Vector3(1.8, 1, 11)
+
+[sub_resource type="BoxShape3D" id="forma_strada"]
+size = Vector3(120, 1, 10)
+
+[sub_resource type="BoxShape3D" id="forma_perete_lung"]
+size = Vector3(1, 8, 40)
+
+[sub_resource type="BoxShape3D" id="forma_perete_lat"]
+size = Vector3(30, 8, 1)
+
+[sub_resource type="Gradient" id="culori_frunze"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.25, 0.5, 0.75)
+colors = PackedColorArray(0.565, 0.29, 0.251, 1, 0.647, 0.408, 0.314, 1, 0.631, 0.518, 0.388, 1, 0.482, 0.22, 0.227, 1)
+
+[sub_resource type="GradientTexture1D" id="tex_culori_frunze"]
+gradient = SubResource("culori_frunze")
+
+[sub_resource type="ParticleProcessMaterial" id="cadere_frunze"]
+emission_shape = 3
+emission_box_extents = Vector3(13, 2, 8)
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0.4, -1, 0.15)
+spread = 35.0
+initial_velocity_min = 0.2
+initial_velocity_max = 0.6
+angular_velocity_min = -160.0
+angular_velocity_max = 160.0
+gravity = Vector3(0.35, -0.55, 0.1)
+color_initial_ramp = SubResource("tex_culori_frunze")
+turbulence_enabled = true
+turbulence_noise_strength = 1.5
+turbulence_noise_scale = 4.0
+turbulence_influence_min = 0.05
+turbulence_influence_max = 0.15
+
+[sub_resource type="StandardMaterial3D" id="mat_frunza"]
+cull_mode = 2
+vertex_color_use_as_albedo = true
+texture_filter = 0
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="frunza"]
+material = SubResource("mat_frunza")
+size = Vector2(0.12, 0.09)
+
+[node name="AfaraBloc" type="Node3D"]
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("22")
+marime_camera = 0.25
+amortizare = 0.8
+ecou = 0.04
+
+[node name="Luna" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, 0.3536, -0.3536, 0, 0.7071, 0.7071, 0.5, -0.6124, 0.6124, 0, 20, 0)
+light_color = Color(0.62, 0.7, 0.95, 1)
+light_energy = 0.22
+light_volumetric_fog_energy = 0.3
+shadow_enabled = true
+
+[node name="Teren" type="CSGCombiner3D" parent="."]
+use_collision = true
+
+[node name="Sol" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 10)
+size = Vector3(120, 0.2, 120)
+material = SubResource("mat_iarba")
+
+[node name="Trotuar" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 1.6)
+size = Vector3(27, 0.06, 3.2)
+material = SubResource("mat_beton")
+
+[node name="Alee" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 8.7)
+size = Vector3(1.8, 0.06, 11)
+material = SubResource("mat_beton")
+
+[node name="TrotuarStrada" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 14.6)
+size = Vector3(120, 0.1, 1.2)
+material = SubResource("mat_beton")
+
+[node name="Bordura" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 15.25)
+size = Vector3(120, 0.14, 0.15)
+material = SubResource("mat_bordura")
+
+[node name="Strada" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 18.75)
+size = Vector3(120, 0.02, 7)
+material = SubResource("mat_asfalt")
+
+[node name="BorduraVizavi" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07, 22.3)
+size = Vector3(120, 0.14, 0.15)
+material = SubResource("mat_bordura")
+
+[node name="TrotuarVizavi" type="CSGBox3D" parent="Teren"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 23.2)
+size = Vector3(120, 0.1, 1.8)
+material = SubResource("mat_beton")
+
+[node name="Bloc" type="StaticBody3D" parent="."]
+
+[node name="Model" parent="Bloc" instance=ExtResource("5")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Lumini")
+stralucire = 1.4
+
+[node name="Corp" type="CollisionShape3D" parent="Bloc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, -5.1)
+shape = SubResource("forma_corp")
+
+[node name="Podest" type="CollisionShape3D" parent="Bloc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0.7)
+shape = SubResource("forma_podest")
+
+[node name="Rampa" type="CollisionShape3D" parent="Bloc"]
+transform = Transform3D(1, 0, 0, 0, 0.8414, -0.5402, 0, 0.5402, 0.8414, 0, 0.183, 1.723)
+shape = SubResource("forma_rampa")
+
+[node name="UsaBloc" type="StaticBody3D" parent="Bloc"]
+script = ExtResource("19")
+indiciu = "[E] Go back inside"
+replici = PackedStringArray("You: Nope. Mom's still up there.")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Bloc/UsaBloc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0.13)
+shape = SubResource("forma_usa_bloc")
+
+[node name="BecScara" type="OmniLight3D" parent="Bloc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 0.45)
+light_color = Color(1, 0.75, 0.45, 1)
+light_energy = 1.0
+light_volumetric_fog_energy = 2.0
+shadow_enabled = true
+omni_range = 5.0
+script = ExtResource("23")
+energie_normala = 1.0
+sansa_stingere = 0.08
+
+[node name="BlocVizavi" parent="." instance=ExtResource("5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5, 0, 40)
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Lumini")
+stralucire = 1.4
+
+[node name="BlocLateral" parent="." instance=ExtResource("5")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32, 0, 8)
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Lumini")
+stralucire = 1.4
+
+[node name="Copaci" type="Node3D" parent="."]
+
+[node name="Copac1" parent="Copaci" instance=ExtResource("6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 6.2)
+
+[node name="Copac2" parent="Copaci" instance=ExtResource("7")]
+transform = Transform3D(0.5, 0, -0.866, 0, 1, 0, 0.866, 0, 0.5, -10, 0, 10.8)
+
+[node name="Copac3" parent="Copaci" instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0, 6.5)
+
+[node name="Copac4" parent="Copaci" instance=ExtResource("6")]
+transform = Transform3D(-0.5, 0, 0.866, 0, 1, 0, -0.866, 0, -0.5, 10.5, 0, 11)
+
+[node name="CopacGol" parent="Copaci" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, 12)
+
+[node name="Copac5" parent="Copaci" instance=ExtResource("7")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.8, 0, 11.8)
+
+[node name="Copac6" parent="Copaci" instance=ExtResource("8")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -15, 0, 25)
+
+[node name="CopacGol2" parent="Copaci" instance=ExtResource("9")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 12, 0, 25.5)
+
+[node name="Copac7" parent="Copaci" instance=ExtResource("6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0, 3)
+
+[node name="Copac8" parent="Copaci" instance=ExtResource("7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, 0, 5)
+
+[node name="Frunze" type="Node3D" parent="."]
+
+[node name="SubCopac1" parent="Frunze" instance=ExtResource("12")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 6.2)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="SubCopac2" parent="Frunze" instance=ExtResource("12")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -10, 0, 10.8)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="SubCopac3" parent="Frunze" instance=ExtResource("12")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 6.5, 0, 6.5)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="SubCopac4" parent="Frunze" instance=ExtResource("12")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0, 11)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="SubCopac5" parent="Frunze" instance=ExtResource("12")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3.8, 0, 11.8)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="PeAlee" parent="Frunze" instance=ExtResource("13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.06, 6)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="PeAlee2" parent="Frunze" instance=ExtResource("13")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.4, 0.06, 11.5)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="PeTrotuar" parent="Frunze" instance=ExtResource("13")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5, 0.06, 2)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="PeTrotuar2" parent="Frunze" instance=ExtResource("13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.06, 1.8)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="PeStrada" parent="Frunze" instance=ExtResource("13")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.02, 16)
+script = ExtResource("3")
+material = ExtResource("4")
+umbre = false
+
+[node name="Gramada" parent="Frunze" instance=ExtResource("14")]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 8.3, 0, 8.6)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="FrunzeCazatoare" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 8)
+amount = 45
+lifetime = 16.0
+preprocess = 16.0
+visibility_aabb = AABB(-16, -10, -10, 32, 14, 20)
+process_material = SubResource("cadere_frunze")
+draw_pass_1 = SubResource("frunza")
+
+[node name="Gard" type="Node3D" parent="."]
+
+[node name="Fata1" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0, 13.9)
+
+[node name="Fata2" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 13.9)
+
+[node name="Fata3" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 13.9)
+
+[node name="Fata4" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 13.9)
+
+[node name="Fata5" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 13.9)
+
+[node name="Fata6" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 13.9)
+
+[node name="Fata7" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 13.9)
+
+[node name="Fata8" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 13.9)
+
+[node name="Stanga1" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13, 0, 13.9)
+
+[node name="Stanga2" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13, 0, 10.9)
+
+[node name="Stanga3" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13, 0, 7.9)
+
+[node name="Dreapta1" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13, 0, 13.9)
+
+[node name="Dreapta2" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13, 0, 10.9)
+
+[node name="Dreapta3" parent="Gard" instance=ExtResource("10")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13, 0, 7.9)
+
+[node name="StalpAlee" parent="." instance=ExtResource("11")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.45, 0, 9.5)
+
+[node name="StalpStrada" parent="." instance=ExtResource("11")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 14.6)
+
+[node name="Banca" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.75, 0, 6.8)
+script = ExtResource("19")
+replici = PackedStringArray("Someone carved \"THE COVEN WAS HERE\" into the backrest.", "You: Very subtle.")
+
+[node name="Model" parent="Banca" instance=ExtResource("15")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Banca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0.05)
+shape = SubResource("forma_banca")
+
+[node name="Tomberon" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0.06, 2.4)
+script = ExtResource("19")
+replici = PackedStringArray("It smells like cabbage and bad decisions.")
+
+[node name="Model" parent="Tomberon" instance=ExtResource("16")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Tomberon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.65, 0)
+shape = SubResource("forma_tomberon")
+
+[node name="Batator" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0, 4.3)
+script = ExtResource("19")
+replici = PackedStringArray("Somebody left their carpet out here. At midnight. Again.")
+
+[node name="Model" parent="Batator" instance=ExtResource("17")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Batator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("forma_batator")
+
+[node name="Masina" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -6, 0, 16.6)
+script = ExtResource("19")
+replici = PackedStringArray("Mr. Ionescu's car. It hasn't moved since 1989.")
+
+[node name="Model" parent="Masina" instance=ExtResource("18")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Masina"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("forma_masina")
+
+[node name="Beton" type="Area3D" parent="."]
+script = ExtResource("20")
+suprafata = "beton"
+
+[node name="Trotuar" type="CollisionShape3D" parent="Beton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 1.6)
+shape = SubResource("forma_trotuar")
+
+[node name="Alee" type="CollisionShape3D" parent="Beton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 8.7)
+shape = SubResource("forma_alee")
+
+[node name="Strada" type="CollisionShape3D" parent="Beton"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 19.2)
+shape = SubResource("forma_strada")
+
+[node name="Limite" type="StaticBody3D" parent="."]
+
+[node name="Stanga" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 4, 8)
+shape = SubResource("forma_perete_lung")
+
+[node name="Dreapta" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 8)
+shape = SubResource("forma_perete_lung")
+
+[node name="Fata" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 24.5)
+shape = SubResource("forma_perete_lat")
+
+[node name="Spate" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -11)
+shape = SubResource("forma_perete_lat")
+
+[node name="Jucator" parent="." instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.1, 10.5)
+suprafata_implicita = "frunze"
+
+[node name="Vant" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("24")
+volume_db = -17.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Sperieturi" type="Node3D" parent="."]
+script = ExtResource("21")
+sunete = Array[AudioStream]([ExtResource("25"), ExtResource("26"), ExtResource("26"), ExtResource("28")])
+pauza_minima = 20.0
+pauza_maxima = 45.0
+volum_db = -12.0
+variatie = 0.1
+in_jurul_jucatorului = true
+distanta_minima = 9.0
+distanta_maxima = 16.0
+
+[node name="Fantoma" type="Node3D" parent="."]
+script = ExtResource("21")
+sunete = Array[AudioStream]([ExtResource("27")])
+pauza_minima = 120.0
+pauza_maxima = 240.0
+volum_db = -22.0
+variatie = 0.05
+in_jurul_jucatorului = true
+distanta_minima = 8.0
+distanta_maxima = 14.0

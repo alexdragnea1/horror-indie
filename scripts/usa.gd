@@ -33,6 +33,14 @@ signal descuiata
 @export var sunet_inchidere: AudioStream
 @export var volum_db := -4.0
 
+@export_group("Iesire din scena")
+## Dacă e completat, deschiderea ușii te duce în scena asta (prin ecran negru, vezi Tranzitie).
+@export_file("*.tscn") var scena_urmatoare := ""
+## Numele locului, arătat jos în stânga după tranziție (Enter = rând nou).
+@export_multiline var titlu_locatie := ""
+## Ce se aude pe ecranul negru, în ordine (pași pe scări, o ușă trântită...).
+@export var sunete_tranzitie: Array[AudioStream] = []
+
 var deschisa_acum := false
 
 var _unghi_inchis := 0.0
@@ -61,6 +69,10 @@ func interactioneaza() -> void:
 		descuiata.emit()
 	_misca(not deschisa_acum)
 	folosit.emit()
+	if deschisa_acum and scena_urmatoare != "":
+		# ușa apucă să se deschidă puțin, apoi se întunecă ecranul
+		await get_tree().create_timer(0.35).timeout
+		Tranzitie.mergi_la(scena_urmatoare, titlu_locatie, sunete_tranzitie)
 
 
 func _misca(deschide: bool) -> void:

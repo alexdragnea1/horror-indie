@@ -34,9 +34,12 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/inventar.gd` – fereastra de inventar (Tab). `Stare.seteaza_sarcina("...")` schimbă sarcina curentă și o arată sus 5 secunde.
 - `scenes/usa_intrare.tscn` – ușa de la intrare. În Inspector, la `Usa`: `marcaj_necesar` = ce trebuie să se fi întâmplat ca să se deschidă (acum `a_vorbit_cu_mom`), `replici_fara_marcaj` = ce zici până atunci.
 - `scenes/nivel_test.tscn` – prima scenă, casa: camera ta, holul cu ușa de la intrare, bucătăria cu Mom, frigiderul și becurile. Începi în camera ta.
+- `scenes/afara_bloc.tscn` – afară, în fața blocului tău (BL. M7, scara B), noaptea: grădină cu copaci de toamnă, frunze care cad, ceață, felinare care pâlpâie, banca, tomberonul, bătătorul cu covor, mașina vecinului. Ajungi aici când deschizi ușa de la intrare, printr-un ecran negru în care auzi cum cobori scările și ușa blocului trântindu-se.
+- `scripts/tranzitie.gd` – trecerea dintre scene prin ecran negru: `Tranzitie.mergi_la("res://scenes/...tscn", "Numele locului", [sunete])`. La orice ușă (`usa.gd`) completezi în Inspector, la „Iesire din scena”: `scena_urmatoare`, `titlu_locatie` și `sunete_tranzitie`.
+- `scripts/acustica.gd` – pune câte unul în fiecare nivel: cât ecou au sunetele acolo (în casă puțin, afară aproape deloc).
 
 ## Modele 3D
-Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py`. Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:
+Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender/modele.py` (casa), `dormitor.py` (camera ta) și `afara.py` (blocul, copacii și curtea). Toate culorile vin din paleta ta, `textures/paleta culori.hex`, și se scriu ca `p("7b383a")`. O culoare din afara paletei oprește scriptul cu o eroare. Ca să schimbi o culoare sau o mărime, editezi acolo și rulezi:
 ```
 "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python tools/blender/modele.py
 ```
@@ -48,10 +51,11 @@ Pachetul tău de sunete stă în `Sound/Soundpack` (Godot și git îl ignoră). 
 bash tools/sunete.sh
 ```
 Ce se aude acum:
-- **pași** pe podeaua de lemn (uneori scârțâie) și mai moi pe covorul cu pentagramă; clic la lanternă;
+- **pași** pe podeaua de lemn (uneori scârțâie), mai moi pe covorul cu pentagramă, pe beton afară și foșnind prin frunze uscate în grădină; clic la lanternă;
 - **bâzâit** la becuri, care tace când becul se stinge; **frigiderul** bâzâie, iar la deschidere și închidere se aud garnitura și borcanele;
 - **ușa camerei** scârțâie lung când o deschizi; **ceaunul** fierbe și gâlgâie din când în când; **ceasul** din bucătărie ticăie (e oprit la 11:55);
-- **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău;
+- **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău; în fața blocului, uneori, cineva fluieră departe în întuneric sau se aude o tablă lovită;
+- **tranziția** spre afară: pașii pe scara blocului, cu ecou, și ușa metalică a scării trântită;
 - în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, tu subțire;
 - la meniul cu numele: clicuri și o lovitură dramatică la „Are you sure your name is little bitch?”.
 

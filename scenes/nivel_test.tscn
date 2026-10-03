@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="AudioStream" path="res://sunete/ciocanit.ogg" id="13"]
 [ext_resource type="AudioStream" path="res://sunete/fantoma.ogg" id="14"]
 [ext_resource type="PackedScene" path="res://scenes/usa_intrare.tscn" id="15"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="16"]
 [ext_resource type="Texture2D" path="res://textures/perete_casa.png" id="5"]
 [ext_resource type="Texture2D" path="res://textures/podea_casa.png" id="6"]
 
@@ -73,6 +74,9 @@ shader_parameter/uv_din_lume = true
 
 [node name="Mediu" type="WorldEnvironment" parent="."]
 environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("16")
 
 [node name="Casa" type="CSGCombiner3D" parent="."]
 use_collision = true
