@@ -18,7 +18,8 @@ const INALTIME_JUCATOR := 1.25
 ## Pentru replicile fără nume (descrieri, naratorul).
 const INALTIME_FARA_NUME := 0.9
 const LITERE_INTRE_BIPURI := 4
-const VOLUM_VOCE_DB := -17.0
+## La fel de tare ca toate efectele (Sunet.VOLUM_EFECTE).
+const VOLUM_VOCE_DB := 0.0
 
 var activ := false
 

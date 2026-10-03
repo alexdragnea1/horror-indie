@@ -304,7 +304,7 @@ pasi_poteca = Array[AudioStream]([ExtResource("44"), ExtResource("45"), ExtResou
 
 [node name="Vant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("36")
-volume_db = -16.0
+volume_db = -14.0
 autoplay = true
 bus = &"Ambianta"
 
@@ -325,7 +325,6 @@ script = ExtResource("10")
 sunete = Array[AudioStream]([ExtResource("39")])
 pauza_minima = 18.0
 pauza_maxima = 45.0
-volum_db = -10.0
 variatie = 0.06
 in_jurul_jucatorului = true
 distanta_minima = 14.0

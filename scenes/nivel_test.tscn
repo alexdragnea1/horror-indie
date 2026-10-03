@@ -257,7 +257,7 @@ shape = SubResource("forma_cuier")
 
 [node name="Vant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("11")
-volume_db = -26.0
+volume_db = -14.0
 autoplay = true
 bus = &"Ambianta"
 
@@ -266,7 +266,6 @@ script = ExtResource("10")
 sunete = Array[AudioStream]([ExtResource("12"), ExtResource("13"), ExtResource("12")])
 pauza_minima = 25.0
 pauza_maxima = 60.0
-volum_db = -10.0
 variatie = 0.15
 in_jurul_jucatorului = true
 distanta_minima = 3.0
@@ -277,7 +276,6 @@ script = ExtResource("10")
 sunete = Array[AudioStream]([ExtResource("14")])
 pauza_minima = 120.0
 pauza_maxima = 240.0
-volum_db = -22.0
 variatie = 0.05
 in_jurul_jucatorului = true
 distanta_minima = 6.0

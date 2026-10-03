@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pregătește sunetele jocului din pachetul brut (Sound/Soundpack, ignorat de Godot și de git)
-# în sunete/*.ogg: taie liniștea de la început, aduce vârful la -1 dB, mono pentru sunetele
+# în sunete/*.ogg: taie liniștea de la început, aduce totul la aceeași tărie (-20 LUFS), mono pentru sunetele
 # care vin dintr-un loc anume (3D) și face buclele să se lege fără cusătură.
 # Rulare din folderul proiectului:   bash tools/sunete.sh
 set -e
@@ -9,11 +9,29 @@ PACHET="Sound/Soundpack"
 OUT="sunete"
 mkdir -p "$OUT"
 
-# varf_la FISIER_INTRARE FILTRU -> câștigul (dB) care aduce vârful la -1 dB după FILTRU
+# Toate sunetele ies la aceeași tărie PERCEPUTĂ (loudness, ca la studiourile mari), nu doar la același
+# vârf: un pas și o ușă trântită sună la fel de tare. Vârfurile care ar trece de -2 dB le prinde limitatorul (rezervă pentru comprimarea .ogg).
+TINTA_LUFS=-20
+LIMITATOR="alimiter=limit=0.79:attack=1:release=60:level=false"
+
+# castig FISIER_INTRARE FILTRU -> câștigul (dB) care aduce tăria (LUFS integrat) la TINTA_LUFS după FILTRU.
+# La sunetele foarte scurte măsurătoarea are nevoie de puțină liniște după (apad).
 castig() {
-	local max
-	max=$(ffmpeg -hide_banner -i "$1" -af "$2,volumedetect" -f null - 2>&1 | grep -o "max_volume: [-0-9.]*" | grep -o "[-0-9.]*$")
-	awk -v m="$max" 'BEGIN { printf "%.2f", -1 - m }'
+	local i
+	i=$(ffmpeg -hide_banner -i "$1" -af "$2,apad=pad_dur=0.5,ebur128" -f null - 2>&1 | grep -A2 "Integrated loudness" | grep -o "I: *[-0-9.]*" | grep -o "[-0-9.]*$")
+	awk -v i="$i" -v t="$TINTA_LUFS" 'BEGIN { printf "%.2f", t - i }'
+}
+
+# castig_final FISIER_INTRARE FILTRU -> ca `castig`, dar măsoară din nou DUPĂ limitator și corectează
+# (de două ori): sunetele cu vârfuri ascuțite (pași, ușa trântită) pierd tărie la limitator.
+castig_final() {
+	local g i k
+	g=$(castig "$1" "$2")
+	for k in 1 2; do
+		i=$(ffmpeg -hide_banner -i "$1" -af "$2,volume=${g}dB,$LIMITATOR,apad=pad_dur=0.5,ebur128" -f null - 2>&1 | grep -A2 "Integrated loudness" | grep -o "I: *[-0-9.]*" | grep -o "[-0-9.]*$")
+		g=$(awk -v g="$g" -v i="$i" -v t="$TINTA_LUFS" 'BEGIN { printf "%.2f", g + (t - i) }')
+	done
+	echo "$g"
 }
 
 # unic NUME SURSA [mono|stereo] [FILTRU_EXTRA] -> sunet scurt (pas, ușă, clic)
@@ -22,8 +40,8 @@ unic() {
 	[ -f "$sursa" ] || sursa="$2"  # merge și cu un fișier din afara pachetului
 	local ac=1; [ "$canale" = stereo ] && ac=2
 	local f="silenceremove=start_periods=1:start_threshold=-50dB,$extra"
-	local g; g=$(castig "$sursa" "$f")
-	ffmpeg -v error -y -i "$sursa" -af "$f,volume=${g}dB" -ac $ac -c:a libvorbis -q:a 5 "$OUT/$nume.ogg"
+	local g; g=$(castig_final "$sursa" "$f")
+	ffmpeg -v error -y -i "$sursa" -af "$f,volume=${g}dB,$LIMITATOR" -ac $ac -c:a libvorbis -q:a 5 "$OUT/$nume.ogg"
 	echo "$nume.ogg  <- $2"
 }
 
@@ -36,9 +54,9 @@ bucla() {
 	local ac=1; [ "$canale" = stereo ] && ac=2
 	local tmp="$OUT/_tmp.wav"
 	ffmpeg -v error -y -i "$sursa" -af "$extra" -ac $ac "$tmp"
-	local g; g=$(castig "$tmp" "anull")
+	local g; g=$(castig_final "$tmp" "anull")
 	ffmpeg -v error -y -i "$tmp" -filter_complex \
-		"[0]atrim=start=$d,asetpts=PTS-STARTPTS[a];[0]atrim=end=$d,asetpts=PTS-STARTPTS[b];[a][b]acrossfade=d=$d:c1=$curba:c2=$curba,volume=${g}dB" \
+		"[0]atrim=start=$d,asetpts=PTS-STARTPTS[a];[0]atrim=end=$d,asetpts=PTS-STARTPTS[b];[a][b]acrossfade=d=$d:c1=$curba:c2=$curba,volume=${g}dB,$LIMITATOR" \
 		-c:a libvorbis -q:a 5 "$OUT/$nume.ogg"
 	rm -f "$tmp"
 	echo "$nume.ogg  (buclă)"
@@ -80,7 +98,8 @@ mv -f "$OUT/gâlgâit.ogg" "$OUT/galgait.ogg"
 # --- bucle de ambianță
 bucla vant "$PACHET/Environment/ambient_wind.wav" 1.5 stereo
 bucla ceaun_fierbe "$PACHET/Environment/water_boiling_loop.wav" 0.6 mono "asetrate=44100*0.75,aresample=44100,lowpass=f=4000"
-ffmpeg -v error -y -i "$PACHET/Environment/clock_ticking.wav" -ac 1 -af "volume=-1dB" -c:a libvorbis -q:a 5 "$OUT/ceas.ogg"
+g=$(castig_final "$PACHET/Environment/clock_ticking.wav" "anull")
+ffmpeg -v error -y -i "$PACHET/Environment/clock_ticking.wav" -ac 1 -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/ceas.ogg"
 echo "ceas.ogg  (buclă, 4 s = exact 4 tic-tacuri)"
 
 # --- sintetizate (nu există în pachet)

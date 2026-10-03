@@ -20,7 +20,8 @@ extends CharacterBody3D
 @export var pasi_frunze: Array[AudioStream] = []
 ## Pe poteca din pădure (pământ bătătorit și pietriș).
 @export var pasi_poteca: Array[AudioStream] = []
-@export var volum_pasi_db := -9.0
+## 0 = volumul comun al efectelor (Sunet.VOLUM_EFECTE); schimbă doar dacă vrei intenționat altfel.
+@export var volum_pasi_db := 0.0
 ## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
 @export var scartait_podea: AudioStream
 @export_range(0.0, 1.0) var sansa_scartait := 0.07
@@ -67,7 +68,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("lanterna"):
 		_lanterna.visible = not _lanterna.visible
-		Sunet.reda(lanterna_pornita if _lanterna.visible else lanterna_oprita, -10.0, 0.05)
+		Sunet.reda(lanterna_pornita if _lanterna.visible else lanterna_oprita, Sunet.VOLUM_EFECTE, 0.05)
 	elif event.is_action_pressed("interact") and not _ocupat():
 		var tinta := _tinta_privita()
 		if tinta:
@@ -139,7 +140,7 @@ func _urca_treapta(delta: float) -> void:
 	velocity.y = 0.0
 
 
-func _pas(fuge: bool) -> void:
+func _pas(_fuge: bool) -> void:
 	var lista: Array[AudioStream] = pasi_lemn
 	match suprafata:
 		"covor": lista = pasi_covor
@@ -152,10 +153,10 @@ func _pas(fuge: bool) -> void:
 	while lista.size() > 1 and sunet == _ultimul_pas:
 		sunet = lista.pick_random()
 	_ultimul_pas = sunet
-	var volum := volum_pasi_db + (3.0 if fuge else 0.0)
+	var volum := volum_pasi_db  # și la fugă la fel de tare (toate efectele au același volum)
 	Sunet.reda(sunet, volum, 0.07)
 	if suprafata == "lemn" and randf() < sansa_scartait:
-		Sunet.reda(scartait_podea, volum - 4.0, 0.15)
+		Sunet.reda(scartait_podea, volum, 0.15)
 
 
 ## Adevărat cât rulează un dialog, e deschis un meniu sau e ecranul negru: jucătorul stă pe loc.

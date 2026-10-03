@@ -206,7 +206,7 @@ func _zornaieli(delta: float) -> void:
 	_pana_la_zornait = _rng.randf_range(1.5, 4.5)
 	var p := AudioStreamPlayer3D.new()
 	p.stream = zornaieli.pick_random()
-	p.volume_db = _rng.randf_range(-26.0, -18.0)
+	p.volume_db = Sunet.VOLUM_EFECTE
 	p.pitch_scale = _rng.randf_range(1.5, 2.2)
 	p.unit_size = 2.0
 	p.bus = &"Efecte"
@@ -300,7 +300,7 @@ func _scenariu() -> void:
 		var trecut := _timp - start
 		if trecut > momeala and not _momeala_data:
 			_momeala_data = true
-			Sunet.reda_la(sunet_crengi, autobuz.global_position + Vector3(9.0, 1.0, 14.0), -6.0, 0.05)
+			Sunet.reda_la(sunet_crengi, autobuz.global_position + Vector3(9.0, 1.0, 14.0), Sunet.VOLUM_EFECTE, 0.05)
 			_clipeste_lumina()
 		if trecut > fortat and not Dialog.activ:
 			await calator.priveste_spre(95.0, -4.0, 1.3)

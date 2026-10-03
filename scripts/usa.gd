@@ -31,7 +31,8 @@ signal descuiata
 ## Sunetul de la deschidere (scârțâit) și cel de la închidere (se aude când ușa ajunge la loc).
 @export var sunet_deschidere: AudioStream
 @export var sunet_inchidere: AudioStream
-@export var volum_db := -4.0
+## 0 = volumul comun al efectelor (Sunet.VOLUM_EFECTE).
+@export var volum_db := 0.0
 
 @export_group("Iesire din scena")
 ## Dacă e completat, deschiderea ușii te duce în scena asta (prin ecran negru, vezi Tranzitie).

@@ -96,7 +96,7 @@ func _confirma_nume() -> void:
 		return
 	_pas_nume.hide()
 	_pas_intrebare.show()
-	Sunet.reda(SUNET_STING, -3.0, 0.0, &"Interfata")
+	Sunet.reda(SUNET_STING, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
 	_pas_intrebare.get_child(1).get_child(0).grab_focus()
 
 
@@ -109,4 +109,4 @@ func _termina() -> void:
 
 func _scris(_text: String) -> void:
 	_ok_nume.disabled = _nume_curat().is_empty()
-	Sunet.reda(SUNET_TASTA, -16.0, 0.1, &"Interfata", 1.6)
+	Sunet.reda(SUNET_TASTA, Sunet.VOLUM_EFECTE, 0.1, &"Interfata", 1.6)

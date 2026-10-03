@@ -93,7 +93,7 @@ sansa_stingere = 0.05
 [node name="Bazait" type="AudioStreamPlayer3D" parent="Corp"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
 stream = ExtResource("8")
-volume_db = -26.0
+volume_db = -14.0
 pitch_scale = 1.15
 unit_size = 2.0
 max_distance = 12.0
@@ -103,7 +103,7 @@ bus = &"Ambianta"
 [node name="Motor" type="AudioStreamPlayer3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.8)
 stream = ExtResource("7")
-volume_db = -3.0
+volume_db = -14.0
 unit_size = 6.0
 max_distance = 90.0
 autoplay = true

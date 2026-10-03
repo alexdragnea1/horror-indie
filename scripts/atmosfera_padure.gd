@@ -63,13 +63,13 @@ func _process(delta: float) -> void:
 	env.ambient_light_energy = lerpf(lerpf(lumina_padure, lumina_platou, _p), lumina_vale, _c)
 	luna.light_energy = lerpf(lerpf(luna_padure, luna_platou, _p), luna_vale, _c)
 	if greieri:
-		greieri.volume_db = linear_to_db(maxf(_p, 0.001)) - 10.0
+		greieri.volume_db = Sunet.VOLUM_AMBIANTA + linear_to_db(maxf(_p, 0.001))
 	if drone:
-		drone.volume_db = linear_to_db(maxf(_c, 0.001)) - 4.0
+		drone.volume_db = Sunet.VOLUM_AMBIANTA + linear_to_db(maxf(_c, 0.001))
 	if vant:
 		vant.volume_db = _volum_vant + linear_to_db(maxf(1.0 - _c * 0.85, 0.001))
 	if sperieturi_vale:
-		sperieturi_vale.set("volum_db", lerpf(-40.0, -6.0, _c))
+		sperieturi_vale.set("volum_db", Sunet.VOLUM_EFECTE + linear_to_db(maxf(_c, 0.001)))
 		sperieturi_vale.set("pauza_minima", lerpf(40.0, 6.0, _c))
 		sperieturi_vale.set("pauza_maxima", lerpf(80.0, 14.0, _c))
 	_suprafata(jucator, poz)

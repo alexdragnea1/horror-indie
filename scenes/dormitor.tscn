@@ -130,7 +130,7 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.6, 0.02, -0.45)
 [node name="Fierbe" type="AudioStreamPlayer3D" parent="Ceaun"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
 stream = ExtResource("14")
-volume_db = -16.0
+volume_db = -14.0
 unit_size = 1.2
 max_distance = 8.0
 autoplay = true
@@ -142,7 +142,6 @@ script = ExtResource("12")
 sunete = Array[AudioStream]([ExtResource("15")])
 pauza_minima = 6.0
 pauza_maxima = 14.0
-volum_db = -14.0
 
 [node name="ZonaCovor" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0.2, 0)

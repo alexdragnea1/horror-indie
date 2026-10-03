@@ -81,7 +81,7 @@ func _process(delta: float) -> void:
 				p.stream = sunet_frana
 				p.unit_size = 6.0
 				p.max_distance = 80.0
-				p.volume_db = -2.0
+				p.volume_db = Sunet.VOLUM_EFECTE
 				p.finished.connect(p.queue_free)
 				autobuz.add_child(p)
 				p.play()

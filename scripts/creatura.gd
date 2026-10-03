@@ -14,7 +14,8 @@ extends Node3D
 ## Pașii (sunetele creatura_pas_*: grei, umezi, cu pocnet de oase); unul la întâmplare la fiecare bătaie.
 @export var pasi: Array[AudioStream] = []
 ## Cât de tare se aud pașii (dB).
-@export var volum_pasi_db := 3.0
+## 0 = volumul comun al efectelor (Sunet.VOLUM_EFECTE); schimbă doar dacă vrei intenționat altfel.
+@export var volum_pasi_db := 0.0
 
 var alearga := false
 
@@ -66,8 +67,8 @@ func _pas(i: int) -> void:
 		return
 	var p := AudioStreamPlayer3D.new()
 	p.stream = pasi.pick_random()
-	# a doua bătaie din pereche e mai ușoară (pumnul), prima mai grea (talpa)
-	p.volume_db = volum_pasi_db - (4.0 if i % 2 == 1 else 0.0) + randf_range(-1.5, 1.5)
+	# toate bătăile la același volum (ca toate efectele); diferența o face doar pitch-ul
+	p.volume_db = volum_pasi_db
 	p.pitch_scale = randf_range(0.78, 0.95)
 	p.unit_size = 6.0
 	p.max_distance = 45.0

@@ -6,7 +6,8 @@ extends Node3D
 ## Pauza dintre sunete, în secunde (alege la întâmplare între minim și maxim).
 @export var pauza_minima := 20.0
 @export var pauza_maxima := 50.0
-@export var volum_db := -6.0
+## 0 = volumul comun al efectelor (Sunet.VOLUM_EFECTE).
+@export var volum_db := 0.0
 ## Cât de mult variază înălțimea sunetului (0,1 = ±10%).
 @export var variatie := 0.1
 ## Bifat = sunetul vine dintr-un loc la întâmplare în jurul jucătorului (sperieturi).

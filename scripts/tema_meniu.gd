@@ -62,11 +62,11 @@ static func buton(parinte: Control, text: String, la_apasare: Callable) -> Butto
 	b.text = text
 	b.custom_minimum_size.x = 56
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	b.pressed.connect(func() -> void: Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata"))
+	b.pressed.connect(func() -> void: Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata"))
 	b.pressed.connect(la_apasare)
 	b.mouse_entered.connect(func() -> void:
 		if not b.disabled:
-			Sunet.reda(SUNET_PESTE, -4.0, 0.05, &"Interfata"))
+			Sunet.reda(SUNET_PESTE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata"))
 	parinte.add_child(b)
 	return b
 

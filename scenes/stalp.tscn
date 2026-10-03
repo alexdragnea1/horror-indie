@@ -36,7 +36,7 @@ bazait = NodePath("Bazait")
 
 [node name="Bazait" type="AudioStreamPlayer3D" parent="Lumina"]
 stream = ExtResource("5")
-volume_db = -16.0
+volume_db = -14.0
 pitch_scale = 0.8
 unit_size = 2.0
 max_distance = 14.0

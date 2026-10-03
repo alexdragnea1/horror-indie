@@ -87,7 +87,7 @@ Ce se aude acum:
 - în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, baba puțin mai subțire, tu subțire;
 - la meniul cu numele: clicuri și o lovitură dramatică la „Are you sure your name is little bitch?”.
 
-Volumele se reglează din Inspector, la fiecare nod de sunet (`volume_db`), sau pe canale, în panoul **Audio** de jos (`Efecte`, `Ambianta`, `Interfata`). ⚠️ Pachetul e de pe Guru3D: verifică licența înainte de Steam.
+**Toate efectele au același volum**: fișierele sunt aduse la aceeași tărie de `tools/sunete.sh`, iar în joc toate efectele se redau la `Sunet.VOLUM_EFECTE` și toate buclele de fundal (vânt, bâzâit, motor...) la `Sunet.VOLUM_AMBIANTA` (-14 dB, ca să nu acopere efectele). Ca să faci totul mai tare sau mai încet, schimbi unul din cele două numere din `scripts/sunet.gd`, sau canalele din panoul **Audio** de jos (`Efecte`, `Ambianta`, `Interfata`). ⚠️ Pachetul e de pe Guru3D: verifică licența înainte de Steam.
 
 ## Texturi
 Pereții și podeaua casei au texturi adevărate (`textures/perete_casa.png`, `textures/podea_casa.png`, micșorate la 256×256; originalele mari stau în `textures/originale/`, ignorate de Godot și de git). Restul obiectelor au încă texturi din „zgomot”. De unde iei altele:

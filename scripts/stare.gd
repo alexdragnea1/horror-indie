@@ -92,7 +92,7 @@ func adauga_obiect(id: String, nume: String) -> bool:
 		return false
 	obiecte[id] = nume
 	_arata_mesaj("Picked up: " + nume)
-	Sunet.reda(SUNET_OBIECT, -6.0, 0.0, &"Interfata")
+	Sunet.reda(SUNET_OBIECT, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
 	schimbat.emit()
 	return true
 
@@ -127,7 +127,7 @@ func seteaza_sarcina(text: String) -> void:
 	_tween_sarcina.tween_property(_sarcina_sus, "modulate:a", 1.0, 0.4)
 	_tween_sarcina.tween_interval(DURATA_SARCINA)
 	_tween_sarcina.tween_property(_sarcina_sus, "modulate:a", 0.0, 0.8)
-	Sunet.reda(SUNET_SARCINA, -6.0, 0.0, &"Interfata")
+	Sunet.reda(SUNET_SARCINA, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
 
 
 func _arata_mesaj(text: String) -> void:
@@ -156,11 +156,11 @@ func _deschide_inventar() -> void:
 	_inventar.show()
 	_mesaj.hide()
 	meniu_deschis = true
-	Sunet.reda(SUNET_DESCHIDE, -8.0, 0.05, &"Interfata")
+	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
 
 
 func _inchide_inventar() -> void:
 	_inventar.hide()
 	_mesaj.show()
 	meniu_deschis = false
-	Sunet.reda(SUNET_INCHIDE, -8.0, 0.05, &"Interfata")
+	Sunet.reda(SUNET_INCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")

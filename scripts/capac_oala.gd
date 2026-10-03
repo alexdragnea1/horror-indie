@@ -33,4 +33,4 @@ func _process(delta: float) -> void:
 		_pana_la_salt = randf_range(pauza_min, pauza_max)
 		_salt = randf_range(0.5, 1.0)
 		if sunet:
-			Sunet.reda_la(sunet, capac.global_position, -20.0, 0.15, 2.2)
+			Sunet.reda_la(sunet, capac.global_position, Sunet.VOLUM_EFECTE, 0.15, 2.2)

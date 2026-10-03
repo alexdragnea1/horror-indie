@@ -38,13 +38,13 @@ func interactioneaza() -> void:
 		return
 	_deschis = true
 	folosit.emit()
-	Sunet.reda_la(sunet_deschidere, _loc_usa(), -6.0, 0.05)
+	Sunet.reda_la(sunet_deschidere, _loc_usa(), Sunet.VOLUM_EFECTE, 0.05)
 	await _misca_usa(unghi_deschidere, _energie_lumina, 5.0)
 	if not replici.is_empty():
 		Dialog.spune(replici)
 		await Dialog.terminat
 	await _misca_usa(0.0, 0.0, 0.0)
-	Sunet.reda_la(sunet_inchidere, _loc_usa(), -5.0, 0.05)
+	Sunet.reda_la(sunet_inchidere, _loc_usa(), Sunet.VOLUM_EFECTE, 0.05)
 	_deschis = false
 
 

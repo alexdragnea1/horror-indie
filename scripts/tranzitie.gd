@@ -67,7 +67,7 @@ func mergi_la(cale: String, titlu := "", sunete: Array[AudioStream] = []) -> voi
 		if sunet == null:
 			continue
 		# sunetele scurte (pași) mai încet, cele lungi (ușa trântită) mai tare, ca să iasă în față
-		var volum := -11.0 if sunet.get_length() < 0.5 else -3.0
+		var volum := Sunet.VOLUM_EFECTE
 		Sunet.reda(sunet, volum, 0.05)
 		await _asteapta(maxf(PAUZA_SUNETE, minf(sunet.get_length(), 1.4) * 0.7))
 	await _asteapta(0.3)

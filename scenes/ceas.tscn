@@ -15,7 +15,7 @@ material = ExtResource("4")
 
 [node name="TicTac" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("5")
-volume_db = -15.0
+volume_db = -14.0
 unit_size = 1.5
 max_distance = 10.0
 autoplay = true

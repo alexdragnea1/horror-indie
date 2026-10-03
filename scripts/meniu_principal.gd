@@ -75,7 +75,7 @@ func _input(event: InputEvent) -> void:
 	else:
 		var schimbata := Setari.schimba_tasta(actiune, event)
 		_mesaj_taste.text = ("Swapped with " + schimbata) if not schimbata.is_empty() else ""
-		Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata")
+		Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
 	_actualizeaza_taste()
 	_butoane_taste[actiune].grab_focus()
 
@@ -83,7 +83,7 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and _ecran_curent != "principal" and not _plecat:
 		get_viewport().set_input_as_handled()
-		Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata")
+		Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
 		_arata("salvari" if _ecran_curent == "confirmare" else "principal")
 
 
@@ -200,7 +200,7 @@ func _start() -> void:
 	_plecat = true
 	for ecran in _ecrane.values():
 		ecran.propagate_call("set", ["disabled", true])
-	Sunet.reda(SUNET_STING, -8.0, 0.0, &"Interfata")
+	Sunet.reda(SUNET_STING, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	if Salvare.exista(Setari.slot):
 		Salvare.continua()
@@ -381,7 +381,7 @@ func _rand_volum(parinte: Control, text: String, tip: String, valoare: float) ->
 		# la efecte se aude un clic, ca să știi cât de tare e
 		if tip == "efecte" and _timp - _ultim_clic > 0.09:
 			_ultim_clic = _timp
-			Sunet.reda(SUNET_CLIC, -8.0, 0.05, &"Interfata"))
+			Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata"))
 
 
 # -------- bucăți comune

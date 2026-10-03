@@ -6,6 +6,12 @@ extends Node
 
 ## Cât de repede se pierde un sunet 3D cu distanța (mai mic = se aude doar de aproape).
 const MARIME_SUNET_3D := 3.0
+## Volumul TUTUROR efectelor (pași, uși, interfață, voci, sperieturi). Fișierele din sunete/ au toate
+## aceeași tărie (-20 LUFS, vezi tools/sunete.sh), deci aici un singur număr le reglează pe toate.
+const VOLUM_EFECTE := 0.0
+## Volumul buclelor de fundal (vânt, bâzâit, frigider, ceas, motor, greieri, huruit): toate la fel între ele,
+## dar mai jos decât efectele, ca să nu le acopere. În scene, `volume_db` al buclelor = valoarea asta.
+const VOLUM_AMBIANTA := -14.0
 
 
 ## variatie = cât de mult se schimbă înălțimea la întâmplare (0,05 = ±5%), ca să nu sune identic.

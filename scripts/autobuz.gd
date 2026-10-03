@@ -125,7 +125,7 @@ func _sunet_usi(sunet: AudioStream) -> void:
 	for intrare in _intrari:
 		var p := AudioStreamPlayer3D.new()
 		p.stream = sunet
-		p.volume_db = -4.0
+		p.volume_db = Sunet.VOLUM_EFECTE
 		p.unit_size = 4.0
 		p.pitch_scale = randf_range(0.95, 1.05)
 		p.bus = &"Efecte"

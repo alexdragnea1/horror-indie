@@ -538,7 +538,7 @@ suprafata_implicita = "frunze"
 
 [node name="Vant" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("24")
-volume_db = -17.0
+volume_db = -14.0
 autoplay = true
 bus = &"Ambianta"
 
@@ -547,7 +547,6 @@ script = ExtResource("21")
 sunete = Array[AudioStream]([ExtResource("25"), ExtResource("26"), ExtResource("26"), ExtResource("28")])
 pauza_minima = 20.0
 pauza_maxima = 45.0
-volum_db = -12.0
 variatie = 0.1
 in_jurul_jucatorului = true
 distanta_minima = 9.0
@@ -558,7 +557,6 @@ script = ExtResource("21")
 sunete = Array[AudioStream]([ExtResource("27")])
 pauza_minima = 120.0
 pauza_maxima = 240.0
-volum_db = -22.0
 variatie = 0.05
 in_jurul_jucatorului = true
 distanta_minima = 8.0
