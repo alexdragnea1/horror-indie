@@ -17,6 +17,13 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | Tab | deschide / închide inventarul (5 sloturi + sarcina curentă) |
 | Esc | închide inventarul / eliberează mouse-ul |
 
+## Povestea până acum
+1. Te trezești în camera ta de vrăjitoare. Când încerci să ieși, îți alegi numele... și jocul te întreabă dacă nu cumva te cheamă „little bitch”.
+2. În bucătărie vorbești cu **Mom**: azi împlinești 16 ani și trebuie să devii vrăjitoare. Primești sarcina **„Meet with the coven.”** (o vezi oricând cu Tab).
+3. Abia acum se deschide ușa de la intrare. Ecranul se face negru, cobori scările blocului și ajungi afară, în fața blocului **M7, scara B**, la 11:57 PM.
+4. Pe bancă stă o **babă** care are câteva lucruri de spus despre mama ta.
+5. Urmează: drumul spre pădure și întâlnirea cu coven-ul.
+
 ## Ce e unde
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
 - `shaders/ps2_ecran.gdshader` + `scenes/efect_ps2.tscn` – filtrul de peste tot ecranul (puține culori, dithering, vignetă, grăunte). Pornește automat.
@@ -56,7 +63,7 @@ Ce se aude acum:
 - **ușa camerei** scârțâie lung când o deschizi; **ceaunul** fierbe și gâlgâie din când în când; **ceasul** din bucătărie ticăie (e oprit la 11:55);
 - **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău; în fața blocului, uneori, cineva fluieră departe în întuneric sau se aude o tablă lovită;
 - **tranziția** spre afară: pașii pe scara blocului, cu ecou, și ușa metalică a scării trântită;
-- în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, tu subțire;
+- în dialog, un bip la câteva litere („vocea”): Mom are vocea groasă, baba puțin mai subțire, tu subțire;
 - la meniul cu numele: clicuri și o lovitură dramatică la „Are you sure your name is little bitch?”.
 
 Volumele se reglează din Inspector, la fiecare nod de sunet (`volume_db`), sau pe canale, în panoul **Audio** de jos (`Efecte`, `Ambianta`, `Interfata`). ⚠️ Pachetul e de pe Guru3D: verifică licența înainte de Steam.
@@ -72,8 +79,8 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 ## Plan
 1. ✅ Baza: aspect PS2, jucător, dialog, obiecte interactive
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
-3. Uși, chei, inventar, triggere de poveste
-4. Niveluri: blockout, apoi modele low-poly
+3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
+4. ⏳ Niveluri (✅ casa, ✅ curtea blocului; urmează pădurea), modele low-poly făcute din cod
 5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață; urmează jumpscare-uri și muzică)
 6. Monstrul, jumpscare-uri, comedie
 7. Meniu, salvare, final

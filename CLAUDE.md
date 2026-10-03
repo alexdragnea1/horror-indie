@@ -14,6 +14,9 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 - Ce trebuie să poată regla owner-ul se face `@export`, cu un comentariu `##` deasupra.
 - Commit-urile sunt în română, direct pe `main`. **Push doar când owner-ul cere explicit.**
 
+## Povestea până acum (ce e deja în joc)
+Camera de vrăjitoare (`nivel_test.tscn`, începi aici) → la ușă `MeniuNume` („Are you sure your name is little bitch?”, marcaj `si_a_ales_numele`) → **Mom** în bucătărie (marcaj `a_vorbit_cu_mom`, sarcina „Meet with the coven.”) → ușa de la intrare (blocată până atunci) → `Tranzitie` cu scara blocului pe negru → `afara_bloc.tscn` („Block M7, Entrance B / 11:57 PM”) → **baba** de pe bancă („Old hag”). Urmează: pădurea și coven-ul (la miezul nopții; ceasul din bucătărie e oprit la 11:55). Replicile scrise de owner (Mom, baba, meniul cu numele) se păstrează **exact** cum le-a scris, cu greșeli cu tot.
+
 ## Arhitectura
 | Fișier | Rol |
 |---|---|
@@ -77,8 +80,8 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dia
 ## Plan (roadmap)
 1. ✅ Baza: aspect PS2, jucător, dialog, obiecte interactive.
 2. ⏳ **Povestea**: premisa, personajele, 4–6 capitole de ~5 min (owner-ul o scrie, Claude ajută).
-3. Uși, chei, inventar mic, triggere de poveste.
-4. Niveluri: întâi blockout, apoi modele low-poly (PSX assets de pe itch.io / Kenney) cu `ps2.gdshader`.
+3. ✅ Uși, chei, inventar (5 sloturi), sarcini, marcaje, tranziții între scene (`Tranzitie`).
+4. ⏳ Niveluri: ✅ casa, ✅ curtea blocului; urmează pădurea cu coven-ul. Modelele se fac din cod în Blender (`tools/blender/`), cu paleta owner-ului.
 5. ⏳ Sunet: ✅ ambianță, pași, uși, obiecte, interfață, voce dialog; urmează jumpscare-uri și muzică.
 6. Monstrul/urmăritorul, jumpscare-uri, momentele de comedie.
 7. Meniu, salvare, final, credite.
@@ -87,6 +90,6 @@ Straturi CanvasLayer: 1 = filtrul PS2, 5 = HUD, 6 = inventar (`Stare`), 10 = dia
 ## Texturi
 Surse recomandate: pachete „PSX textures” de pe itch.io, ambientCG / Poly Haven (CC0, micșorate la 128×128), poze proprii. **Verifică licența** (CC0 sau uz comercial permis), ca jocul să poată merge pe Steam. Se pun în `textures/` și se trag în parametrul `textura` al materialului, cu `culoare` albă.
 
-Owner-ul aduce texturi mari (4096 px). Le micșorăm la **256×256 PNG** cu ffmpeg (`-vf scale=256:256:flags=area`) și le dăm nume în română (`perete_casa.png`, `podea_casa.png`). Originalele merg în `textures/originale/`, care are `.gdignore` (Godot nu le importă) și e în `.gitignore`. ffmpeg: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_*\ffmpeg-*\bin\ffmpeg.exe` (nu e în PATH).
+Owner-ul aduce texturi mari (4096 px). Le micșorăm la **256×256 PNG** cu ffmpeg (`-vf scale=256:256:flags=area`) și le dăm nume în română (`perete_casa.png`, `podea_casa.png`). Originalele merg în `textures/originale/`, care are `.gdignore` (Godot nu le importă) și e în `.gitignore`. ffmpeg: `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_*\ffmpeg-*\bin\ffmpeg.exe` (în Git Bash e deja în PATH).
 
 Modele: de preferat `.glb`. Un `.obj` vine cu un `.mtl` (materialul) lângă el; fără el Godot dă eroare la import.
