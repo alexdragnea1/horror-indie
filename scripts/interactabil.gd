@@ -6,7 +6,7 @@ extends StaticBody3D
 
 signal folosit
 
-@export var indiciu := "[E] Examinează"
+@export var indiciu := "[E] Examine"
 @export_multiline var replici: PackedStringArray = []
 ## Dacă e bifat, după prima folosire nu mai face nimic.
 @export var o_singura_data := false

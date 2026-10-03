@@ -39,7 +39,7 @@ func _eticheta(pozitie: Vector2) -> Label:
 
 func adauga_obiect(id: String, nume: String) -> void:
 	obiecte[id] = nume
-	_arata_mesaj("Ai luat: " + nume)
+	_arata_mesaj("Picked up: " + nume)
 	schimbat.emit()
 
 
@@ -73,9 +73,9 @@ func _arata_mesaj(text: String) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("inventar"):
-		var text := "INVENTAR"
+		var text := "INVENTORY"
 		if obiecte.is_empty():
-			text += "\n  (nimic)"
+			text += "\n  (empty)"
 		for nume in obiecte.values():
 			text += "\n  - " + str(nume)
 		_lista.text = text

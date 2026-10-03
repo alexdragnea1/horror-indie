@@ -1,6 +1,6 @@
 # horror-indie
 
-Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **PS2**: pixelat, ceață, lumină slabă, texturi care tremură. Făcut în **Godot 4.7**.
+Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **PS2**: pixelat, ceață, lumină slabă, texturi care tremură. Făcut în **Godot 4.7**. Jocul e în **engleză** (codul și comentariile sunt în română).
 
 ## Cum îl pornești
 1. Deschide Godot 4.7 → **Import** → alege `project.godot` din folderul ăsta.

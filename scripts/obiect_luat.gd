@@ -6,7 +6,7 @@ extends Interactabil
 ## Numele intern, folosit de uși ("cheie_necesara") și de cod. Fără spații.
 @export var id_obiect := "cheie"
 ## Numele pe care îl vede jucătorul în inventar.
-@export var nume_obiect := "Cheie"
+@export var nume_obiect := "Key"
 
 
 func interactioneaza() -> void:

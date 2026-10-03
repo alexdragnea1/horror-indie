@@ -12,8 +12,8 @@ size = Vector3(0.78, 1.8, 0.76)
 script = ExtResource("1")
 usa = NodePath("Model/UsaFrigider")
 lumina = NodePath("LuminaInauntru")
-indiciu = "[E] Deschide frigiderul"
-replici = PackedStringArray("Un borcan de murături, o varză și un tort cu 16 lumânări.", "...Cineva a mâncat deja o felie. Din mijloc.")
+indiciu = "[E] Open the fridge"
+replici = PackedStringArray("A jar of pickles, a cabbage and a cake with 16 candles.", "...Someone already ate a slice. From the middle.")
 
 [node name="Model" parent="." instance=ExtResource("2")]
 script = ExtResource("3")

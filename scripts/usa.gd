@@ -10,7 +10,7 @@ signal descuiata
 ## Id-ul cheii (vezi ObiectLuat.id_obiect). Gol = ușa nu e încuiată.
 @export var cheie_necesara := ""
 ## Ce zice personajul când ușa e încuiată și n-are cheia.
-@export_multiline var replici_incuiata: PackedStringArray = ["E încuiată."]
+@export_multiline var replici_incuiata: PackedStringArray = ["It's locked."]
 ## Ce zice când o descuie.
 @export_multiline var replici_descuiere: PackedStringArray = []
 ## Dacă e bifat, cheia dispare din inventar după ce descuie ușa.
@@ -19,8 +19,8 @@ signal descuiata
 @export var unghi_deschidere := 95.0
 ## Cât durează deschiderea (secunde).
 @export var durata := 0.7
-@export var indiciu_inchisa := "[E] Deschide"
-@export var indiciu_deschisa := "[E] Închide"
+@export var indiciu_inchisa := "[E] Open"
+@export var indiciu_deschisa := "[E] Close"
 
 var deschisa_acum := false
 

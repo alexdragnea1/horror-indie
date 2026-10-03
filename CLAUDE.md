@@ -10,6 +10,7 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 ## Reguli de cod
 - GDScript cu **TAB-uri**, tipuri explicite (`var x: bool = ...`, nu `:=`, când valoarea vine din ceva netipat, ca `event`, altfel e parse error).
 - Numele (variabile, funcții, noduri, fișiere) și comentariile sunt **în română, fără diacritice în identificatori**. Comentariile pot avea diacritice.
+- **Jocul e în engleză**: tot textul pe care îl vede jucătorul (replici, indicii „[E] …”, inventar, mesaje) se scrie în **engleză**. Codul (identificatori, comentarii) rămâne în română.
 - Ce trebuie să poată regla owner-ul se face `@export`, cu un comentariu `##` deasupra.
 - Commit-urile sunt în română, direct pe `main`. **Push doar când owner-ul cere explicit.**
 
@@ -29,7 +30,7 @@ Owner-ul e **începător**: îi răspunzi **în română** și îl îndrumi pas 
 | `scripts/frigider.gd` | Extinde `Interactabil`: deschide `usa` (tween pe rotation.y), aprinde `lumina`, spune replicile, închide după `Dialog.terminat`. |
 | `scenes/bec.tscn`, `scenes/frigider.tscn`, `scenes/mama.tscn` | Modelele gata de pus în nivel (fiecare cu `Model` = `.glb` + `ModelPS2`). |
 | `tools/blender/modele.py` + `unelte.py` | **Sursa modelelor** `models/*.glb`. Folderul `tools/` are `.gdignore`. |
-| `scripts/stare.gd` | Autoload `Stare` (CanvasLayer 6): inventar (`adauga_obiect/are_obiect/scoate_obiect`) + marcaje de poveste (`marcheaza/e_marcat`), mesaj „Ai luat: …”, lista pe **Tab** (acțiunea `inventar`). |
+| `scripts/stare.gd` | Autoload `Stare` (CanvasLayer 6): inventar (`adauga_obiect/are_obiect/scoate_obiect`) + marcaje de poveste (`marcheaza/e_marcat`), mesaj „Picked up: …”, lista pe **Tab** (acțiunea `inventar`). |
 | `scripts/obiect_luat.gd` | `class_name ObiectLuat` (extinde `Interactabil`): `id_obiect`, `nume_obiect`; la E intră în inventar și dispare. |
 | `scripts/usa.gd` | `class_name Usa` (extinde `Interactabil`): originea nodului = balamaua; `cheie_necesara`, `replici_incuiata`, `unghi_deschidere`. **Scris, încă nefolosit în nivel.** |
 | `scripts/declansator.gd` | `class_name Declansator` (Area3D): când intră un corp din grupul `jucator` → replici, `marcaj`, `de_aratat`/`de_ascuns`. **Scris, încă nefolosit în nivel.** |
