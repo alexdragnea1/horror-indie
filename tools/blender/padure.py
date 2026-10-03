@@ -78,11 +78,12 @@ def statie_rurala(cale):
 	# stâlpul cu plăcuța liniei, lângă șosea
 	piese += [
 		cilindru("Stalp placuta", 0.035, 0.035, 2.6, (2.2, -0.9, 1.3), METAL, laturi=6),
-		cub("Placuta", (0.5, 0.03, 0.35), (2.2, -0.9, 2.45), ALB),
-		cub("Placuta chenar", (0.56, 0.03, 0.41), (2.2, -0.87, 2.45), p("295555")),
-		text("Numar linie", "13", (2.2, -0.925, 2.5), 0.15, NEGRU),
-		cub("Placuta traseu", (0.5, 0.03, 0.14), (2.2, -0.9, 2.15), p("a18463")),
-		text("Traseu", "TRIVALE", (2.2, -0.925, 2.15), 0.08, NEGRU),
+		# plăcuțele stau ÎN FAȚA stâlpului (spre șosea), nu prin el: stâlpul iese până la y = -0,935
+		cub("Placuta chenar", (0.56, 0.03, 0.41), (2.2, -0.93, 2.45), p("295555")),
+		cub("Placuta", (0.5, 0.03, 0.35), (2.2, -0.96, 2.45), ALB),
+		text("Numar linie", "13", (2.2, -0.985, 2.5), 0.15, NEGRU),
+		cub("Placuta traseu", (0.5, 0.03, 0.14), (2.2, -0.96, 2.15), p("a18463")),
+		text("Traseu", "TRIVALE", (2.2, -0.985, 2.15), 0.08, NEGRU),
 	]
 	for s in (-1, 1):
 		for y in (-0.44, 0.52):

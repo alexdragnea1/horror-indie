@@ -424,12 +424,13 @@ def statie(cale):
 	# stâlpul cu plăcuța stației și numărul liniei (lângă bordură, în dreapta)
 	piese += [
 		cilindru("Stalp placuta", 0.035, 0.035, 2.7, (2.1, -0.65, 1.35), METAL, laturi=6),
-		cub("Placuta", (0.55, 0.03, 0.4), (2.1, -0.65, 2.55), ALB),
-		cub("Placuta chenar", (0.6, 0.03, 0.45), (2.1, -0.635, 2.55), p("295555")),
-		cub("Autobuz desenat", (0.32, 0.035, 0.14), (2.1, -0.665, 2.6), p("295555")),
-		cub("Roti desenate", (0.25, 0.036, 0.04), (2.1, -0.667, 2.5), p("295555")),
-		cub("Placuta linie", (0.3, 0.03, 0.22), (2.1, -0.65, 2.12), p("a18463")),
-		text("Numar linie", "13", (2.1, -0.67, 2.12), 0.16, NEGRU),
+		# plăcuțele stau ÎN FAȚA stâlpului (spre stradă), nu prin el: stâlpul iese până la y = -0,685
+		cub("Placuta chenar", (0.6, 0.03, 0.45), (2.1, -0.68, 2.55), p("295555")),
+		cub("Placuta", (0.55, 0.03, 0.4), (2.1, -0.71, 2.55), ALB),
+		cub("Autobuz desenat", (0.32, 0.012, 0.14), (2.1, -0.733, 2.6), p("295555")),
+		cub("Roti desenate", (0.25, 0.012, 0.04), (2.1, -0.733, 2.5), p("295555")),
+		cub("Placuta linie", (0.3, 0.03, 0.22), (2.1, -0.71, 2.12), p("a18463")),
+		text("Numar linie", "13", (2.1, -0.735, 2.12), 0.16, NEGRU),
 		text("Statie", "STATIE", (0, -0.83, 2.32), 0.12, ALB),
 	]
 	uneste(piese, "Statie")
