@@ -9,6 +9,11 @@ extends Interactabil
 @export var marime := Vector2(0.55, 0.55)
 
 
+## Un tablou fără replici e doar decor: nu apare „[E]” când te uiți la el.
+func poate_fi_folosit() -> bool:
+	return not replici.is_empty() and super()
+
+
 func _ready() -> void:
 	var panza := MeshInstance3D.new()
 	panza.name = "Panza"

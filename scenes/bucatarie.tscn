@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
-[ext_resource type="Script" path="res://scripts/interactabil.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/capac_oala.gd" id="6"]
@@ -97,9 +96,6 @@ bus = &"Ambianta"
 
 [node name="Aragaz" type="StaticBody3D" parent="."]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.05, 0.02, 4)
-script = ExtResource("3")
-indiciu = "[E] Look in the pot"
-replici = PackedStringArray("Sarmale. Again.", "Mom has been making sarmale since Tuesday. Nobody knows who they're for.")
 
 [node name="Model" parent="Aragaz" instance=ExtResource("11")]
 script = ExtResource("1")
@@ -148,9 +144,6 @@ shape = SubResource("forma_masa")
 
 [node name="CutieBiscuiti" type="StaticBody3D" parent="."]
 transform = Transform3D(0.96, 0, 0.28, 0, 1, 0, -0.28, 0, 0.96, 2.6, 0.804, 1.72)
-script = ExtResource("3")
-indiciu = "[E] Open the cookie tin"
-replici = PackedStringArray("Danish butter cookies!", "...It's needles and thread. It's always needles and thread.")
 
 [node name="Model" parent="CutieBiscuiti" instance=ExtResource("14")]
 script = ExtResource("1")
@@ -195,9 +188,6 @@ shape = SubResource("forma_taburet")
 
 [node name="Icoana" type="StaticBody3D" parent="."]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 1.95, -2.2)
-script = ExtResource("3")
-indiciu = "[E] Look at the icon"
-replici = PackedStringArray("A saint. His eyes follow you around the kitchen.", "He knows what you are.")
 
 [node name="Model" parent="Icoana" instance=ExtResource("15")]
 script = ExtResource("1")
@@ -223,9 +213,6 @@ stralucire_sticla = 4.0
 
 [node name="PungaPungi" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.5, -4)
-script = ExtResource("3")
-indiciu = "[E] Look at the bag"
-replici = PackedStringArray("The bag with bags. Every bag this family ever got lives in here.", "Throwing one away is a sin. Mom said so.")
 
 [node name="Model" parent="PungaPungi" instance=ExtResource("16")]
 script = ExtResource("1")
@@ -237,9 +224,6 @@ shape = SubResource("forma_punga")
 
 [node name="RaftBorcane" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 1.55, -4)
-script = ExtResource("3")
-indiciu = "[E] Look at the jars"
-replici = PackedStringArray("Pickles, zacusca, cherry compote. Enough for a nuclear winter.", "One jar has been here since before you were born. Nobody opens that one.")
 
 [node name="Model" parent="RaftBorcane" instance=ExtResource("17")]
 script = ExtResource("1")
@@ -262,9 +246,6 @@ shape = SubResource("forma_colt")
 
 [node name="Calendar" type="StaticBody3D" parent="."]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 1.75, 1.5)
-script = ExtResource("3")
-indiciu = "[E] Look at the calendar"
-replici = PackedStringArray("A church calendar from 2009. Nobody is allowed to take it down.", "One day is circled in red. Nobody remembers why.")
 
 [node name="Model" parent="Calendar" instance=ExtResource("19")]
 script = ExtResource("1")

@@ -27,7 +27,6 @@
 [ext_resource type="PackedScene" path="res://models/cuier.glb" id="28"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="29"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="30"]
-[ext_resource type="Script" path="res://scripts/interactabil.gd" id="31"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -207,7 +206,7 @@ script = ExtResource("21")
 imagine = ExtResource("27")
 marime = Vector2(0.74, 0.475)
 indiciu = "[E] Look at the painting"
-replici = PackedStringArray("A street with one single car on it. Grandpa says it was his car.", "It wasn't.")
+replici = PackedStringArray("I wish I could become a drug dealer like my uncle instead of a witch..")
 
 [node name="Model" parent="TablouStrada" instance=ExtResource("24")]
 script = ExtResource("29")
@@ -222,8 +221,6 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1, 1.6, -8.1)
 script = ExtResource("21")
 imagine = ExtResource("25")
 marime = Vector2(0.55, 0.55)
-indiciu = "[E] Look at the painting"
-replici = PackedStringArray("An old photo of the town. Grandma says it was better back then.", "Better for who, she never says.")
 
 [node name="Model" parent="TablouBiserica" instance=ExtResource("22")]
 script = ExtResource("29")
@@ -238,8 +235,6 @@ transform = Transform3D(0, 0, 1, 0.06994, 0.99755, 0, -0.99755, 0.06994, 0, -1, 
 script = ExtResource("21")
 imagine = ExtResource("26")
 marime = Vector2(0.74, 0.48)
-indiciu = "[E] Look at the painting"
-replici = PackedStringArray("Two old men on two benches, ignoring each other.", "It's crooked again. You straightened it yesterday.")
 
 [node name="Model" parent="TablouParc" instance=ExtResource("23")]
 script = ExtResource("29")
@@ -251,8 +246,6 @@ shape = SubResource("forma_tablou_lat")
 
 [node name="Cuier" type="StaticBody3D" parent="."]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1, 0.02, -13.2)
-script = ExtResource("31")
-replici = PackedStringArray("Mom's coat and the guest slippers.", "No guest has ever worn the guest slippers. No guest has ever come.")
 
 [node name="Model" parent="Cuier" instance=ExtResource("28")]
 script = ExtResource("29")
