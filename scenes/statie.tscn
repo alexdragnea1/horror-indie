@@ -3,7 +3,6 @@
 [ext_resource type="PackedScene" path="res://models/statie.glb" id="1"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="3"]
-[ext_resource type="Script" path="res://scripts/interactabil.gd" id="4"]
 
 [sub_resource type="BoxShape3D" id="forma_spate"]
 size = Vector3(3.1, 2.35, 0.1)
@@ -16,9 +15,6 @@ size = Vector3(2.3, 0.5, 0.42)
 
 [sub_resource type="BoxShape3D" id="forma_stalp"]
 size = Vector3(0.1, 2.35, 0.1)
-
-[sub_resource type="BoxShape3D" id="forma_orar"]
-size = Vector3(0.12, 0.55, 0.42)
 
 [sub_resource type="CylinderShape3D" id="forma_stalp_placuta"]
 height = 2.8
@@ -54,12 +50,3 @@ shape = SubResource("forma_banca")
 [node name="StalpPlacuta" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 1.4, 0.65)
 shape = SubResource("forma_stalp_placuta")
-
-[node name="Orar" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.5, 0.45)
-script = ExtResource("4")
-indiciu = "[E] Read the schedule"
-replici = PackedStringArray("NIGHT LINE 13: Block M7 - Forest Road (terminus).", "Last departure: 11:59 PM.", "Someone scratched something under it with a key: \"DON'T SIT BY THE WINDOW.\"")
-
-[node name="Forma" type="CollisionShape3D" parent="Orar"]
-shape = SubResource("forma_orar")

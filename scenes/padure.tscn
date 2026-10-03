@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/sunete_aleatorii.gd" id="10"]
-[ext_resource type="Script" path="res://scripts/interactabil.gd" id="11"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="12"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="13"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="14"]
@@ -200,9 +199,6 @@ teren = NodePath("../Teren")
 
 [node name="Statie" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -5.6)
-script = ExtResource("11")
-indiciu = "[E] Read the schedule"
-replici = PackedStringArray("Line 13. Next bus: 5:40 AM.", "You: Great. Five and a half hours.")
 
 [node name="Model" parent="PePamant/Statie" instance=ExtResource("32")]
 script = ExtResource("12")
@@ -230,8 +226,6 @@ shape = SubResource("forma_banca")
 
 [node name="Bariera" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -14)
-script = ExtResource("11")
-replici = PackedStringArray("Locked. Chained. Padlocked.", "You: Good thing I'm not a car.")
 
 [node name="Model" parent="PePamant/Bariera" instance=ExtResource("33")]
 script = ExtResource("12")
@@ -251,9 +245,6 @@ shape = SubResource("forma_bara")
 
 [node name="PanouOcol" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(0.94, 0, -0.342, 0, 1, 0, 0.342, 0, 0.94, 7.2, 0, -12.6)
-script = ExtResource("11")
-indiciu = "[E] Read the sign"
-replici = PackedStringArray("TRIVALE FOREST DISTRICT. Property of the State. No fires.", "Someone added underneath, in marker: \"STAY ON THE RIGHT PATH.\"")
 
 [node name="Model" parent="PePamant/PanouOcol" instance=ExtResource("34")]
 script = ExtResource("12")
@@ -265,9 +256,6 @@ shape = SubResource("forma_panou")
 
 [node name="Indicator" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -49.5)
-script = ExtResource("11")
-indiciu = "[E] Read the signpost"
-replici = PackedStringArray("Right: PLATEAU.", "Left: somebody carved the name off with a knife. The scratches look fresh.")
 
 [node name="Model" parent="PePamant/Indicator" instance=ExtResource("35")]
 script = ExtResource("12")
@@ -279,8 +267,6 @@ shape = SubResource("forma_indicator")
 
 [node name="BusteanPlatou" type="StaticBody3D" parent="PePamant"]
 transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, 27, -0.1, -99)
-script = ExtResource("11")
-replici = PackedStringArray("You: Nice. Stars. No coven, though.", "You: Maybe I'm early. Maybe I'm in the wrong place. Maybe both.")
 
 [node name="Model" parent="PePamant/BusteanPlatou" instance=ExtResource("26")]
 script = ExtResource("12")
