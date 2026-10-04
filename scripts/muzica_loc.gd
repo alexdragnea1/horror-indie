@@ -4,8 +4,8 @@ extends AudioStreamPlayer
 ## glisorul Music din setări. Se oprește singură când pleci: Tranzitie stinge sunetul și schimbă scena.
 ## Dacă scena e doar fundal (meniul principal folosește curtea blocului fără Jucator), tace.
 
-## Cât de tare (aceeași valoare ca muzica din meniul principal: fișierele au toate -20 LUFS).
-@export var volum_db := -6.0
+## Cât de tare: 0 = Sunet.VOLUM_MUZICA, la fel ca efectele (fișierele au toate -20 LUFS).
+@export var volum_db := 0.0
 ## În câte secunde urcă de la liniște la volum_db.
 @export var intrare := 4.0
 

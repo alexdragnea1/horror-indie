@@ -13,7 +13,8 @@ const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
 @export var tinta_camera := Vector3(-4.5, 1.2, 7.8)
 ## Cât de mult plutește camera (metri).
 @export var plutire := 0.2
-@export var volum_muzica_db := -6.0
+## 0 = Sunet.VOLUM_MUZICA (la fel de tare ca efectele).
+@export var volum_muzica_db := 0.0
 
 @onready var _muzica: AudioStreamPlayer = $Muzica
 

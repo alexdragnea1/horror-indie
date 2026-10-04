@@ -9,8 +9,8 @@ extends Node3D
 
 @export var aproape := 14.0
 @export var departe := 38.0
-## Volumul când ești lângă el (fișierele au toate -20 LUFS; muzica din meniu e la -6).
-@export var volum_db := -6.0
+## Volumul când ești lângă el: 0 = Sunet.VOLUM_MUZICA, la fel ca efectele (fișierele au toate -20 LUFS).
+@export var volum_db := 0.0
 ## Cât de înfundat se aude de departe (Hz) și cât de deschis de aproape.
 @export var filtru_departe := 600.0
 @export var filtru_aproape := 16000.0

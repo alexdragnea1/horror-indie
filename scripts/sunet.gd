@@ -12,6 +12,8 @@ const VOLUM_EFECTE := 0.0
 ## Volumul buclelor de fundal (vânt, bâzâit, frigider, ceas, motor, greieri, huruit): toate la fel între ele,
 ## dar mai jos decât efectele, ca să nu le acopere. În scene, `volume_db` al buclelor = valoarea asta.
 const VOLUM_AMBIANTA := -14.0
+## Volumul TUTUROR muzicilor (meniu, fața blocului, boombox-ul): cerut de owner, la fel de tare ca efectele.
+const VOLUM_MUZICA := VOLUM_EFECTE
 
 
 ## variatie = cât de mult se schimbă înălțimea la întâmplare (0,05 = ±5%), ca să nu sune identic.

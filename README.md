@@ -108,7 +108,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
 4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale; urmează coven-ul), modele low-poly făcute din cod
-5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum, muzica ta „Block” în fața blocului; urmează jumpscare-uri și muzică în alte locuri)
+5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum, muzica la fel de tare ca efectele, muzica ta „Block” în fața blocului; urmează jumpscare-uri și muzică în alte locuri)
 6. ⏳ Monstrul (✅ prima apariție: creatura de lângă autobuz), jumpscare-uri, comedie
 7. ⏳ Meniu, salvare (✅), final
 8. Playtest și build
