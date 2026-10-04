@@ -1,0 +1,34 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/boombox.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/boombox.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_deal.ogg" id="5"]
+
+[sub_resource type="BoxShape3D" id="forma"]
+size = Vector3(0.52, 0.34, 0.16)
+
+[node name="Boombox" type="StaticBody3D"]
+script = ExtResource("1")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Afisaj")
+stralucire = 0.8
+
+[node name="Coliziune" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.17, 0)
+shape = SubResource("forma")
+
+[node name="Muzica" type="AudioStreamPlayer3D" parent="."]
+position = Vector3(0, 0.15, 0)
+stream = ExtResource("5")
+bus = &"Boombox"
+
+[node name="Lumina" type="OmniLight3D" parent="."]
+position = Vector3(0, 0.32, 0.3)
+light_color = Color(0.647, 0.408, 0.314, 1)
+light_energy = 0.9
+omni_range = 2.4

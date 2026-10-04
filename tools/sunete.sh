@@ -220,4 +220,11 @@ rm -f "$OUT/_meniu.wav"
 # Piesa se termină la 3:45, apoi sunt 3 s de liniște: le tăiem (cu o mică stingere), ca bucla să reînceapă repede.
 # În Godot e buclă din import (loop=true).
 unic muzica_bloc "Sound/Music/Block.mp3" stereo "atrim=end=226,afade=t=out:st=225.3:d=0.7"
+# --- dealul din dreapta: boombox-ul bețivului (adusă de owner: Sound/Music/Deal.mp3, Ion feat. Herodot).
+# Piesa se termină la 7:05, apoi sunt aproape 5 s de liniște: le tăiem, ca bucla să reînceapă repede.
+unic muzica_deal "Sound/Music/Deal.mp3" stereo "atrim=end=426,afade=t=out:st=425.3:d=0.7"
+# --- berea de la bețiv: clinchetul sticlei, înghițiturile, râgâitul
+unic bere_clinchet "Materials/glass_ping_small.wav"
+unic bere_inghititura "Other/drink_slurp.wav"
+unic bere_ragait "Human/belch_2.wav"
 echo "Gata."

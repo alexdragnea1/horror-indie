@@ -221,3 +221,6 @@ autobuz.toate(MODELE)
 
 import padure  # noqa: E402
 padure.toate(MODELE)
+
+import deal  # noqa: E402
+deal.toate(MODELE)

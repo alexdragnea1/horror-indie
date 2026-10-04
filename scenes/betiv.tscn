@@ -1,0 +1,125 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/betiv.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/betiv.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/trunchi_cazut.glb" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/boombox.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://models/bere.glb" id="7"]
+[ext_resource type="PackedScene" path="res://models/bere_goala.glb" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/bere_clinchet.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/bere_inghititura.ogg" id="10"]
+[ext_resource type="AudioStream" path="res://sunete/bere_ragait.ogg" id="11"]
+
+[sub_resource type="BoxShape3D" id="forma_betiv"]
+size = Vector3(0.75, 1.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="forma_bustean"]
+size = Vector3(3.6, 0.6, 0.6)
+
+[node name="Betiv" type="Node3D"]
+
+[node name="Bustean" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.1, 0)
+
+[node name="Model" parent="Bustean" instance=ExtResource("5")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Forma" type="CollisionShape3D" parent="Bustean"]
+position = Vector3(0, 0.3, 0)
+shape = SubResource("forma_bustean")
+
+[node name="Personaj" type="StaticBody3D" parent="." node_paths=PackedStringArray("boombox", "brat", "sticla_mana", "sticle_pline", "cap")]
+script = ExtResource("1")
+boombox = NodePath("../Boombox")
+brat = NodePath("Model/BratBere")
+sticla_mana = NodePath("Model/BratBere/SticlaMana")
+sticla_jucator = ExtResource("7")
+sticle_pline = NodePath("../Pline")
+sunet_clinchet = ExtResource("9")
+sunet_inghititura = ExtResource("10")
+sunet_ragait = ExtResource("11")
+cap = NodePath("Model/Cap")
+distanta_privire = 6.0
+unghi_maxim_cap = 60.0
+se_intoarce = false
+indiciu = "[E] Talk to the drunkard"
+replici = PackedStringArray("You: Can you turn that shit off?", "Drunkard: Nah nigga")
+
+[node name="Model" parent="Personaj" instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Personaj"]
+position = Vector3(0, 0.95, 0.2)
+shape = SubResource("forma_betiv")
+
+[node name="Boombox" parent="." instance=ExtResource("6")]
+position = Vector3(0.85, 0.48, 0.02)
+rotation = Vector3(0, -0.4, 0)
+
+[node name="Pline" type="Node3D" parent="."]
+
+[node name="Bere1" parent="Pline" instance=ExtResource("7")]
+position = Vector3(-0.55, 0, 0.38)
+rotation = Vector3(0, 0.1, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Bere2" parent="Pline" instance=ExtResource("7")]
+position = Vector3(-0.66, 0, 0.47)
+rotation = Vector3(0, 0.2, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Bere3" parent="Pline" instance=ExtResource("7")]
+position = Vector3(-0.49, 0, 0.52)
+rotation = Vector3(0, 0.3, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Bere4" parent="Pline" instance=ExtResource("7")]
+position = Vector3(-0.74, 0, 0.33)
+rotation = Vector3(0, 0.4, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Bere5" parent="Pline" instance=ExtResource("7")]
+position = Vector3(-0.6, 0, 0.62)
+rotation = Vector3(0, 0.5, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Goale" type="Node3D" parent="."]
+
+[node name="Goala1" parent="Goale" instance=ExtResource("8")]
+position = Vector3(0.42, 0.033, 0.72)
+rotation = Vector3(0, 0.6, 1.5708)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Goala2" parent="Goale" instance=ExtResource("8")]
+position = Vector3(0.95, 0.033, 0.5)
+rotation = Vector3(0, 2.3, 1.5708)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Goala3" parent="Goale" instance=ExtResource("8")]
+position = Vector3(-0.22, 0.033, 0.98)
+rotation = Vector3(0, -0.4, 1.5708)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Goala4" parent="Goale" instance=ExtResource("8")]
+position = Vector3(0.3, 0, 0.45)
+rotation = Vector3(0, 0, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Goala5" parent="Goale" instance=ExtResource("8")]
+position = Vector3(-1.05, 0, 0.62)
+rotation = Vector3(0, 1.0, 0)
+script = ExtResource("3")
+material = ExtResource("4")

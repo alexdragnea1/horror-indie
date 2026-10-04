@@ -7,6 +7,13 @@ damping = 0.65
 spread = 0.6
 wet = 0.14
 
+[sub_resource type="AudioEffectLowPassFilter" id="filtru_boombox"]
+resource_name = "LowPassFilter"
+cutoff_hz = 600.0
+
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="analizor_boombox"]
+resource_name = "SpectrumAnalyzer"
+
 [resource]
 bus/1/name = &"Efecte"
 bus/1/solo = false
@@ -34,3 +41,13 @@ bus/4/mute = false
 bus/4/bypass_fx = false
 bus/4/volume_db = 0.0
 bus/4/send = &"Master"
+bus/5/name = &"Boombox"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"Muzica"
+bus/5/effect/0/effect = SubResource("filtru_boombox")
+bus/5/effect/0/enabled = true
+bus/5/effect/1/effect = SubResource("analizor_boombox")
+bus/5/effect/1/enabled = true
