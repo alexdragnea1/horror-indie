@@ -226,7 +226,8 @@ def betiv(cale):
 
 def boombox(cale):
 	"""Boombox anii '90: carcasă gri, două difuzoare mari (`DifuzorS`, `DifuzorD`, separate, originea în centru:
-	pulsează pe muzică), casetofon la mijloc, afișaj (`Afisaj`, strălucește), mâner, antenă scoasă.
+	pulsează pe muzică), casetofon la mijloc, afișaj (`Afisaj`, strălucește), mâner, antenă scoasă (`Antena`, separată,
+	originea la bază: se îndoaie când împuști boombox-ul).
 	Originea = jos, la mijloc, fața spre -Y."""
 	curata()
 	carcasa, fata, inchis = p("6f6d7f"), p("778c96"), p("2a3c3d")
@@ -249,12 +250,14 @@ def boombox(cale):
 		os_intre("Maner", (-0.2, 0.0, 0.26), (-0.17, 0.0, 0.34), 0.012, NEGRU, laturi=5),
 		os_intre("Maner", (0.2, 0.0, 0.26), (0.17, 0.0, 0.34), 0.012, NEGRU, laturi=5),
 		os_intre("Maner", (-0.17, 0.0, 0.34), (0.17, 0.0, 0.34), 0.014, NEGRU, laturi=5),
-		os_intre("Antena", (0.23, 0.04, 0.26), (0.05, 0.12, 0.72), 0.004, fata, laturi=4),
-		sfera("Varf antena", 0.008, (0.05, 0.12, 0.72), fata, segmente=5, inele=3),
 		# un abțibild jupuit pe carcasă
 		cub("Abtibild", (0.06, 0.004, 0.035), (0.21, -0.0835, 0.225), p("438b88"), rot=(0, 0.1, 0)),
 	]
 	uneste(piese, "Boombox")
+	uneste([
+		os_intre("Antena", (0.23, 0.04, 0.26), (0.05, 0.12, 0.72), 0.004, fata, laturi=4),
+		sfera("Varf antena", 0.008, (0.05, 0.12, 0.72), fata, segmente=5, inele=3),
+	], "Antena", (0.23, 0.04, 0.26))
 	uneste([cub("Afisaj", (0.11, 0.006, 0.03), (0, -0.0855, 0.2), p("a56850"))], "Afisaj")
 	for nume, x in (("DifuzorS", -0.17), ("DifuzorD", 0.17)):
 		uneste([

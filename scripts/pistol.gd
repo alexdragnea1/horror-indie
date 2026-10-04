@@ -2,7 +2,8 @@ class_name Pistol
 extends Node3D
 ## Pistolul roz de la Head Witch, în mâna ta dreaptă (la persoana întâi). Îl pune jucator.gd sub cameră; se vede
 ## doar cât îl ai în inventar (Stare: `ID`). Click stânga (acțiunea "trage") = tragi: un glonț omoară pe loc doar
-## personajele `omorabil` (Personaj.impuscat; acum doar bețivul), pe ceilalți nu-i atinge. Un cadavru îl împinge,
+## personajele `omorabil` (Personaj.impuscat: bețivul) și, după ce ți-a cerut bețivul, vrăjitoarele din cerc; pe ceilalți nu-i
+## atinge. Orice are `impuscat(directie, punct)` primește glonțul (ex. boombox-ul se strică). Un cadavru îl împinge,
 ## iar în rest ridică un pic de praf. Gloanțe câte vrei, câte unul la `pauza` secunde.
 ## Cât vorbești nu tragi; cât e deschis un meniu / o scenă (Stare.meniu_deschis) sau e ecranul negru, îl lași jos.
 
@@ -114,7 +115,7 @@ func _trage() -> void:
 		return
 	var tinta: Object = lovit.collider
 	if tinta.has_method("impuscat"):
-		tinta.impuscat(directie)
+		tinta.impuscat(directie, lovit.position)
 	elif tinta is RigidBody3D:
 		(tinta as RigidBody3D).apply_impulse(directie * 30.0, lovit.position - (tinta as RigidBody3D).global_position)
 	else:

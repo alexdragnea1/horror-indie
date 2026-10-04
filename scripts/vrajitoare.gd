@@ -81,7 +81,7 @@ func model_cadavru() -> PackedScene:
 
 
 ## O lovește un glonț (pistol.gd). Moare doar după ce ți-a cerut-o bețivul.
-func impuscat(directie: Vector3) -> void:
+func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
 	if not mort and Stare.e_marcat(marcaj_omorabila):
 		_moare(directie, forta_glont)
 

@@ -259,4 +259,12 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc='lt(random(1)\,0.0008)*(random(2)*2-1)'
 	-f lavfi -i "anoisesrc=c=brown:a=0.12:d=10:r=44100" \
 	-filter_complex "[0]highpass=f=700,aecho=0.6:0.4:20:0.3[t];[1]lowpass=f=400[v];[t][v]amix=inputs=2:normalize=0" -ac 1 "$OUT/_foc.wav"
 bucla foc_trosnet "$OUT/_foc.wav" 1 mono
+# --- boombox-ul împușcat: plasticul crapă, difuzorul pocnește, apoi scântei electrice și un bâzâit care se taie
+ffmpeg -v error -y -i "$PACHET/Materials/cardboard_hit.wav" -i "$PACHET/Materials/pottery_clang.wav" \
+	-f lavfi -i "aevalsrc='lt(random(1)\,0.02*exp(-t*2.5))*(random(2)*2-1)':s=44100:d=1.8" \
+	-f lavfi -i "aevalsrc=0.25*sin(2*PI*100*t)*sgn(sin(2*PI*130*t))*lt(t\,0.9)*gt(sin(2*PI*7*t)\,-0.3):s=44100:d=1.8" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,apad=pad_dur=1.8,atrim=end=1.8[p];[1]aformat=channel_layouts=mono,highpass=f=600,volume=0.5,apad=pad_dur=1.8,atrim=end=1.8[c];[2]highpass=f=1500,aecho=0.6:0.3:12:0.4,volume=0.8[s];[3]lowpass=f=3000,afade=t=out:st=0.6:d=0.3[b];[p][c][s][b]amix=inputs=4:normalize=0" \
+	-ac 1 "$OUT/_boombox.wav"
+unic boombox_stricat "$OUT/_boombox.wav"
+rm -f "$OUT"/_boombox.wav
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

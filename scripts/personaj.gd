@@ -77,7 +77,7 @@ func poate_fi_folosit() -> bool:
 
 
 ## Îl lovește un glonț (pistol.gd). Moare doar dacă e `omorabil`.
-func impuscat(directie: Vector3) -> void:
+func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
 	if omorabil and not mort:
 		omoara(directie, forta_glont)
 
