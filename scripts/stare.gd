@@ -74,6 +74,15 @@ func reseteaza() -> void:
 	_mesaj.show()
 
 
+## Șterge de pe ecran „Task: …” și „Picked up: …” (la ieșirea în meniul principal).
+func ascunde_mesaje() -> void:
+	for tween in [_tween_sarcina, _tween_mesaj]:
+		if tween:
+			tween.kill()
+	_sarcina_sus.modulate.a = 0.0
+	_mesaj.modulate.a = 0.0
+
+
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
 	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator}

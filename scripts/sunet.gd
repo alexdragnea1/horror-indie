@@ -20,6 +20,8 @@ func reda(stream: AudioStream, volum_db := 0.0, variatie := 0.0, bus := &"Efecte
 		return
 	var sursa := AudioStreamPlayer.new()
 	_pregateste(sursa, stream, volum_db, variatie, bus, inaltime)
+	if bus == &"Interfata":
+		sursa.process_mode = Node.PROCESS_MODE_ALWAYS  # se aude și în meniul de pauză
 	add_child(sursa)
 	sursa.play()
 

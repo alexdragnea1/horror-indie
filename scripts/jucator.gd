@@ -64,8 +64,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cap.rotation.x = clamp(_cap.rotation.x, deg_to_rad(-85), deg_to_rad(85))
 	elif event is InputEventMouseButton and event.pressed and not Stare.meniu_deschis:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("lanterna"):
 		_lanterna.visible = not _lanterna.visible
 		Sunet.reda(lanterna_pornita if _lanterna.visible else lanterna_oprita, Sunet.VOLUM_EFECTE, 0.05)

@@ -40,8 +40,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			limita_jos, limita_sus)
 	elif event is InputEventMouseButton and event.pressed and not Stare.meniu_deschis:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 func _process(delta: float) -> void:

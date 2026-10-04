@@ -53,7 +53,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if not in_joc:
+	if not in_joc or get_tree().paused:
 		return
 	timp_jucat += delta
 	_ceas += delta

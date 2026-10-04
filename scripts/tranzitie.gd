@@ -58,6 +58,7 @@ func mergi_la(cale: String, titlu := "", sunete: Array[AudioStream] = []) -> voi
 	await tween.finished
 
 	get_tree().change_scene_to_file(cale)
+	get_tree().paused = false  # dacă venim din meniul de pauză
 	await get_tree().process_frame
 	_volum_general(0.0)
 	# pe negru suntem „între” locuri (o scară de bloc): ecou mare, de beton

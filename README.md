@@ -15,7 +15,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | E / click | interacționezi / treci la replica următoare |
 | F | lanterna |
 | Tab | deschide / închide inventarul (5 sloturi + sarcina curentă) |
-| Esc | închide inventarul / eliberează mouse-ul / în meniul principal: înapoi |
+| Esc | în joc: **meniul de pauză** (Resume, Go to main menu, Settings, Quit; jocul stă pe loc) / închide inventarul / în meniuri: înapoi |
 | F11 | ecran complet (merge oriunde) |
 
 ## Povestea până acum
@@ -43,6 +43,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scenes/mama.tscn`, `scenes/frigider.tscn`, `scenes/bec.tscn` – Mom, frigiderul (se deschide) și becul care pâlpâie și se leagănă. Le tragi în nivel din FileSystem.
 - `scenes/dormitor.tscn` – camera ta, de vrăjitoare: pat, ceaun, raft cu cărți de vrăji, covor cu pentagramă și lumânări, glob de cristal, mătură. Mută lucrurile din ea cu mouse-ul în editor.
 - `scripts/meniu_principal.gd` – meniul principal (în spate e curtea blocului, cu baba pe bancă). Tastele, volumul și ecranul complet le ține `scripts/setari.gd`, iar salvările `scripts/salvare.gd`: jocul se salvează singur (când intri într-un loc, când se întâmplă ceva în poveste, la fiecare minut și când închizi), în fișierul ales din meniu. Fișierele stau în `%APPDATA%\Godot\app_userdata\Horror Indie\`.
+- `scripts/pauza.gd` – meniul de pauză (Esc în joc, sau singur când dai Alt+Tab): Resume, Go to main menu, Settings, Quit. Ecranul de Settings e același ca în meniul principal (`scripts/panou_setari.gd`), deci ce schimbi acolo se vede în ambele.
 - `scripts/meniu_nume.gd` – meniul în care îți scrii numele (apare prima dată când încerci să ieși din cameră). Textele lui se schimbă din `@export`-urile de sus.
 - `scripts/inventar.gd` – fereastra de inventar (Tab). `Stare.seteaza_sarcina("...")` schimbă sarcina curentă și o arată sus 5 secunde.
 - `scenes/usa_intrare.tscn` – ușa de la intrare. În Inspector, la `Usa`: `marcaj_necesar` = ce trebuie să se fi întâmplat ca să se deschidă (acum `a_vorbit_cu_mom`), `replici_fara_marcaj` = ce zici până atunci.

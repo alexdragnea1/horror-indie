@@ -23,6 +23,7 @@ Sunet="*res://scripts/sunet.gd"
 Tranzitie="*res://scripts/tranzitie.gd"
 Setari="*res://scripts/setari.gd"
 Salvare="*res://scripts/salvare.gd"
+Pauza="*res://scripts/pauza.gd"
 
 [display]
 
