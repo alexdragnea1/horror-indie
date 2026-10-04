@@ -81,6 +81,7 @@ bash tools/sunete.sh
 Ce se aude acum:
 - **pași** pe podeaua de lemn (uneori scârțâie), mai moi pe covorul cu pentagramă, pe beton afară și foșnind prin frunze uscate în grădină; clic la lanternă;
 - **bâzâit** la becuri, care tace când becul se stinge; **frigiderul** bâzâie, iar la deschidere și închidere se aud garnitura și borcanele;
+- **muzică** în fața blocului: piesa ta „Block” (din `Sound/Music`), în buclă; pornește încet când ieși din casă și o reglezi cu glisorul Music. Dacă schimbi piesa, rulează iar `bash tools/sunete.sh`;
 - **ușa camerei** scârțâie lung când o deschizi; **ceaunul** fierbe și gâlgâie din când în când; **ceasul** din bucătărie ticăie (e oprit la 11:55);
 - **vânt** afară, iar din când în când un scârțâit sau un ciocănit din pereți, și foarte rar ceva... mai rău; în fața blocului, uneori, cineva fluieră departe în întuneric sau se aude o tablă lovită;
 - **tranziția** spre afară: pașii pe scara blocului, cu ecou, și ușa metalică a scării trântită;
@@ -105,7 +106,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
 4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale; urmează coven-ul), modele low-poly făcute din cod
-5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum; urmează jumpscare-uri și muzică)
+5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum, muzica ta „Block” în fața blocului; urmează jumpscare-uri și muzică în alte locuri)
 6. ⏳ Monstrul (✅ prima apariție: creatura de lângă autobuz), jumpscare-uri, comedie
 7. ⏳ Meniu, salvare (✅), final
 8. Playtest și build

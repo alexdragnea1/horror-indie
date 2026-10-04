@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=3]
+[gd_scene load_steps=68 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -35,6 +35,8 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="34"]
 [ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="35"]
 [ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="36"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_bloc.ogg" id="37"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="38"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -541,6 +543,11 @@ stream = ExtResource("24")
 volume_db = -14.0
 autoplay = true
 bus = &"Ambianta"
+
+[node name="Muzica" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("37")
+bus = &"Muzica"
+script = ExtResource("38")
 
 [node name="Sperieturi" type="Node3D" parent="."]
 script = ExtResource("21")

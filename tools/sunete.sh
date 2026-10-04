@@ -216,4 +216,8 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc=0.16*sin(2*PI*55*t)*(0.7+0.3*sin(2*PI*t
 [d][c]amix=inputs=2:normalize=0,atrim=end=36" -ac 2 "$OUT/_meniu.wav"
 bucla muzica_meniu "$OUT/_meniu.wav" 3 stereo
 rm -f "$OUT/_meniu.wav"
+# --- muzica din fața blocului (adusă de owner: Sound/Music/Block.mp3, „ranger's lament” de human gazpacho).
+# Piesa se termină la 3:45, apoi sunt 3 s de liniște: le tăiem (cu o mică stingere), ca bucla să reînceapă repede.
+# În Godot e buclă din import (loop=true).
+unic muzica_bloc "Sound/Music/Block.mp3" stereo "atrim=end=226,afade=t=out:st=225.3:d=0.7"
 echo "Gata."
