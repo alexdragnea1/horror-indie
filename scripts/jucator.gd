@@ -164,6 +164,8 @@ func _pas(_fuge: bool) -> void:
 ## (ex. zborul pe mătură, sefa_vrajitoare.gd). Mersul și privitul le oprește oricum Stare.meniu_deschis.
 func seteaza_purtat(purtat: bool) -> void:
 	set_physics_process(not purtat)
+	if purtat:
+		_indiciu.text = ""
 	$Coliziune.set_deferred("disabled", purtat)
 	velocity = Vector3.ZERO
 	_camera.position = Vector3.ZERO

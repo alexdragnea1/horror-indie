@@ -36,7 +36,9 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 14. Dimineața te trezești în pat. Ușa de la intrare nu te lasă: e cineva în bucătărie. E **Head Witch**: mama ta i-a zis să te antreneze cât îți vin puterile. Îți zice să-ți iei mătura și să vă vedeți afară, apoi dispare într-un fum mov.
 15. Mătura e în camera ta, sprijinită de perete: E → „Pick up the broom?” Yes / No.
 16. Afară e **zi**, tot cu ceață. Head Witch te așteaptă la scară. **Cu mătura**: o pui jos, sar scântei, mătura tresare de trei ori... și rămâne acolo (n-ai talent la magie). O ameninți cu pistolul, ea zice că vine mâine, iar mătura se teleportează înapoi acasă. **Fără mătură**: „I got this glock.” În ambele cazuri ea pleacă în zbor pe mătura ei și se topește în aer. „I hate this bitch.”
-17. Urmează: ce se întâmplă după antrenament.
+17. La 10 secunde după ce pleacă Head Witch îți vibrează telefonul: un mesaj de la „School Whore” (Lexy), într-o aplicație de mesaje. Îi răspunzi, iar după 5 secunde vine autobuzul.
+18. Autobuzul te lasă la Lexy: o casă americană puțin gotică, cu un cimitir peste drum. Lexy fumează pe canapea și se uită la știri. Te așezi lângă ea, vorbiți, vă dați jointul, apoi îl stinge și se duce să mănânce pizza în bucătărie.
+19. Urmează: ce se întâmplă după pizza.
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
@@ -88,6 +90,8 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/sefa_antrenament.gd` (nodul `HeadWitchZi` din `afara_bloc.tscn`) – antrenamentul din fața blocului: toate replicile (grupul „Replici”), cât de departe pui mătura, cât durează zborul. `final_si_cu_matura`: debifat = „I hate this bitch.” doar la varianta fără mătură.
 - `scripts/zi_bloc.gd` (nodul `ZiBloc` din `afara_bloc.tscn`) – cum arată curtea ziua: culorile cerului, ale ceții și ale soarelui (grupul „Culori zi”).
 - `scripts/tomberon.gd` (pe `Tomberon` din `afara_bloc.tscn`) – E pe tomberon: ridici capacul, scotocești și găsești bomboana (o dată pe joc). Ce găsești (`id_obiect`, `nume_obiect`) se schimbă din Inspector.
+- `scripts/telefon.gd` – telefonul pe ecran, ca o aplicație de mesaje. `scripts/mesaj_telefon.gd` (nodul `MesajLexy` din `afara_bloc.tscn`) – când vine mesajul, de la cine (`contact`) și ce scrie (`mesaje`; „You:” = mesajele tale).
+- `scenes/casa_lexy.tscn` – casa lui Lexy și strada cu cimitirul. `scripts/canapea_lexy.gd` (pe `Canapea`) – replicile de pe canapea (grupul „Replici”) și unde stați. `scripts/lexy.gd` – cum se mișcă Lexy. `scripts/televizor.gd` – ce scrie la știri (`titlu`, `banda_jos`).
 - `scripts/limite_padure.gd` (nodul `ZidInvizibil`) – zidul invizibil din pădure: poți ieși de pe potecă printre copaci, dar doar cam 8 m (`departe_de_poteca`); pe platou (`raza_platou`) și în poiana din vale (`raza_vale`) ai loc mai mult. Bifează `arata` ca să-l vezi roșu când testezi.
 - La orice model pus în scenă fără coliziune (o piatră, o ladă) poți bifa în Inspector, la `ModelPS2`, `coliziune` = Cilindru sau Cutie.
 - `scripts/atmosfera_padure.gd` (nodul `Atmosfera`) – cum se schimbă ceața, lumina, cerul și sunetele în pădure, pe platou și în vale (grupurile „Pădure”, „Platou”, „Vale” din Inspector).
@@ -134,7 +138,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 1. ✅ Baza: aspect PS2, jucător, dialog, obiecte interactive
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
-4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale, ✅ bețivul, ✅ coven-ul și zborul acasă; urmează ce se întâmplă acasă), modele low-poly făcute din cod
+4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale, ✅ bețivul, ✅ coven-ul și zborul acasă, ✅ somnul și dimineața cu Head Witch, ✅ mesajul pe telefon și casa lui Lexy; urmează ce se întâmplă după pizza), modele low-poly făcute din cod
 5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum, muzica la fel de tare ca efectele, muzica ta „Block” în fața blocului și „Deal” la bețiv, coven-ul; urmează jumpscare-uri și muzică în alte locuri)
 6. ⏳ Monstrul (✅ prima apariție: creatura de lângă autobuz), jumpscare-uri, comedie
 7. ⏳ Meniu, salvare (✅), final

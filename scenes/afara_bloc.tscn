@@ -1,4 +1,4 @@
-[gd_scene load_steps=85 format=3]
+[gd_scene load_steps=86 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -53,6 +53,7 @@
 [ext_resource type="AudioStream" path="res://sunete/vraja_esuata.ogg" id="zi7"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="zi8"]
 [ext_resource type="Script" path="res://scripts/tomberon.gd" id="tb1"]
+[ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="lx1"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -617,3 +618,19 @@ brat = NodePath("Model/BratDrept")
 cap = NodePath("Model/Cap")
 model_matura = ExtResource("zi5")
 distanta_privire = 9.0
+
+[node name="MesajLexy" type="Node" parent="."]
+script = ExtResource("lx1")
+mesaje = PackedStringArray("Her: Hey do you wanna come hangout?", "Her: My mom is out of town and we can smoke if you want", "You: Aight bet", "You: Will be there in 10 mins")
+
+[node name="AutobuzLexy" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("32")
+autobuz = NodePath("../Autobuz")
+marcaj = "a_primit_mesajul_lexy"
+marcaj_oprire = "a_urcat_spre_lexy"
+scena_drum = "res://scenes/casa_lexy.tscn"
+marcaj_urcare = "a_urcat_spre_lexy"
+titlu = "Lexy's place
+9:34 AM"
+sunete_urcare = Array[AudioStream]([ExtResource("34"), ExtResource("35"), ExtResource("34"), ExtResource("36"), ExtResource("33")])
+sunet_frana = ExtResource("33")

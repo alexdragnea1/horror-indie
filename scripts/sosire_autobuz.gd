@@ -3,6 +3,7 @@ extends Node
 ## Pornește de departe (din ceață, doar farurile), frânează, își deschide ușile și așteaptă.
 ## Când urci ([E] la o ușă), pornește scena din autobuz (`scena_drum`), prin Tranzitie.
 ## Dacă pornești jocul cu marcajul deja pus (Continue), autobuzul vine din nou după `intarziere`.
+## Al doilea nod (`AutobuzLexy`, ziua): vine după mesajul de pe telefon și te duce la Lexy (`scena_drum` = casa ei).
 
 ## Autobuzul din scenă (scenes/autobuz.tscn), cu fața spre direcția din care vine.
 @export var autobuz: Autobuz
@@ -24,6 +25,8 @@ extends Node
 
 @export_group("La urcare")
 @export_file("*.tscn") var scena_drum := "res://scenes/autobuz_drum.tscn"
+## Marcajul pus când urci.
+@export var marcaj_urcare := "a_urcat_in_autobuz"
 ## Numele locului, arătat după tranziție.
 @export_multiline var titlu := "Night line 13\n11:59 PM"
 ## Ce se aude pe negru: urci treptele, ușile se închid, pornește.
@@ -105,5 +108,5 @@ func _urca() -> void:
 	if _stare != OPRIT or Tranzitie.activa:
 		return
 	_stare = PLECAT
-	Stare.marcheaza("a_urcat_in_autobuz")
+	Stare.marcheaza(marcaj_urcare)
 	Tranzitie.mergi_la(scena_drum, titlu, sunete_urcare)

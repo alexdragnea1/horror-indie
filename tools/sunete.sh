@@ -294,4 +294,55 @@ rm -f "$OUT"/_rascolit.wav
 unic bomboana_ambalaj "Materials/paper_scrunch.wav" mono "highpass=f=1500,asetrate=44100*1.4,aresample=44100,atrim=end=0.6,afade=t=out:st=0.45:d=0.15"
 # bomboana tare ronțăită (o mușcătură; în joc se cântă de mai multe ori, cu altă înălțime)
 unic bomboana_ronta "Combat and Gore/crunch_quick.wav" mono "highpass=f=300,asetrate=44100*1.25,aresample=44100,lowpass=f=5000"
+# --- telefonul (mesajul de la Lexy): sintetizate, în afară de buzunar
+# vibrația: motorașul (165 Hz, „pătrat”, înfundat de buzunar), de două ori
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.5*sgn(sin(2*PI*165*t))*(lt(t\,0.38)+gt(t\,0.55)*lt(t\,0.93))*(0.85+0.15*sin(2*PI*9*t))':s=44100:d=1.1" \
+	-af "lowpass=f=650,highpass=f=90" -ac 1 "$OUT/_vibratie.wav"
+unic telefon_vibratie "$OUT/_vibratie.wav" stereo
+# scos / băgat în buzunarul gecii: foșnet de haine
+unic telefon_buzunar "Materials/clothing_1.wav" stereo "atrim=end=0.5,afade=t=out:st=0.35:d=0.15"
+# notificarea: două note scurte, ca un clopoțel de telefon
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.4*sin(2*PI*1318*t)*exp(-t*22)+0.4*gt(t\,0.085)*sin(2*PI*1975*(t-0.085))*exp(-(t-0.085)*14)+0.1*sin(2*PI*2636*t)*exp(-t*30)':s=44100:d=0.5" \
+	-ac 1 "$OUT/_notificare.wav"
+unic telefon_notificare "$OUT/_notificare.wav" stereo
+# tastele: un „tic” scurt de sticlă (zgomot de 6 ms + un sinus înalt)
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(0)*2-1)*exp(-t*700)*0.6+0.3*sin(2*PI*2400*t)*exp(-t*400)':s=44100:d=0.05" \
+	-af "highpass=f=1200" -ac 1 "$OUT/_tasta.wav"
+unic telefon_tasta "$OUT/_tasta.wav" stereo
+# mesaj trimis: un „fâș” care urcă
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.5*sin(2*PI*(500*t+3500*t*t))*exp(-t*16)':s=44100:d=0.25" -ac 1 "$OUT/_trimis.wav"
+unic telefon_trimis "$OUT/_trimis.wav" stereo
+# mesaj primit (cu conversația deschisă): un „pop” care coboară
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.5*sin(2*PI*(1100*t-1800*t*t))*exp(-t*20)':s=44100:d=0.2" -ac 1 "$OUT/_primit.wav"
+unic telefon_primit "$OUT/_primit.wav" stereo
+rm -f "$OUT"/_vibratie.wav "$OUT"/_notificare.wav "$OUT"/_tasta.wav "$OUT"/_trimis.wav "$OUT"/_primit.wav
+# --- la Lexy: jointul, pizza, canapeaua, televizorul cu știrile
+# tras din joint: un șuierat de aer care crește (zgomot roz filtrat) și pârâitul hârtiei care arde
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.5:d=1.4:r=44100" \
+	-f lavfi -i "aevalsrc='lt(random(1)\,0.006)*(random(2)*2-1)*0.8':s=44100:d=1.4" \
+	-filter_complex "[0]bandpass=f=1400:t=h:w=1800,afade=t=in:st=0:d=0.9,afade=t=out:st=1.15:d=0.25,volume=0.7[a];[1]highpass=f=2500,afade=t=in:st=0.1:d=0.5,afade=t=out:st=1.0:d=0.4[c];[a][c]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_tras.wav"
+unic fum_tras "$OUT/_tras.wav"
+# suflat: aer care iese lung și se stinge (mai jos decât trasul)
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.5:d=1.7:r=44100" \
+	-af "bandpass=f=900:t=h:w=1200,afade=t=in:st=0:d=0.12,afade=t=out:st=0.3:d=1.35,volume=0.8" -ac 1 "$OUT/_suflat.wav"
+unic fum_suflat "$OUT/_suflat.wav"
+# jointul strivit în scrumieră: hârtia mototolită scurt + un sfârâit
+ffmpeg -v error -y -i "$PACHET/Materials/paper_scrunch.wav" -f lavfi -i "anoisesrc=c=white:a=0.3:d=0.6:r=44100" \
+	-filter_complex "[0]aformat=channel_layouts=mono,atrim=end=0.35,afade=t=out:st=0.25:d=0.1,highpass=f=800,apad=pad_dur=0.6,atrim=end=0.6[h];[1]highpass=f=3500,afade=t=out:st=0.05:d=0.5,adelay=120,atrim=end=0.6,volume=0.6[s];[h][s]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_stins.wav"
+unic joint_stins "$OUT/_stins.wav"
+# o mușcătură de pizza: o bucată scurtă din molfăitul din pachet
+unic pizza_muscatura "Other/munching_food.wav" mono "atrim=end=0.7,afade=t=out:st=0.5:d=0.2"
+# te lași pe canapea: bufnitura hainelor, mai joasă (perne moi)
+unic canapea_asezat "Materials/clothing_thud.wav" mono "asetrate=44100*0.8,aresample=44100,lowpass=f=2500"
+# știrile de la televizor (buclă): o voce „de crainic” înfundată = zgomot filtrat pe benzile vocii, tăiat în
+# silabe și fraze, prin difuzorul mic al televizorului, peste un fond muzical de știri foarte încet
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=12:r=44100" \
+	-f lavfi -i "aevalsrc='(0.55+0.45*sin(2*PI*4.7*t+2*sin(2*PI*0.9*t)))*gt(sin(2*PI*0.23*t)+0.55\,0)*gt(sin(2*PI*0.61*t+1)+0.8\,0)':s=44100:d=12" \
+	-f lavfi -i "aevalsrc='0.05*sin(2*PI*110*t)*(0.6+0.4*sin(2*PI*0.5*t))+0.03*sin(2*PI*165*t)+0.025*sin(2*PI*220*t)*gt(sin(2*PI*1*t)\,0)':s=44100:d=12" \
+	-filter_complex "[0]bandpass=f=1000:t=h:w=1600,highpass=f=250[v];[v][1]amultiply[vo];[vo]equalizer=f=2500:t=q:w=1:g=6,lowpass=f=3200,highpass=f=280[voce];[2]lowpass=f=900[m];[voce][m]amix=inputs=2:normalize=0,aecho=0.6:0.4:18:0.2" \
+	-ac 1 "$OUT/_stiri.wav"
+bucla tv_stiri "$OUT/_stiri.wav" 1.5 mono
+rm -f "$OUT"/_tras.wav "$OUT"/_suflat.wav "$OUT"/_stins.wav "$OUT"/_stiri.wav
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

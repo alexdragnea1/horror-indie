@@ -69,3 +69,20 @@ static func forma(corp: CollisionObject3D, c: AABB, t: Transform3D, rotund: bool
 		nod.shape = box
 	nod.transform = Transform3D(baza, t.origin + baza * (centru * marime))
 	corp.add_child(nod)
+
+
+## Coliziune exact după forma modelului (toate bucățile lui, în afară de `fara`, ex. lămpile), într-un StaticBody3D nou.
+## Pentru clădiri și mobilă: pereții, treptele, podeaua. Nu merge pentru ce se mișcă.
+static func plasa(model: Node3D, fara: PackedStringArray = ["Lumini"]) -> StaticBody3D:
+	var corp := StaticBody3D.new()
+	corp.name = "Coliziune"
+	model.add_child(corp)
+	for nod in model.find_children("*", "MeshInstance3D", true, false):
+		var mi := nod as MeshInstance3D
+		if String(mi.name) in fara:
+			continue
+		var forma := CollisionShape3D.new()
+		forma.shape = mi.mesh.create_trimesh_shape()
+		corp.add_child(forma)
+		forma.global_transform = mi.global_transform
+	return corp
