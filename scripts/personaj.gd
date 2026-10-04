@@ -42,6 +42,9 @@ extends Interactabil
 @export var sunet_cadere: AudioStream
 @export var sunet_luat: AudioStream
 
+## Marcajul pus la primul mort din pădure (bețivul sau o vrăjitoare): după el gloanțele nu mai omoară pe nimeni.
+const MARCAJ_CRIMA := "a_omorat_pe_cineva"
+
 var mort := false
 var _a_vorbit := false
 var _vorbeste := false
@@ -57,6 +60,7 @@ func _ready() -> void:
 	if marcaj_luat != "" and Stare.e_marcat(marcaj_luat):
 		# l-ai luat deja (în inventar sau în cazan): nu mai e aici
 		mort = true
+		Stare.marcheaza(MARCAJ_CRIMA)  # salvările de dinainte de marcaj
 		hide()
 		_dezactiveaza_coliziunea()
 	elif marcaj_mort != "" and Stare.e_marcat(marcaj_mort):
@@ -76,9 +80,9 @@ func poate_fi_folosit() -> bool:
 	return not _vorbeste and not mort
 
 
-## Îl lovește un glonț (pistol.gd). Moare doar dacă e `omorabil`.
+## Îl lovește un glonț (pistol.gd). Moare doar dacă e `omorabil` și n-ai mai omorât pe nimeni (`MARCAJ_CRIMA`).
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
-	if omorabil and not mort:
+	if omorabil and not mort and not Stare.e_marcat(MARCAJ_CRIMA):
 		omoara(directie, forta_glont)
 
 
@@ -86,6 +90,7 @@ func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
 ## îl poți lua în inventar cu E.
 func omoara(directie: Vector3, forta: float) -> void:
 	mort = true
+	Stare.marcheaza(MARCAJ_CRIMA)
 	_vorbeste = false
 	_dezactiveaza_coliziunea()
 	if marcaj_mort != "":

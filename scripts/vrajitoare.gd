@@ -4,7 +4,8 @@ extends Node3D
 ## La vrajă (cazan.gd) își ridică brațele și capul spre cer: ridica_bratele(true / false).
 ## Modelul are `Brate` (originea între umeri) și `Cap` (originea în gât), vezi tools/blender/coven.py.
 ## După ce bețivul ți-a cerut asta (`marcaj_omorabila`), le poți împușca (nu și pe Head Witch): cade pe spate ca un
-## ragdoll, apoi o iei în inventar cu E (`nume_cadavru`) și o poți arunca în cazan în locul bețivului (cazan.gd).
+## ragdoll (doar una, și doar dacă n-ai omorât deja bețivul: vezi Personaj.MARCAJ_CRIMA), apoi o iei în inventar
+## cu E (`nume_cadavru`) și o poți arunca în cazan în locul bețivului (cazan.gd).
 ## Marcajele și id-ul din inventar vin din numele nodului (ex. Vrajitoare3: „vrajitoare3_moarta”, „cadavru_vrajitoare3”).
 
 ## Ca să nu se miște toate la fel (secunde).
@@ -44,6 +45,7 @@ func _ready() -> void:
 	if Stare.e_marcat(nume + "_luata"):
 		# ai luat-o deja (în inventar sau în cazan): nu mai e aici
 		mort = true
+		Stare.marcheaza(Personaj.MARCAJ_CRIMA)  # salvările de dinainte de marcaj
 		remove_from_group("vrajitoare_cerc")
 		hide()
 		_dezactiveaza_coliziunea()
@@ -80,15 +82,16 @@ func model_cadavru() -> PackedScene:
 	return load(_cale_model) if _cale_model != "" else null
 
 
-## O lovește un glonț (pistol.gd). Moare doar după ce ți-a cerut-o bețivul.
+## O lovește un glonț (pistol.gd). Moare doar după ce ți-a cerut-o bețivul și dacă n-ai mai omorât pe nimeni.
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
-	if not mort and Stare.e_marcat(marcaj_omorabila):
+	if not mort and Stare.e_marcat(marcaj_omorabila) and not Stare.e_marcat(Personaj.MARCAJ_CRIMA):
 		_moare(directie, forta_glont)
 
 
 ## Cade pe spate (în afara cercului), iar după ce se oprește o poți lua cu E. Ca Personaj.omoara.
 func _moare(directie: Vector3, forta: float) -> void:
 	mort = true
+	Stare.marcheaza(Personaj.MARCAJ_CRIMA)
 	remove_from_group("vrajitoare_cerc")
 	_dezactiveaza_coliziunea()
 	Stare.marcheaza(String(name).to_lower() + "_moarta")
