@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
@@ -15,6 +15,9 @@
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="13"]
 [ext_resource type="AudioStream" path="res://sunete/ceaun_fierbe.ogg" id="14"]
 [ext_resource type="AudioStream" path="res://sunete/galgait.ogg" id="15"]
+[ext_resource type="Script" path="res://scripts/pat.gd" id="p1"]
+[ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="p2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="p3"]
 
 [sub_resource type="BoxShape3D" id="forma_pat"]
 size = Vector3(2, 0.6, 1.1)
@@ -37,6 +40,9 @@ radius = 0.36
 
 [node name="Pat" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.02, -1.7)
+script = ExtResource("p1")
+sunet_scartait = ExtResource("p2")
+sunet_patura = ExtResource("p3")
 
 [node name="Model" parent="Pat" instance=ExtResource("4")]
 script = ExtResource("1")

@@ -27,6 +27,8 @@
 [ext_resource type="PackedScene" path="res://models/cuier.glb" id="28"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="29"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="30"]
+[ext_resource type="Script" path="res://scripts/acasa_noaptea.gd" id="an1"]
+[ext_resource type="Script" path="res://scripts/declansator.gd" id="an2"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -84,6 +86,9 @@ size = Vector3(0.86, 0.6, 0.06)
 
 [sub_resource type="BoxShape3D" id="forma_cuier"]
 size = Vector3(0.95, 1.8, 0.32)
+
+[sub_resource type="BoxShape3D" id="forma_bucatarie_goala"]
+size = Vector3(2, 2, 0.8)
 
 [node name="NivelTest" type="Node3D"]
 
@@ -289,3 +294,18 @@ material = SubResource("mat_pamant")
 
 [node name="UsaIntrare" parent="." instance=ExtResource("15")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.02, -14.1)
+
+[node name="AcasaNoaptea" type="Node" parent="." node_paths=PackedStringArray("mama", "usa_intrare")]
+script = ExtResource("an1")
+mama = NodePath("../Mama")
+usa_intrare = NodePath("../UsaIntrare/Usa")
+
+[node name="BucatarieGoala" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -4.7)
+script = ExtResource("an2")
+replici = PackedStringArray("You: Mom?", "You: ...", "You: Where the hell is she at this hour?")
+marcaj = "a_vazut_ca_mom_lipseste"
+marcaj_necesar = "a_venit_acasa"
+
+[node name="Forma" type="CollisionShape3D" parent="BucatarieGoala"]
+shape = SubResource("forma_bucatarie_goala")

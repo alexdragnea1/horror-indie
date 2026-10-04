@@ -32,7 +32,8 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 10. Cu pistolul poți omorî dintr-un glonț doar pe cine trebuie: la început doar **bețivul** de pe platou. Cade pe spate peste buștean, moale ca o cârpă, și îl iei în inventar cu E. Dar dacă te duci la el cu pistolul, ridică mâinile: „Wait!”. Îți spune că vrăjitoarele fac asta de ani de zile și te roagă să împuști una de-a lor în locul lui. După asta poți împușca **orice vrăjitoare din cerc** (pe Head Witch nu), o iei în inventar („Witch”) și o arunci în cazan în locul bețivului. Dar poți omorî **o singură persoană**: după primul mort (bețivul sau o vrăjitoare), gloanțele nu mai omoară pe nimeni. Și dacă te enervează muzica, poți trage în **boombox**: sar scântei, iese fum, muzica se îneacă și tace de tot (rămâne stricat și la Continue).
 11. Îl arunci în cazan: poțiunea se face verde, din cazan pleacă spre cer o undă de lumină, apoi țâșnesc scântei roșii. Vraja e gata.
 12. Head Witch te trimite acasă la culcare; autobuzul vine abia la 6 dimineața, așa că te duce ea pe mătură. Urcați peste pădure, spre lună... și te trezești pe iarbă în fața blocului. Baba nu mai e pe bancă. Sarcina: „Go home and rest.”
-13. Urmează: ce se întâmplă acasă.
+13. Intri iar în bloc (ușa scării te lasă acum) și urci acasă. **Mom nu mai e** în bucătărie. Ușa de la intrare nu te mai lasă afară. Sarcina: „Go to sleep.” Te așezi pe pat, te întinzi, pleoapele se lasă greu și adormi. „To be continued...”
+14. Urmează: ce se întâmplă după somn.
 
 ## Ce e unde
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
@@ -71,6 +72,9 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/pistol.gd` – pistolul din mâna ta: unde îl ții pe ecran (`pozitie`), cât de departe bate (`bataie`), cât aștepți între gloanțe (`pauza`). Rozul vine din `shaders/material_roz.tres` (`culoare`).
 - `scripts/ragdoll.gd` – corpul care cade moale când moare cineva. Merge cu orice model făcut din bucăți separate, cu originea fiecărei bucăți în încheietură.
 - `scripts/intoarcere_acasa.gd` (nodul `IntoarcereAcasa` din `afara_bloc.tscn`) – trezirea în fața blocului după zbor: unde te trezești (`loc_trezire`), încotro te uiți, ce sarcină primești.
+- `scripts/usa_bloc.gd` (nodul `Bloc/UsaBloc`) – ușa scării: ce zice cât e blocată, numele locului și sunetele de pe negru când urci acasă.
+- `scripts/acasa_noaptea.gd` (nodul `AcasaNoaptea` din `nivel_test.tscn`) – casa după ce te-ai întors: Mom dispare, ușa de la intrare nu te mai lasă afară, unde apari, ce sarcină primești. Replicile din bucătărie sunt pe nodul `BucatarieGoala`.
+- `scripts/pat.gd` (nodul `Pat` din `dormitor.tscn`) – somnul: replica de pe marginea patului (`replici_somn`), unde stai și cât de jos îți sunt ochii, scena de după (`scena_dupa`; goală = „To be continued...”).
 - `scripts/limite_padure.gd` (nodul `ZidInvizibil`) – zidul invizibil din pădure: poți ieși de pe potecă printre copaci, dar doar cam 8 m (`departe_de_poteca`); pe platou (`raza_platou`) și în poiana din vale (`raza_vale`) ai loc mai mult. Bifează `arata` ca să-l vezi roșu când testezi.
 - La orice model pus în scenă fără coliziune (o piatră, o ladă) poți bifa în Inspector, la `ModelPS2`, `coliziune` = Cilindru sau Cutie.
 - `scripts/atmosfera_padure.gd` (nodul `Atmosfera`) – cum se schimbă ceața, lumina, cerul și sunetele în pădure, pe platou și în vale (grupurile „Pădure”, „Platou”, „Vale” din Inspector).

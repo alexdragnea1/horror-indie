@@ -30,6 +30,9 @@ func _la_intrare(corp: Node3D) -> void:
 		return
 	if marcaj_necesar != "" and not Stare.e_marcat(marcaj_necesar):
 		return
+	# s-a întâmplat deja (ex. înainte de un Continue)
+	if o_singura_data and marcaj != "" and Stare.e_marcat(marcaj):
+		return
 	_gata = o_singura_data
 	for nod in de_aratat:
 		nod.show()

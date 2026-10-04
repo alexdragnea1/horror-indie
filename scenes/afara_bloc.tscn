@@ -1,4 +1,4 @@
-[gd_scene load_steps=68 format=3]
+[gd_scene load_steps=74 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -38,6 +38,12 @@
 [ext_resource type="AudioStream" path="res://sunete/muzica_bloc.ogg" id="37"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="38"]
 [ext_resource type="Script" path="res://scripts/intoarcere_acasa.gd" id="39"]
+[ext_resource type="Script" path="res://scripts/usa_bloc.gd" id="ub1"]
+[ext_resource type="AudioStream" path="res://sunete/usa_bloc.ogg" id="ub2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_2.ogg" id="ub3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="ub4"]
+[ext_resource type="AudioStream" path="res://sunete/usa_intrare.ogg" id="ub5"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="ub6"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -258,9 +264,11 @@ transform = Transform3D(1, 0, 0, 0, 0.8414, -0.5402, 0, 0.5402, 0.8414, 0, 0.183
 shape = SubResource("forma_rampa")
 
 [node name="UsaBloc" type="StaticBody3D" parent="Bloc"]
-script = ExtResource("19")
+script = ExtResource("ub1")
 indiciu = "[E] Go back inside"
 replici = PackedStringArray("You: Nope. Mom's still up there.")
+sunete_tranzitie = Array[AudioStream]([ExtResource("34"), ExtResource("ub3"), ExtResource("35"), ExtResource("ub4"), ExtResource("34"), ExtResource("ub3"), ExtResource("35"), ExtResource("ub5"), ExtResource("ub6")])
+sunet_usa = ExtResource("ub2")
 
 [node name="Coliziune" type="CollisionShape3D" parent="Bloc/UsaBloc"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 0.13)
