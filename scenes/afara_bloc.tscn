@@ -631,6 +631,6 @@ marcaj_oprire = "a_urcat_spre_lexy"
 scena_drum = "res://scenes/casa_lexy.tscn"
 marcaj_urcare = "a_urcat_spre_lexy"
 titlu = "Lexy's place
-9:34 AM"
+1:15 PM"
 sunete_urcare = Array[AudioStream]([ExtResource("34"), ExtResource("35"), ExtResource("34"), ExtResource("36"), ExtResource("33")])
 sunet_frana = ExtResource("33")

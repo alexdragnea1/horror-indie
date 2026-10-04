@@ -11,6 +11,8 @@ signal declansat
 @export var marcaj := ""
 ## Merge doar dacă marcajul ăsta e deja pus (gol = merge oricând).
 @export var marcaj_necesar := ""
+## Nu mai merge deloc după marcajul ăsta (gol = nicio limită), ex. „Mom?” din bucătărie nu mai are sens dimineața.
+@export var marcaj_oprire := ""
 ## Noduri care apar (devin vizibile) când se declanșează.
 @export var de_aratat: Array[Node3D] = []
 ## Noduri care dispar (lumini stinse, obiecte care „nu mai sunt acolo”).
@@ -29,6 +31,8 @@ func _la_intrare(corp: Node3D) -> void:
 	if _gata or not corp.is_in_group("jucator"):
 		return
 	if marcaj_necesar != "" and not Stare.e_marcat(marcaj_necesar):
+		return
+	if marcaj_oprire != "" and Stare.e_marcat(marcaj_oprire):
 		return
 	# s-a întâmplat deja (ex. înainte de un Continue)
 	if o_singura_data and marcaj != "" and Stare.e_marcat(marcaj):

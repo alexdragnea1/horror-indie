@@ -4,7 +4,7 @@ extends CanvasLayer
 ## vibrează în buzunar, îl scoți, pe ecranul blocat apare notificarea, o apeși și se deschide conversația.
 ## Mesajele ei vin după „typing” (trei puncte), pe ale tale le scrii literă cu literă în bara de jos și le trimiți.
 ## La sfârșit „Seen”, apoi bagi telefonul la loc în buzunar. Cât e scos, nu te miști (Stare.meniu_deschis).
-##   await Telefon.conversatie(self, "School Whore", ["Her: Hey...", "You: Aight bet"], "9:21")
+##   await Telefon.conversatie(self, "School Whore", ["Her: Hey...", "You: Aight bet"], "1:02")
 ## Prefixul ("You:" = tu, în dreapta; orice altceva = ea, în stânga) alege doar partea: pe ecran nu apare.
 
 const LATIME := 150
@@ -34,7 +34,7 @@ const SUNET_PRIMIT := preload("res://sunete/telefon_primit.ogg")
 
 var contact := ""
 var mesaje: PackedStringArray = []
-var ora := "9:21"
+var ora := "1:02"
 
 var _umbra: ColorRect
 var _corp: Panel
@@ -51,7 +51,7 @@ var _sus := 0.0  # 0 = în buzunar, 1 = în mână (pentru legănat)
 
 
 ## Scoate telefonul, arată conversația și îl bagă la loc. Se termină după ce telefonul a coborât.
-static func conversatie(nod: Node, cu_cine: String, ce: PackedStringArray, cat_e_ora := "9:21") -> void:
+static func conversatie(nod: Node, cu_cine: String, ce: PackedStringArray, cat_e_ora := "1:02") -> void:
 	var t := Telefon.new()
 	t.contact = cu_cine
 	t.mesaje = ce

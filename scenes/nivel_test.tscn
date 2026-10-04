@@ -308,6 +308,7 @@ script = ExtResource("an2")
 replici = PackedStringArray("You: Mom?", "You: ...", "You: Where the hell is she at this hour?")
 marcaj = "a_vazut_ca_mom_lipseste"
 marcaj_necesar = "a_venit_acasa"
+marcaj_oprire = "e_dimineata"
 
 [node name="Forma" type="CollisionShape3D" parent="BucatarieGoala"]
 shape = SubResource("forma_bucatarie_goala")

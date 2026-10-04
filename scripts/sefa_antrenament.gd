@@ -177,12 +177,13 @@ func _cu_matura(c: Cutscena) -> void:
 
 func _fara_matura() -> void:
 	await _spune(replici_fara_matura)
-	_scoate_pistolul()
-	await get_tree().create_timer(0.45).timeout
-	# „I got this glock.”: îl întorci pe o parte
-	Pistol.inclinare = 1.25
-	await _spune(replici_glock)
-	Pistol.inclinare = 0.0
+	# „I got this glock.”: îl scoți și îl întorci pe o parte; fără pistol (aruncat, pe raft) replica asta se sare
+	if Stare.are_obiect(Pistol.ID):
+		_scoate_pistolul()
+		await get_tree().create_timer(0.45).timeout
+		Pistol.inclinare = 1.25
+		await _spune(replici_glock)
+		Pistol.inclinare = 0.0
 	await _spune(replici_fara_matura_final)
 
 

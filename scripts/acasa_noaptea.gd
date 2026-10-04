@@ -26,7 +26,7 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 @export var marcaj_dimineata := "e_dimineata"
 @export var marcaj_iesire_dimineata := "a_vorbit_cu_sefa_acasa"
 @export_multiline var replici_usa_dimineata: PackedStringArray = ["You: Hold up. Somebody's in the kitchen."]
-@export_multiline var titlu_afara_dimineata := "Block M7, Entrance B\n9:02 AM"
+@export_multiline var titlu_afara_dimineata := "Block M7, Entrance B\n12:41 PM"
 
 
 func _ready() -> void:

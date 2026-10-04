@@ -10,7 +10,7 @@ extends Node
 @export var intarziere := 10.0
 ## Numele de sus din aplicație (cum e salvată ea în telefonul tău).
 @export var contact := "School Whore"
-@export var ora := "9:21"
+@export var ora := "1:02"
 @export_multiline var mesaje: PackedStringArray = []
 @export var sarcina_noua := "Take the bus to her place."
 

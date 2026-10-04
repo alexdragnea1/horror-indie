@@ -21,7 +21,7 @@ extends Interactabil
 @export var sunet_patura: AudioStream
 ## Unde te trezești (gol = „To be continued...” și meniul principal) și ce scrie jos în stânga.
 @export_file("*.tscn") var scena_dupa := "res://scenes/nivel_test.tscn"
-@export_multiline var titlu_dupa := "Home\nNext morning, 8:47 AM"
+@export_multiline var titlu_dupa := "Home\nNext day, 12:24 PM"
 @export var marcaj_dimineata := "e_dimineata"
 
 var _in_curs := false
