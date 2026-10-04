@@ -26,7 +26,7 @@ extends Interactabil
 
 @export_group("Moarte")
 ## Bifat = îl omoară un glonț din pistol (cade moale pe spate, vezi Ragdoll). Doar pe cine a zis owner-ul
-## (acum doar bețivul); pe ceilalți gloanțele nu-i fac nimic.
+## (bețivul; vrăjitoarele din cerc au codul lor, în vrajitoare.gd); pe ceilalți gloanțele nu-i fac nimic.
 @export var omorabil := false
 ## Marcajul pus când moare și cel pus când îl iei în inventar (la Continue rămâne mort / dispare).
 @export var marcaj_mort := ""
@@ -52,6 +52,8 @@ var _cadavru: Ragdoll
 
 func _ready() -> void:
 	_model = get_node_or_null("Model")
+	if id_cadavru != "":
+		add_to_group("cadavre")  # cazanul îl caută aici (cazan.gd)
 	if marcaj_luat != "" and Stare.e_marcat(marcaj_luat):
 		# l-ai luat deja (în inventar sau în cazan): nu mai e aici
 		mort = true
@@ -63,6 +65,11 @@ func _ready() -> void:
 		_dezactiveaza_coliziunea()
 		await get_tree().process_frame
 		omoara(Vector3.ZERO, 0.0)
+
+
+## Modelul aruncat în cazan (același .glb ca al lui).
+func model_cadavru() -> PackedScene:
+	return load(_model.scene_file_path) if _model and _model.scene_file_path != "" else null
 
 
 func poate_fi_folosit() -> bool:
@@ -103,23 +110,9 @@ func omoara(directie: Vector3, forta: float) -> void:
 		_pune_ridicare()
 
 
-## „[E] Pick up the body”: o sferă care stă pe trunchiul cadavrului, pe stratul 4 (8), pe care o vede doar
-## raza jucătorului (bucățile ragdoll-ului nu se lovesc de ea).
+## „[E] Pick up the body” pe trunchiul cadavrului (vezi Ragdoll.pune_ridicare).
 func _pune_ridicare() -> void:
-	var ridicare := ObiectLuat.new()
-	ridicare.id_obiect = id_cadavru
-	ridicare.nume_obiect = nume_cadavru
-	ridicare.indiciu = indiciu_cadavru
-	ridicare.collision_layer = 8
-	ridicare.collision_mask = 0
-	var forma := CollisionShape3D.new()
-	var sfera := SphereShape3D.new()
-	sfera.radius = 0.55
-	forma.shape = sfera
-	ridicare.add_child(forma)
-	_cadavru.trunchi.add_child(ridicare)
-	ridicare.global_position = _cadavru.centru()
-	ridicare.folosit.connect(_luat)
+	_cadavru.pune_ridicare(id_cadavru, nume_cadavru, indiciu_cadavru).folosit.connect(_luat)
 
 
 func _luat() -> void:

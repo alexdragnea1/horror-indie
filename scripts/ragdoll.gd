@@ -122,6 +122,25 @@ func centru() -> Vector3:
 	return trunchi.global_transform * (trunchi.get_child(0) as CollisionShape3D).position
 
 
+## „[E] Pick up …”: o sferă care stă pe trunchi, pe stratul 4 (valoarea 8), pe care o vede doar raza jucătorului
+## (bucățile ragdoll-ului nu se lovesc de ea). La E intră în inventar ca `id` / `nume` și emite `folosit`.
+func pune_ridicare(id: String, nume: String, indiciu: String) -> ObiectLuat:
+	var ridicare := ObiectLuat.new()
+	ridicare.id_obiect = id
+	ridicare.nume_obiect = nume
+	ridicare.indiciu = indiciu
+	ridicare.collision_layer = 8
+	ridicare.collision_mask = 0
+	var forma := CollisionShape3D.new()
+	var sfera := SphereShape3D.new()
+	sfera.radius = 0.55
+	forma.shape = sfera
+	ridicare.add_child(forma)
+	trunchi.add_child(ridicare)
+	ridicare.global_position = centru()
+	return ridicare
+
+
 ## Adevărat după ce s-a liniștit (nu se mai mișcă aproape deloc).
 func s_a_oprit() -> bool:
 	for b in bucati:

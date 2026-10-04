@@ -33,10 +33,11 @@ material = ExtResource("4")
 position = Vector3(0, 0.3, 0)
 shape = SubResource("forma_bustean")
 
-[node name="Personaj" type="StaticBody3D" parent="." node_paths=PackedStringArray("boombox", "brat", "sticla_mana", "sticle_pline", "cap")]
+[node name="Personaj" type="StaticBody3D" parent="." node_paths=PackedStringArray("boombox", "brat", "brat_stang", "sticla_mana", "sticle_pline", "cap")]
 script = ExtResource("1")
 boombox = NodePath("../Boombox")
 brat = NodePath("Model/BratBere")
+brat_stang = NodePath("Model/BratStang")
 sticla_mana = NodePath("Model/BratBere/SticlaMana")
 sticla_jucator = ExtResource("7")
 sticle_pline = NodePath("../Pline")
@@ -49,6 +50,7 @@ unghi_maxim_cap = 60.0
 se_intoarce = false
 indiciu = "[E] Talk to the drunkard"
 replici = PackedStringArray("You: Can you turn that shit off?", "Drunkard: Nah nigga")
+replici_pistol = PackedStringArray("Drunkard: Wait!", "Drunkard: They been doing this shit for years now..", "You: You know about the witches?", "Drunkard: Yeah..Can you shoot a bitch from the coven instead?", "You: I'll think about it.")
 omorabil = true
 marcaj_mort = "betivul_e_mort"
 marcaj_luat = "betivul_luat"

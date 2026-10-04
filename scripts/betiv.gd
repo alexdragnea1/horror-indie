@@ -7,8 +7,15 @@ extends Personaj
 ## Între timp dă din cap pe muzica boombox-ului (Boombox.ritm), se clatină și capul îi cade într-o parte.
 ## Cu pistolul roz (de la Head Witch) îl omori dintr-un glonț: cade pe spate ca un ragdoll, iar apoi îl iei în
 ## inventar cu E (`omorabil` și restul din grupul „Moarte” al Personaj, puse în betiv.tscn).
+## După ce ai pistolul (`marcaj_blocare`) și până faci vraja (`marcaj_vraja`), la E spune o singură dată `replici_pistol`:
+## ridică mâinile sus la prima replică și le lasă jos după ultima, apoi pune `marcaj_rugaminte`. De atunci poți
+## împușca și vrăjitoarele din cerc (vrajitoare.gd) și arunca una în cazan în locul lui.
 
 @export var marcaj_blocare := "a_vorbit_cu_vrajitoarele"
+## Conversația de după pistol (cu mâinile sus) și marcajul pus după ea.
+@export_multiline var replici_pistol: PackedStringArray = []
+@export var marcaj_rugaminte := "betivul_a_cerut_o_vrajitoare"
+@export var marcaj_vraja := "vraja_facuta"
 @export var intrebare := "Drunkard: You want a beer?"
 @export var optiuni: PackedStringArray = ["Yes", "No"]
 @export var boombox: Boombox
@@ -17,6 +24,9 @@ extends Personaj
 @export var sticla_mana: Node3D
 ## Cât își ridică brațul ca să-ți dea berea (radiani, pe X).
 @export var ridicare_brat := -0.55
+## Celălalt braț (originea în umăr) și cât de sus ridică amândouă brațele când se predă (radiani, pe X și pe Z).
+@export var brat_stang: Node3D
+@export var maini_sus := Vector2(-2.0, 0.3)
 ## Sticla pe care o ții tu în mână cât bei.
 @export var sticla_jucator: PackedScene
 @export var durata_beat := 5.0
@@ -42,11 +52,18 @@ func _ready() -> void:
 
 
 func poate_fi_folosit() -> bool:
-	return super() and not Stare.e_marcat(marcaj_blocare)
+	if not super():
+		return false
+	if not Stare.e_marcat(marcaj_blocare):
+		return true
+	return not replici_pistol.is_empty() and not Stare.e_marcat(marcaj_rugaminte) and not Stare.e_marcat(marcaj_vraja)
 
 
 func interactioneaza() -> void:
 	if not poate_fi_folosit():
+		return
+	if Stare.e_marcat(marcaj_blocare):
+		await _roaga()
 		return
 	_vorbeste = true
 	folosit.emit()
@@ -138,3 +155,27 @@ func _da_bere() -> void:
 				s.hide()
 				break
 	sticla_mana.show()
+
+
+## „Wait!”: ridică mâinile (are pistolul tău în față), îți cere o vrăjitoare în locul lui, apoi le lasă jos.
+func _roaga() -> void:
+	_vorbeste = true
+	folosit.emit()
+	_maini(true, 0.35)
+	Dialog.spune(replici_pistol)
+	if Dialog.activ:
+		await Dialog.terminat
+	await _maini(false, 0.9).finished
+	Stare.marcheaza(marcaj_rugaminte)
+	_vorbeste = false
+
+
+func _maini(sus: bool, durata: float) -> Tween:
+	var tw := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT if sus else Tween.EASE_IN_OUT)
+	# întâi ridicat în față-sus (X), apoi deschis spre exterior (Z): brațul drept e pe -X, cel stâng pe +X
+	var drept := Quaternion(Basis(Vector3.BACK, maini_sus.y) * Basis(Vector3.RIGHT, maini_sus.x)) if sus else Quaternion.IDENTITY
+	var stang := Quaternion(Basis(Vector3.BACK, -maini_sus.y) * Basis(Vector3.RIGHT, maini_sus.x)) if sus else Quaternion.IDENTITY
+	tw.tween_property(brat, "quaternion", drept, durata)
+	if brat_stang:
+		tw.tween_property(brat_stang, "quaternion", stang, durata)
+	return tw

@@ -2,7 +2,7 @@ extends Personaj
 ## Head Witch: șefa coven-ului din fundul văii (scenes/coven.tscn). Te așteaptă lângă cercul de vrăjitoare.
 ##  - Prima conversație: `replici` (ultima e „Here.”: își ridică brațul cu pistolul roz în mână), apoi pistolul
 ##    trece la tine (în inventar și în mâna ta, vezi Pistol) și urmează `replici_pistol`. Primești `sarcina_noua`
-##    și marcajul `marcaj_dupa` (după el bețivul nu mai vorbește cu tine).
+##    și marcajul `marcaj_dupa` (după el bețivul are altă conversație, vezi betiv.gd).
 ##  - Până faci vraja (cazan.gd) n-are ce să-ți spună: nu se poate vorbi cu ea.
 ##  - După vrajă (`marcaj_vraja`): `replici_acasa`, apoi scoate o mătură, se urcă pe ea, tu te urci în spatele ei
 ##    și decolați. La `dupa_decolare` secunde de la decolare: ecran negru și te trezești în fața blocului

@@ -1,10 +1,9 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/cazan.gd" id="1"]
 [ext_resource type="PackedScene" path="res://models/cazan.glb" id="2"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
-[ext_resource type="PackedScene" path="res://models/betiv.glb" id="5"]
 [ext_resource type="AudioStream" path="res://sunete/ceaun_fierbe.ogg" id="6"]
 [ext_resource type="AudioStream" path="res://sunete/vrajitoare_cant.ogg" id="7"]
 [ext_resource type="AudioStream" path="res://sunete/foc_trosnet.ogg" id="8"]
@@ -34,7 +33,6 @@ size = Vector3(0.7, 1.9, 0.6)
 
 [node name="Cazan" type="StaticBody3D" parent="."]
 script = ExtResource("1")
-model_cadavru = ExtResource("5")
 indiciu = "[E] Throw the drunkard in"
 
 [node name="Model" parent="Cazan" instance=ExtResource("2")]

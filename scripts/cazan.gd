@@ -1,5 +1,6 @@
 extends Interactabil
-## Cazanul mare din mijlocul coven-ului (scenes/coven.tscn). Cu cadavrul în inventar (`id_cadavru`), E îl aruncă
+## Cazanul mare din mijlocul coven-ului (scenes/coven.tscn). Cu un cadavru în inventar (bețivul sau o vrăjitoare din cerc:
+## orice nod din grupul „cadavre”, cu `id_cadavru`, `nume_cadavru` și `model_cadavru()`), E îl aruncă
 ## înăuntru și pornește vraja (la persoana întâi, cu benzi negre, vezi Cutscena):
 ##   1. corpul zboară din brațele tale în cazan și se scufundă (pleoscăit, stropi);
 ##   2. poțiunea se face verde, fierbe mai tare, vrăjitoarele din cerc își ridică brațele;
@@ -8,7 +9,6 @@ extends Interactabil
 ## Pune marcajul `marcaj_vraja` și sarcina `sarcina_dupa`. La Continue, cu marcajul pus, cazanul e deja verde.
 ## Focul de sub cazan pâlpâie și luminează roșiatic; poțiunea strălucește în culoarea ei.
 
-@export var id_cadavru := "cadavru_betiv"
 @export var marcaj_vraja := "vraja_facuta"
 @export var sarcina_dupa := "Talk to the Head Witch."
 ## Cât stă unda de lumină pe cer (secunde).
@@ -18,8 +18,6 @@ extends Interactabil
 @export var culoare_vraja := Color(0.45, 1.0, 0.3)
 ## Particulele de la sfârșit.
 @export var culoare_particule := Color(1.0, 0.12, 0.08)
-## Modelul aruncat în cazan (bețivul, în poziția în care stătea).
-@export var model_cadavru: PackedScene
 
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
@@ -45,6 +43,7 @@ var _mat_unda: ShaderMaterial
 var _scantei: CPUParticles3D
 var _timp := 0.0
 var _in_vraja := false
+var _cadavru: Node  # al cui cadavru e în inventar (vezi _cadavru_din_inventar)
 
 @onready var _fierbere: AudioStreamPlayer3D = $Fierbere
 
@@ -68,7 +67,21 @@ func _ready() -> void:
 
 
 func poate_fi_folosit() -> bool:
-	return not _in_vraja and Stare.are_obiect(id_cadavru) and not Stare.e_marcat(marcaj_vraja)
+	if _in_vraja or Stare.e_marcat(marcaj_vraja):
+		return false
+	_cadavru = _cadavru_din_inventar()
+	if _cadavru == null:
+		return false
+	indiciu = "[E] Throw the %s in" % String(_cadavru.nume_cadavru).to_lower()
+	return true
+
+
+## Primul cadavru din inventar (bețivul sau o vrăjitoare), sau null.
+func _cadavru_din_inventar() -> Node:
+	for nod in get_tree().get_nodes_in_group("cadavre"):
+		if Stare.are_obiect(nod.id_cadavru):
+			return nod
+	return null
 
 
 func _process(delta: float) -> void:
@@ -88,7 +101,8 @@ func interactioneaza() -> void:
 		return
 	_in_vraja = true
 	folosit.emit()
-	Stare.scoate_obiect(id_cadavru)
+	Stare.scoate_obiect(_cadavru.id_cadavru)
+	var model: PackedScene = _cadavru.model_cadavru()
 	var c := Cutscena.porneste(self)
 	var gura := global_position + Vector3.UP * GURA
 	# faci un pas spre cazan, ca să vezi poțiunea dinăuntru
@@ -101,7 +115,7 @@ func interactioneaza() -> void:
 	await c.priveste(gura + Vector3.DOWN * 0.15, 0.6)
 
 	# 1. îl arunci
-	await _arunca_corpul(gura)
+	await _arunca_corpul(gura, model)
 	await get_tree().create_timer(0.5).timeout
 
 	# 2. poțiunea se face verde, fierbe mai tare, vrăjitoarele ridică brațele
@@ -154,12 +168,12 @@ func interactioneaza() -> void:
 
 
 ## Corpul pleacă de sub privirea ta, zboară în arc peste buză și se scufundă în poțiune.
-func _arunca_corpul(gura: Vector3) -> void:
+func _arunca_corpul(gura: Vector3, model: PackedScene) -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
-	if model_cadavru == null or jucator == null:
+	if model == null or jucator == null:
 		return
 	var camera: Camera3D = jucator.get_node("Cap/Camera3D")
-	var corp := model_cadavru.instantiate() as Node3D
+	var corp := model.instantiate() as Node3D
 	corp.set_script(SCRIPT_MODEL)
 	corp.set("material", MATERIAL)
 	get_tree().current_scene.add_child(corp)
