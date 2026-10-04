@@ -281,4 +281,17 @@ ffmpeg -v error -y -i "$PACHET/Retro/power_down.wav" \
 	-ac 1 "$OUT/_esuata.wav"
 unic vraja_esuata "$OUT/_esuata.wav"
 rm -f "$OUT"/_scantei.wav "$OUT"/_esuata.wav
+# --- tomberonul din curte și bomboana găsită în el
+# capacul de tablă care se ridică / cade la loc: zăngănit gros, înfundat
+unic tomberon_capac "Materials/metal_clang.wav" mono "lowpass=f=2200,asetrate=44100*0.75,aresample=44100"
+# răscolitul prin gunoi: hârtie mototolită, o cutie împinsă, la sfârșit o doză
+ffmpeg -v error -y -i "$PACHET/Materials/paper_scrunch.wav" -i "$PACHET/Materials/cardboard_push.wav" -i "$PACHET/Materials/aluminium_can_pick_up.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono[h];[1]aformat=channel_layouts=mono,adelay=250,volume=0.7[c];[2]aformat=channel_layouts=mono,adelay=1000,lowpass=f=3500,volume=0.6[d];[h][c][d]amix=inputs=3:normalize=0,atrim=end=1.6,afade=t=out:st=1.3:d=0.3" \
+	-ac 1 "$OUT/_rascolit.wav"
+unic tomberon_rascolit "$OUT/_rascolit.wav"
+rm -f "$OUT"/_rascolit.wav
+# ambalajul desfăcut: celofan (hârtie mototolită, mai sus și mai scurt)
+unic bomboana_ambalaj "Materials/paper_scrunch.wav" mono "highpass=f=1500,asetrate=44100*1.4,aresample=44100,atrim=end=0.6,afade=t=out:st=0.45:d=0.15"
+# bomboana tare ronțăită (o mușcătură; în joc se cântă de mai multe ori, cu altă înălțime)
+unic bomboana_ronta "Combat and Gore/crunch_quick.wav" mono "highpass=f=300,asetrate=44100*1.25,aresample=44100,lowpass=f=5000"
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

@@ -329,12 +329,11 @@ def stalp(cale):
 
 
 def tomberon(cale):
-	"""Tomberon verde de metal, pe roți, cu un sac lângă el (n-a încăput)."""
+	"""Tomberon verde de metal, pe roți, cu un sac lângă el (n-a încăput). `Capac` e separat (originea în balama)."""
 	curata()
 	verde = p("32453b")
 	piese = [
-		cub("Cos", (1.2, 0.85, 1.05), (0, 0, 0.65), VERDE_VOPSIT),
-		cub("Capac", (1.25, 0.9, 0.06), (0, 0.02, 1.2), verde, rot=(0.12, 0, 0)),
+		cub("Cos", (1.2, 0.85, 1.0), (0, 0, 0.65), VERDE_VOPSIT),
 		cub("Maner", (0.9, 0.06, 0.05), (0, 0.47, 1.05), NEGRU),
 		cub("Rugina", (0.4, 0.86, 0.25), (0.3, 0, 0.3), p("904a40")),
 	]
@@ -344,8 +343,15 @@ def tomberon(cale):
 	piese += [
 		sfera("Sac", 0.3, (0.9, -0.3, 0.25), NEGRU, segmente=6, inele=4, scara=(1, 0.9, 0.85)),
 		cub("Nod sac", (0.08, 0.08, 0.12), (0.9, -0.3, 0.55), NEGRU),
+		# ce se vede când ridici capacul: gunoiul de sus (pungi negre și o hârtie), tot sub capacul închis
+		cub("Gunoi", (1.1, 0.75, 0.03), (0, 0, 1.15), NEGRU),
+		sfera("Punga", 0.2, (-0.25, 0.05, 1.08), p("2a3c3d"), segmente=6, inele=4, scara=(1.2, 1, 0.45)),
+		sfera("Punga", 0.16, (0.28, -0.12, 1.09), NEGRU, segmente=6, inele=4, scara=(1, 1.1, 0.5)),
+		cub("Hartie", (0.18, 0.13, 0.03), (0.1, 0.2, 1.16), p("70706e"), rot=(0, 0, 0.5)),
 	]
 	uneste(piese, "Tomberon")
+	# capacul separat, cu originea în balamaua din spate: se ridică din joc (tomberon.gd)
+	uneste([cub("Capac", (1.25, 0.9, 0.06), (0, 0.02, 1.21), verde)], "Capac", origine=(0, -0.43, 1.18))
 	exporta(os.path.join(cale, "tomberon.glb"))
 
 
@@ -661,6 +667,25 @@ def baba(cale):
 	exporta(os.path.join(cale, "baba.glb"))
 
 
+def bomboana(cale):
+	"""Bomboana găsită în tomberon (o ții în mână, vezi obiect_in_mana.gd): ambalaj roșu cu dungi, răsucit la capete.
+	Culcată pe X, originea în mijloc. `Ambalaj` și `Bomboana` (cea dinăuntru, mentă) sunt separate:
+	la mâncat, ambalajul cade și rămâne bomboana."""
+	curata()
+	rosu = p("7b383a")
+	piese = [sfera("Corp", 0.02, (0, 0, 0), rosu, segmente=10, inele=8, scara=(1.3, 1, 1))]
+	for x, r in ((-0.012, 0.0185), (0.0, 0.0205), (0.012, 0.0185)):
+		piese.append(cilindru("Dunga", r, r, 0.004, (x, 0, 0), ALB, laturi=10, rot=(0, 1.5708, 0)))
+	for s in (-1, 1):
+		# răsucitura (se îngustează spre capăt), apoi evantaiul turtit de celofan
+		piese.append(cilindru("Rasucitura", 0.008, 0.003, 0.01, (s * 0.03, 0, 0), rosu, laturi=6, rot=(0, s * 1.5708, 0)))
+		piese.append(cilindru("Aripa", 0.003, 0.016, 0.02, (s * 0.045, 0, 0), p("904a40"), laturi=6,
+			rot=(0, s * 1.5708, 0), scara=(0.3, 1, 1)))
+	uneste(piese, "Ambalaj")
+	uneste([sfera("Bomboana", 0.017, (0, 0, 0), p("61a19f"), segmente=10, inele=8, scara=(1.3, 1, 1))], "Bomboana")
+	exporta(os.path.join(cale, "bomboana.glb"))
+
+
 def toate(cale):
 	bloc(cale)
 	copac(cale, "copac_1", 21, 6.5, [p("904a40"), p("a56850"), p("7b383a")])
@@ -677,6 +702,7 @@ def toate(cale):
 	gard(cale)
 	masina(cale)
 	baba(cale)
+	bomboana(cale)
 
 
 if __name__ == "__main__":

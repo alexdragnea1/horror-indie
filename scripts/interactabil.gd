@@ -10,12 +10,14 @@ signal folosit
 @export_multiline var replici: PackedStringArray = []
 ## Dacă e bifat, după prima folosire nu mai face nimic.
 @export var o_singura_data := false
+## Debifat = nu se poate folosi deloc (nu apare indiciul, E nu face nimic). Ex. ZiBloc îl debifează ziua la bătător.
+@export var activ := true
 
 var _folosit := false
 
 
 func poate_fi_folosit() -> bool:
-	return not (o_singura_data and _folosit)
+	return activ and not (o_singura_data and _folosit)
 
 
 func interactioneaza() -> void:

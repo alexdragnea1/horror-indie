@@ -1,4 +1,4 @@
-[gd_scene load_steps=84 format=3]
+[gd_scene load_steps=85 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -52,6 +52,7 @@
 [ext_resource type="AudioStream" path="res://sunete/scantei_matura.ogg" id="zi6"]
 [ext_resource type="AudioStream" path="res://sunete/vraja_esuata.ogg" id="zi7"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="zi8"]
+[ext_resource type="Script" path="res://scripts/tomberon.gd" id="tb1"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -477,8 +478,7 @@ sarcina_noua = "Catch the night bus."
 
 [node name="Tomberon" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0.06, 2.4)
-script = ExtResource("19")
-replici = PackedStringArray("It smells like cabbage and bad decisions.")
+script = ExtResource("tb1")
 
 [node name="Model" parent="Tomberon" instance=ExtResource("16")]
 script = ExtResource("3")
@@ -590,7 +590,7 @@ distanta_maxima = 14.0
 script = ExtResource("39")
 baba = NodePath("../Baba")
 
-[node name="ZiBloc" type="Node" parent="." node_paths=PackedStringArray("mediu", "soare", "stalpi", "blocuri", "bec_scara", "de_oprit")]
+[node name="ZiBloc" type="Node" parent="." node_paths=PackedStringArray("mediu", "soare", "stalpi", "blocuri", "bec_scara", "de_oprit", "doar_noaptea")]
 script = ExtResource("zi1")
 mediu = NodePath("../Mediu")
 soare = NodePath("../Luna")
@@ -598,6 +598,7 @@ stalpi = [NodePath("../StalpAlee"), NodePath("../StalpStrada")]
 blocuri = [NodePath("../Bloc/Model"), NodePath("../BlocVizavi"), NodePath("../BlocLateral")]
 bec_scara = NodePath("../Bloc/BecScara")
 de_oprit = [NodePath("../Sperieturi"), NodePath("../Fantoma")]
+doar_noaptea = [NodePath("../Batator")]
 
 [node name="HeadWitchZi" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("zi2")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.25, 0.06, 5.0)

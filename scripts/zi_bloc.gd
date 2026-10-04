@@ -1,9 +1,10 @@
 class_name ZiBloc
 extends Node
 ## Curtea blocului dimineața (`marcaj_dimineata`, pus de pat.gd după somn): cer alb de ceață, lumină de zi rece,
-## felinarele, becul scării și geamurile aprinse se sting, sperieturile de noapte tac. Ceața rămâne (owner-ul: „tot
-## mai e ceață”). Dacă ai ieșit pe ușa de la intrare a casei (`din_casa`, pus de acasa_noaptea.gd), te pune în fața
-## scării, cu spatele la bloc. Fără `Jucator` (fundalul din meniul principal) e mereu noapte.
+## felinarele, becul scării și geamurile aprinse se sting, sperieturile de noapte tac, iar ce e în `doar_noaptea`
+## nu se mai poate examina. Ceața rămâne (owner-ul: „tot mai e ceață”). Dacă ai ieșit pe ușa de la intrare a casei
+## (`din_casa`, pus de acasa_noaptea.gd), te pune în fața scării, cu spatele la bloc. Fără `Jucator` (fundalul din
+## meniul principal) e mereu noapte.
 
 ## Adevărat de la deschiderea ușii de la intrare până te pune curtea la scară.
 static var din_casa := false
@@ -19,6 +20,8 @@ static var din_casa := false
 @export var bec_scara: Light3D
 ## Ce tace ziua (sperieturile, fantoma).
 @export var de_oprit: Array[Node] = []
+## Ce se poate examina doar noaptea (ex. covorul de pe bătător: „At midnight.”).
+@export var doar_noaptea: Array[Interactabil] = []
 ## Unde apari când ieși din bloc și încotro te uiți (PI = spre stradă).
 @export var loc_iesire := Vector3(0.0, 0.1, 2.9)
 @export var unghi_iesire := PI
@@ -84,3 +87,5 @@ func _fa_zi() -> void:
 		bec_scara.visible = false
 	for nod in de_oprit:
 		nod.process_mode = Node.PROCESS_MODE_DISABLED
+	for obiect in doar_noaptea:
+		obiect.activ = false
