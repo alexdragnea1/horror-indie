@@ -1,0 +1,184 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/cazan.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/cazan.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/betiv.glb" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/ceaun_fierbe.ogg" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/vrajitoare_cant.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/foc_trosnet.ogg" id="8"]
+[ext_resource type="Script" path="res://scripts/vrajitoare.gd" id="9"]
+[ext_resource type="PackedScene" path="res://models/vrajitoare_1.glb" id="10"]
+[ext_resource type="PackedScene" path="res://models/vrajitoare_2.glb" id="11"]
+[ext_resource type="PackedScene" path="res://models/vrajitoare_3.glb" id="12"]
+[ext_resource type="PackedScene" path="res://models/vrajitoare_4.glb" id="13"]
+[ext_resource type="Script" path="res://scripts/sefa_vrajitoare.gd" id="14"]
+[ext_resource type="PackedScene" path="res://models/vrajitoare_sefa.glb" id="15"]
+[ext_resource type="PackedScene" path="res://models/pistol_roz.glb" id="16"]
+[ext_resource type="PackedScene" path="res://models/matura_zbor.glb" id="17"]
+[ext_resource type="PackedScene" path="res://scenes/torta.tscn" id="18"]
+
+[sub_resource type="CylinderShape3D" id="forma_cazan"]
+height = 1.35
+radius = 0.95
+
+[sub_resource type="CylinderShape3D" id="forma_vrajitoare"]
+height = 1.8
+radius = 0.3
+
+[sub_resource type="BoxShape3D" id="forma_sefa"]
+size = Vector3(0.7, 1.9, 0.6)
+
+[node name="Coven" type="Node3D"]
+
+[node name="Cazan" type="StaticBody3D" parent="."]
+script = ExtResource("1")
+model_cadavru = ExtResource("5")
+indiciu = "[E] Throw the drunkard in"
+
+[node name="Model" parent="Cazan" instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Foc")
+stralucire = 2.0
+
+[node name="Forma" type="CollisionShape3D" parent="Cazan"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.675, 0)
+shape = SubResource("forma_cazan")
+
+[node name="Fierbere" type="AudioStreamPlayer3D" parent="Cazan"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+stream = ExtResource("6")
+volume_db = -14.0
+unit_size = 2.5
+max_distance = 18.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Foc" type="AudioStreamPlayer3D" parent="Cazan"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+stream = ExtResource("8")
+volume_db = -14.0
+unit_size = 2.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Cant" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+stream = ExtResource("7")
+volume_db = -14.0
+unit_size = 4.0
+max_distance = 30.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Vrajitoare1" type="StaticBody3D" parent="." groups=["vrajitoare_cerc"]]
+transform = Transform3D(-0.588, 0, -0.809, 0, 1, 0, 0.809, 0, -0.588, 2.265, 0, 1.646)
+script = ExtResource("9")
+
+[node name="Model" parent="Vrajitoare1" instance=ExtResource("10")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="Vrajitoare1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma_vrajitoare")
+
+[node name="Vrajitoare2" type="StaticBody3D" parent="." groups=["vrajitoare_cerc"]]
+transform = Transform3D(-0.951, 0, 0.309, 0, 1, 0, -0.309, 0, -0.951, -0.865, 0, 2.663)
+script = ExtResource("9")
+faza = 1.3
+viteza = 1.15
+
+[node name="Model" parent="Vrajitoare2" instance=ExtResource("11")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="Vrajitoare2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma_vrajitoare")
+
+[node name="Vrajitoare3" type="StaticBody3D" parent="." groups=["vrajitoare_cerc"]]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.8, 0, 0)
+script = ExtResource("9")
+faza = 2.6
+viteza = 0.9
+
+[node name="Model" parent="Vrajitoare3" instance=ExtResource("12")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="Vrajitoare3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma_vrajitoare")
+
+[node name="Vrajitoare4" type="StaticBody3D" parent="." groups=["vrajitoare_cerc"]]
+transform = Transform3D(0.951, 0, 0.309, 0, 1, 0, -0.309, 0, 0.951, -0.865, 0, -2.663)
+script = ExtResource("9")
+faza = 3.9
+viteza = 1.05
+
+[node name="Model" parent="Vrajitoare4" instance=ExtResource("13")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="Vrajitoare4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma_vrajitoare")
+
+[node name="Vrajitoare5" type="StaticBody3D" parent="." groups=["vrajitoare_cerc"]]
+transform = Transform3D(0.588, 0, -0.809, 0, 1, 0, 0.809, 0, 0.588, 2.265, 0, -1.646)
+script = ExtResource("9")
+faza = 5.2
+viteza = 0.95
+
+[node name="Model" parent="Vrajitoare5" instance=ExtResource("11")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="Vrajitoare5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("forma_vrajitoare")
+
+[node name="HeadWitch" type="StaticBody3D" parent="." node_paths=PackedStringArray("brat", "cap")]
+transform = Transform3D(0.984, 0, 0.177, 0, 1, 0, -0.177, 0, 0.984, 2.63, 0, 4.94)
+script = ExtResource("14")
+replici_pistol = PackedStringArray("Head Witch: This should help you.", "You: Damn bitch u ain't playin'")
+replici_acasa = PackedStringArray("Head Witch: Your powers will slowly come these following days.", "Head Witch: Go home to rest..You will need it.", "You: But the next bus comes at 6 in the morning bro..", "Head Witch: Ok..I will give you a ride then.")
+brat = NodePath("Model/BratDrept")
+model_pistol = ExtResource("16")
+model_matura = ExtResource("17")
+cap = NodePath("Model/Cap")
+distanta_privire = 7.0
+marcaj_dupa = "a_vorbit_cu_vrajitoarele"
+sarcina_noua = "Make a human sacrifice."
+indiciu = "[E] Talk to the Head Witch"
+replici = PackedStringArray("Head Witch: We were waiting for you.", "You: Idgaf bitch...", "Head Witch: You need to make a human sacrifice to get your powers.", "Head Witch: Here.")
+
+[node name="Model" parent="HeadWitch" instance=ExtResource("15")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi", "Amuleta")
+stralucire = 2.5
+
+[node name="Forma" type="CollisionShape3D" parent="HeadWitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_sefa")
+
+[node name="TortaSefa" parent="." instance=ExtResource("18")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.85, 0, 4.7)
+
+[node name="TortaIntrare" parent="." instance=ExtResource("18")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0, 5.6)

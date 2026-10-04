@@ -8,6 +8,8 @@ extends Node
 @export var autobuz: Autobuz
 ## Marcajul după care vine (îl pune baba la sfârșitul primei conversații).
 @export var marcaj := "a_vorbit_cu_baba"
+## După marcajul ăsta nu mai vine deloc (te-a adus Head Witch acasă pe mătură).
+@export var marcaj_oprire := "a_zburat_acasa"
 ## La câte secunde după conversație apare.
 @export var intarziere := 5.0
 ## Unde oprește (ușa din mijloc în dreptul stației).
@@ -40,6 +42,8 @@ func _ready() -> void:
 	# în meniul principal scena e doar fundal: acolo autobuzul nu vine
 	await get_tree().process_frame
 	if get_tree().get_first_node_in_group("jucator") == null:
+		return
+	if Stare.e_marcat(marcaj_oprire):
 		return
 	autobuz.urcare.connect(_urca)
 	if Stare.e_marcat(marcaj):

@@ -29,7 +29,6 @@
 [ext_resource type="PackedScene" path="res://models/cruce.glb" id="27"]
 [ext_resource type="PackedScene" path="res://models/copac_craca.glb" id="28"]
 [ext_resource type="PackedScene" path="res://models/papusa.glb" id="29"]
-[ext_resource type="PackedScene" path="res://models/vatra.glb" id="30"]
 [ext_resource type="PackedScene" path="res://scenes/lumanare.tscn" id="31"]
 [ext_resource type="PackedScene" path="res://models/statie_rurala.glb" id="32"]
 [ext_resource type="PackedScene" path="res://models/bariera.glb" id="33"]
@@ -49,6 +48,7 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_4.ogg" id="47"]
 [ext_resource type="Script" path="res://scripts/limite_padure.gd" id="48"]
 [ext_resource type="PackedScene" path="res://scenes/betiv.tscn" id="49"]
+[ext_resource type="PackedScene" path="res://scenes/coven.tscn" id="50"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("2")
@@ -189,7 +189,6 @@ teren = NodePath("../Teren")
 cruce = ExtResource("27")
 copac_craca = ExtResource("28")
 papusa = ExtResource("29")
-vatra = ExtResource("30")
 lumanare = ExtResource("31")
 piatra = ExtResource("25")
 
@@ -271,6 +270,9 @@ shape = SubResource("forma_indicator")
 [node name="Betiv" parent="PePamant" instance=ExtResource("49")]
 position = Vector3(27, 0, -99)
 rotation = Vector3(0, 0.22, 0)
+
+[node name="Coven" parent="PePamant" groups=["pe_pamant_cu_copii"] instance=ExtResource("50")]
+position = Vector3(-42, 0, -108)
 
 [node name="PiatraPlatou1" parent="PePamant" instance=ExtResource("25")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, -0.2, -89)

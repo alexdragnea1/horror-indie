@@ -1,15 +1,14 @@
 extends Node3D
 ## „Semnele” de pe poteca din stânga, care coboară în vale: cu cât cobori, cu atât sunt mai multe.
 ## Întâi o cruce strâmbă pe margine, apoi păpuși de paie atârnate de crăci, mai multe cruci, iar în
-## fundul văii un cerc de cruci în jurul unei vetre stinse, cu lumânări care încă ard (cineva a fost
-## aici de curând). Pozițiile sunt date ca fracție din lungimea potecii (0 = bifurcația, 1 = capătul)
+## fundul văii un cerc de cruci cu lumânări aprinse, iar în mijlocul lui coven-ul (scenes/coven.tscn): cazanul și
+## vrăjitoarele. Pozițiile sunt date ca fracție din lungimea potecii (0 = bifurcația, 1 = capătul)
 ## și ca distanță în lateral (pozitiv = în dreapta cui coboară).
 
 @export var teren: TerenPadure
 @export var cruce: PackedScene
 @export var copac_craca: PackedScene
 @export var papusa: PackedScene
-@export var vatra: PackedScene
 @export var lumanare: PackedScene
 @export var piatra: PackedScene
 
@@ -59,19 +58,18 @@ func _ready() -> void:
 	_cerc()
 
 
-## Fundul văii: vatra, lumânările pe pietrele ei, cercul de cruci și o păpușă deasupra.
+## Fundul văii: cercul de cruci (în mijloc stă coven-ul, scenes/coven.tscn, cu cazanul), câte o lumânare
+## aprinsă în fața fiecărei cruci și o păpușă deasupra.
 func _cerc() -> void:
 	var c := teren.centru_vale
-	_pune(vatra, c, 0.0, 0.0)
-	for k in 3:
-		var u := k * TAU / 3.0 + 0.4
-		var l := lumanare.instantiate() as Node3D
-		add_child(l)
-		l.global_position = Vector3(c.x + cos(u) * 0.68, teren.inaltime(c.x, c.y) + 0.12, c.y + sin(u) * 0.68)
 	for k in 7:
 		var u := k * TAU / 7.0
 		var q := c + Vector2(cos(u), sin(u)) * 4.2
-		# cu fața spre vatră, fiecare puțin altfel aplecată
+		var l := lumanare.instantiate() as Node3D
+		add_child(l)
+		var ql := c + Vector2(cos(u), sin(u)) * 3.75
+		l.global_position = Vector3(ql.x, teren.inaltime(ql.x, ql.y), ql.y)
+		# cu fața spre cazan, fiecare puțin altfel aplecată
 		_pune(cruce, q, atan2(c.x - q.x, c.y - q.y), _rng.randf_range(-0.2, 0.2))
 	var unde := c + Vector2(-6.0, -1.5)
 	var spre := c - unde

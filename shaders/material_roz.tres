@@ -1,0 +1,22 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
+
+[sub_resource type="Gradient" id="gradient"]
+colors = PackedColorArray(0.82, 0.82, 0.82, 1, 1, 1, 1, 1)
+
+[sub_resource type="FastNoiseLite" id="zgomot"]
+frequency = 0.09
+
+[sub_resource type="NoiseTexture2D" id="murdarie"]
+width = 64
+height = 64
+seamless = true
+color_ramp = SubResource("gradient")
+noise = SubResource("zgomot")
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/textura = SubResource("murdarie")
+shader_parameter/culoare = Color(1.85, 0.64, 0.985, 1)
+shader_parameter/repetare_uv = Vector2(1, 1)

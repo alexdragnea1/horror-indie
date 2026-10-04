@@ -224,3 +224,6 @@ padure.toate(MODELE)
 
 import deal  # noqa: E402
 deal.toate(MODELE)
+
+import coven  # noqa: E402
+coven.toate(MODELE)

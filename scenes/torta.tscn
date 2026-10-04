@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://models/torta.glb" id="1"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="3"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="4"]
+
+[node name="Torta" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1")]
+script = ExtResource("2")
+material = ExtResource("3")
+coliziune = 2
+
+[node name="Lumina" type="OmniLight3D" parent="." node_paths=PackedStringArray("sticla")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, 0)
+light_color = Color(1, 0.62, 0.32, 1)
+light_energy = 1.6
+omni_range = 7.0
+script = ExtResource("4")
+energie_normala = 1.6
+sansa_stingere = 0.0
+sticla = NodePath("../Model/Flacara")
+stralucire_sticla = 3.0

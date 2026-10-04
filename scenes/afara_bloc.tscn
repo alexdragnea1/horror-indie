@@ -37,6 +37,7 @@
 [ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="36"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_bloc.ogg" id="37"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="38"]
+[ext_resource type="Script" path="res://scripts/intoarcere_acasa.gd" id="39"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -568,3 +569,7 @@ variatie = 0.05
 in_jurul_jucatorului = true
 distanta_minima = 8.0
 distanta_maxima = 14.0
+
+[node name="IntoarcereAcasa" type="Node" parent="." node_paths=PackedStringArray("baba")]
+script = ExtResource("39")
+baba = NodePath("../Baba")

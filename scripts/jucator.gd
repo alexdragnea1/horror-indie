@@ -50,6 +50,8 @@ var _decalaj_treapta := 0.0
 
 func _ready() -> void:
 	suprafata = suprafata_implicita
+	# pistolul roz: se vede doar cât îl ai în inventar (vezi pistol.gd)
+	_camera.add_child(Pistol.new())
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
 
@@ -155,6 +157,15 @@ func _pas(_fuge: bool) -> void:
 	Sunet.reda(sunet, volum, 0.07)
 	if suprafata == "lemn" and randf() < sansa_scartait:
 		Sunet.reda(scartait_podea, volum, 0.15)
+
+
+## Cât e true, jucătorul nu mai are fizică (gravitate, coliziuni, pași): îl mută o scenă din cod
+## (ex. zborul pe mătură, sefa_vrajitoare.gd). Mersul și privitul le oprește oricum Stare.meniu_deschis.
+func seteaza_purtat(purtat: bool) -> void:
+	set_physics_process(not purtat)
+	$Coliziune.set_deferred("disabled", purtat)
+	velocity = Vector3.ZERO
+	_camera.position = Vector3.ZERO
 
 
 ## Adevărat cât rulează un dialog, e deschis un meniu sau e ecranul negru: jucătorul stă pe loc.

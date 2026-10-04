@@ -77,7 +77,8 @@ def betiv(cale):
 	Hanorac larg cu glugă, pantaloni de trening cu dungă, adidași albi, căciulă, lanț de aur.
 	Originea = solul de sub el (șezutul e la SEZUT), fața spre -Y. Piese separate: `Cap` (originea în gât, ca
 	să dea din cap pe muzică și să te urmărească), `BratBere` (originea în umăr: îți întinde berea), iar sticla
-	din mână e `SticlaMana`, copil al brațului (dispare cât bei tu)."""
+	din mână e `SticlaMana`, copil al brațului (dispare cât bei tu). Restul corpului e tot în bucăți, pentru
+	ragdoll (când îl împuști): `Corp` (trunchiul), `BratStang`, `CoapsaS/D` cu `GambaS/D` în ele."""
 	curata()
 	r = random.Random(13)
 	piese = []
@@ -114,39 +115,52 @@ def betiv(cale):
 			rot=(0.6, 0, u)))
 	piese.append(cub("Medalion", (0.034, 0.012, 0.04), (0, -0.05, z0 + 0.44), AUR, rot=(0.35, 0, 0)))
 
-	# --- picioarele: depărtate, coapsele pe buștean, gambele în jos; trening cu dungă albă pe lateral
-	for s in (-1, 1):
+	uneste(piese, "Corp")
+
+	# --- picioarele: depărtate, coapsele pe buștean, gambele în jos; trening cu dungă albă pe lateral.
+	# Fiecare picior = `Coapsa*` (originea în șold) + `Gamba*` (originea în genunchi, copil al coapsei, cu adidasul):
+	# când moare, bucățile devin un ragdoll (Ragdoll în Godot), legate în punctele astea.
+	for s, latura in ((-1, "D"), (1, "S")):
 		sold, genunchi, glezna = (0.1 * s, 0.02, z0 + 0.06), (0.24 * s, -0.4, z0 + 0.06), (0.29 * s, -0.5, 0.11)
-		piese.append(trunchi("Coapsa", [(sold, 0.09, 0.09), (genunchi, 0.075, 0.072)], PANTALONI, laturi=8, ref=(0, 0, 1)))
-		piese.append(sfera("Genunchi", 0.078, genunchi, PANTALONI, segmente=8, inele=5))
-		piese.append(trunchi("Gamba", [(genunchi, 0.07, 0.07), (glezna, 0.058, 0.055)], PANTALONI, laturi=8, ref=(0, 0, 1)))
-		# dunga: pe partea din afară, la 1 cm peste material
-		piese.append(os_intre("Dunga", (sold[0] + 0.1 * s, sold[1] - 0.05, sold[2]), (genunchi[0] + 0.083 * s, genunchi[1], genunchi[2]),
-			0.012, ALB, laturi=4))
-		piese.append(os_intre("Dunga", (genunchi[0] + 0.078 * s, genunchi[1], genunchi[2]), (glezna[0] + 0.066 * s, glezna[1], glezna[2] + 0.04),
-			0.012, ALB, laturi=4))
+		coapsa = [
+			trunchi("Coapsa", [(sold, 0.09, 0.09), (genunchi, 0.075, 0.072)], PANTALONI, laturi=8, ref=(0, 0, 1)),
+			# dunga: pe partea din afară, la 1 cm peste material
+			os_intre("Dunga", (sold[0] + 0.1 * s, sold[1] - 0.05, sold[2]), (genunchi[0] + 0.083 * s, genunchi[1], genunchi[2]),
+				0.012, ALB, laturi=4),
+		]
+		gamba = [
+			sfera("Genunchi", 0.078, genunchi, PANTALONI, segmente=8, inele=5),
+			trunchi("Gamba", [(genunchi, 0.07, 0.07), (glezna, 0.058, 0.055)], PANTALONI, laturi=8, ref=(0, 0, 1)),
+			os_intre("Dunga", (genunchi[0] + 0.078 * s, genunchi[1], genunchi[2]), (glezna[0] + 0.066 * s, glezna[1], glezna[2] + 0.04),
+				0.012, ALB, laturi=4),
+		]
 		# adidașii: albi, groși, cu talpa închisă și șireturi
 		xb = glezna[0]
-		piese.append(trunchi("Adidas", [
+		gamba.append(trunchi("Adidas", [
 			((xb, -0.46, 0.06), 0.0, 0.0),
 			((xb, -0.47, 0.06), 0.055, 0.05),
 			((xb + 0.01 * s, -0.55, 0.055), 0.06, 0.048),
 			((xb + 0.015 * s, -0.63, 0.045), 0.052, 0.035),
 			((xb + 0.02 * s, -0.68, 0.035), 0.0, 0.0),
 		], ALB, laturi=8, faza=0.39))
-		piese.append(cub("Talpa", (0.115, 0.24, 0.02), (xb + 0.012 * s, -0.57, 0.01), NEGRU))
-		piese.append(cub("Siret", (0.05, 0.012, 0.006), (xb + 0.008 * s, -0.56, 0.104), NEGRU, rot=(0.5, 0, 0)))
-		piese.append(cub("Siret", (0.045, 0.012, 0.006), (xb + 0.011 * s, -0.6, 0.09), NEGRU, rot=(0.5, 0, 0)))
-		piese.append(inel("Gura adidas", 0.048, 0.012, (xb, -0.48, 0.105), PANTALONI, segmente=8))
+		gamba.append(cub("Talpa", (0.115, 0.24, 0.02), (xb + 0.012 * s, -0.57, 0.01), NEGRU))
+		gamba.append(cub("Siret", (0.05, 0.012, 0.006), (xb + 0.008 * s, -0.56, 0.104), NEGRU, rot=(0.5, 0, 0)))
+		gamba.append(cub("Siret", (0.045, 0.012, 0.006), (xb + 0.011 * s, -0.6, 0.09), NEGRU, rot=(0.5, 0, 0)))
+		gamba.append(inel("Gura adidas", 0.048, 0.012, (xb, -0.48, 0.105), PANTALONI, segmente=8))
+		ob_coapsa = uneste(coapsa, "Coapsa" + latura, sold)
+		ob_gamba = uneste(gamba, "Gamba" + latura, genunchi)
+		ob_gamba.parent = ob_coapsa
+		ob_gamba.matrix_parent_inverse = ob_coapsa.matrix_world.inverted()
 
-	# --- brațul stâng: atârnă moale peste genunchiul stâng, mâna căzută
+	# --- brațul stâng (separat, originea în umăr): atârnă moale peste genunchiul stâng, mâna căzută
 	umar_s, cot_s, inch_s = (0.215, 0.13, z0 + 0.48), (0.31, 0.0, z0 + 0.25), (0.27, -0.3, z0 + 0.15)
-	_brat(piese, umar_s, cot_s, inch_s, HANORAC, "Brat")
-	piese.append(sfera("Mana", 0.045, (0.265, -0.355, z0 + 0.12), PIELE, scara=(0.8, 1.1, 0.55), segmente=8, inele=5))
+	brat_s = []
+	_brat(brat_s, umar_s, cot_s, inch_s, HANORAC, "Brat")
+	brat_s.append(sfera("Mana", 0.045, (0.265, -0.355, z0 + 0.12), PIELE, scara=(0.8, 1.1, 0.55), segmente=8, inele=5))
 	for k in range(4):  # degetele atârnă peste genunchi
-		piese.append(os_intre("Deget", (0.245 + k * 0.014, -0.39, z0 + 0.11), (0.243 + k * 0.015, -0.41, z0 + 0.07), 0.009, PIELE, laturi=4))
-	piese.append(sfera("Palma", 0.03, (0.265, -0.36, z0 + 0.1), PALMA, scara=(0.8, 1.0, 0.4), segmente=6, inele=4))
-	uneste(piese, "Corp")
+		brat_s.append(os_intre("Deget", (0.245 + k * 0.014, -0.39, z0 + 0.11), (0.243 + k * 0.015, -0.41, z0 + 0.07), 0.009, PIELE, laturi=4))
+	brat_s.append(sfera("Palma", 0.03, (0.265, -0.36, z0 + 0.1), PALMA, scara=(0.8, 1.0, 0.4), segmente=6, inele=4))
+	uneste(brat_s, "BratStang", umar_s)
 
 	# --- brațul cu berea (separat, originea în umăr): mâna pe genunchiul drept, ține sticla dreaptă
 	umar_d, cot_d, inch_d = (-0.215, 0.13, z0 + 0.48), (-0.3, -0.02, z0 + 0.25), (-0.26, -0.3, z0 + 0.2)

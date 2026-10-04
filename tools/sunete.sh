@@ -228,3 +228,35 @@ unic bere_clinchet "Materials/glass_ping_small.wav"
 unic bere_inghititura "Other/drink_slurp.wav"
 unic bere_ragait "Human/belch_2.wav"
 echo "Gata."
+
+# --- coven-ul din vale: pistolul roz, cadavrul, cazanul, vraja, mătura
+# împușcătura: pocnetul (zgomot alb care se stinge repede), bubuitul grav (sinus care coboară) și „shot_muffled”
+# din pachet pentru corp, cu ecoul pădurii după
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=0.9:d=1.8:r=44100" \
+	-f lavfi -i "aevalsrc=0.9*sin(2*PI*(45+260*exp(-t*35))*t)*exp(-t*9):s=44100:d=1.8" -i "$PACHET/Weapons/shot_muffled.wav" \
+	-filter_complex "[0]volume='exp(-t*30)':eval=frame,highpass=f=300[c];[1]lowpass=f=400[b];[2]aformat=channel_layouts=mono,apad=pad_dur=1.8,atrim=end=1.8[m];[c][b][m]amix=inputs=3:normalize=0,aecho=0.8:0.6:140|360|780:0.35|0.22|0.12" \
+	-ac 1 "$OUT/_impuscatura.wav"
+unic pistol_impuscatura "$OUT/_impuscatura.wav"
+unic pistol_primit "Weapons/weapon_pick_up.wav"
+unic corp_cazut "Materials/clothing_thud.wav" mono "lowpass=f=1500,asetrate=44100*0.8,aresample=44100"
+unic corp_luat "Materials/clothing_1.wav"
+unic cazan_plescait "Environment/water_splashing.wav" mono "asetrate=44100*0.7,aresample=44100,lowpass=f=3000"
+# unda de lumină: un sinus care urcă (70 -> 540 Hz) peste un șuierat care crește, cu tremolo și ecou
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.45*sin(2*PI*(70*t+90*t*t))*min(t*1.5\,1):s=44100:d=2.8" \
+	-f lavfi -i "anoisesrc=c=pink:a=0.35:d=2.8:r=44100" \
+	-filter_complex "[1]lowpass=f=2500,volume='min(t/2.2\,1)':eval=frame[z];[0][z]amix=inputs=2:normalize=0,tremolo=f=9:d=0.35,afade=t=out:st=2.4:d=0.4,aecho=0.8:0.7:90|230:0.3|0.2" \
+	-ac 1 "$OUT/_unda.wav"
+unic vraja_unda "$OUT/_unda.wav"
+unic vraja_bum "Retro/explosion_large.wav" mono "asetrate=44100*0.65,aresample=44100,lowpass=f=900,aecho=0.8:0.7:200|500:0.4|0.25"
+unic matura_scoasa "Other/whoosh_1.wav" mono "lowpass=f=4000"
+unic zbor_decolare "Other/whoosh_2.wav" mono "asetrate=44100*0.6,aresample=44100,lowpass=f=2500"
+# cântecul vrăjitoarelor: un murmur grav din trei voci care se umflă și se sting, fiecare în ritmul ei
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0.25*sin(2*PI*110*t)*(0.6+0.4*sin(2*PI*0.23*t)) + 0.2*sin(2*PI*164.8*t+0.4*sin(2*PI*5*t))*(0.5+0.5*sin(2*PI*0.17*t+1)) + 0.15*sin(2*PI*220.5*t+0.3*sin(2*PI*4.3*t))*(0.5+0.5*sin(2*PI*0.31*t+2)):s=44100:d=24" \
+	-af "lowpass=f=900,chorus=0.6:0.9:50|60:0.4|0.32:0.25|0.4:2|1.3,aecho=0.7:0.6:300|700:0.3|0.2" -ac 1 "$OUT/_cant.wav"
+bucla vrajitoare_cant "$OUT/_cant.wav" 2 mono anull tri
+# focul de sub cazan: trosnete rare (impulsuri la întâmplare) peste un vuiet jos
+ffmpeg -v error -y -f lavfi -i "aevalsrc='lt(random(1)\,0.0008)*(random(2)*2-1)':s=44100:d=10" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.12:d=10:r=44100" \
+	-filter_complex "[0]highpass=f=700,aecho=0.6:0.4:20:0.3[t];[1]lowpass=f=400[v];[t][v]amix=inputs=2:normalize=0" -ac 1 "$OUT/_foc.wav"
+bucla foc_trosnet "$OUT/_foc.wav" 1 mono
+rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

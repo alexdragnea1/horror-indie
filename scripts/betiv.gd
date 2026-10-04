@@ -5,6 +5,8 @@ extends Personaj
 ##     râgâit), apoi ești beat `durata_beat` secunde (EfectBeat). El își ia altă bere de pe jos.
 ##   - a doua (No): se termină conversația.
 ## Între timp dă din cap pe muzica boombox-ului (Boombox.ritm), se clatină și capul îi cade într-o parte.
+## Cu pistolul roz (de la Head Witch) îl omori dintr-un glonț: cade pe spate ca un ragdoll, iar apoi îl iei în
+## inventar cu E (`omorabil` și restul din grupul „Moarte” al Personaj, puse în betiv.tscn).
 
 @export var marcaj_blocare := "a_vorbit_cu_vrajitoarele"
 @export var intrebare := "Drunkard: You want a beer?"
@@ -58,6 +60,8 @@ func interactioneaza() -> void:
 
 
 func _process(delta: float) -> void:
+	if mort:
+		return  # l-ai împușcat: acum e un ragdoll (vezi Personaj.omoara)
 	super(delta)  # respiră + capul se uită după tine (rotation.y)
 	var ritm := boombox.ritm if boombox else 0.0
 	_timp_dans += delta * (1.0 + ritm * 0.6)

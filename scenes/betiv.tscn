@@ -11,6 +11,8 @@
 [ext_resource type="AudioStream" path="res://sunete/bere_clinchet.ogg" id="9"]
 [ext_resource type="AudioStream" path="res://sunete/bere_inghititura.ogg" id="10"]
 [ext_resource type="AudioStream" path="res://sunete/bere_ragait.ogg" id="11"]
+[ext_resource type="AudioStream" path="res://sunete/corp_cazut.ogg" id="12"]
+[ext_resource type="AudioStream" path="res://sunete/corp_luat.ogg" id="13"]
 
 [sub_resource type="BoxShape3D" id="forma_betiv"]
 size = Vector3(0.75, 1.0, 1.0)
@@ -47,6 +49,15 @@ unghi_maxim_cap = 60.0
 se_intoarce = false
 indiciu = "[E] Talk to the drunkard"
 replici = PackedStringArray("You: Can you turn that shit off?", "Drunkard: Nah nigga")
+omorabil = true
+marcaj_mort = "betivul_e_mort"
+marcaj_luat = "betivul_luat"
+id_cadavru = "cadavru_betiv"
+nume_cadavru = "Drunkard"
+indiciu_cadavru = "[E] Pick up the drunkard"
+lipite_ragdoll = PackedStringArray("SticlaMana")
+sunet_cadere = ExtResource("12")
+sunet_luat = ExtResource("13")
 
 [node name="Model" parent="Personaj" instance=ExtResource("2")]
 script = ExtResource("3")
