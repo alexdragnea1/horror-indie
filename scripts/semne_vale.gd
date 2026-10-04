@@ -84,9 +84,22 @@ func _pune(scena: PackedScene, q: Vector2, unghi_y: float, aplecare: float) -> N
 	if not n is ModelPS2 and n.get_script() == null:
 		n.set_script(SCRIPT_MODEL)
 		n.set("material", MATERIAL)
+	# pietrele și crucile au „hitbox”, la copacul cu cracă doar trunchiul (pe sub cracă se trece)
+	if scena == piatra or scena == cruce:
+		n.set("coliziune", 1 if scena == piatra else 2)
 	add_child(n)
 	n.global_position = Vector3(q.x, teren.inaltime(q.x, q.y) - 0.05, q.y)
 	n.rotation = Vector3(aplecare, unghi_y, aplecare * 0.5)
+	if scena == copac_craca:
+		var corp := StaticBody3D.new()
+		var forma := CollisionShape3D.new()
+		var cilindru := CylinderShape3D.new()
+		cilindru.radius = 0.3
+		cilindru.height = 4.0
+		forma.shape = cilindru
+		forma.position.y = 2.0
+		corp.add_child(forma)
+		n.add_child(corp)
 	return n
 
 

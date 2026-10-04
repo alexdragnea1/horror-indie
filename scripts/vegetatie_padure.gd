@@ -17,7 +17,7 @@ extends Node3D
 @export var pietre: Array[PackedScene] = []
 @export var bustean: PackedScene
 @export var saminta := 21
-## Unde nu crește nimic (x, z, lățime, adâncime): stația, bariera, bifurcația.
+## Unde nu crește nimic (x, z, lățime, adâncime): stația, bariera, panoul verde (altfel un brad îl acoperă).
 @export var zone_libere: Array[Rect2] = []
 
 const MATERIAL := preload("res://shaders/material_model.tres")
@@ -109,10 +109,15 @@ func _margini_poteca() -> void:
 			var y := teren.inaltime(q.x, q.y) - 0.1
 			if _rng.randf() < 0.75 or bustean == null:
 				var baza := Basis(Vector3.UP, _rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * _rng.randf_range(0.6, 1.2))
-				_adauga(pietre.pick_random(), Transform3D(baza, Vector3(q.x, y, q.y)))
+				var t := Transform3D(baza, Vector3(q.x, y, q.y))
+				var scena: PackedScene = pietre.pick_random()
+				_adauga(scena, t)
+				ColiziuneModel.adauga(_corp, scena, t, true)
 			else:
 				var unghi := atan2(inainte.x, inainte.y) + _rng.randf_range(-0.3, 0.3)
-				_adauga(bustean, Transform3D(Basis(Vector3.UP, unghi), Vector3(q.x, y, q.y)))
+				var t := Transform3D(Basis(Vector3.UP, unghi), Vector3(q.x, y, q.y))
+				_adauga(bustean, t)
+				ColiziuneModel.adauga(_corp, bustean, t, false)
 
 
 func _construieste_multimesh() -> void:

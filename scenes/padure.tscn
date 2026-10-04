@@ -1,4 +1,4 @@
-[gd_scene load_steps=80 format=3]
+[gd_scene load_steps=81 format=3]
 
 [ext_resource type="Script" path="res://scripts/teren_padure.gd" id="1"]
 [ext_resource type="Shader" path="res://shaders/cer_noapte.gdshader" id="2"]
@@ -47,6 +47,7 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_2.ogg" id="45"]
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_3.ogg" id="46"]
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_4.ogg" id="47"]
+[ext_resource type="Script" path="res://scripts/limite_padure.gd" id="48"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("2")
@@ -182,7 +183,7 @@ copaci_goi = Array[PackedScene]([ExtResource("21")])
 copaci_morti = Array[PackedScene]([ExtResource("22"), ExtResource("23")])
 pietre = Array[PackedScene]([ExtResource("24"), ExtResource("24"), ExtResource("25")])
 bustean = ExtResource("26")
-zone_libere = Array[Rect2]([Rect2(-12, -11, 24, 11), Rect2(-4, -18, 14, 8)])
+zone_libere = Array[Rect2]([Rect2(-12, -11, 24, 11), Rect2(-4, -18, 14, 8), Rect2(4, -17, 11, 9)])
 
 [node name="SemneVale" type="Node3D" parent="." node_paths=PackedStringArray("teren")]
 script = ExtResource("5")
@@ -284,11 +285,13 @@ shape = SubResource("forma_bustean")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, -0.2, -89)
 script = ExtResource("12")
 material = ExtResource("13")
+coliziune = 1
 
 [node name="PiatraPlatou2" parent="PePamant" instance=ExtResource("24")]
 transform = Transform3D(0.5, 0, 0.866, 0, 1, 0, -0.866, 0, 0.5, 22, -0.1, -90)
 script = ExtResource("12")
 material = ExtResource("13")
+coliziune = 1
 
 [node name="Autobuz" parent="." instance=ExtResource("15")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0.04, -1.75)
@@ -368,3 +371,7 @@ shape = SubResource("forma_perete_lat")
 [node name="Fund" type="CollisionShape3D" parent="Limite"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -168)
 shape = SubResource("forma_perete_lat")
+
+[node name="ZidInvizibil" type="StaticBody3D" parent="." node_paths=PackedStringArray("teren")]
+script = ExtResource("48")
+teren = NodePath("../Teren")

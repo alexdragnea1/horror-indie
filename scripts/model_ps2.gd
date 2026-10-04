@@ -15,6 +15,9 @@ extends Node3D
 ## Bucățile de sticlă: cele al căror nume începe cu asta (ex. "Geam") devin transparente.
 ## Gol = nicio bucată de sticlă.
 @export var sticla := ""
+## Coliziune făcută din mărimea modelului (pentru modele puse fără StaticBody): Cilindru = pietre,
+## Cutie = bușteni, cruci, lăzi. Vezi ColiziuneModel.
+@export_enum("Fara", "Cilindru", "Cutie") var coliziune := 0
 
 const MATERIAL_STICLA := preload("res://shaders/material_sticla.tres")
 
@@ -31,3 +34,5 @@ func _ready() -> void:
 		if sticla != "" and String(mesh.name).begins_with(sticla):
 			mesh.material_override = MATERIAL_STICLA
 			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if coliziune > 0:
+		ColiziuneModel.pentru_nod(self, coliziune == 1)
