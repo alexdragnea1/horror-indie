@@ -4,7 +4,8 @@ extends CanvasLayer
 ##   Stare.are_obiect("cheie_hol")  /  Stare.scoate_obiect("cheie_hol")
 ##   Stare.marcheaza("a_vorbit_cu_mom")  /  Stare.e_marcat("a_vorbit_cu_mom")
 ##   Stare.seteaza_sarcina("Meet with the coven.")  -> apare sus câteva secunde
-## Tab deschide / închide inventarul (sloturile + sarcina curentă).
+## Tab deschide / închide inventarul (sloturile + sarcina curentă). Click pe un slot = îl ții în mână
+## (`in_mana`, vezi Pistol și ObiectInMana); click pe un slot gol sau pe cel din mână = mâinile goale.
 
 signal schimbat
 
@@ -28,6 +29,8 @@ var sarcina := ""
 var nume_jucator := ""
 ## Cât e deschis un meniu (MeniuNume, inventarul), jucătorul nu se mișcă și nu se uită în jur.
 var meniu_deschis := false
+## Id-ul obiectului din mână ('' = nimic). Se schimbă cu tine_in_mana().
+var in_mana := ""
 
 var _mesaj: Label
 var _sarcina_sus: Label
@@ -47,6 +50,7 @@ func _ready() -> void:
 	_sarcina_sus.add_theme_font_size_override("font_size", 13)
 	_sarcina_sus.add_theme_color_override("font_color", Color("a18463"))
 	_inventar = Inventar.new(LOCURI_INVENTAR)
+	_inventar.slot_apasat.connect(_la_slot)
 	add_child(_inventar)
 	_inventar.hide()
 
@@ -69,6 +73,7 @@ func reseteaza() -> void:
 	marcaje = {}
 	sarcina = ""
 	nume_jucator = ""
+	in_mana = ""
 	meniu_deschis = false
 	_inventar.hide()
 	_mesaj.show()
@@ -85,7 +90,7 @@ func ascunde_mesaje() -> void:
 
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
-	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator}
+	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana}
 
 
 func importa(date: Dictionary) -> void:
@@ -93,6 +98,10 @@ func importa(date: Dictionary) -> void:
 	marcaje = date.get("marcaje", {})
 	sarcina = date.get("sarcina", "")
 	nume_jucator = date.get("nume_jucator", "")
+	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
+	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
+	if not obiecte.has(in_mana):
+		in_mana = ""
 
 
 func adauga_obiect(id: String, nume: String) -> bool:
@@ -112,6 +121,8 @@ func are_obiect(id: String) -> bool:
 
 func scoate_obiect(id: String) -> void:
 	if obiecte.erase(id):
+		if in_mana == id:
+			in_mana = ""
 		schimbat.emit()
 
 
@@ -161,10 +172,11 @@ func _input(event: InputEvent) -> void:
 
 
 func _deschide_inventar() -> void:
-	_inventar.actualizeaza(obiecte, sarcina)
+	_inventar.actualizeaza(obiecte, sarcina, in_mana)
 	_inventar.show()
 	_mesaj.hide()
 	meniu_deschis = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
 
 
@@ -172,4 +184,23 @@ func _inchide_inventar() -> void:
 	_inventar.hide()
 	_mesaj.show()
 	meniu_deschis = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Sunet.reda(SUNET_INCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
+
+
+## Pune în mână obiectul `id` din inventar ('' sau un obiect pe care nu-l ai = mâinile goale).
+func tine_in_mana(id: String) -> void:
+	if not obiecte.has(id):
+		id = ""
+	if id == in_mana:
+		return
+	in_mana = id
+	schimbat.emit()
+
+
+## Click pe slotul `index` din inventar: îl iei în mână; pe slotul din mână sau pe unul gol, îl lași.
+func _la_slot(index: int) -> void:
+	var id: String = obiecte.keys()[index] if index < obiecte.size() else ""
+	tine_in_mana("" if id == in_mana else id)
+	_inventar.actualizeaza(obiecte, sarcina, in_mana)
+	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata", 1.3)

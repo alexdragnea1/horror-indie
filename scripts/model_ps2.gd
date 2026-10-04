@@ -36,3 +36,12 @@ func _ready() -> void:
 			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if coliziune > 0:
 		ColiziuneModel.pentru_nod(self, coliziune == 1)
+
+
+## Face să dispară (pe pixeli, vezi `disparitie` în ps2.gdshader) toate bucățile de sub `nod`: 0 = întreg, 1 = dispărut.
+## Merge pe orice model cu materialul PS2 (de pus în tween_method).
+static func disparitie(nod: Node, valoare: float) -> void:
+	for mesh in nod.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).set_instance_shader_parameter("disparitie", valoare)
+	if nod is GeometryInstance3D:
+		(nod as GeometryInstance3D).set_instance_shader_parameter("disparitie", valoare)

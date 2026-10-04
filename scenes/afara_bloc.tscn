@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=3]
+[gd_scene load_steps=84 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -44,6 +44,14 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="ub4"]
 [ext_resource type="AudioStream" path="res://sunete/usa_intrare.ogg" id="ub5"]
 [ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="ub6"]
+[ext_resource type="Script" path="res://scripts/zi_bloc.gd" id="zi1"]
+[ext_resource type="PackedScene" path="res://scenes/head_witch.tscn" id="zi2"]
+[ext_resource type="Script" path="res://scripts/sefa_antrenament.gd" id="zi3"]
+[ext_resource type="PackedScene" path="res://models/matura.glb" id="zi4"]
+[ext_resource type="PackedScene" path="res://models/matura_zbor.glb" id="zi5"]
+[ext_resource type="AudioStream" path="res://sunete/scantei_matura.ogg" id="zi6"]
+[ext_resource type="AudioStream" path="res://sunete/vraja_esuata.ogg" id="zi7"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="zi8"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -581,3 +589,30 @@ distanta_maxima = 14.0
 [node name="IntoarcereAcasa" type="Node" parent="." node_paths=PackedStringArray("baba")]
 script = ExtResource("39")
 baba = NodePath("../Baba")
+
+[node name="ZiBloc" type="Node" parent="." node_paths=PackedStringArray("mediu", "soare", "stalpi", "blocuri", "bec_scara", "de_oprit")]
+script = ExtResource("zi1")
+mediu = NodePath("../Mediu")
+soare = NodePath("../Luna")
+stalpi = [NodePath("../StalpAlee"), NodePath("../StalpStrada")]
+blocuri = [NodePath("../Bloc/Model"), NodePath("../BlocVizavi"), NodePath("../BlocLateral")]
+bec_scara = NodePath("../Bloc/BecScara")
+de_oprit = [NodePath("../Sperieturi"), NodePath("../Fantoma")]
+
+[node name="HeadWitchZi" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("zi2")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.25, 0.06, 5.0)
+script = ExtResource("zi3")
+replici_cu_matura = PackedStringArray("Head Witch: Ok, try to put the broom on the ground and make it fly.", "You: Ok.")
+replici_dupa_incercare = PackedStringArray("Head Witch: I didn't know you had no talent for magic..", "You: If you talk more shit imma put a cap in yo ass bitch.", "Head Witch: I'll come back tomorrow to see if anything changes.")
+replici_fara_matura = PackedStringArray("Head Witch: Where is the broom?", "You: I don't need no bitch ass broom.")
+replici_glock = PackedStringArray("You: I got this glock.")
+replici_fara_matura_final = PackedStringArray("Head Witch: You are unbelievable miss..", "Head Witch: I will talk to your mother and we will continue this tomorrow..")
+replici_final = PackedStringArray("You: I hate this bitch.")
+model_matura_ta = ExtResource("zi4")
+sunet_pus_jos = ExtResource("zi8")
+sunet_scantei = ExtResource("zi6")
+sunet_esuat = ExtResource("zi7")
+brat = NodePath("Model/BratDrept")
+cap = NodePath("Model/Cap")
+model_matura = ExtResource("zi5")
+distanta_privire = 9.0

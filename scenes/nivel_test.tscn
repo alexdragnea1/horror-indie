@@ -29,6 +29,8 @@
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="30"]
 [ext_resource type="Script" path="res://scripts/acasa_noaptea.gd" id="an1"]
 [ext_resource type="Script" path="res://scripts/declansator.gd" id="an2"]
+[ext_resource type="PackedScene" path="res://scenes/head_witch.tscn" id="hw1"]
+[ext_resource type="Script" path="res://scripts/sefa_acasa.gd" id="hw2"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -309,3 +311,13 @@ marcaj_necesar = "a_venit_acasa"
 
 [node name="Forma" type="CollisionShape3D" parent="BucatarieGoala"]
 shape = SubResource("forma_bucatarie_goala")
+
+[node name="HeadWitch" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("hw1")]
+transform = Transform3D(-0.786, 0, -0.619, 0, 1, 0, 0.619, 0, -0.786, 0.7, 0, -1.3)
+script = ExtResource("hw2")
+brat = NodePath("Model/BratDrept")
+cap = NodePath("Model/Cap")
+indiciu = "[E] Talk to the Head Witch"
+replici = PackedStringArray("You: Why are you here bitch?", "Head Witch: I'm going to train you while you get your powers.", "You: I don't need you retard.", "Head Witch: Language.", "Head Witch: Whether you like it or not your mother told me to train you.", "You: Fine, what am I learning today?", "Head Witch: Grab your broom and we'll meet outside.")
+marcaj_dupa = "a_vorbit_cu_sefa_acasa"
+sarcina_noua = "Grab your broom and meet the Head Witch outside."

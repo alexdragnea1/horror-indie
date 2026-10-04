@@ -119,6 +119,7 @@ func _ia_pistolul(pistol: Node3D) -> void:
 	await tween.finished
 	pistol.queue_free()
 	Stare.adauga_obiect(Pistol.ID, "Pink pistol")
+	Stare.tine_in_mana(Pistol.ID)
 	create_tween().set_trans(Tween.TRANS_SINE).tween_property(brat, "rotation:x", 0.0, 0.8)
 
 

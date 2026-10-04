@@ -1,7 +1,7 @@
 class_name Pistol
 extends Node3D
 ## Pistolul roz de la Head Witch, în mâna ta dreaptă (la persoana întâi). Îl pune jucator.gd sub cameră; se vede
-## doar cât îl ai în inventar (Stare: `ID`). Click stânga (acțiunea "trage") = tragi: un glonț omoară pe loc doar
+## doar cât îl ții în mână (`Stare.in_mana` = `ID`; îl alegi din inventar). Click stânga (acțiunea "trage") = tragi: un glonț omoară pe loc doar
 ## personajele `omorabil` (Personaj.impuscat: bețivul) și, după ce ți-a cerut bețivul, vrăjitoarele din cerc; pe ceilalți nu-i
 ## atinge. Orice are `impuscat(directie, punct)` primește glonțul (ex. boombox-ul se strică). Un cadavru îl împinge,
 ## iar în rest ridică un pic de praf. Gloanțe câte vrei, câte unul la `pauza` secunde.
@@ -16,6 +16,11 @@ const SUNET := preload("res://sunete/pistol_impuscatura.ogg")
 ## Gura țevii, în coordonatele modelului.
 const GURA_TEVII := Vector3(0, 0.037, -0.155)
 
+## O scenă din cod (sefa_antrenament.gd) îl poate ține la vedere cât merge ea (altfel coboară cât e Stare.meniu_deschis)
+## și îl poate înclina pe o parte („gangsta”, radiani pe Z).
+static var in_scena := false
+static var inclinare := 0.0
+
 ## Unde îl ții (față de cameră) și unde stă când e lăsat jos.
 @export var pozitie := Vector3(0.16, -0.15, -0.32)
 @export var pozitie_jos := Vector3(0.18, -0.45, -0.26)
@@ -29,6 +34,7 @@ var _jucator: CharacterBody3D
 var _model: Node3D
 var _jos := 1.0  # 0 = în mână, 1 = lăsat jos (nu se vede)
 var _recul := 0.0
+var _inclinat := 0.0
 var _gata := 0.0
 var _timp := 0.0
 var _lumina: OmniLight3D
@@ -76,8 +82,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_timp += delta
-	var are := Stare.are_obiect(ID)
-	var jos := not are or Stare.meniu_deschis or Tranzitie.activa
+	var are := Stare.in_mana == ID
+	var jos := not are or (Stare.meniu_deschis and not in_scena) or Tranzitie.activa
+	_inclinat = move_toward(_inclinat, inclinare, delta * 4.0)
 	_jos = move_toward(_jos, 1.0 if jos else 0.0, delta * 3.5)
 	visible = are and _jos < 0.99
 	_gata = maxf(_gata - delta, 0.0)
@@ -86,7 +93,9 @@ func _process(delta: float) -> void:
 	# respiră puțin în mână
 	var respiratie := Vector3(sin(_timp * 1.3) * 0.002, sin(_timp * 2.1) * 0.003, 0.0)
 	position = pozitie.lerp(pozitie_jos, k) + respiratie + Vector3(0, _recul * 0.01, _recul * 0.045)
-	rotation = Vector3(_recul * 0.35 - k * 0.6, 0.0, 0.0)
+	# înclinat pe o parte îl ridici în fața ochilor (altfel intră sub caseta de dialog)
+	position += Vector3(-0.07, 0.1, 0.04) * (_inclinat / 1.25)
+	rotation = Vector3(_recul * 0.35 - k * 0.6, 0.0, _inclinat)
 
 
 func _unhandled_input(event: InputEvent) -> void:

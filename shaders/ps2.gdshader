@@ -23,6 +23,11 @@ uniform float deformare_textura : hint_range(0.0, 1.0) = 0.0;
 // obiect, cu set_instance_shader_parameter("stralucire", ...). 0 = deloc.
 instance uniform float stralucire = 0.0;
 
+// Dispariția „pe pixeli”, ca la jocurile vechi (fără transparență adevărată, deci fără probleme de ordine):
+// 0 = obiectul întreg, 1 = dispărut de tot. Pixelii pleacă după un model Bayer 4×4. Se schimbă din cod cu
+// ModelPS2.disparitie(nod, valoare).
+instance uniform float disparitie = 0.0;
+
 varying vec3 uv_afin;
 
 void vertex() {
@@ -43,6 +48,13 @@ void vertex() {
 }
 
 void fragment() {
+	if (disparitie > 0.0) {
+		ivec2 p = ivec2(FRAGCOORD.xy) % 4;
+		int bayer[16] = int[](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+		if ((float(bayer[p.y * 4 + p.x]) + 0.5) / 16.0 < disparitie) {
+			discard;
+		}
+	}
 	vec2 uv = mix(UV, uv_afin.xy / uv_afin.z, deformare_textura);
 	// COLOR = culorile vârfurilor din modelele făcute în Blender (albe la pereții din CSG).
 	ALBEDO = texture(textura, uv).rgb * culoare.rgb * COLOR.rgb;

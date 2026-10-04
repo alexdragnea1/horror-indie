@@ -2,10 +2,17 @@ class_name Inventar
 extends Control
 ## Fereastra de inventar (o deschide Stare cu Tab): sloturile în stânga, sarcina curentă în dreapta.
 ## Nu ține minte nimic singură: Stare îi dă obiectele și sarcina cu actualizeaza().
+## Sloturile se apasă cu mouse-ul (`slot_apasat`): Stare pune obiectul în mână. Slotul din mână are ramă deschisă
+## și scrie „IN HAND” sub nume.
+
+signal slot_apasat(index: int)
 
 const MARIME_SLOT := 44
 
 var _sloturi: Array[Label] = []
+var _in_mana: Array[Label] = []
+var _peste := -1
+var _ultimele: Array = []
 var _sarcina: Label
 
 
@@ -40,7 +47,7 @@ func _init(numar_sloturi: int) -> void:
 	for i in numar_sloturi:
 		rand.add_child(_slot(i + 1))
 	var ajutor := Label.new()
-	ajutor.text = "[Tab] Close"
+	ajutor.text = "[Click] Hold in hand   [Tab] Close"
 	ajutor.add_theme_font_size_override("font_size", 8)
 	ajutor.add_theme_color_override("font_color", Color("5e5356"))
 	stanga.add_child(ajutor)
@@ -59,13 +66,16 @@ func _init(numar_sloturi: int) -> void:
 
 
 ## obiecte = id -> nume (în ordinea în care le-ai luat); sarcina = "" dacă nu ai niciuna.
-func actualizeaza(obiecte: Dictionary, sarcina: String) -> void:
+func actualizeaza(obiecte: Dictionary, sarcina: String, in_mana := "") -> void:
 	var nume := obiecte.values()
+	var iduri := obiecte.keys()
+	_ultimele = [nume, iduri, in_mana]
 	for i in _sloturi.size():
 		var plin := i < nume.size()
+		var tinut: bool = plin and iduri[i] == in_mana
 		_sloturi[i].text = str(nume[i]) if plin else ""
-		(_sloturi[i].get_parent() as PanelContainer).add_theme_stylebox_override("panel",
-			_cutie(Color("48313b") if plin else Color("2a3c3d"), Color("a18463") if plin else Color("5e5356"), 2))
+		_in_mana[i].visible = tinut
+		_coloreaza(i, plin, tinut)
 	if sarcina.is_empty():
 		_sarcina.text = "Nothing right now."
 		_sarcina.add_theme_color_override("font_color", Color("5e5356"))
@@ -84,6 +94,14 @@ func _titlu(text: String) -> Label:
 func _slot(numar: int) -> PanelContainer:
 	var slot := PanelContainer.new()
 	slot.custom_minimum_size = Vector2(MARIME_SLOT, MARIME_SLOT)
+	slot.mouse_filter = Control.MOUSE_FILTER_STOP
+	slot.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var index := numar - 1
+	slot.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			slot_apasat.emit(index))
+	slot.mouse_entered.connect(_la_mouse.bind(index, true))
+	slot.mouse_exited.connect(_la_mouse.bind(index, false))
 	var nume := Label.new()
 	nume.add_theme_font_size_override("font_size", 8)
 	nume.add_theme_color_override("font_color", Color("83b3b0"))
@@ -99,6 +117,15 @@ func _slot(numar: int) -> PanelContainer:
 	cifra.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	cifra.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	slot.add_child(cifra)
+	var tinut := Label.new()  # „IN HAND”, jos, pe slotul din mână
+	tinut.text = "IN HAND"
+	tinut.add_theme_font_size_override("font_size", 6)
+	tinut.add_theme_color_override("font_color", Color("a18463"))
+	tinut.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tinut.size_flags_vertical = Control.SIZE_SHRINK_END
+	tinut.hide()
+	slot.add_child(tinut)
+	_in_mana.append(tinut)
 	_sloturi.append(nume)
 	return slot
 
@@ -121,3 +148,22 @@ func _cutie(fundal: Color, margine: Color, spatiu: int) -> StyleBoxFlat:
 	cutie.set_border_width_all(1)
 	cutie.set_content_margin_all(spatiu)
 	return cutie
+
+
+## Rama slotului: plin / gol, în mână (ramă deschisă, fundal mai cald), sub mouse (ramă albăstruie).
+func _coloreaza(i: int, plin: bool, tinut: bool) -> void:
+	var fundal := Color("48313b") if plin else Color("2a3c3d")
+	var margine := Color("a18463") if plin else Color("5e5356")
+	if tinut:
+		fundal = Color("7b383a")
+		margine = Color("83b3b0")
+	elif i == _peste:
+		margine = Color("438b88")
+	(_sloturi[i].get_parent() as PanelContainer).add_theme_stylebox_override("panel", _cutie(fundal, margine, 2))
+
+
+func _la_mouse(i: int, intra: bool) -> void:
+	_peste = i if intra else (-1 if _peste == i else _peste)
+	if _ultimele.size() == 3:
+		var plin: bool = i < _ultimele[0].size()
+		_coloreaza(i, plin, plin and _ultimele[1][i] == _ultimele[2])

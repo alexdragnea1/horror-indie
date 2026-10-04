@@ -267,4 +267,18 @@ ffmpeg -v error -y -i "$PACHET/Materials/cardboard_hit.wav" -i "$PACHET/Material
 	-ac 1 "$OUT/_boombox.wav"
 unic boombox_stricat "$OUT/_boombox.wav"
 rm -f "$OUT"/_boombox.wav
+# --- antrenamentul cu mătura (afară, dimineața): vraja care nu prinde
+# scantei_matura: o pârâitură de scântei + un „power up” care se îneacă la jumătate (o încercare ratată)
+ffmpeg -v error -y -i "$PACHET/Retro/power_up.wav" \
+	-f lavfi -i "aevalsrc='lt(random(1)\,0.05*exp(-t*4))*(random(2)*2-1)':s=44100:d=0.8" \
+	-filter_complex "[0]aformat=channel_layouts=mono,atrim=end=0.35,afade=t=out:st=0.2:d=0.15,apad=pad_dur=0.8,atrim=end=0.8,volume=0.6[u];[1]highpass=f=1800,aecho=0.6:0.3:9:0.4[s];[u][s]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_scantei.wav"
+unic scantei_matura "$OUT/_scantei.wav"
+# vraja_esuata: „power down” încetinit, ca un balon care se dezumflă, cu ultimele scântei
+ffmpeg -v error -y -i "$PACHET/Retro/power_down.wav" \
+	-f lavfi -i "aevalsrc='lt(random(1)\,0.015*exp(-t*1.5))*(random(2)*2-1)':s=44100:d=1.6" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,apad=pad_dur=1.6,atrim=end=1.6[d];[1]highpass=f=2000,volume=0.7[s];[d][s]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_esuata.wav"
+unic vraja_esuata "$OUT/_esuata.wav"
+rm -f "$OUT"/_scantei.wav "$OUT"/_esuata.wav
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

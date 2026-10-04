@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=32 format=3]
 
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
@@ -18,6 +18,12 @@
 [ext_resource type="Script" path="res://scripts/pat.gd" id="p1"]
 [ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="p2"]
 [ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="p3"]
+[ext_resource type="Script" path="res://scripts/matura_camera.gd" id="m1"]
+[ext_resource type="AudioStream" path="res://sunete/matura_scoasa.ogg" id="m2"]
+
+[sub_resource type="CylinderShape3D" id="forma_matura"]
+height = 1.6
+radius = 0.16
 
 [sub_resource type="BoxShape3D" id="forma_pat"]
 size = Vector3(2, 0.6, 1.1)
@@ -125,10 +131,18 @@ transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0.241, 0.034, 0.744)
 [node name="Lumanare5" parent="." instance=ExtResource("10")]
 transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 0.575, 0.034, -0.284)
 
-[node name="Matura" parent="." instance=ExtResource("9")]
+[node name="Matura" type="StaticBody3D" parent="."]
 transform = Transform3D(0.966, -0.259, 0, 0.259, 0.966, 0, 0, 0, 1, -2.08, 0.02, -2)
+script = ExtResource("m1")
+sunet_luat = ExtResource("m2")
+
+[node name="Model" parent="Matura" instance=ExtResource("9")]
 script = ExtResource("1")
 material = ExtResource("2")
+
+[node name="Forma" type="CollisionShape3D" parent="Matura"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("forma_matura")
 
 [node name="UsaDormitor" parent="." instance=ExtResource("11")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.6, 0.02, -0.45)

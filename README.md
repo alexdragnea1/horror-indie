@@ -33,7 +33,14 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 11. Îl arunci în cazan: poțiunea se face verde, din cazan pleacă spre cer o undă de lumină, apoi țâșnesc scântei roșii. Vraja e gata.
 12. Head Witch te trimite acasă la culcare; autobuzul vine abia la 6 dimineața, așa că te duce ea pe mătură. Urcați peste pădure, spre lună... și te trezești pe iarbă în fața blocului. Baba nu mai e pe bancă. Sarcina: „Go home and rest.”
 13. Intri iar în bloc (ușa scării te lasă acum) și urci acasă. **Mom nu mai e** în bucătărie. Ușa de la intrare nu te mai lasă afară. Sarcina: „Go to sleep.” Te așezi pe pat, te întinzi, pleoapele se lasă greu și adormi. „To be continued...”
-14. Urmează: ce se întâmplă după somn.
+14. Dimineața te trezești în pat. Ușa de la intrare nu te lasă: e cineva în bucătărie. E **Head Witch**: mama ta i-a zis să te antreneze cât îți vin puterile. Îți zice să-ți iei mătura și să vă vedeți afară, apoi dispare într-un fum mov.
+15. Mătura e în camera ta, sprijinită de perete: E → „Pick up the broom?” Yes / No.
+16. Afară e **zi**, tot cu ceață. Head Witch te așteaptă la scară. **Cu mătura**: o pui jos, sar scântei, mătura tresare de trei ori... și rămâne acolo (n-ai talent la magie). O ameninți cu pistolul, ea zice că vine mâine, iar mătura se teleportează înapoi acasă. **Fără mătură**: „I got this glock.” În ambele cazuri ea pleacă în zbor pe mătura ei și se topește în aer. „I hate this bitch.”
+17. Urmează: ce se întâmplă după antrenament.
+
+**Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
+
+**Ce ții în mână:** Tab → click pe un slot din inventar = îl ții în mână (pistolul, mătura). Click pe același slot sau pe unul gol = mâinile goale.
 
 ## Ce e unde
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
@@ -75,6 +82,11 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - `scripts/usa_bloc.gd` (nodul `Bloc/UsaBloc`) – ușa scării: ce zice cât e blocată, numele locului și sunetele de pe negru când urci acasă.
 - `scripts/acasa_noaptea.gd` (nodul `AcasaNoaptea` din `nivel_test.tscn`) – casa după ce te-ai întors: Mom dispare, ușa de la intrare nu te mai lasă afară, unde apari, ce sarcină primești. Replicile din bucătărie sunt pe nodul `BucatarieGoala`.
 - `scripts/pat.gd` (nodul `Pat` din `dormitor.tscn`) – somnul: replica de pe marginea patului (`replici_somn`), unde stai și cât de jos îți sunt ochii, scena de după (`scena_dupa`; goală = „To be continued...”).
+- `scripts/obiect_in_mana.gd` – obiectele din mână în afară de pistol: în `MODELE` scrii pentru fiecare id din inventar ce model are, unde îl ții (`pozitie`) și cum e rotit (`rotatie`).
+- `scripts/sefa_acasa.gd` (nodul `HeadWitch` din `nivel_test.tscn`) – Head Witch în bucătărie dimineața: replicile, sarcina, cât durează dispariția.
+- `scripts/matura_camera.gd` (nodul `Matura` din `dormitor.tscn`) – mătura pe care o iei din cameră (întrebarea Yes/No).
+- `scripts/sefa_antrenament.gd` (nodul `HeadWitchZi` din `afara_bloc.tscn`) – antrenamentul din fața blocului: toate replicile (grupul „Replici”), cât de departe pui mătura, cât durează zborul. `final_si_cu_matura`: debifat = „I hate this bitch.” doar la varianta fără mătură.
+- `scripts/zi_bloc.gd` (nodul `ZiBloc` din `afara_bloc.tscn`) – cum arată curtea ziua: culorile cerului, ale ceții și ale soarelui (grupul „Culori zi”).
 - `scripts/limite_padure.gd` (nodul `ZidInvizibil`) – zidul invizibil din pădure: poți ieși de pe potecă printre copaci, dar doar cam 8 m (`departe_de_poteca`); pe platou (`raza_platou`) și în poiana din vale (`raza_vale`) ai loc mai mult. Bifează `arata` ca să-l vezi roșu când testezi.
 - La orice model pus în scenă fără coliziune (o piatră, o ladă) poți bifa în Inspector, la `ModelPS2`, `coliziune` = Cilindru sau Cutie.
 - `scripts/atmosfera_padure.gd` (nodul `Atmosfera`) – cum se schimbă ceața, lumina, cerul și sunetele în pădure, pe platou și în vale (grupurile „Pădure”, „Platou”, „Vale” din Inspector).

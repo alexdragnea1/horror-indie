@@ -1,8 +1,9 @@
 extends Interactabil
 ## Patul din camera jucătorului. După ce ai venit acasă noaptea (`marcaj_necesar`) și până dormi: „[E] Sleep”.
 ## Somnul: te așezi pe marginea patului, oftezi (`replici_somn`), te întinzi cu capul pe pernă, te uiți la tavan,
-## pleoapele se lasă greu de câteva ori și se închid; sunetul se stinge, apoi `marcaj_dormit` și „To be continued...”.
-## La Continue după somn (fără `marcaj_trezit`): te trezești în pat (pleoapele se deschid) și te ridici.
+## pleoapele se lasă greu de câteva ori și se închid; sunetul se stinge, apoi `marcaj_dormit` + `marcaj_dimineata` și, pe negru,
+## scena se reîncarcă dimineața (`scena_dupa`, `titlu_dupa`). Cu `marcaj_dormit` fără `marcaj_trezit` (dimineața, sau
+## Continue de atunci) te trezești în pat: pleoapele se deschid greu și te ridici.
 ## Coordonatele sunt în spațiul patului (tăblia spre +X, partea liberă spre +Z).
 
 @export var marcaj_necesar := "a_venit_acasa"
@@ -18,8 +19,10 @@ extends Interactabil
 @export var ochi_intins := 0.8
 @export var sunet_scartait: AudioStream
 @export var sunet_patura: AudioStream
-## Gol = „To be continued...” și meniul principal.
-@export_file("*.tscn") var scena_dupa := ""
+## Unde te trezești (gol = „To be continued...” și meniul principal) și ce scrie jos în stânga.
+@export_file("*.tscn") var scena_dupa := "res://scenes/nivel_test.tscn"
+@export_multiline var titlu_dupa := "Home\nNext morning, 8:47 AM"
+@export var marcaj_dimineata := "e_dimineata"
 
 var _in_curs := false
 var _pleoape: Array[ColorRect] = []
@@ -117,10 +120,11 @@ func interactioneaza() -> void:
 	cap.position.y = inaltime_ochi
 	cap.rotation = Vector3.ZERO
 	jucator.seteaza_purtat(false)
+	Stare.seteaza_sarcina("")
+	Stare.marcheaza(marcaj_dimineata)
 	Stare.marcheaza(marcaj_dormit)
-	Salvare.salveaza(false)
 	if scena_dupa != "":
-		Tranzitie.mergi_la(scena_dupa)
+		Tranzitie.mergi_la(scena_dupa, titlu_dupa)
 	else:
 		await _de_continuat()
 

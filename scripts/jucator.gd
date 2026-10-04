@@ -50,8 +50,9 @@ var _decalaj_treapta := 0.0
 
 func _ready() -> void:
 	suprafata = suprafata_implicita
-	# pistolul roz: se vede doar cât îl ai în inventar (vezi pistol.gd)
+	# ce ții în mână (ales din inventar): pistolul roz are scriptul lui, restul (mătura) ObiectInMana
 	_camera.add_child(Pistol.new())
+	_camera.add_child(ObiectInMana.new())
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
 

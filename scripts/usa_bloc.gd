@@ -1,11 +1,17 @@
 extends Interactabil
 ## Ușa scării de bloc (în afara_bloc.tscn). Până te aduce Head Witch acasă (`marcaj_necesar`) spune doar
 ## `replici` („Nope. Mom's still up there.”); după aceea te duce înapoi în casă (`scena_acasa`), prin Tranzitie,
-## cu pașii pe scări și ușa apartamentului pe ecranul negru.
+## cu pașii pe scări și ușa apartamentului pe ecranul negru. Ziua (`marcaj_dimineata`) scrie altă oră.
+## Casa te pune lângă ușa de la intrare (`intrat_pe_usa`, citit de acasa_noaptea.gd).
+
+## Adevărat de la deschiderea ușii până te pune casa pe hol.
+static var intrat_pe_usa := false
 
 @export var marcaj_necesar := "s_a_trezit_la_bloc"
 @export_file("*.tscn") var scena_acasa := "res://scenes/nivel_test.tscn"
 @export_multiline var titlu_acasa := "Home\n1:16 AM"
+@export var marcaj_dimineata := "e_dimineata"
+@export_multiline var titlu_acasa_dimineata := "Home"
 ## Ce se aude pe negru: ușa blocului, scările, ușa apartamentului.
 @export var sunete_tranzitie: Array[AudioStream] = []
 @export var sunet_usa: AudioStream
@@ -17,4 +23,6 @@ func interactioneaza() -> void:
 		return
 	Sunet.reda_la(sunet_usa, global_position + Vector3.UP, Sunet.VOLUM_EFECTE, 0.05)
 	folosit.emit()
-	Tranzitie.mergi_la(scena_acasa, titlu_acasa, sunete_tranzitie)
+	intrat_pe_usa = true
+	var titlu := titlu_acasa_dimineata if Stare.e_marcat(marcaj_dimineata) else titlu_acasa
+	Tranzitie.mergi_la(scena_acasa, titlu, sunete_tranzitie)
