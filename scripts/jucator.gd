@@ -55,6 +55,8 @@ func _ready() -> void:
 	_camera.add_child(ObiectInMana.new())
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
+	# ce ai aruncat pe jos aici data trecută
+	Stare.pune_aruncate.call_deferred()
 
 
 func _unhandled_input(event: InputEvent) -> void:

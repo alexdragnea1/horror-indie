@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
@@ -20,6 +20,8 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="p3"]
 [ext_resource type="Script" path="res://scripts/matura_camera.gd" id="m1"]
 [ext_resource type="AudioStream" path="res://sunete/matura_scoasa.ogg" id="m2"]
+[ext_resource type="PackedScene" path="res://models/raft_depozit.glb" id="rd1"]
+[ext_resource type="Script" path="res://scripts/raft_depozit.gd" id="rd2"]
 
 [sub_resource type="CylinderShape3D" id="forma_matura"]
 height = 1.6
@@ -41,6 +43,9 @@ radius = 1.0
 [sub_resource type="CylinderShape3D" id="forma_ceaun"]
 height = 0.6
 radius = 0.36
+
+[sub_resource type="BoxShape3D" id="forma_raft_depozit"]
+size = Vector3(1.6, 0.66, 0.38)
 
 [node name="Dormitor" type="Node3D"]
 
@@ -169,3 +174,15 @@ script = ExtResource("13")
 
 [node name="Forma" type="CollisionShape3D" parent="ZonaCovor"]
 shape = SubResource("forma_covor")
+
+[node name="RaftDepozit" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -2.31, 0.02, 1.3)
+script = ExtResource("rd2")
+
+[node name="Model" parent="RaftDepozit" instance=ExtResource("rd1")]
+script = ExtResource("1")
+material = ExtResource("2")
+
+[node name="Coliziune" type="CollisionShape3D" parent="RaftDepozit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.33, 0)
+shape = SubResource("forma_raft_depozit")

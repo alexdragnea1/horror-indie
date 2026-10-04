@@ -167,7 +167,7 @@ suprafata_implicita = "frunze"
 script = ExtResource("27")
 
 [node name="CutiePosta" parent="." instance=ExtResource("28")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0, 6.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0, 7.75)
 script = ExtResource("3")
 material = ExtResource("4")
 coliziune = 2

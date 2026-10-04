@@ -211,6 +211,38 @@ def usa(cale):
 	exporta(os.path.join(cale, "toc_usa.glb"))
 
 
+def raft_depozit(cale):
+	"""Etajera joasă cu 5 compartimente, unde îți lași lucrurile (RaftDepozit în joc pune obiectele în ele).
+	Lată pe X (1,55 m), fața spre -Y. Compartimentele au mijloacele la x = -0,62 / -0,31 / 0 / 0,31 / 0,62,
+	fundul la z = 0,08. Sus: o lumânare și două cărți. Pe fiecare compartiment, o plăcuță cu numărul lui."""
+	curata()
+	L, A, H = 1.55, 0.36, 0.62
+	piese = [
+		cub("Spate", (L - 0.04, 0.02, H - 0.09), (0, A / 2 - 0.01, 0.08 + (H - 0.09) / 2), NEGRU),
+		cub("Jos", (L, A, 0.06), (0, 0, 0.05), LEMN_INCHIS),
+		cub("Sus", (L + 0.04, A + 0.02, 0.03), (0, -0.01, H + 0.005), LEMN_INCHIS),
+	]
+	for x in (-L / 2 + 0.01, L / 2 - 0.01):
+		piese.append(cub("Lateral", (0.02, A, H - 0.1), (x, 0, 0.08 + (H - 0.1) / 2), LEMN_INCHIS))
+	for k in range(4):
+		x = -0.465 + k * 0.31
+		piese.append(cub("Perete", (0.02, A - 0.03, H - 0.1), (x, 0.005, 0.08 + (H - 0.1) / 2), LEMN))
+	for k in range(5):
+		x = -0.62 + k * 0.31
+		piese.append(cub("Placuta", (0.07, 0.01, 0.025), (x, -A / 2 - 0.004, 0.05), AUR))
+		piese.append(text("Cifra", str(k + 1), (x, -A / 2 - 0.011, 0.05), 0.022, NEGRU))
+	for x in (-0.72, 0.72):
+		piese.append(cilindru("Picior", 0.02, 0.02, 0.02, (x, 0, 0.01), NEGRU, laturi=6))
+	piese += [
+		cilindru("Lumanare", 0.03, 0.03, 0.11, (0.6, 0.02, H + 0.075), p("7b383a"), laturi=6),
+		cub("Fitil", (0.004, 0.004, 0.012), (0.6, 0.02, H + 0.136), NEGRU),
+		cub("Carte", (0.2, 0.14, 0.04), (-0.55, 0.0, H + 0.04), p("553e4d"), rot=(0, 0, 0.2)),
+		cub("Carte", (0.18, 0.13, 0.035), (-0.54, 0.01, H + 0.0775), p("295555"), rot=(0, 0, -0.1)),
+	]
+	uneste(piese, "RaftDepozit")
+	exporta(os.path.join(cale, "raft_depozit.glb"))
+
+
 def toate(cale):
-	for f in (pat, noptiera, raft, ceaun, lumanare, covor, matura, usa):
+	for f in (pat, noptiera, raft, ceaun, lumanare, covor, matura, usa, raft_depozit):
 		f(cale)

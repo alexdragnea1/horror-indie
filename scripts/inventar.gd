@@ -3,9 +3,11 @@ extends Control
 ## Fereastra de inventar (o deschide Stare cu Tab): sloturile în stânga, sarcina curentă în dreapta.
 ## Nu ține minte nimic singură: Stare îi dă obiectele și sarcina cu actualizeaza().
 ## Sloturile se apasă cu mouse-ul (`slot_apasat`): Stare pune obiectul în mână. Slotul din mână are ramă deschisă
-## și scrie „IN HAND” sub nume.
+## și scrie „IN HAND” sub nume. Click dreapta (`slot_aruncat`) = îl arunci pe jos.
 
 signal slot_apasat(index: int)
+## Click dreapta pe un slot: Stare aruncă obiectul pe jos.
+signal slot_aruncat(index: int)
 
 const MARIME_SLOT := 44
 
@@ -47,7 +49,7 @@ func _init(numar_sloturi: int) -> void:
 	for i in numar_sloturi:
 		rand.add_child(_slot(i + 1))
 	var ajutor := Label.new()
-	ajutor.text = "[Click] Hold in hand   [Tab] Close"
+	ajutor.text = "[Click] Hold in hand   [Right click] Drop   [Tab] Close"
 	ajutor.add_theme_font_size_override("font_size", 8)
 	ajutor.add_theme_color_override("font_color", Color("5e5356"))
 	stanga.add_child(ajutor)
@@ -99,7 +101,9 @@ func _slot(numar: int) -> PanelContainer:
 	var index := numar - 1
 	slot.gui_input.connect(func(ev: InputEvent) -> void:
 		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
-			slot_apasat.emit(index))
+			slot_apasat.emit(index)
+		elif ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_RIGHT:
+			slot_aruncat.emit(index))
 	slot.mouse_entered.connect(_la_mouse.bind(index, true))
 	slot.mouse_exited.connect(_la_mouse.bind(index, false))
 	var nume := Label.new()

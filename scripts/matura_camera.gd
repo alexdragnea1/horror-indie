@@ -20,7 +20,8 @@ func _ready() -> void:
 
 
 func _actualizeaza() -> void:
-	var aici := not Stare.are_obiect(ID)
+	# nu e pe perete cât e în inventar, pe raft sau aruncată pe jos undeva
+	var aici := not Stare.are_obiect(ID) and not Stare.e_pe_raft(ID) and not Stare.e_aruncat(ID)
 	visible = aici
 	for copil in get_children():
 		if copil is CollisionShape3D:

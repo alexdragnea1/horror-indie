@@ -71,13 +71,23 @@ static func forma(corp: CollisionObject3D, c: AABB, t: Transform3D, rotund: bool
 	corp.add_child(nod)
 
 
-## Coliziune exact după forma modelului (toate bucățile lui, în afară de `fara`, ex. lămpile), într-un StaticBody3D nou.
-## Pentru clădiri și mobilă: pereții, treptele, podeaua. Nu merge pentru ce se mișcă.
+## Coliziune exact după forma modelului, într-un StaticBody3D nou. Pentru clădiri și mobilă: pereții, treptele, podeaua.
+## Dacă modelul are o bucată `Coliziune` (forma simplă făcută în Blender: fără rosturi, preșuri, ornamente, cu rampă
+## peste trepte), se folosește doar ea și nu se vede; altfel toate bucățile, în afară de `fara` (ex. lămpile).
+## Nu merge pentru ce se mișcă.
 static func plasa(model: Node3D, fara: PackedStringArray = ["Lumini"]) -> StaticBody3D:
+	var simpla := model.find_child("Coliziune", true, false) as MeshInstance3D
+	var bucati: Array[Node] = []
+	if simpla:
+		bucati.append(simpla)
+	else:
+		bucati = model.find_children("*", "MeshInstance3D", true, false)
+	if simpla:
+		simpla.visible = false
 	var corp := StaticBody3D.new()
-	corp.name = "Coliziune"
+	corp.name = "CorpColiziune"
 	model.add_child(corp)
-	for nod in model.find_children("*", "MeshInstance3D", true, false):
+	for nod in bucati:
 		var mi := nod as MeshInstance3D
 		if String(mi.name) in fara:
 			continue

@@ -26,6 +26,9 @@ const MATERIAL_STICLA := preload("res://shaders/material_sticla.tres")
 func _ready() -> void:
 	for nod in find_children("*", "MeshInstance3D", true, false):
 		var mesh := nod as MeshInstance3D
+		if mesh.name == &"Coliziune":
+			mesh.visible = false  # forma simplă pentru coliziune (din Blender), nu se vede niciodată
+			continue
 		if material:
 			mesh.material_override = material
 		if not umbre:

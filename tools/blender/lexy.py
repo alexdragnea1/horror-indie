@@ -103,6 +103,19 @@ def prisma(nume, puncte, plan, a0, a1, culoare):
 	return ob
 
 
+def _copii(piese, nume):
+	"""Copii ale pieselor ale căror nume (fără .001) e în `nume`: din ele se face obiectul `Coliziune`
+	(forma simplă pe care o folosește Godot pentru coliziune, vezi ColiziuneModel.plasa; nu se vede)."""
+	copii = []
+	for ob in piese:
+		if ob.name.split(".")[0] in nume:
+			c = ob.copy()
+			c.data = ob.data.copy()
+			bpy.context.scene.collection.objects.link(c)
+			copii.append(c)
+	return copii
+
+
 def _fereastra_fata(piese, geamuri, x0, x1, z0, z1, y_fata, spre, obloane=True):
 	"""Fereastra dintr-un perete pe X (golul e deja făcut): rama și pervazul pe fața de afară (`y_fata`,
 	afară e spre `spre` = -1 sau +1), geamul la mijlocul peretelui, crucea ramei, obloanele negre."""
@@ -277,8 +290,8 @@ def casa_lexy(cale):
 		prisma("Vitraliu", [(-0.45, FL + 2.33), (0.45, FL + 2.33), (0, FL + 2.66)], "xz", -0.058, -0.048, p("7b383a")),
 		cub("Placuta", (0.22, 0.02, 0.12), (0.85, -0.01, FL + 1.75), p("a18463")),
 		text("Numar", "13", (0.85, -0.022, FL + 1.75), 0.09, NEGRU),
-		cub("Pres", (0.9, 0.55, 0.012), (0, -0.4, FL), p("7b383a")),
-		text("Scris pres", "GO AWAY", (0, -0.4, FL + 0.009), 0.09, NEGRU, rot=(0, 0, 0)),
+		cub("Pres", (0.9, 0.55, 0.012), (0, -0.4, FL + 0.009), p("7b383a")),
+		text("Scris pres", "GO AWAY", (0, -0.4, FL + 0.018), 0.09, NEGRU, rot=(0, 0, 0)),
 	]
 	piese += [  # felinarul de lângă ușă (sticla strălucește: e aprins și ziua)
 		cub("Brat felinar", (0.04, 0.12, 0.04), (-0.85, -0.06, FL + 2.0), NEGRU),
@@ -289,9 +302,9 @@ def casa_lexy(cale):
 	lumini.append(cub("Sticla felinar", (0.1, 0.1, 0.22), (-0.85, -0.16, FL + 1.95), p("a18463")))
 
 	# --- veranda: podea, trepte, stâlpi strunjiți, balustradă, acoperiș, dovleci
-	piese.append(cub("Veranda", (7.0, 2.2, FL - 0.01), (0, -1.1, (FL - 0.01) / 2), p("6f6d7f")))
+	piese.append(cub("Veranda", (7.0, 2.2, FL), (0, -1.1, FL / 2), p("6f6d7f")))  # la nivelul podelei: fără prag
 	for k in range(14):  # scândurile verandei (rosturi)
-		piese.append(cub("Rost", (0.012, 2.18, 0.012), (-3.25 + k * 0.5, -1.1, FL - 0.008), p("5e5356")))
+		piese.append(cub("Rost", (0.012, 2.18, 0.012), (-3.25 + k * 0.5, -1.1, FL + 0.003), p("5e5356")))
 	piese.append(cub("Treapta", (2.0, 0.3, 0.3), (0, -2.35, 0.15), p("6f6d7f")))
 	piese.append(cub("Treapta", (2.0, 0.3, 0.15), (0, -2.65, 0.075), p("6f6d7f")))
 	stalpi = (-3.3, -1.2, 1.2, 3.3)
@@ -320,8 +333,9 @@ def casa_lexy(cale):
 	piese.append(cub("Acoperis veranda", (7.4, 2.5, 0.1), (0, -1.2, 3.07), ACOPERIS, rot=(-0.06, 0, 0)))
 	piese.append(cub("Grinda veranda", (7.0, 0.14, 0.18), (0, -2.0, 2.92), TRIM))
 	piese.append(cub("Tavan veranda", (6.9, 2.0, 0.02), (0, -1.0, 2.99), p("5e363e")))
-	_dovleac(piese, -0.85, -2.62, 0.15, 0.14, r, scobit=True)
-	_dovleac(piese, 0.8, -2.35, 0.3, 0.11, r)
+	# dovlecii stau pe verandă, pe lângă balustradă (nu pe trepte, pe unde urci)
+	_dovleac(piese, -2.75, -1.65, FL, 0.15, r, scobit=True)
+	_dovleac(piese, -2.35, -1.75, FL, 0.1, r)
 	_dovleac(piese, 2.6, -0.7, FL, 0.17, r)
 	# scaunul-balansoar de pe verandă (gol, se mișcă singur? nu: e doar vechi)
 	bx, by = 2.5, -1.2
@@ -402,6 +416,16 @@ def casa_lexy(cale):
 	for k in range(9):  # rosturile cărămizilor
 		piese.append(cub("Rost cos", (0.72, 0.72, 0.015), (-5.6, 4.9, W + 2.9 + k * 0.18), p("5e363e")))
 
+	# coliziunea: doar ce ține (pereți, podele, acoperișuri, stâlpi), o cutie pe balustradă și o rampă peste trepte,
+	# ca să urci lin; detaliile (rosturi, preș, ornamente, dovleci) n-au coliziune, să nu te agăți de ele
+	col = _copii(piese, ("Fundatie", "Podea", "Siding", "Perete", "Tavan", "Usa dormitor", "Acoperis", "Fronton", "Fronton intrare",
+		"Acoperis fronton", "Cos", "Veranda", "Stalp", "Balansoar"))
+	for a, b in ((-3.3, -1.2), (1.2, 3.3)):
+		col.append(cub("Coliziune balustrada", (b - a, 0.1, 1.0), ((a + b) / 2, -2.0, FL + 0.5), NEGRU))
+	for x in (-3.3, 3.3):
+		col.append(cub("Coliziune balustrada", (0.1, 2.0, 1.0), (x, -1.0, FL + 0.5), NEGRU))
+	col.append(prisma("Rampa", [(-2.9, 0.0), (-2.2, 0.0), (-2.2, FL - 0.01)], "yz", -1.0, 1.0, NEGRU))
+	uneste(col, "Coliziune")
 	uneste(piese, "Casa")
 	uneste(geamuri, "Geamuri")
 	uneste(lumini, "Lumini")
@@ -683,6 +707,12 @@ def decor_living(cale):
 	for x, y in ((0, 2.4), (4.1, 3.6)):
 		piese.append(cilindru("Plafoniera", 0.05, 0.16, 0.08, (x, y, FL + H - 0.04), NEGRU, laturi=8))
 		lumini.append(sfera("Glob", 0.13, (x, y, FL + H - 0.1), p("a18463"), scara=(1, 1, 0.5), segmente=8, inele=4))
+	# coliziunea: biblioteca, planta, măsuța din hol (covoarele și draperiile n-au)
+	uneste([
+		cub("Coliziune", (bx1 - bx0 + 0.03, 0.34, 1.92), ((bx0 + bx1) / 2, by, FL + 0.96), NEGRU),
+		cub("Coliziune", (0.5, 0.5, 1.0), (pcx, pcy, FL + 0.5), NEGRU),
+		cub("Coliziune", (0.32, 0.82, 0.85), (mx, 4.6, FL + 0.425), NEGRU),
+	], "Coliziune")
 	uneste(piese, "Decor")
 	uneste(lumini, "Lumini")
 	exporta(os.path.join(cale, "decor_living.glb"))
@@ -849,6 +879,16 @@ def bucatarie_lexy(cale):
 	piese.append(cilindru("Cadran", 0.13, 0.13, 0.01, (BUC_X1 - 0.04, 5.0, FL + 2.0), ALB, laturi=12, rot=(0, 1.5708, 0)))
 	piese.append(cub("Ac", (0.008, 0.008, 0.09), (BUC_X1 - 0.05, 5.0, FL + 2.03), NEGRU))
 	piese.append(cub("Ac", (0.008, 0.07, 0.008), (BUC_X1 - 0.05, 4.97, FL + 2.0), NEGRU))
+	# coliziunea: rândurile de dulapuri, frigiderul, masa, scaunele
+	col = [
+		cub("Coliziune", (ad + 0.03, BUC_Y1 - y0, 0.95), (BUC_X0 + (ad + 0.03) / 2, (y0 + BUC_Y1) / 2, FL + 0.475), NEGRU),
+		cub("Coliziune", (x1 - x0 + 0.03, ad + 0.03, 0.95), ((x0 + x1 + 0.03) / 2, BUC_Y1 - (ad + 0.03) / 2, FL + 0.475), NEGRU),
+		cub("Coliziune", (fx1 - fx0, 0.72, 1.9), ((fx0 + fx1) / 2, BUC_Y1 - 0.36, FL + 0.95), NEGRU),
+		cub("Coliziune", (1.3, 0.85, 0.76), (mx, my, FL + 0.38), NEGRU),
+	]
+	for sx, sy in (LOC_LEXY_BUC, (mx - 0.25, my - 0.62), (mx + 0.25, my + 0.62)):
+		col.append(cub("Coliziune", (0.46, 0.46, 0.9), (sx, sy, FL + 0.45), NEGRU))
+	uneste(col, "Coliziune")
 	uneste(piese, "Bucatarie")
 	uneste(lumini, "Lumini")
 	exporta(os.path.join(cale, "bucatarie_lexy.glb"))
@@ -1105,8 +1145,8 @@ def strada_lexy(cale):
 		if abs(x) < 3.5:
 			continue  # trecerea de pietoni
 		piese.append(cub("Linie", (2.0, 0.1, 0.012), (x, 0, 0.046), p("a18463")))
-	for k in range(7):  # trecerea de pietoni
-		piese.append(cub("Zebra", (0.45, 5.6, 0.012), (-1.6 + k * 0.55 - 0.1, 0, 0.046), ALB))
+	for k in range(8):  # trecerea de pietoni: dungi lungi în lungul străzii, una sub alta de la un trotuar la celălalt
+		piese.append(cub("Zebra", (2.6, 0.45, 0.012), (0, -3.15 + k * 0.9, 0.046), ALB))
 	for k in range(25):  # crăpături și petice în asfalt
 		x, y = r.uniform(-60, 60), r.uniform(-3, 3)
 		if -3 < x < 3:
@@ -1121,6 +1161,12 @@ def strada_lexy(cale):
 		x = -79 + k * 2
 		piese.append(cub("Rost", (0.02, 1.85, 0.01), (x, -4.575, 0.145), PIATRA))
 		piese.append(cub("Rost", (0.02, 2.35, 0.01), (x, 4.825, 0.145), PIATRA))
+	# coliziunea: asfaltul și trotuarele (cu bordurile), netede: crăpăturile, peticele și rosturile n-au
+	uneste([
+		cub("Coliziune", (160, 7.0, 0.04), (0, 0, 0.02), NEGRU),
+		cub("Coliziune", (160, 2.0, 0.14), (0, -4.5, 0.07), NEGRU),
+		cub("Coliziune", (160, 2.5, 0.14), (0, 4.75, 0.07), NEGRU),
+	], "Coliziune")
 	uneste(piese, "Strada")
 	exporta(os.path.join(cale, "strada_lexy.glb"))
 

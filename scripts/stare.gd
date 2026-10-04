@@ -6,11 +6,15 @@ extends CanvasLayer
 ##   Stare.seteaza_sarcina("Meet with the coven.")  -> apare sus câteva secunde
 ## Tab deschide / închide inventarul (sloturile + sarcina curentă). Click pe un slot = îl ții în mână
 ## (`in_mana`, vezi Pistol și ObiectInMana); click pe un slot gol sau pe cel din mână = mâinile goale.
+## Click dreapta pe un slot = îl arunci pe jos (`aruncate`, rămâne și în salvare; vezi ObiecteLume, ObiectAruncat).
+## Raftul din camera ta (RaftDepozit) ține până la `LOCURI_RAFT` obiecte (`raft`); E pe el = fereastra raftului.
 
 signal schimbat
 
 ## Câte obiecte încap în inventar.
 const LOCURI_INVENTAR := 5
+## Câte obiecte încap pe raftul din camera ta.
+const LOCURI_RAFT := 5
 ## Cât stă pe ecran mesajul „Picked up: ...” (secunde).
 const DURATA_MESAJ := 2.5
 ## Cât stă sus „Task: ...” când primești o sarcină nouă (secunde).
@@ -19,6 +23,8 @@ const SUNET_OBIECT := preload("res://sunete/obiect_luat.ogg")
 const SUNET_SARCINA := preload("res://sunete/sarcina_noua.ogg")
 const SUNET_DESCHIDE := preload("res://sunete/inventar_deschis.ogg")
 const SUNET_INCHIDE := preload("res://sunete/inventar_inchis.ogg")
+const SUNET_ARUNCAT := preload("res://sunete/obiect_aruncat.ogg")
+const SUNET_PUS := preload("res://sunete/obiect_pus.ogg")
 
 ## id -> numele afișat, în ordinea în care le-ai luat.
 var obiecte: Dictionary = {}
@@ -31,10 +37,15 @@ var nume_jucator := ""
 var meniu_deschis := false
 ## Id-ul obiectului din mână ('' = nimic). Se schimbă cu tine_in_mana().
 var in_mana := ""
+## Ce e pe raftul din camera ta: id -> nume, în ordine.
+var raft: Dictionary = {}
+## Ce ai aruncat pe jos: id -> {scena, nume, poz: [x, y, z], unghi}.
+var aruncate: Dictionary = {}
 
 var _mesaj: Label
 var _sarcina_sus: Label
 var _inventar: Inventar
+var _panou_raft: PanouRaft
 var _tween_mesaj: Tween
 var _tween_sarcina: Tween
 
@@ -51,8 +62,14 @@ func _ready() -> void:
 	_sarcina_sus.add_theme_color_override("font_color", Color("a18463"))
 	_inventar = Inventar.new(LOCURI_INVENTAR)
 	_inventar.slot_apasat.connect(_la_slot)
+	_inventar.slot_aruncat.connect(_arunca)
 	add_child(_inventar)
 	_inventar.hide()
+	_panou_raft = PanouRaft.new(LOCURI_RAFT, LOCURI_INVENTAR)
+	_panou_raft.raft_apasat.connect(_ia_de_pe_raft)
+	_panou_raft.inventar_apasat.connect(_pune_pe_raft)
+	add_child(_panou_raft)
+	_panou_raft.hide()
 
 
 func _eticheta() -> Label:
@@ -74,8 +91,11 @@ func reseteaza() -> void:
 	sarcina = ""
 	nume_jucator = ""
 	in_mana = ""
+	raft = {}
+	aruncate = {}
 	meniu_deschis = false
 	_inventar.hide()
+	_panou_raft.hide()
 	_mesaj.show()
 
 
@@ -90,7 +110,8 @@ func ascunde_mesaje() -> void:
 
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
-	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana}
+	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana,
+		"raft": raft, "aruncate": aruncate}
 
 
 func importa(date: Dictionary) -> void:
@@ -98,6 +119,8 @@ func importa(date: Dictionary) -> void:
 	marcaje = date.get("marcaje", {})
 	sarcina = date.get("sarcina", "")
 	nume_jucator = date.get("nume_jucator", "")
+	raft = date.get("raft", {})
+	aruncate = date.get("aruncate", {})
 	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
 	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
 	if not obiecte.has(in_mana):
@@ -152,6 +175,8 @@ func seteaza_sarcina(text: String) -> void:
 
 func _arata_mesaj(text: String) -> void:
 	_mesaj.text = text
+	move_child(_mesaj, -1)  # deasupra ferestrelor (raftul, inventarul)
+	_mesaj.show()
 	if _tween_mesaj:
 		_tween_mesaj.kill()
 	_mesaj.modulate.a = 1.0
@@ -162,7 +187,11 @@ func _arata_mesaj(text: String) -> void:
 
 # _input (nu _unhandled_input), ca Tab/Esc să ajungă aici înaintea jucătorului.
 func _input(event: InputEvent) -> void:
-	if _inventar.visible:
+	if _panou_raft.visible:
+		if event.is_action_pressed("inventar") or event.is_action_pressed("ui_cancel") or event.is_action_pressed("interact"):
+			inchide_raft()
+			get_viewport().set_input_as_handled()
+	elif _inventar.visible:
 		if event.is_action_pressed("inventar") or event.is_action_pressed("ui_cancel"):
 			_inchide_inventar()
 			get_viewport().set_input_as_handled()
@@ -204,3 +233,117 @@ func _la_slot(index: int) -> void:
 	tine_in_mana("" if id == in_mana else id)
 	_inventar.actualizeaza(obiecte, sarcina, in_mana)
 	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata", 1.3)
+
+
+# ---------------------------------------------------------------- aruncat pe jos
+
+## Click dreapta pe slotul `index` din inventar: obiectul cade pe jos în fața ta (îl iei înapoi cu E).
+func _arunca(index: int) -> void:
+	if index >= obiecte.size():
+		return
+	var id: String = obiecte.keys()[index]
+	var nume: String = obiecte[id]
+	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
+	if jucator == null:
+		return
+	if not ObiecteLume.are_model(id):
+		_arata_mesaj("Can't drop that.")
+		_mesaj.show()
+		return
+	# în fața ta, pe podea (nu în perete: dacă e unul aproape, cade lângă el)
+	var spatiu := jucator.get_world_3d().direct_space_state
+	var fata := -jucator.global_basis.z
+	fata.y = 0.0
+	fata = fata.normalized()
+	var start := jucator.global_position + Vector3.UP * 0.5
+	# puțin într-o parte la întâmplare, ca două obiecte aruncate unul după altul să nu cadă unul în altul
+	var tinta := start + fata * randf_range(0.75, 1.0) + fata.cross(Vector3.UP) * randf_range(-0.3, 0.3)
+	var raza := PhysicsRayQueryParameters3D.create(start, tinta)
+	raza.exclude = [jucator.get_rid()]
+	var lovit := spatiu.intersect_ray(raza)
+	if lovit:
+		tinta = lovit.position - fata * 0.25
+	raza = PhysicsRayQueryParameters3D.create(tinta + Vector3.UP * 0.4, tinta + Vector3.DOWN * 3.0)
+	raza.exclude = [jucator.get_rid()]
+	lovit = spatiu.intersect_ray(raza)
+	var punct: Vector3 = lovit.position if lovit else Vector3(tinta.x, jucator.global_position.y, tinta.z)
+	var unghi := jucator.rotation.y + randf_range(-0.6, 0.6)
+	# întâi în `aruncate`, apoi scos din inventar (cine ascultă `schimbat` îl vede deja pe jos, ex. mătura de pe perete)
+	aruncate[id] = {"scena": get_tree().current_scene.scene_file_path, "nume": nume, "poz": [punct.x, punct.y, punct.z],
+		"unghi": unghi}
+	scoate_obiect(id)
+	ObiecteLume.pune_jos(get_tree().current_scene, id, nume, punct, unghi)
+	Sunet.reda_la(SUNET_ARUNCAT, punct, Sunet.VOLUM_EFECTE, 0.08)
+	_inventar.actualizeaza(obiecte, sarcina, in_mana)
+
+
+## L-ai luat înapoi de pe jos (ObiectAruncat).
+func uita_aruncat(id: String) -> void:
+	aruncate.erase(id)
+
+
+## Adevărat dacă `id` e aruncat pe jos undeva.
+func e_aruncat(id: String) -> bool:
+	return aruncate.has(id)
+
+
+## Pune înapoi pe jos ce ai aruncat în scena de acum (o cheamă jucătorul când intră în scenă).
+func pune_aruncate() -> void:
+	var scena := get_tree().current_scene
+	if scena == null:
+		return
+	for id: String in aruncate:
+		var a: Dictionary = aruncate[id]
+		if a.scena == scena.scene_file_path and ObiecteLume.are_model(id):
+			ObiecteLume.pune_jos(scena, id, a.nume, Vector3(a.poz[0], a.poz[1], a.poz[2]), a.unghi)
+
+
+# ---------------------------------------------------------------- raftul din camera ta
+
+func deschide_raft() -> void:
+	_panou_raft.actualizeaza(raft, obiecte)
+	_panou_raft.show()
+	meniu_deschis = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata", 1.2)
+
+
+func inchide_raft() -> void:
+	_panou_raft.hide()
+	meniu_deschis = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	Sunet.reda(SUNET_INCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata", 1.2)
+
+
+## Adevărat dacă `id` stă pe raftul din camera ta.
+func e_pe_raft(id: String) -> bool:
+	return raft.has(id)
+
+
+func _pune_pe_raft(index: int) -> void:
+	if index >= obiecte.size():
+		return
+	var id: String = obiecte.keys()[index]
+	if raft.size() >= LOCURI_RAFT:
+		_arata_mesaj("The shelf is full")
+	elif not ObiecteLume.are_model(id):
+		_arata_mesaj("That doesn't go on a shelf.")
+	else:
+		raft[id] = obiecte[id]
+		scoate_obiect(id)
+		Sunet.reda(SUNET_PUS, Sunet.VOLUM_EFECTE, 0.05)
+	_panou_raft.actualizeaza(raft, obiecte)
+
+
+func _ia_de_pe_raft(index: int) -> void:
+	if index >= raft.size():
+		return
+	var id: String = raft.keys()[index]
+	if obiecte.size() >= LOCURI_INVENTAR:
+		_arata_mesaj("Inventory full")
+	else:
+		obiecte[id] = raft[id]
+		raft.erase(id)
+		Sunet.reda(SUNET_OBIECT, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
+		schimbat.emit()
+	_panou_raft.actualizeaza(raft, obiecte)

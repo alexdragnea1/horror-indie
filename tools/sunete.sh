@@ -345,4 +345,7 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=12:r=44100" \
 	-ac 1 "$OUT/_stiri.wav"
 bucla tv_stiri "$OUT/_stiri.wav" 1.5 mono
 rm -f "$OUT"/_tras.wav "$OUT"/_suflat.wav "$OUT"/_stins.wav "$OUT"/_stiri.wav
+# --- obiecte aruncate pe jos și puse pe raft
+unic obiect_aruncat "Materials/wood_small_drop.wav"
+unic obiect_pus "Materials/wood_small_hollow.wav" stereo
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav
