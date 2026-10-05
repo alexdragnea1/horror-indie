@@ -52,9 +52,12 @@ func _ready() -> void:
 	suprafata = suprafata_implicita
 	# fiecare scenă are un jucător nou: lanterna rămâne cum ai lăsat-o
 	_lanterna.visible = Stare.lanterna
-	# ce ții în mână (ales din inventar): pistolul roz și cel de aur au scriptul lor, restul (mătura) ObiectInMana
+	# ce ții în mână (ales din inventar): pistolul roz și cel de aur, vraja Fireball au scriptul lor, restul (mătura) ObiectInMana
 	_camera.add_child(Pistol.new())
 	_camera.add_child(Pistol.auriu())
+	var vraja := VrajaFoc.new()
+	vraja.name = "VrajaFoc"  # helga.gd o caută după nume (lecția)
+	_camera.add_child(vraja)
 	_camera.add_child(ObiectInMana.new())
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)

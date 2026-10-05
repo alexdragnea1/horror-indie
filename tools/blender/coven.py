@@ -151,6 +151,17 @@ def _cap(piese, ochi, gat, s, r):
 		ochi += [
 			cub("Ochi", (0.022, 0.008, 0.012), (gx + x, gy - 0.092, gz + 0.168), s["ochi"]),
 		]
+	if s.get("ochelari"):
+		_ochelari(piese, gx, gy, gz, s["ochelari"])
+	if s.get("coc"):
+		# părul strâns (fără pălărie): o calotă peste creștet și ceafă, cocul în vârf, două șuvițe pe lângă urechi
+		piese.append(sfera("Par", 0.094, (gx, gy + 0.03, gz + 0.205), s["par"], scara=(0.98, 1.0, 0.95), segmente=10, inele=7))
+		piese.append(sfera("Coc", 0.052, (gx, gy + 0.085, gz + 0.3), s["par"], scara=(1.0, 0.9, 0.85), segmente=8, inele=5))
+		piese.append(inel("Funda coc", 0.042, 0.008, (gx, gy + 0.085, gz + 0.262), s.get("par_suvita", s["par"]), segmente=10))
+		for k in (-1, 1):
+			piese.append(trunchi("Suvita", [((gx + 0.08 * k, gy - 0.02, gz + 0.2), 0.008, 0.005),
+				((gx + 0.086 * k, gy - 0.035, gz + 0.12), 0.006, 0.004)], s.get("par_suvita", s["par"]), laturi=4))
+		return
 	# părul: șuvițe lungi, slinoase, de sub pălărie până pe umeri și spate
 	for k in range(16):
 		u = math.pi * (-0.15 + 1.3 * k / 15)  # de pe o parte, pe la spate, pe cealaltă parte
@@ -167,6 +178,16 @@ def _cap(piese, ochi, gat, s, r):
 			ref=(math.cos(u), math.sin(u), 0)))
 	_palarie(piese, (gx, gy + 0.012, gz + 0.235), s.get("bor", 0.27) , s.get("inaltime_palarie", 0.5), s["palarie"],
 		s["banda"], r, aplecare=0.03, varf=s.get("varf", (0.16, 0.05)))
+
+
+def _ochelari(piese, gx, gy, gz, culoare):
+	"""Ochelari rotunzi cu ramă subțire de metal: două cercuri în dreptul ochilor, puntea și brațele spre urechi."""
+	y = gy - 0.106
+	for k in (-1, 1):
+		x = gx + 0.034 * k
+		piese.append(_inel_vertical("Rama ochelari", 0.021, 0.003, (x, y, gz + 0.168), culoare))
+		piese.append(cub("Brat ochelari", (0.004, 0.09, 0.004), (gx + 0.074 * k, y + 0.05, gz + 0.172), culoare))
+	piese.append(cub("Punte ochelari", (0.026, 0.004, 0.004), (gx, y, gz + 0.174), culoare))
 
 
 def _corp(piese, s, r, inaltime=1.0):

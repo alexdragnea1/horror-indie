@@ -4,9 +4,13 @@ extends "res://scripts/sefa_vrajitoare.gd"
 ## spatele ei pe mătură, veniți de departe peste pădure, ocoliți dealul și coborâți în curte (`drum` = punctele
 ## zborului, ultimul e chiar înainte de aterizare). Privirea ta stă pe conac (`priveste_spre`). Mătura se oprește
 ## lângă fântână, ea sare jos, tu cobori, iar mătura îi dispare din mână într-un fum mov. Apoi se întoarce spre tine.
-## La Continue e deja jos.
+## La Continue e deja jos. Apoi, la E, te cheamă înăuntru și dispare (`interactioneaza`).
 
 @export var marcaj_sosire := "a_ajuns_la_conac"
+## După „Come inside...” dispare și ușa conacului se deschide.
+@export var marcaj_intrat := "head_witch_in_conac"
+@export var sarcina_intra := "Go inside the manor."
+@export_multiline var replici_curte: PackedStringArray = ["Head Witch: Come inside and we'll talk more about the situation."]
 ## Punctele zborului (în lume). Între ele mătura merge lin (Catmull-Rom), tot mai încet spre aterizare.
 @export var drum := PackedVector3Array([Vector3(70, 26, 160), Vector3(45, 22, 100), Vector3(-8, 18, 66),
 	Vector3(-24, 11, 38), Vector3(-12, 5.5, 24), Vector3(-0.8, 2.0, 17.0)])
@@ -29,6 +33,9 @@ var _inclinare := 0.0
 
 func _ready() -> void:
 	super()
+	if Stare.e_marcat(marcaj_intrat):
+		queue_free()  # a intrat deja în conac (o găsești înăuntru, sefa_interior.gd)
+		return
 	await get_tree().process_frame
 	var jucator := _jucator()
 	if jucator == null or Stare.e_marcat(marcaj_sosire):
@@ -37,7 +44,51 @@ func _ready() -> void:
 
 
 func poate_fi_folosit() -> bool:
-	return false
+	return not _vorbeste and Stare.e_marcat(marcaj_sosire) and not Stare.e_marcat(marcaj_intrat)
+
+
+## După aterizare: `replici_curte` („Come inside...”), apoi pocnește din degete și dispare într-un fum mov
+## (te așteaptă înăuntru). Primești `sarcina_intra`; ușa conacului se descuie (`marcaj_intrat`, vezi UsaScena).
+func interactioneaza() -> void:
+	if not poate_fi_folosit():
+		return
+	_vorbeste = true
+	folosit.emit()
+	var jucator := _jucator()
+	await intoarce_spre(jucator).finished
+	Dialog.spune(replici_curte)
+	if Dialog.activ:
+		await Dialog.terminat
+	var c := Cutscena.porneste(self)
+	await c.priveste(global_position + Vector3.UP * 1.3, 0.4)
+	var ridica := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	ridica.tween_property(brat, "rotation", Vector3(-1.1, 0.0, -0.35), 0.35)
+	await ridica.finished
+	await get_tree().create_timer(0.25).timeout
+	var unde := global_position + Vector3.UP * 1.0
+	Sunet.reda_la(SUNET_MATURA, unde, Sunet.VOLUM_EFECTE, 0.05)
+	for k in 3:
+		_fum(unde + Vector3(randf_range(-0.3, 0.3), k * 0.45 - 0.4, randf_range(-0.3, 0.3)))
+	# și un fulger mov
+	var fulger := OmniLight3D.new()
+	fulger.light_color = Color(0.75, 0.5, 0.95)
+	fulger.light_energy = 3.0
+	fulger.omni_range = 5.0
+	get_tree().current_scene.add_child(fulger)
+	fulger.global_position = unde
+	var stinge := fulger.create_tween()
+	stinge.tween_property(fulger, "light_energy", 0.0, 0.7)
+	stinge.tween_callback(fulger.queue_free)
+	var dispare := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	dispare.tween_property(_model, "scale", Vector3(0.05, 1.3, 0.05), 0.3)
+	await dispare.finished
+	hide()
+	_dezactiveaza_coliziunea()
+	Stare.marcheaza(marcaj_intrat)
+	Stare.seteaza_sarcina(sarcina_intra)
+	await get_tree().create_timer(0.5).timeout
+	await c.opreste()
+	queue_free()
 
 
 func _process(delta: float) -> void:

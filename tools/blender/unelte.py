@@ -224,12 +224,16 @@ def _cutie(ob):
 def verifica_fete(piese, nume):
 	"""Caută perechi de cutii cu fețe paralele, cu aceeași orientare, la mai puțin de
 	DISTANTA_MINIMA_FETE una de alta și care se acoperă (z-fighting). Întoarce lista problemelor."""
-	cutii = [(p.name, c) for p in piese for c in [_cutie(p)] if c]
+	# sortate după X: două cutii cu fețe apropiate se suprapun pe toate axele (cu toleranța), deci pentru fiecare cutie
+	# e de ajuns să le verifici pe cele care încep înainte să se termine ea pe X (altfel la mii de piese durează ore)
+	cutii = sorted(((p.name, c) for p in piese for c in [_cutie(p)] if c), key=lambda t: t[1][0][0])
 	probleme = []
 	for i in range(len(cutii)):
 		na, (amn, amx) = cutii[i]
 		for j in range(i + 1, len(cutii)):
 			nb, (bmn, bmx) = cutii[j]
+			if bmn[0] > amx[0] + DISTANTA_MINIMA_FETE:
+				break
 			for a in range(3):
 				b1, b2 = [k for k in range(3) if k != a]
 				arie = (min(amx[b1], bmx[b1]) - max(amn[b1], bmn[b1])) * (min(amx[b2], bmx[b2]) - max(amn[b2], bmn[b2]))

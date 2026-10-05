@@ -356,3 +356,34 @@ unic maini_sus "Materials/clothing_2.wav" mono "atrim=end=0.45,afade=t=out:st=0.
 # corpul atinge vârfurile gardului de fier când trece peste el: un zăngănit înfundat
 unic gard_zanganit "Materials/metal_clang.wav" mono "lowpass=f=2200,asetrate=44100*0.85,aresample=44100,afade=t=out:st=0.35:d=0.2"
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav
+# --- conacul coven-ului: mingea de foc (vraja Fireball) și vorba vrăjitoarelor din living room
+# focul se aprinde în palmă: chibritul care ia foc, mai jos și mai plin
+unic minge_foc_aprinsa "Environment/fire_lighting.wav" mono "asetrate=44100*0.8,aresample=44100,lowpass=f=3500"
+# o arunci: un vâjâit scurt peste o pufăitură de flacără
+ffmpeg -v error -y -i "$PACHET/Other/whoosh_2.wav" -i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.1,aresample=44100[w];[1]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,atrim=end=0.8,afade=t=out:st=0.5:d=0.3,volume=0.8[f];[w][f]amix=inputs=2:normalize=0,lowpass=f=4000" \
+	-ac 1 "$OUT/_aruncata.wav"
+unic minge_foc_aruncata "$OUT/_aruncata.wav"
+# în zbor (buclă): vuietul flăcării = zgomot maro care fâlfâie, cu pârâituri rare
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=0.7:d=6:r=44100:s=7" \
+	-f lavfi -i "aevalsrc='lt(random(3)\,0.004)*(random(4)*2-1)':s=44100:d=6" \
+	-filter_complex "[0]lowpass=f=700,tremolo=f=11:d=0.45[v];[1]highpass=f=1200,aecho=0.5:0.3:6:0.4,volume=0.6[c];[v][c]amix=inputs=2:normalize=0" \
+	-ac 1 "$OUT/_zbor.wav"
+bucla minge_foc_zbor "$OUT/_zbor.wav" 1 mono
+# lovește: o bubuitură joasă și flacăra care se umflă
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_medium.wav" -i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=1400[b];[1]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,volume=0.7[f];[b][f]amix=inputs=2:normalize=0,aecho=0.7:0.5:90|210:0.25|0.15" \
+	-ac 1 "$OUT/_bum.wav"
+unic minge_foc_bum "$OUT/_bum.wav"
+# vorba din living room (buclă): patru „voci” de femei (zgomot pe benzile vocii, tăiat în silabe, fiecare cu ritmul și
+# înălțimea ei), care vorbesc una peste alta, într-o sală mare de lemn
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=14:r=44100:s=3" \
+	-f lavfi -i "aevalsrc='(0.5+0.5*sin(2*PI*5.3*t+2*sin(2*PI*0.7*t)))*gt(sin(2*PI*0.19*t)+0.3\,0)':s=44100:d=14" \
+	-f lavfi -i "anoisesrc=c=pink:a=0.6:d=14:r=44100:s=4" \
+	-f lavfi -i "aevalsrc='(0.5+0.5*sin(2*PI*4.6*t+1+2*sin(2*PI*0.5*t)))*gt(sin(2*PI*0.23*t+2)+0.2\,0)':s=44100:d=14" \
+	-f lavfi -i "anoisesrc=c=pink:a=0.6:d=14:r=44100:s=5" \
+	-f lavfi -i "aevalsrc='(0.5+0.5*sin(2*PI*6.1*t+2+2*sin(2*PI*0.9*t)))*gt(sin(2*PI*0.17*t+4)+0.4\,0)':s=44100:d=14" \
+	-filter_complex "[0]bandpass=f=1100:t=h:w=1200[a0];[a0][1]amultiply[a];[2]bandpass=f=1400:t=h:w=1300[b0];[b0][3]amultiply[b];[4]bandpass=f=900:t=h:w=1000[c0];[c0][5]amultiply[c];[a][b][c]amix=inputs=3:normalize=0,lowpass=f=2600,highpass=f=300,aecho=0.7:0.6:60|140|260:0.35|0.25|0.15" \
+	-ac 1 "$OUT/_murmur.wav"
+bucla conac_murmur "$OUT/_murmur.wav" 2 mono
+rm -f "$OUT"/_aruncata.wav "$OUT"/_zbor.wav "$OUT"/_bum.wav "$OUT"/_murmur.wav

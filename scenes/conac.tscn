@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
@@ -25,6 +25,13 @@
 [ext_resource type="PackedScene" path="res://models/pistol_aur.glb" id="23"]
 [ext_resource type="Script" path="res://scripts/pistol_aur_masa.gd" id="24"]
 [ext_resource type="Material" path="res://shaders/material_aur.tres" id="25"]
+[ext_resource type="Script" path="res://scripts/usa_scena.gd" id="26"]
+[ext_resource type="Script" path="res://scripts/punct_sosire.gd" id="27"]
+[ext_resource type="AudioStream" path="res://sunete/usa_scartait.ogg" id="28"]
+[ext_resource type="AudioStream" path="res://sunete/usa_incuiata.ogg" id="29"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="30"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="31"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="32"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("11")
@@ -67,6 +74,9 @@ radius = 7.0
 
 [sub_resource type="BoxShape3D" id="forma_alee_poarta"]
 size = Vector3(3.2, 1, 18.2)
+
+[sub_resource type="BoxShape3D" id="forma_usa_conac"]
+size = Vector3(2.3, 3.4, 0.25)
 
 [sub_resource type="BoxShape3D" id="forma_pistol"]
 size = Vector3(0.32, 0.12, 0.3)
@@ -219,6 +229,25 @@ brat = NodePath("Model/BratDrept")
 cap = NodePath("Model/Cap")
 model_matura = ExtResource("8")
 distanta_privire = 9.0
+sarcina_noua = "Talk to the Head Witch."
+
+[node name="UsaConac" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, -7.78)
+script = ExtResource("26")
+indiciu = "[E] Enter the manor"
+scena = "res://scenes/conac_interior.tscn"
+sosire = "DinCurte"
+marcaj_necesar = "head_witch_in_conac"
+sunet_usa = ExtResource("28")
+sunet_incuiat = ExtResource("29")
+sunete_tranzitie = Array[AudioStream]([ExtResource("30"), ExtResource("31"), ExtResource("32")])
+
+[node name="Forma" type="CollisionShape3D" parent="UsaConac"]
+shape = SubResource("forma_usa_conac")
+
+[node name="DinConac" type="Marker3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.95, -7.1)
+script = ExtResource("27")
 
 [node name="Jucator" parent="." instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.1, 13.5)
