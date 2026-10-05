@@ -7,7 +7,9 @@ extends Node3D
 ##    `lasa_mana("D")` le duce înapoi în poală (sau pe lângă corp, în picioare);
 ##  - `privire` = spre ce se uită (un Node3D; null = drept înainte), doar cu capul;
 ##  - `fumeaza = true`: din când în când trage din joint (mâna la gură, jarul se aprinde, apoi suflă fumul);
-##  - `ridica_te()`, `mergi(drum)`, `asaza_te(loc, unghi)`; `mananca = true` (la masă, cu felia de pizza).
+##  - `ridica_te()`, `mergi(drum)`, `asaza_te(loc, unghi)`; `mananca = true` (la masă, cu felia de pizza);
+##  - la jaf (lexy_masa.gd): `maini_sus()` / `maini_jos()` (tremură cât `frica` > 0), `scoate_bancnota(spre)`,
+##    `lasa_felia()`; `omoara(impuls)` = ragdoll (vezi Ragdoll).
 ## Mâna dreaptă e `D` (spre -X), stânga `S`.
 
 signal a_tras
@@ -19,6 +21,13 @@ const MATERIAL := preload("res://shaders/material_model.tres")
 const SUNET_TRAS := preload("res://sunete/fum_tras.ogg")
 const SUNET_SUFLAT := preload("res://sunete/fum_suflat.ogg")
 const SUNET_MUSCATURA := preload("res://sunete/pizza_muscatura.ogg")
+const MODEL_BANCNOTA := preload("res://models/bancnota.glb")
+const SUNET_BANCNOTA := preload("res://sunete/bancnota.ogg")
+const SUNET_MAINI_SUS := preload("res://sunete/maini_sus.ogg")
+## Unde ajung palmele când ridică mâinile (față de umăr, în coordonatele corpului; x e în afară, spre mâna ei).
+const MAINI_SUS := Vector3(0.21, 0.4, 0.07)
+## Buzunarul mare din fața hanoracului (în coordonatele corpului; originea corpului e în bazin).
+const BUZUNAR := Vector3(0.06, 0.09, 0.19)
 
 ## Punctul dintre degete (unde ține jointul / felia), în coordonatele antebrațului (originea în cot).
 const MANA := {"D": Vector3(-0.011, -0.335, 0.082), "S": Vector3(0.011, -0.335, 0.082)}
@@ -39,6 +48,10 @@ var sezut := 0.0
 var mananca := false
 var joint: Node3D
 var felie: Node3D
+## Cât de speriată e (0..1): mâinile ridicate tremură, respiră repede.
+var frica := 0.0
+## Moartă (ragdoll): nu se mai animă nimic.
+var mort := false
 
 var _model: Node3D
 var _corp: Node3D
@@ -62,6 +75,12 @@ var _timp := 0.0
 var _pana_la_fum := 4.0
 var _pana_la_muscatura := 2.0
 var _jar_aprins := 0.0
+## Tween-ul care mișcă acum fiecare mână (unul nou îl oprește pe cel vechi).
+var _tw := {"D": null, "S": null}
+## Pusă când o întrerupe jaful: mușcatul din pizza nu mai continuă.
+var _oprita := false
+## Punctele spre care merg palmele când ridică mâinile (copii ai corpului).
+var _sus := {}
 
 
 func _ready() -> void:
@@ -153,30 +172,52 @@ func gura() -> Vector3:
 
 # ---------------------------------------------------------------- brațe (IK)
 
-## Duce mâna `l` la `tinta` (un Node3D urmărit sau un punct global) în `durata` secunde.
+## Duce mâna `l` la `tinta` (un Node3D urmărit sau un punct global) în `durata` secunde. Dacă mâna era deja
+## întinsă spre altceva, alunecă de acolo până la noua țintă (nu sare).
 func du_mana(l: String, tinta: Variant, durata: float) -> void:
 	_ocupata[l] = true
+	var t := _tween_mana(l)
+	if _cat[l] > 0.01:
+		var de_la := _tinta_globala(l)
+		_cat[l] = 1.0
+		_spre[l] = de_la
+		t.tween_method(func(v: float) -> void: _spre[l] = de_la.lerp(_punct(tinta), v), 0.0, 1.0, durata)
+		await t.finished
+		_spre[l] = tinta
+		return
 	_spre[l] = tinta
-	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_method(func(v: float) -> void: _cat[l] = v, _cat[l], 1.0, durata)
 	await t.finished
 
 
 ## Lasă mâna `l` înapoi în repaus.
 func lasa_mana(l: String, durata := 0.6) -> void:
-	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	var t := _tween_mana(l)
 	t.tween_method(func(v: float) -> void: _cat[l] = v, _cat[l], 0.0, durata)
 	await t.finished
 	_ocupata[l] = false
 
 
+## Un tween nou pentru mâna `l`; îl oprește pe cel de dinainte (altfel s-ar trage de mână în două părți).
+func _tween_mana(l: String) -> Tween:
+	var vechi: Tween = _tw[l]
+	if vechi and vechi.is_valid():
+		vechi.kill()
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tw[l] = t
+	return t
+
+
+func _punct(tinta: Variant) -> Vector3:
+	return (tinta as Node3D).global_position if tinta is Node3D else tinta
+
+
 func _tinta_globala(l: String) -> Vector3:
 	var repaus: Vector3 = _corp.global_transform * (_brat[l].position + _repaus[l])
 	var spre: Variant = _spre[l]
-	if _cat[l] <= 0.0 or spre == null:
+	if _cat[l] <= 0.0 or spre == null or (spre is Object and not is_instance_valid(spre)):
 		return repaus
-	var punct: Vector3 = (spre as Node3D).global_position if spre is Node3D else spre
-	return repaus.lerp(punct, _cat[l])
+	return repaus.lerp(_punct(spre), _cat[l])
 
 
 ## IK cu două oase: întoarce brațul și antebrațul ca mâna să ajungă în `tinta` (globală).
@@ -269,8 +310,13 @@ func _process(delta: float) -> void:
 		_gamba[l].rotation.x = UNGHI_COAPSA * sezut + maxf(0.0, faza) * 1.4 * leg
 	_model.position.y = -COBORARE * sezut + absf(sin(_mers)) * 0.025 * leg
 	# corpul: respiră, se apleacă când se ridică / se așază, se lasă pe spătar când stă
-	_corp.rotation.x = _aplecare - 0.12 * sezut * (1.0 - _aplecare * 2.0) + sin(_timp * 1.6) * 0.01
+	_corp.rotation.x = _aplecare - 0.12 * sezut * (1.0 - _aplecare * 2.0) + sin(_timp * lerpf(1.6, 5.5, frica)) * lerpf(0.01, 0.018, frica)
 	_actualizeaza_repaus()
+	# speriată, cu mâinile sus: palmele tremură puțin
+	for l: String in _sus:
+		var s := -1.0 if l == "D" else 1.0
+		var tremur := Vector3(sin(_timp * 31.0 + s), sin(_timp * 26.0 + s * 2.0), sin(_timp * 23.0)) * 0.006 * frica
+		(_sus[l] as Node3D).position = _brat[l].position + Vector3(MAINI_SUS.x * s, MAINI_SUS.y, MAINI_SUS.z) + tremur
 	# brațele: legănate la mers, altfel spre ținta lor
 	for l in ["D", "S"]:
 		var tinta := _tinta_globala(l)
@@ -410,6 +456,8 @@ static func fir_de_fum(nod: Node3D, decalaj: Vector3) -> Timer:
 ## Ia o felie de pizza (din cutia de la `cutie`, punct global) și o ține în mâna dreaptă.
 func ia_felie(cutie: Vector3) -> void:
 	await du_mana("D", cutie + Vector3.UP * 0.06, 0.7)
+	if _oprita:
+		return
 	felie = MODEL_FELIE.instantiate()
 	felie.set_script(SCRIPT_MODEL)
 	felie.set("material", MATERIAL)
@@ -424,8 +472,12 @@ var _muscaturi := 0
 
 ## Începe să mănânce pizza de la masă (cutia la `cutie`, global).
 func incepe_pizza(cutie: Vector3) -> void:
+	if _oprita:
+		return
 	_cutie_pizza = cutie
 	await ia_felie(cutie)
+	if _oprita:
+		return
 	_muscaturi = 0
 	mananca = true
 
@@ -435,13 +487,21 @@ func _musca() -> void:
 	_cap.add_child(gura_nod)
 	gura_nod.position = GURA + Vector3(0.0, -0.02, 0.05)
 	await du_mana("D", gura_nod, 0.6)
+	if _oprita:
+		gura_nod.queue_free()
+		return
 	Sunet.reda_la(SUNET_MUSCATURA, gura(), Sunet.VOLUM_EFECTE - 6.0, 0.08)
 	_muscaturi += 1
 	if is_instance_valid(felie):
 		felie.scale.x = maxf(1.0 - _muscaturi * 0.22, 0.1)
 	await get_tree().create_timer(0.25).timeout
+	if _oprita:
+		gura_nod.queue_free()
+		return
 	await lasa_mana("D", 0.6)
 	gura_nod.queue_free()
+	if _oprita:
+		return
 	if _muscaturi >= 4 and is_instance_valid(felie):
 		# a terminat felia: coaja o lasă în cutie și ia alta
 		mananca = false
@@ -464,3 +524,89 @@ func apleaca(cat: float, durata: float) -> void:
 ## Adevărat cât mâna `l` face ceva (trage un fum, mușcă, ia ceva).
 func mana_ocupata(l: String) -> bool:
 	return _ocupata[l]
+
+
+# ---------------------------------------------------------------- jaful (lexy_masa.gd)
+
+## Se sperie și ridică mâinile, cu palmele lângă cap (felia rămâne în mâna dreaptă). Nu mai mănâncă.
+func maini_sus(durata := 0.35) -> void:
+	_oprita = true
+	mananca = false
+	frica = 1.0
+	Sunet.reda_la(SUNET_MAINI_SUS, gura(), Sunet.VOLUM_EFECTE - 4.0, 0.05)
+	for l in ["D", "S"]:
+		if not _sus.has(l):
+			var m := Node3D.new()
+			m.name = "MainaSus" + l
+			_corp.add_child(m)
+			_sus[l] = m
+		du_mana(l, _sus[l], durata)
+	await get_tree().create_timer(durata).timeout
+
+
+## Lasă mâinile jos, încet (încă speriată).
+func maini_jos(durata := 1.2) -> void:
+	for l in ["D", "S"]:
+		lasa_mana(l, durata)
+	await get_tree().create_timer(durata).timeout
+	for l: String in _sus:
+		(_sus[l] as Node3D).queue_free()
+	_sus.clear()
+
+
+## Bagă mâna stângă în buzunarul hanoracului, scoate o bancnotă de 5 dolari și ți-o întinde până la `spre`
+## (punct global). Întoarce bancnota (încă în mâna ei).
+func scoate_bancnota(spre: Vector3) -> Node3D:
+	var buzunar := Node3D.new()
+	_corp.add_child(buzunar)
+	buzunar.position = BUZUNAR
+	await du_mana("S", buzunar, 0.6)
+	# scotocește puțin în buzunar
+	for i in 2:
+		await du_mana("S", _corp.global_transform * (BUZUNAR + Vector3(0.025, -0.02, -0.02)), 0.15)
+		await du_mana("S", buzunar, 0.15)
+	var b := MODEL_BANCNOTA.instantiate() as Node3D
+	b.set_script(SCRIPT_MODEL)
+	b.set("material", MATERIAL)
+	b.set("umbre", false)
+	tine_in_mana(b, "S")
+	# o ține de un capăt, în picioare (bancnota e culcată în planul XZ al modelului)
+	b.basis = Basis(Vector3.UP, 0.25) * Basis(Vector3.RIGHT, PI / 2.0)
+	b.position = MANA["S"] + Vector3(0.0, -0.035, 0.0)
+	Sunet.reda_la(SUNET_BANCNOTA, punct_mana("S"), Sunet.VOLUM_EFECTE - 4.0, 0.05)
+	await get_tree().create_timer(0.15).timeout
+	buzunar.queue_free()
+	await du_mana("S", spre, 0.85)
+	return b
+
+
+## Pune felia de pizza (sau ce a rămas din ea) înapoi în cutie, cu mâna dreaptă.
+func lasa_felia() -> void:
+	var felii: Array[Node3D] = []
+	for copil in _antebrat["D"].get_children():
+		if copil is Node3D and copil.scene_file_path == MODEL_FELIE.resource_path:
+			felii.append(copil)
+	felie = null
+	if felii.is_empty():
+		return
+	await du_mana("D", _cutie_pizza + Vector3(0.05, 0.04, 0.0), 0.8)
+	for f in felii:
+		# rămâne în cutie, culcată
+		f.reparent(get_tree().current_scene, true)
+		f.global_position = _cutie_pizza + Vector3(0.05, 0.015, 0.02)
+		f.global_basis = Basis(Vector3.UP, randf() * TAU)
+	await lasa_mana("D", 0.7)
+
+
+## Moare: tot corpul devine ragdoll (bucățile modelului trec în corpuri fizice). Întoarce ragdoll-ul.
+func omoara(impuls: Vector3) -> Ragdoll:
+	mort = true
+	mananca = false
+	_oprita = true
+	frica = 0.0
+	set_process(false)
+	for l in ["D", "S"]:
+		var t: Tween = _tw[l]
+		if t and t.is_valid():
+			t.kill()
+	return Ragdoll.din_model(_model, impuls, [])

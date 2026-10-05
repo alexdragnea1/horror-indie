@@ -348,4 +348,11 @@ rm -f "$OUT"/_tras.wav "$OUT"/_suflat.wav "$OUT"/_stins.wav "$OUT"/_stiri.wav
 # --- obiecte aruncate pe jos și puse pe raft
 unic obiect_aruncat "Materials/wood_small_drop.wav"
 unic obiect_pus "Materials/wood_small_hollow.wav" stereo
+# --- jaful de la Lexy și gardul cimitirului
+# bancnota scoasă din buzunar și întinsă: un foșnet scurt de hârtie
+unic bancnota "Materials/paper_move.wav" mono "highpass=f=400"
+# Lexy ridică mâinile, speriată: un foșnet scurt de haine, repede
+unic maini_sus "Materials/clothing_2.wav" mono "atrim=end=0.45,afade=t=out:st=0.3:d=0.15,asetrate=44100*1.15,aresample=44100"
+# corpul atinge vârfurile gardului de fier când trece peste el: un zăngănit înfundat
+unic gard_zanganit "Materials/metal_clang.wav" mono "lowpass=f=2200,asetrate=44100*0.85,aresample=44100,afade=t=out:st=0.35:d=0.2"
 rm -f "$OUT"/_impuscatura.wav "$OUT"/_unda.wav "$OUT"/_cant.wav "$OUT"/_foc.wav

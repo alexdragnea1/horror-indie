@@ -153,9 +153,14 @@ func scoate_obiect(id: String) -> void:
 		schimbat.emit()
 
 
-func marcheaza(marcaj: String) -> void:
-	marcaje[marcaj] = true
+## Pune marcajul. `valoare` = ce ții minte odată cu el, dacă e nevoie (ex. unde a căzut ceva), vezi valoare_marcaj().
+func marcheaza(marcaj: String, valoare: Variant = true) -> void:
+	marcaje[marcaj] = valoare
 	schimbat.emit()
+
+
+func valoare_marcaj(marcaj: String, implicit: Variant = null) -> Variant:
+	return marcaje.get(marcaj, implicit)
 
 
 func e_marcat(marcaj: String) -> bool:

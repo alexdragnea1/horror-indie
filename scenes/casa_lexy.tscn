@@ -39,6 +39,8 @@
 [ext_resource type="AudioStream" path="res://sunete/joint_stins.ogg" id="37"]
 [ext_resource type="PackedScene" path="res://models/frunze_jos_mic.glb" id="38"]
 [ext_resource type="Script" path="res://scripts/ceata_interior.gd" id="39"]
+[ext_resource type="Script" path="res://scripts/lexy_masa.gd" id="40"]
+[ext_resource type="Script" path="res://scripts/gard_cimitir.gd" id="41"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -101,6 +103,13 @@ size = Vector3(1.4, 1, 4.6)
 
 [sub_resource type="BoxShape3D" id="forma_casa"]
 size = Vector3(14.2, 2.4, 10.6)
+
+[sub_resource type="CapsuleShape3D" id="forma_lexy_masa"]
+radius = 0.3
+height = 1.3
+
+[sub_resource type="BoxShape3D" id="forma_gard_cimitir"]
+size = Vector3(30, 1.75, 0.4)
 
 [sub_resource type="BoxShape3D" id="forma_interior"]
 size = Vector3(13.8, 2.8, 7.4)
@@ -429,3 +438,20 @@ mediu = NodePath("../Mediu")
 [node name="Forma" type="CollisionShape3D" parent="CeataInterior"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -3.8)
 shape = SubResource("forma_interior")
+
+[node name="LexyMasa" type="StaticBody3D" parent="." node_paths=PackedStringArray("lexy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.05, 0.45, -2.3)
+script = ExtResource("40")
+lexy = NodePath("../Lexy")
+
+[node name="Forma" type="CollisionShape3D" parent="LexyMasa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+shape = SubResource("forma_lexy_masa")
+
+[node name="GardCimitir" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 19.7)
+script = ExtResource("41")
+
+[node name="Forma" type="CollisionShape3D" parent="GardCimitir"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, -0.15)
+shape = SubResource("forma_gard_cimitir")

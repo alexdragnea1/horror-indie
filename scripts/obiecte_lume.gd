@@ -27,6 +27,12 @@ const MODELE := {
 		"ridicare": 0.02,
 		"raft": Vector3(0.0, 0.4, 0.0),
 	},
+	"bani_5": {  # bancnota de 5 dolari de la Lexy (lexy_masa.gd); modelul e deja culcat
+		"scena": "res://models/bancnota.glb",
+		"jos": Vector3.ZERO,
+		"ridicare": 0.002,
+		"raft": Vector3(0.0, 0.3, 0.0),
+	},
 }
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")

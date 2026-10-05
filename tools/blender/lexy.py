@@ -970,6 +970,47 @@ def joint(cale):
 	exporta(os.path.join(cale, "joint.glb"))
 
 
+# Bancnota de 5 dolari, „pixel art” din cutii lipite una de alta (fără plăci suprapuse: n-are z-fighting):
+# B = rama, . = hârtia, - = linia din ramă, O = ovalul, P = fundalul portretului, F = fața, N = cifra 5, s = sigiliul
+_HARTA_BANCNOTA = [
+	"BBBBBBBBBBBBBBBBBB",
+	"BNN..-.OOOO.-..NNB",
+	"BN....OPPPPO.....B",
+	"B.ss..OPFFPO..ss.B",
+	"B.ss..OPFFPO..ss.B",
+	"B.....OPPPPO....NB",
+	"BNN..-.OOOO.-..NNB",
+	"BBBBBBBBBBBBBBBBBB",
+]
+
+
+def bancnota(cale):
+	"""Bancnota de 5 dolari pe care ți-o dă Lexy (15,6 × 6,6 cm), culcată în planul XY, cu originea în mijloc.
+	Desenul (rama, ovalul cu portretul, cifrele din colțuri, sigiliile) e făcut din cutii una lângă alta,
+	toate la fel de groase, ca să se vadă și de aproape, la rezoluția mică a jocului."""
+	curata()
+	culori = {"B": p("445d46"), ".": p("7e8d87"), "-": p("5b6d4e"), "O": p("32453b"), "P": p("5b6d4e"),
+		"F": p("7a7b59"), "N": p("32453b"), "s": p("438b88")}
+	randuri = len(_HARTA_BANCNOTA)
+	coloane = len(_HARTA_BANCNOTA[0])
+	lat, inalt, gros = 0.156, 0.066, 0.0012
+	cx, cy = lat / coloane, inalt / randuri
+	piese = []
+	for r, rand in enumerate(_HARTA_BANCNOTA):
+		# celulele de aceeași culoare de pe un rând se lipesc într-o singură cutie
+		c = 0
+		while c < coloane:
+			k = c
+			while k + 1 < coloane and rand[k + 1] == rand[c]:
+				k += 1
+			x = -lat / 2 + (c + k + 1) * cx / 2
+			y = inalt / 2 - (r + 0.5) * cy
+			piese.append(cub("Bancnota", ((k - c + 1) * cx, cy, gros), (x, y, 0), culori[rand[c]]))
+			c = k + 1
+	uneste(piese, "Bancnota")
+	exporta(os.path.join(cale, "bancnota.glb"))
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Strada și cimitirul de vizavi
 # ---------------------------------------------------------------------------------------------------------------
@@ -1351,6 +1392,7 @@ def toate(cale):
 	pizza(cale)
 	felie_pizza(cale)
 	joint(cale)
+	bancnota(cale)
 	gard_fier(cale)
 	poarta_cimitir(cale)
 	morminte(cale)

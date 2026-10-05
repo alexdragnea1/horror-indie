@@ -166,12 +166,20 @@ func _input(event: InputEvent) -> void:
 
 ## Spune `replica`, apoi arată butoanele `optiuni` și așteaptă să alegi unul (mouse, săgeți + Enter sau E
 ## pe butonul selectat). Cât alegi, jucătorul stă pe loc și mouse-ul se vede.
+## Cu `replica` goală apar doar butoanele, fără casetă (ex. ce-i spui lui Lexy la masă).
 func intreaba(replica: String, optiuni: PackedStringArray) -> int:
-	spune(PackedStringArray([replica]))
+	if replica.is_empty():
+		activ = true
+		_text.text = ""
+		_text.visible_ratio = 1.0
+	else:
+		spune(PackedStringArray([replica]))
 	_cu_optiuni = true
 	while _text.visible_ratio < 1.0:
 		await get_tree().process_frame
 	for copil in _optiuni.get_children():
+		# scos imediat: altfel butonul vechi (șters abia la sfârșitul cadrului) e încă primul și primește focusul
+		_optiuni.remove_child(copil)
 		copil.queue_free()
 	for i in optiuni.size():
 		var buton := TemaMeniu.buton(_optiuni, optiuni[i], func() -> void: _ales.emit(i))

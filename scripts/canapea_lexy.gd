@@ -17,6 +17,8 @@ extends Interactabil
 @export var scaun_bucatarie: Node3D
 @export var cutie_pizza: Node3D
 @export var marcaj_gata := "a_fumat_cu_lexy"
+## Pus de lexy_masa.gd când o jefuiești: la Continue nu mai începe pizza.
+@export var marcaj_jaf := "a_jefuit_lexy"
 @export var loc_lexy := Vector3(0.6, 0.0, 0.15)
 @export var loc_jucator := Vector3(-0.6, 0.0, 0.05)
 ## Înălțimea ochilor tăi când stai pe canapea (față de podea).
@@ -57,7 +59,9 @@ func _ready() -> void:
 		await get_tree().process_frame
 		lexy.stinge_jar()
 		_pune_in_scrumiera(j, false)
-		lexy.incepe_pizza(cutie_pizza.global_position)
+		# după jaf nu mai mănâncă (lexy_masa.gd)
+		if not Stare.e_marcat(marcaj_jaf):
+			lexy.incepe_pizza(cutie_pizza.global_position)
 		return
 	lexy.global_position = to_global(loc_lexy)
 	lexy.rotation.y = global_rotation.y

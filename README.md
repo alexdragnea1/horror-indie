@@ -38,7 +38,9 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 16. Afară e **zi**, tot cu ceață. Dacă n-ai pistolul la tine, nu mai zici „I got this glock.”. Head Witch te așteaptă la scară. **Cu mătura**: o pui jos, sar scântei, mătura tresare de trei ori... și rămâne acolo (n-ai talent la magie). O ameninți cu pistolul, ea zice că vine mâine, iar mătura se teleportează înapoi acasă. **Fără mătură**: „I got this glock.” În ambele cazuri ea pleacă în zbor pe mătura ei și se topește în aer. „I hate this bitch.”
 17. La 10 secunde după ce pleacă Head Witch îți vibrează telefonul: un mesaj de la „School Whore” (Lexy), într-o aplicație de mesaje. Îi răspunzi, iar după 5 secunde vine autobuzul.
 18. Autobuzul te lasă la Lexy: o casă americană puțin gotică, cu un cimitir peste drum. Lexy fumează pe canapea și se uită la știri. Te așezi lângă ea, vorbiți, vă dați jointul, apoi îl stinge și se duce să mănânce pizza în bucătărie.
-19. Urmează: ce se întâmplă după pizza.
+19. La masă, E pe Lexy: **Rob her at gun point** (doar dacă ai pistolul la tine) sau **Leave Lexy's House**. La jaf faci un pas în fața ei, ea ridică mâinile cu felia de pizza în mână și tremură, apoi scoate din buzunarul hanoracului o bancnotă de 5 dolari și ți-o întinde („$5” în inventar). După jaf nu mai mănâncă, doar se uită la tine, iar la plecare zice „Don't come here again you piece of shit..”.
+20. După jaf o poți împușca: cade de pe scaun, o iei în inventar („Lexy”) și o poți arunca peste gardul cimitirului de vizavi (E pe gard). Rămâne acolo, între morminte, și după ce încarci salvarea.
+21. Urmează: ce se întâmplă după ce pleci de la Lexy.
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
@@ -93,7 +95,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 - Inventarul (Tab): click = ții obiectul în mână, **click dreapta = îl arunci pe jos** (rămâne acolo și după salvare; îl iei înapoi cu E). `scripts/obiecte_lume.gd` – ce obiecte se pot arunca / pune pe raft și cum stau.
 - Raftul din camera ta (`scripts/raft_depozit.gd`, etajera cu 5 compartimente din stânga ușii): E = fereastra raftului, click mută obiectele între inventar și raft (maxim 5).
 - `scripts/telefon.gd` – telefonul pe ecran, ca o aplicație de mesaje. `scripts/mesaj_telefon.gd` (nodul `MesajLexy` din `afara_bloc.tscn`) – când vine mesajul, de la cine (`contact`) și ce scrie (`mesaje`; „You:” = mesajele tale).
-- `scenes/casa_lexy.tscn` – casa lui Lexy și strada cu cimitirul. `scripts/canapea_lexy.gd` (pe `Canapea`) – replicile de pe canapea (grupul „Replici”) și unde stați. `scripts/lexy.gd` – cum se mișcă Lexy. `scripts/televizor.gd` – ce scrie la știri (`titlu`, `banda_jos`).
+- `scenes/casa_lexy.tscn` – casa lui Lexy și strada cu cimitirul. `scripts/canapea_lexy.gd` (pe `Canapea`) – replicile de pe canapea (grupul „Replici”) și unde stați. `scripts/lexy.gd` – cum se mișcă Lexy. `scripts/lexy_masa.gd` (pe `LexyMasa`) – opțiunile de la masă, replicile jafului și ale plecării (grupul „Replici”), unde stai la jaf (`loc_jaf`). `scripts/gard_cimitir.gd` (pe `GardCimitir`) – aruncatul peste gard. `scripts/televizor.gd` – ce scrie la știri (`titlu`, `banda_jos`).
 - `scripts/limite_padure.gd` (nodul `ZidInvizibil`) – zidul invizibil din pădure: poți ieși de pe potecă printre copaci, dar doar cam 8 m (`departe_de_poteca`); pe platou (`raza_platou`) și în poiana din vale (`raza_vale`) ai loc mai mult. Bifează `arata` ca să-l vezi roșu când testezi.
 - La orice model pus în scenă fără coliziune (o piatră, o ladă) poți bifa în Inspector, la `ModelPS2`, `coliziune` = Cilindru sau Cutie.
 - `scripts/atmosfera_padure.gd` (nodul `Atmosfera`) – cum se schimbă ceața, lumina, cerul și sunetele în pădure, pe platou și în vale (grupurile „Pădure”, „Platou”, „Vale” din Inspector).
@@ -140,7 +142,7 @@ Pui PNG-ul în `textures/`, apoi dai click pe obiect → **Material** → tragi 
 1. ✅ Baza: aspect PS2, jucător, dialog, obiecte interactive
 2. ⏳ Povestea (premisă, personaje, 4–6 capitole de ~5 min)
 3. ✅ Uși, chei, inventar, sarcini, tranziții între scene
-4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale, ✅ bețivul, ✅ coven-ul și zborul acasă, ✅ somnul și dimineața cu Head Witch, ✅ mesajul pe telefon și casa lui Lexy; urmează ce se întâmplă după pizza), modele low-poly făcute din cod
+4. ⏳ Niveluri (✅ casa, ✅ curtea blocului, ✅ drumul cu autobuzul, ✅ pădurea Trivale, ✅ bețivul, ✅ coven-ul și zborul acasă, ✅ somnul și dimineața cu Head Witch, ✅ mesajul pe telefon și casa lui Lexy, ✅ jaful, împușcatul și cimitirul; urmează ce se întâmplă după ce pleci de la Lexy), modele low-poly făcute din cod
 5. ⏳ Sunet (✅ ambianță, pași, obiecte, interfață, toate la același volum, muzica la fel de tare ca efectele, muzica ta „Block” în fața blocului și „Deal” la bețiv, coven-ul; urmează jumpscare-uri și muzică în alte locuri)
 6. ⏳ Monstrul (✅ prima apariție: creatura de lângă autobuz), jumpscare-uri, comedie
 7. ⏳ Meniu, salvare (✅), final
