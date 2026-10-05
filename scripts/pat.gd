@@ -96,6 +96,7 @@ func interactioneaza() -> void:
 	if lanterna.visible:
 		await get_tree().create_timer(0.4).timeout
 		lanterna.visible = false
+		Stare.lanterna = false
 		Sunet.reda(jucator.lanterna_oprita, Sunet.VOLUM_EFECTE, 0.05)
 	await c.opreste()
 	Stare.meniu_deschis = true

@@ -41,6 +41,8 @@ var in_mana := ""
 var raft: Dictionary = {}
 ## Ce ai aruncat pe jos: id -> {scena, nume, poz: [x, y, z], unghi}.
 var aruncate: Dictionary = {}
+## Lanterna aprinsă sau stinsă; rămâne așa și în scena următoare, și în salvare.
+var lanterna := true
 
 var _mesaj: Label
 var _sarcina_sus: Label
@@ -93,6 +95,7 @@ func reseteaza() -> void:
 	in_mana = ""
 	raft = {}
 	aruncate = {}
+	lanterna = true
 	meniu_deschis = false
 	_inventar.hide()
 	_panou_raft.hide()
@@ -111,7 +114,7 @@ func ascunde_mesaje() -> void:
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
 	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana,
-		"raft": raft, "aruncate": aruncate}
+		"raft": raft, "aruncate": aruncate, "lanterna": lanterna}
 
 
 func importa(date: Dictionary) -> void:
@@ -121,6 +124,7 @@ func importa(date: Dictionary) -> void:
 	nume_jucator = date.get("nume_jucator", "")
 	raft = date.get("raft", {})
 	aruncate = date.get("aruncate", {})
+	lanterna = date.get("lanterna", true)
 	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
 	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
 	if not obiecte.has(in_mana):

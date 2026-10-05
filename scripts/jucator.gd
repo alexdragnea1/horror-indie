@@ -50,6 +50,8 @@ var _decalaj_treapta := 0.0
 
 func _ready() -> void:
 	suprafata = suprafata_implicita
+	# fiecare scenă are un jucător nou: lanterna rămâne cum ai lăsat-o
+	_lanterna.visible = Stare.lanterna
 	# ce ții în mână (ales din inventar): pistolul roz are scriptul lui, restul (mătura) ObiectInMana
 	_camera.add_child(Pistol.new())
 	_camera.add_child(ObiectInMana.new())
@@ -71,6 +73,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("lanterna"):
 		_lanterna.visible = not _lanterna.visible
+		Stare.lanterna = _lanterna.visible
 		Sunet.reda(lanterna_pornita if _lanterna.visible else lanterna_oprita, Sunet.VOLUM_EFECTE, 0.05)
 	elif event.is_action_pressed("interact") and not _ocupat():
 		var tinta := _tinta_privita()
