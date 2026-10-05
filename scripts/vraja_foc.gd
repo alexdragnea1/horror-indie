@@ -1,17 +1,14 @@
 class_name VrajaFoc
 extends Node3D
-## Vraja Fireball (de la Helga), „în mână” la persoana întâi, ca pistolul: o alegi din inventar (`ID`), îți vezi mâna
-## dreaptă cu palma în sus și un foc mic care pâlpâie în ea; la click (acțiunea "trage") împingi palma înainte și din ea
-## pleacă o minge de foc (MingeFoc) spre locul la care te uiți. Focul din palmă se stinge și crește la loc (`pauza`).
+## Vraja Fireball (de la Helga), „în mână” la persoana întâi, ca pistolul: o alegi din inventar (`ID`) și vezi doar
+## o bilă de foc mică care pâlpâie în dreapta-jos (fără mână, cerut de owner; `_model` e un punct gol, „palma”
+## invizibilă); la click (acțiunea "trage") bila e împinsă înainte și pleacă o minge de foc (MingeFoc) spre locul la care te uiți. Focul din palmă se stinge și crește la loc (`pauza`).
 ## A ta e mai mică decât a lui Helga (`MARIME`), cum a cerut owner-ul: „mai micuț, dar tot e ok”.
 ## Îl pune jucator.gd sub cameră (nodul `VrajaFoc`). La lecția cu Helga (helga.gd) mâna apare înainte să ai vraja:
 ## `demonstratie` + `stinge()` / `aprinde()` / `arunca_acum()`.
 
 const ID := "vraja_foc"
 const NUME := "Fireball Spell"
-const MODEL := preload("res://models/mana_jucator.glb")
-const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
-const MATERIAL := preload("res://shaders/material_model.tres")
 const SUNET_ARUNCA := preload("res://sunete/minge_foc_aruncata.ogg")
 const SUNET_APRINS := preload("res://sunete/minge_foc_aprinsa.ogg")
 ## Cât de mare e mingea ta față de a lui Helga (1).
@@ -53,13 +50,9 @@ func _ready() -> void:
 	_camera = get_parent() as Camera3D
 	_cap = _camera.get_parent() as Node3D
 	_jucator = _cap.get_parent() as CharacterBody3D
-	_model = MODEL.instantiate()
-	_model.set_script(SCRIPT_MODEL)
-	_model.set("material", MATERIAL)
-	_model.set("umbre", false)
-	# lipită de cameră, lanterna n-o prinde: puțin luciu, ca pielea să nu fie neagră (focul o luminează oricum)
-	_model.set("stralucitoare", PackedStringArray(["Mana"]))
-	_model.set("stralucire", 0.08)
+	# fără mână (cerut de owner): doar bila de foc, ținută de un punct gol care se mișcă exact cum se mișca palma
+	_model = Node3D.new()
+	_model.name = "Palma"
 	add_child(_model)
 	_foc = MingeFoc.creeaza(_model, MARIME * 0.45)
 	_foc.position = FOC
