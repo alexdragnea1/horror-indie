@@ -22,10 +22,17 @@ const FOC := Vector3(0.0, 0.075, 0.0)
 ## Lecția cu Helga: mâna se vede și când n-ai vraja în inventar (și cât e scena cu benzi negre).
 static var demonstratie := false
 
-## Unde ții mâna (față de cameră), unde stă când e lăsată jos, cum e întoarsă (palma în sus, puțin spre tine).
+## Unde ții mâna (față de cameră) și unde stă când e lăsată jos.
 @export var pozitie := Vector3(0.19, -0.2, -0.38)
 @export var pozitie_jos := Vector3(0.24, -0.62, -0.26)
-@export var rotatie := Vector3(0.5, 0.25, 0.12)
+## Cum e întoarsă mâna (dreaptă!), dată prin direcții față de cameră: încotro arată degetele și încotro privește
+## palma. În repaus: palma în sus (puțin spre tine, să vezi focul), degetele înainte și puțin spre mijlocul ecranului,
+## deci degetul mare iese în dreapta și antebrațul vine din colțul din dreapta-jos.
+@export var degete_repaus := Vector3(-0.35, 0.22, -1.0)
+@export var palma_repaus := Vector3(-0.2, 1.0, 0.3)
+## La aruncare: palma spre înainte, degetele în sus; vezi dosul palmei, cu degetul mare spre mijlocul ecranului.
+@export var degete_impins := Vector3(-0.15, 1.0, -0.2)
+@export var palma_impins := Vector3(0.08, 0.2, -1.0)
 @export var pauza := 0.9
 @export var bataie := 60.0
 
@@ -102,10 +109,18 @@ func _process(delta: float) -> void:
 	# împins înainte: palma se ridică cu degetele în sus și se întoarce spre înainte
 	var impins := Vector3(-0.03, 0.06, -0.14) * _impins
 	position = pozitie.lerp(pozitie_jos, k) + respiratie + impins
-	var q_repaus := Basis.from_euler(rotatie).get_rotation_quaternion()
-	var q_impins := (Basis(Vector3.UP, PI * 0.85) * Basis(Vector3.RIGHT, PI * 0.45)).get_rotation_quaternion()
-	_model.basis = Basis(q_repaus.slerp(q_impins, _impins * 0.85))
+	var q_repaus := orientare(degete_repaus, palma_repaus).get_rotation_quaternion()
+	var q_impins := orientare(degete_impins, palma_impins).get_rotation_quaternion()
+	_model.basis = Basis(q_repaus.slerp(q_impins, _impins))
 	rotation.x = -k * 0.5
+
+
+## Rotația modelului mâinii (în model: degetele spre -Z, palma spre +Y, degetul mare spre +X) care duce degetele
+## pe `degete` și palma pe `palma`. Fiind doar o rotație, mâna rămâne dreaptă orice direcții i-ai da.
+static func orientare(degete: Vector3, palma: Vector3) -> Basis:
+	var z := -degete.normalized()
+	var x := palma.cross(z).normalized()
+	return Basis(x, z.cross(x), z)
 
 
 func _unhandled_input(event: InputEvent) -> void:

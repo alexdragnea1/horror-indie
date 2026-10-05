@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/pisica.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/pisica.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+
+[sub_resource type="CylinderShape3D" id="forma"]
+height = 0.46
+radius = 0.16
+
+[node name="Pisica" type="StaticBody3D"]
+script = ExtResource("1")
+indiciu = "[E] Pet the cat"
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 0.9
+
+[node name="Forma" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, 0)
+shape = SubResource("forma")

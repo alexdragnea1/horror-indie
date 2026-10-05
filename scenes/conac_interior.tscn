@@ -31,6 +31,7 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_1.ogg" id="29"]
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_2.ogg" id="30"]
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="31"]
+[ext_resource type="PackedScene" path="res://scenes/pisica.tscn" id="32"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -66,7 +67,7 @@ size = Vector3(7.2, 1, 6)
 size = Vector3(5.2, 1, 2.7)
 
 [sub_resource type="BoxShape3D" id="covor_helga"]
-size = Vector3(3.4, 1, 3)
+size = Vector3(3.6, 1, 3.6)
 
 [sub_resource type="BoxShape3D" id="covor_dormitor"]
 size = Vector3(3.2, 1, 3.6)
@@ -230,6 +231,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.4, 1.8, -8.4)
 light_color = Color(1, 0.72, 0.45, 1)
 light_energy = 0.8
 omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("17")
+energie = 0.8
+
+[node name="Pian" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.55, 1.75, -12.95)
+light_color = Color(1, 0.72, 0.45, 1)
+light_energy = 0.8
+omni_range = 4.0
 omni_attenuation = 1.4
 script = ExtResource("17")
 energie = 0.8
@@ -563,3 +573,6 @@ script = ExtResource("26")
 [node name="Jucator" parent="." instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -1.4)
 suprafata_implicita = "lemn"
+
+[node name="Pisica" parent="." instance=ExtResource("32")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2, 3.615, -11.3)

@@ -1,6 +1,6 @@
 # Înăuntrul conacului coven-ului (conac_interior.tscn) și cine e acolo: living room-ul gotic cu scara dublă și
 # galeria, cele două camere de la etaj (Helga în dreapta), vrăjitoarele care stau la povești, Helga, manechinul de
-# antrenament și mâna ta (vraja Fireball, la persoana întâi).
+# antrenament, mâna ta (vraja Fireball, la persoana întâi) și pisica neagră din dormitor.
 # Le apelează modele.py, dar merge și singur (mai repede, doar astea):
 #   blender --background --factory-startup --python tools/blender/conac_interior.py
 #   blender --background --factory-startup --python tools/blender/conac_interior.py -- helga manechin
@@ -15,7 +15,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, linie, uneste, exporta, trunchi  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, linie, uneste, exporta, trunchi, _coloreaza  # noqa: E402
 from lexy import prisma, _copii, _dovleac  # noqa: E402
 from conac import _pentagon, _roteste  # noqa: E402
 from coven import CERC, _cap, _corp, _maneca, _mana, _lerp, _parinte, _inel_vertical  # noqa: E402
@@ -41,6 +41,7 @@ GEAM_NOAPTE = p("2a3c3d")
 FLACARA = p("a18463")
 FLACARA_PORTOCALIE = p("a56850")
 PANZA = p("7a7b59")
+OCHI_PISICA = p("a18463")
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -167,11 +168,12 @@ def helga(cale):
 		cilindru("Rama brosa", 0.03, 0.03, 0.01, (0, -0.088, 1.385 * h), AUR, laturi=8, rot=(math.pi / 2, 0, 0)),
 		cilindru("Brosa", 0.022, 0.018, 0.012, (0, -0.098, 1.385 * h), ROSU, laturi=8, rot=(math.pi / 2, 0, 0)),
 	]
-	# brațul stâng ține cartea la piept
-	umar, cot, inch = (0.21, 0.0, z_umar), (0.25, -0.05, z_umar - 0.27), (0.04, -0.21, z_umar - 0.22)
+	# brațul stâng ține cartea la piept: cotul jos pe lângă corp, antebrațul (cu mâneca largă, clopot) trece orizontal
+	# prin fața corpului, cartea stă în picioare PE el, rezemată de piept, iar palma urcă pe coperta din față și o
+	# ține. (Înainte antebrațul trecea prin copertă: mâneca are 10 cm rază la încheietură, nu încape între carte și piept.)
+	umar, cot, inch = (0.21, 0.0, z_umar), (0.26, -0.06, z_umar - 0.31), (-0.07, -0.22, z_umar - 0.33)
 	_maneca(piese, umar, cot, inch, s["roba"], s["roba_umbra"])
-	d = _norm([b - a for a, b in zip(cot, inch)])
-	_mana(piese, _lerp(cot, inch, 1.02), d, (0.0, 0.0, 1.0), s["piele"], NEGRU, r, deschisa=False)
+	_mana(piese, _lerp(cot, inch, 1.02), _norm((-0.05, 0.12, 1.0)), (1.0, 0.0, 0.0), s["piele"], NEGRU, r, deschisa=False)
 	carte = [
 		cub("Coperta", (0.17, 0.008, 0.24), (0, -0.017, 0), ROSU),
 		cub("Coperta", (0.17, 0.008, 0.24), (0, 0.017, 0), ROSU),
@@ -179,7 +181,8 @@ def helga(cale):
 		cub("Pagini", (0.158, 0.026, 0.226), (0.004, 0, 0), OS),
 		cilindru("Pentagrama carte", 0.04, 0.04, 0.004, (0.0, -0.023, 0.02), AUR, laturi=5, rot=(math.pi / 2, 0, 0)),
 	]
-	_muta(carte, (0.12, 0.0, -0.35), (0.09, -0.24, z_umar - 0.22))
+	# puțin înclinată cu vârful spre piept, cu jos-ul pe mânecă (10 cm deasupra antebrațului)
+	_muta(carte, (-0.1, 0.0, -0.08), (0.01, -0.205, z_umar - 0.33 + 0.105 + 0.12))
 	piese += carte
 	uneste(piese, "Corp")
 
@@ -281,7 +284,9 @@ def mana_jucator(cale):
 		sfera("Podul palmei", 0.03, (0.018, 0.035, -0.006), piele, scara=(1.0, 1.0, 0.6), segmente=8, inele=5),
 		trunchi("Antebrat", [((0.0, 0.05, -0.012), 0.032, 0.022), ((0.02, 0.16, -0.06), 0.038, 0.028), ((0.05, 0.32, -0.13), 0.042, 0.032)],
 			piele, laturi=8),
-		trunchi("Maneca", [((0.012, 0.12, -0.044), 0.05, 0.042), ((0.03, 0.22, -0.088), 0.056, 0.048), ((0.06, 0.38, -0.16), 0.062, 0.054)],
+		# mâneca e lungă (70 cm), ca să iasă din ecran oricum ai ține mâna (și când mângâi pisica)
+		trunchi("Maneca", [((0.012, 0.12, -0.044), 0.05, 0.042), ((0.03, 0.22, -0.088), 0.056, 0.048), ((0.06, 0.38, -0.16), 0.062, 0.054),
+			((0.09, 0.55, -0.235), 0.066, 0.058), ((0.115, 0.72, -0.31), 0.07, 0.062)],
 			NEGRU, laturi=8),
 		trunchi("Manseta", [((0.011, 0.108, -0.04), 0.053, 0.045), ((0.014, 0.13, -0.05), 0.053, 0.045)], LEMN, laturi=8),
 	]
@@ -648,7 +653,12 @@ def _covor(piese, cx, cy, lx, ly, baza, margine, r, pentagrama=None, z=0.0):
 		cub("Linie covor", (0.05, ly - 2 * d - 0.05, 0.012), (cx + lx / 2 - d, cy, z + 0.021), AUR),
 	]
 	if pentagrama:
-		rr = pentagrama
+		# medalionul (raza rr + 0,15) stă la aceeași înălțime ca liniile de aur și chenarul: dacă le atinge, fețele se
+		# bat (z-fighting, liniile ies rupte). Îl ținem cu 8 cm înăuntrul liniilor.
+		incape = min(lx, ly) / 2 - d - 0.025 - 0.08 - 0.15
+		if pentagrama > incape:
+			print("COVOR: pentagrama %.2f nu încape în covorul %.1f x %.1f, o micșorez la %.2f" % (pentagrama, lx, ly, incape))
+		rr = min(pentagrama, incape)
 		piese.append(cilindru("Medalion", rr + 0.15, rr + 0.15, 0.012, (cx, cy, z + 0.021), margine, laturi=20))
 		piese.append(inel("Cerc covor", rr, 0.025, (cx, cy, z + 0.033), AUR, segmente=20))
 		varfuri = [(cx + math.cos(math.pi / 2 + k * math.tau / 5) * rr, cy + math.sin(math.pi / 2 + k * math.tau / 5) * rr) for k in range(5)]
@@ -679,43 +689,112 @@ def _candelabru(piese, lumini, cx, cy, cz, tavan, raza=1.15, mic=False):
 			piese.append(cilindru("Picatura", 0.018, 0.0, 0.07, (x, y, zc - 0.07), AUR, laturi=4, rot=(math.pi, 0, 0)))
 
 
-def _orga(piese, col, unghi, loc):
-	"""Orga de lemn negru din colțul din dreapta: consola cu două claviaturi, registrele, pupitrul cu partitura,
-	tuburile de cositor care urcă pe perete și dulapul cu fronton gotic din spatele lor, bancheta."""
-	c, k = [], []
+def _placa(nume, contur, z0, z1, culoare):
+	"""Placă culcată, de la z0 la z1, cu marginea `contur` (punctele (x, y), în ordine; poate fi și concavă: carcasa
+	pianului cu coadă)."""
+	import bmesh
+	bm = bmesh.new()
+	jos = [bm.verts.new((x, y, z0)) for x, y in contur]
+	sus = [bm.verts.new((x, y, z1)) for x, y in contur]
+	bm.faces.new(jos)
+	bm.faces.new(list(reversed(sus)))
+	n = len(contur)
+	for i in range(n):
+		bm.faces.new((jos[i], jos[(i + 1) % n], sus[(i + 1) % n], sus[i]))
+	bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+	bmesh.ops.triangulate(bm, faces=bm.faces[:])
+	me = bpy.data.meshes.new(nume)
+	bm.to_mesh(me)
+	bm.free()
+	ob = bpy.data.objects.new(nume, me)
+	bpy.context.scene.collection.objects.link(ob)
+	_coloreaza(ob, culoare)
+	return ob
+
+
+# Conturul pianului cu coadă, văzut de sus: clapele pe latura dreaptă de la y = 0 (spre -Y, unde stă pianistul), basul
+# în stânga (latura dreaptă, lungă), iar în dreapta curba în S a carcasei până la coada rotunjită.
+CONTUR_PIAN = [(-0.75, 0.0), (0.75, 0.0), (0.75, 0.38), (0.69, 0.62), (0.52, 0.84), (0.33, 1.06), (0.24, 1.32), (0.17, 1.58),
+	(0.04, 1.8), (-0.18, 1.93), (-0.45, 1.96), (-0.64, 1.89), (-0.74, 1.74), (-0.75, 1.55)]
+
+
+def _pian(piese, lumini, col, unghi, loc):
+	"""Pianul cu coadă (în locul orgii, care stătea în drum): lac negru, capacul ridicat pe bețul lui (se vede placa de
+	aur cu corzile), clapele de os cu clapele negre, pupitrul cu partitura, trei picioare strunjite cu rotile de alamă,
+	lira cu pedalele, bancheta cu pernă roșie și un craniu pe carcasă."""
+	c = []
+	zj, zs = 0.66, 0.98  # carcasa: dedesubt și buza de sus
+	zp = zs - 0.06  # fața de sus a corpului plin; deasupra ei, între pereții carcasei, stă placa cu corzile
 	c += [
-		cub("Consola", (2.0, 0.8, 0.82), (0, 0, 0.41), LEMN),
-		cub("Claviatura", (1.7, 0.28, 0.05), (0, -0.5, 0.8), OS),
-		cub("Sub claviatura", (1.8, 0.4, 0.06), (0, -0.45, 0.74), LEMN_DESCHIS),
-		cub("Claviatura", (1.7, 0.22, 0.05), (0, -0.33, 0.93), OS),
-		cub("Dulap orga", (2.0, 0.5, 1.5), (0, 0.15, 1.57), LEMN),
-		cub("Pupitru", (0.9, 0.04, 0.42), (0, -0.14, 1.2), LEMN_DESCHIS, rot=(-0.2, 0, 0)),
-		cub("Partitura", (0.62, 0.012, 0.32), (0, -0.165, 1.21), OS, rot=(-0.2, 0, 0)),
-		cub("Spate orga", (2.2, 0.12, 2.3), (0, 0.34, 3.45), LEMN),
-		prisma("Fronton orga", [(-1.1, 4.6), (1.1, 4.6), (0, 5.3)], "xz", 0.28, 0.4, LEMN),
-		cub("Cornisa orga", (2.3, 0.6, 0.1), (0, 0.15, 2.37), LEMN_DESCHIS),
+		_placa("Corp pian", CONTUR_PIAN, zj, zp, NEGRU),
+		# placa de fontă aurie (se vede pe sub capacul ridicat)
+		_placa("Placa corzi", [(x * 0.9, 0.08 + y * 0.9) for x, y in CONTUR_PIAN], zp, zp + 0.014, AUR),
 	]
-	for i in range(19):  # clapele negre (câte două și trei, ca la pian)
-		if i % 7 in (2, 6):
+	# pereții carcasei: câte o scândură de 3 cm pe fiecare latură a conturului, de la corp până la buză
+	n = len(CONTUR_PIAN)
+	for i in range(n):
+		(x0, y0), (x1, y1) = CONTUR_PIAN[i], CONTUR_PIAN[(i + 1) % n]
+		lung = math.hypot(x1 - x0, y1 - y0)
+		nx, ny = (y1 - y0) / lung, -(x1 - x0) / lung  # normala spre exterior (conturul merge invers acelor de ceasornic)
+		c.append(cub("Perete pian", (lung + 0.03, 0.03, zs - zp + 0.01), ((x0 + x1) / 2 - nx * 0.015, (y0 + y1) / 2 - ny * 0.015,
+			(zs + zp) / 2 + 0.005), NEGRU, rot=(0, 0, math.atan2(y1 - y0, x1 - x0))))
+	for k, lung in enumerate((1.32, 1.38, 1.4, 1.38, 1.32, 1.25, 1.08, 0.66, 0.48)):  # corzile, cât încap pe placă
+		x = -0.6 + k * 0.125
+		c.append(cub("Coarda", (0.012, lung, 0.008), (x, 0.36 + lung / 2, zp + 0.018), OS))
+	# în față, peste mecanism, capacul fix (pe el stau pupitrul și craniul); capacul mare are balamaua pe latura basului
+	# (x = -0.75) și e ridicat ~33 de grade spre sală, pe bețul lui
+	c.append(cub("Capac fata", (1.55, 0.35, 0.022), (0, 0.17, zs + 0.011), NEGRU))
+	capac = [_placa("Capac pian", [(x + 0.765, max(y, 0.34)) for x, y in CONTUR_PIAN], 0.0, 0.022, NEGRU)]
+	_muta(capac, (0, -0.58, 0), (-0.765, 0, zs + 0.004))
+	c += capac
+	xb = -0.765 + 1.15 * math.cos(0.58)
+	c.append(os_intre("Bat capac", (xb, 0.95, zp + 0.014), (xb, 0.95, zs + 0.004 + 1.15 * math.sin(0.58) - 0.01), 0.012, NEGRU, laturi=4))
+	# claviatura: patul clapelor iese în față, cu obrajii de la capete; clapele albe de os, cele negre câte două și trei
+	c += [
+		cub("Pat clape", (1.5, 0.3, 0.07), (0, -0.15, zj + 0.06), NEGRU),
+		cub("Clape", (1.3, 0.16, 0.025), (0, -0.11, zj + 0.107), OS),
+		cub("Spate clape", (1.3, 0.08, 0.14), (0, 0.02, zj + 0.16), NEGRU),
+		cub("Obraz pian", (0.11, 0.33, 0.16), (-0.705, -0.145, zj + 0.13), NEGRU),
+		cub("Obraz pian", (0.11, 0.33, 0.16), (0.705, -0.145, zj + 0.13), NEGRU),
+	]
+	for i in range(30):
+		if i % 7 in (2, 6) or i > 28:
 			continue
-		for z, y in ((0.835, -0.46), (0.965, -0.3)):
-			c.append(cub("Clapa neagra", (0.03, 0.14, 0.022), (-0.81 + i * 0.09, y, z), NEGRU))
-	for s in (-1, 1):  # registrele
-		for j in range(4):
-			c.append(cilindru("Registru", 0.022, 0.022, 0.05, (s * (0.6 + j * 0.09), -0.11, 1.05 + (j % 2) * 0.1), OS if j % 2 else ROSU,
-				laturi=6, rot=(math.pi / 2, 0, 0)))
-	for i in range(11):  # tuburile
-		h = 1.0 + (5 - abs(i - 5)) * 0.32
-		x = -0.95 + i * 0.19
-		c.append(cilindru("Tub orga", 0.07, 0.07, h, (x, 0.1, 2.42 + h / 2), PIATRA, laturi=8))
-		c.append(cilindru("Picior tub", 0.07, 0.02, 0.2, (x, 0.1, 2.52), PIATRA, laturi=8, rot=(math.pi, 0, 0)))
-		c.append(prisma("Gura tub", [(x - 0.035, 2.75), (x + 0.035, 2.75), (x, 2.85)], "xz", 0.02, 0.031, NEGRU))
+		c.append(cub("Clapa neagra", (0.022, 0.09, 0.022), (-0.6 + i * 0.0415 + 0.02, -0.075, zj + 0.13), NEGRU))
+	# pupitrul cu partitura (aplecat spre spate) și un craniu pe buza din stânga
 	c += [
-		cub("Bancheta", (1.4, 0.38, 0.08), (0, -1.0, 0.5), LEMN),
-		cub("Picior bancheta", (0.08, 0.3, 0.46), (-0.6, -1.0, 0.23), LEMN),
-		cub("Picior bancheta", (0.08, 0.3, 0.46), (0.6, -1.0, 0.23), LEMN),
+		cub("Pupitru pian", (0.78, 0.025, 0.3), (0, 0.16, zs + 0.17), NEGRU, rot=(0.28, 0, 0)),
+		cub("Partitura", (0.5, 0.012, 0.25), (0, 0.142, zs + 0.18), OS, rot=(0.28, 0, 0)),
 	]
-	k += [cub("Coliziune", (2.2, 0.85, 3.0), (0, 0.05, 1.5), LEMN), cub("Coliziune", (1.4, 0.4, 0.55), (0, -1.0, 0.27), LEMN)]
+	_craniu(c, -0.6, 0.15, zs + 0.022, 0.9, 0.5)
+	# picioarele strunjite (două la clape, unul la coadă), cu rotile de alamă
+	for x, y in ((-0.64, 0.12), (0.64, 0.12), (-0.5, 1.72)):
+		c += [
+			cilindru("Picior pian", 0.07, 0.05, 0.12, (x, y, zj - 0.06), NEGRU, laturi=8),
+			cilindru("Picior pian", 0.045, 0.06, zj - 0.17, (x, y, (zj - 0.17) / 2 + 0.05), NEGRU, laturi=8),
+			sfera("Inel picior", 0.065, (x, y, zj - 0.28), NEGRU, scara=(1, 1, 0.45), segmente=8, inele=4),
+			sfera("Rotila", 0.035, (x, y, 0.035), AUR, segmente=6, inele=4),
+		]
+	# lira cu pedalele, sub clape
+	c += [
+		cub("Lira", (0.26, 0.05, 0.035), (0, 0.32, zj - 0.02), NEGRU),
+		cub("Lira", (0.035, 0.05, zj - 0.12), (-0.09, 0.32, (zj - 0.12) / 2 + 0.08), NEGRU),
+		cub("Lira", (0.035, 0.05, zj - 0.12), (0.09, 0.32, (zj - 0.12) / 2 + 0.08), NEGRU),
+		cub("Cutie pedale", (0.3, 0.12, 0.06), (0, 0.3, 0.06), NEGRU),
+	]
+	for k in (-1, 0, 1):
+		c.append(cub("Pedala", (0.035, 0.13, 0.015), (k * 0.08, 0.2, 0.06), AUR))
+	# bancheta
+	c += [
+		cub("Bancheta", (0.85, 0.38, 0.07), (0, -0.72, 0.47), NEGRU),
+		cub("Perna bancheta", (0.8, 0.34, 0.05), (0, -0.72, 0.53), ROSU),
+	]
+	for sx in (-1, 1):
+		for sy in (-1, 1):
+			c.append(os_intre("Picior bancheta", (sx * 0.36, -0.72 + sy * 0.14, 0.44), (sx * 0.38, -0.72 + sy * 0.16, 0.0), 0.025, NEGRU,
+				laturi=5))
+	k = [cub("Coliziune", (1.5, 1.96, 1.0), (0, 0.98, 0.5), NEGRU), cub("Coliziune", (1.5, 0.32, 1.0), (0, -0.16, 0.5), NEGRU),
+		cub("Coliziune", (0.85, 0.4, 0.56), (0, -0.72, 0.28), NEGRU)]
 	piese += _muta(c, (0, 0, unghi), loc)
 	col += _muta(k, (0, 0, unghi), loc)
 
@@ -1013,8 +1092,11 @@ def conac_interior(cale):
 	_candelabru(piese, lumini, 0.0, 5.6, 6.2, H)
 
 	strange()
-	# --- colțurile din față: orga (dreapta); ceasul cu pendul (stânga) e în ceas_pendul.glb
-	_orga(piese, col, math.pi, (6.0, 0.45, 0.0))
+	# --- pianul cu coadă, sub galeria din dreapta, cu clapele spre sală (orga din colțul din față stătea în drumul spre
+	# scară); ceasul cu pendul din colțul din stânga e în ceas_pendul.glb
+	_pian(piese, lumini, col, -math.pi / 2, (4.9, 12.0, 0.0))
+	_sfesnic(piese, lumini, 4.55, 12.95, 0.0, brate=3, inalt=1.3)
+	col.append(cilindru("Coliziune", 0.2, 0.2, 1.6, (4.55, 12.95, 0.8), NEGRU, laturi=6))
 
 	strange()
 	# --- în stânga: o măsuță rotundă cu un glob de cristal, între două fotolii; un sfeșnic înalt
@@ -1250,7 +1332,7 @@ def _camera_helga(piese, lumini, geamuri, col, r):
 	# dovleci, covorul cu pentagramă, mături, ierburi, lilieci, un candelabru mic, pânze de păianjen
 	for x, y, rr in ((16.45, 8.6, 0.22), (16.45, 15.4, 0.2), (16.0, 8.55, 0.13)):
 		_dovleac_aprins(piese, lumini, x, y, z, rr, _spre(x, y, xm, ym), r)
-	_covor(piese, 13.0, 11.7, 3.4, 3.0, p("2a3c3d"), VISINIU, r, pentagrama=1.05, z=z)
+	_covor(piese, 13.0, 11.7, 3.6, 3.6, p("2a3c3d"), VISINIU, r, pentagrama=1.05, z=z)
 	for k, (x, y) in enumerate(((9.75, 8.55), (10.1, 8.5))):
 		baza = Vector((x + 0.05 * k, y + 0.5, z + 0.3))
 		varf = Vector((x, y + 0.04, z + 1.7))
@@ -1275,8 +1357,7 @@ def _camera_helga(piese, lumini, geamuri, col, r):
 
 
 def _camera_stanga(piese, lumini, geamuri, col, r):
-	"""Camera din stânga de sus: un dormitor gotic. Pat cu baldachin și draperii roșii (o pisică neagră doarme pe el),
-	dulap sculptat, măsuță de toaletă cu oglindă ovală, biblioteci, un cufăr, dovleci aprinși, un candelabru mic."""
+	"""Camera din stânga de sus: un dormitor gotic. Pat cu baldachin și draperii roșii, dulap sculptat, măsuță de toaletă cu oglindă ovală, biblioteci, un cufăr, dovleci aprinși, un candelabru mic."""
 	z = ET
 	xm, ym = (-W - G - CAM_X1) / 2, (CAM_Y0 + CAM_Y1) / 2
 	for y in (9.5, 14.5):
@@ -1309,17 +1390,7 @@ def _camera_stanga(piese, lumini, geamuri, col, r):
 		piese.append(cub("Bara baldachin", (px1 - px0, 0.08, 0.12), (pmx, y, z + 2.58), LEMN))
 	for x in (px0, px1):
 		piese.append(cub("Bara baldachin", (0.08, py1 - py0, 0.12), (x, 12.0, z + 2.58), LEMN))
-	# pisica neagră, ghemuită pe plapumă
-	kx, ky, kz = px1 - 0.55, 12.35, z + 0.77
-	piese += [
-		sfera("Pisica", 0.2, (kx, ky, kz + 0.07), NEGRU, scara=(1.0, 0.75, 0.5), segmente=8, inele=5),
-		sfera("Cap pisica", 0.075, (kx + 0.17, ky - 0.1, kz + 0.1), NEGRU, segmente=8, inele=5),
-		trunchi("Coada pisica", [((kx - 0.16, ky + 0.05, kz + 0.05), 0.025, 0.025), ((kx - 0.1, ky - 0.15, kz + 0.04), 0.022, 0.022),
-			((kx + 0.08, ky - 0.2, kz + 0.04), 0.018, 0.018)], NEGRU, laturi=5),
-	]
-	for s in (-1, 1):
-		piese.append(prisma("Ureche pisica", [(ky - 0.1 + s * 0.02, kz + 0.15), (ky - 0.1 + s * 0.065, kz + 0.15), (ky - 0.1 + s * 0.045, kz + 0.21)],
-			"yz", kx + 0.16, kx + 0.18, NEGRU))
+	# (pisica neagră nu mai doarme pe pat: stă pe covor și o poți mângâia, e separată: pisica.glb + scenes/pisica.tscn)
 	col.append(cub("Coliziune", (px1 - px0 + 0.2, py1 - py0 + 0.2, 2.8), (pmx, 12.0, z + 1.4), LEMN))
 	piese.append(cub("Cufar", (0.5, 1.2, 0.5), (px1 + 0.4, 12.0, z + 0.25), LEMN_DESCHIS))
 	piese.append(cilindru("Capac cufar", 0.25, 0.25, 1.2, (px1 + 0.4, 12.0, z + 0.5), LEMN_DESCHIS, laturi=8, rot=(math.pi / 2, 0, 0),
@@ -1364,6 +1435,66 @@ def _camera_stanga(piese, lumini, geamuri, col, r):
 	_candelabru(piese, lumini, xm, ym, CAM_H - 0.9, CAM_H, raza=0.5, mic=True)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Pisica neagră din dormitor
+# ---------------------------------------------------------------------------------------------------------------
+
+def pisica(cale):
+	"""Pisica neagră a coven-ului, așezată pe jos cu coada strânsă în fața labelor: zgardă roșie cu clopoțel de aur,
+	ochi galbeni cu pupile verticale, mustăți albe. Piese separate, ca să se miște în joc (pisica.gd): `Corp`, `Cap`
+	(originea în gât: se uită după tine, își ridică fruntea în mâna ta) cu `Ochi` (strălucesc; originea la mijlocul
+	ochilor, se strâng când clipește și când toarce) și `Coada` (originea la rădăcină)."""
+	curata()
+	blana, roz = NEGRU, p("5e363e")
+	piese = [
+		# pieptul drept, șoldurile late jos, gâtul
+		trunchi("Corp", [((0, 0.05, 0.0), 0.0, 0.0), ((0, 0.05, 0.02), 0.1, 0.12), ((0, 0.04, 0.08), 0.115, 0.13),
+			((0, 0.02, 0.15), 0.09, 0.1), ((0, -0.01, 0.22), 0.07, 0.075), ((0, -0.025, 0.27), 0.055, 0.058),
+			((0, -0.03, 0.31), 0.042, 0.045)], blana, laturi=10),
+		inel("Zgarda", 0.056, 0.009, (0, -0.028, 0.272), ROSU, segmente=12),
+		sfera("Clopotel", 0.014, (0, -0.088, 0.258), AUR, segmente=8, inele=5),
+		cub("Gura clopotel", (0.016, 0.004, 0.003), (0, -0.101, 0.254), NEGRU),
+	]
+	for s in (-1, 1):
+		piese += [
+			sfera("Sold", 0.07, (s * 0.075, 0.07, 0.07), blana, scara=(0.75, 1.15, 1.0), segmente=8, inele=6),
+			os_intre("Picior fata", (s * 0.035, -0.06, 0.2), (s * 0.035, -0.088, 0.025), 0.02, blana, laturi=6),
+			sfera("Laba fata", 0.026, (s * 0.035, -0.098, 0.016), blana, scara=(1.0, 1.3, 0.62), segmente=8, inele=5),
+			sfera("Laba spate", 0.028, (s * 0.085, -0.03, 0.014), blana, scara=(0.9, 1.7, 0.5), segmente=8, inele=5),
+		]
+	uneste(piese, "Corp")
+
+	cap, ochi = [], []
+	cap += [
+		sfera("Cap", 0.062, (0, -0.055, 0.345), blana, scara=(1.12, 1.0, 0.92), segmente=10, inele=7),
+		sfera("Bot", 0.026, (0, -0.108, 0.325), blana, scara=(1.25, 0.8, 0.75), segmente=8, inele=5),
+		sfera("Barbie", 0.015, (0, -0.095, 0.305), blana, segmente=6, inele=4),
+		sfera("Nas", 0.008, (0, -0.127, 0.335), roz, scara=(1.3, 0.7, 0.8), segmente=6, inele=4),
+	]
+	for s in (-1, 1):
+		cap += [
+			sfera("Obraz", 0.028, (s * 0.034, -0.085, 0.325), blana, segmente=8, inele=5),
+			prisma("Ureche", [(s * 0.02, 0.385), (s * 0.068, 0.37), (s * 0.055, 0.445)], "xz", -0.07, -0.045, blana),
+			prisma("Ureche interior", [(s * 0.029, 0.388), (s * 0.06, 0.378), (s * 0.051, 0.428)], "xz", -0.077, -0.07, roz),
+		]
+		for k in range(3):  # mustățile
+			cap.append(os_intre("Mustata", (s * 0.022, -0.121, 0.323), (s * 0.115, -0.128 + k * 0.014, 0.338 - k * 0.016), 0.0015, OS,
+				laturi=3))
+		ochi += [
+			sfera("Ochi", 0.015, (s * 0.026, -0.108, 0.353), OCHI_PISICA, scara=(1.1, 0.45, 1.0), segmente=8, inele=6),
+			cub("Pupila", (0.004, 0.004, 0.02), (s * 0.026, -0.117, 0.353), NEGRU),
+		]
+	ob_cap = uneste(cap, "Cap", (0, -0.04, 0.3))
+	_parinte(uneste(ochi, "Ochi", (0, -0.108, 0.353)), ob_cap)
+
+	# coada: din spate, pe lângă șold, apoi strânsă în fața labelor
+	uneste([trunchi("Coada", [((0, 0.12, 0.03), 0.022, 0.022), ((0.08, 0.125, 0.02), 0.02, 0.02), ((0.135, 0.06, 0.018), 0.019, 0.019),
+		((0.135, -0.03, 0.018), 0.017, 0.017), ((0.1, -0.115, 0.018), 0.016, 0.016), ((0.04, -0.158, 0.02), 0.014, 0.014),
+		((-0.02, -0.162, 0.022), 0.011, 0.011), ((-0.055, -0.148, 0.026), 0.0, 0.0)], blana, laturi=6, ref=(0, 0, 1))],
+		"Coada", (0, 0.11, 0.03))
+	exporta(os.path.join(cale, "pisica.glb"))
+
+
 def salon(cale):
 	for i, (s, pahar) in enumerate(SALON):
 		vrajitoare_salon(cale, "vrajitoare_salon_%d" % (i + 1), s, 200 + i, pahar)
@@ -1374,6 +1505,7 @@ def toate(cale):
 	helga(cale)
 	manechin(cale)
 	mana_jucator(cale)
+	pisica(cale)
 	ceas_pendul(cale)
 	conac_interior(cale)
 

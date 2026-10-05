@@ -63,8 +63,14 @@ bucla() {
 }
 
 # --- pași: podeaua de lemn a casei și covorul din camera ta
+# Lemnul: pașii „vinyl” singuri sunau a tablă (tonuri care țiuie la 8–18 kHz). Le păstrăm doar tocul din mijloc
+# (lowpass 1,8 kHz, puțin mai plin la 400 Hz, coada scurtată) și dedesubt bufnitura joasă a scândurii (digital_footstep_wood).
 for i in 1 2 3 4; do
-	unic "pas_lemn_$i" "Footsteps/foley_footstep_vinyl_$i.wav"
+	ffmpeg -v error -y -i "$PACHET/Footsteps/foley_footstep_vinyl_$i.wav" -i "$PACHET/Footsteps/digital/digital_footstep_wood_$i.wav" -filter_complex \
+		"[0]aformat=channel_layouts=mono,silenceremove=start_periods=1:start_threshold=-50dB,lowpass=f=1800,lowpass=f=1800,highpass=f=90,equalizer=f=400:t=q:w=1:g=4,afade=t=out:st=0.03:d=0.22:curve=exp[a];[1]silenceremove=start_periods=1:start_threshold=-50dB,volume=-3dB,afade=t=out:st=0.12:d=0.15[b];[a][b]amix=inputs=2:normalize=0" \
+		-ac 1 "$OUT/_lemn.wav"
+	unic "pas_lemn_$i" "$OUT/_lemn.wav"
+	rm -f "$OUT/_lemn.wav"
 	unic "pas_covor_$i" "Footsteps/foley_footstep_carpet_$i.wav"
 done
 unic scartait_podea "Footsteps/foley_creak_1.wav"
@@ -387,3 +393,13 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=14:r=44100:s=3" \
 	-ac 1 "$OUT/_murmur.wav"
 bucla conac_murmur "$OUT/_murmur.wav" 2 mono
 rm -f "$OUT"/_aruncata.wav "$OUT"/_zbor.wav "$OUT"/_bum.wav "$OUT"/_murmur.wav
+
+# --- pisica neagră din dormitorul conacului: torsul (buclă). În pachet nu e, așa că e sintetizat: ~25 de „bătăi” pe
+# secundă de zgomot jos, expirația mai tare și mai lungă decât inspirația. 4 respirații de 2,2 s: lungimea e multiplu și
+# de respirație, și de bătaie, deci bucla se leagă singură (fără crossfade și fără tăiat liniștea de la început).
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(0)*2-1)*pow(max(sin(2*PI*25*t)\,0)\,3)*if(lt(mod(t\,2.2)\,1.3)\,sqrt(sin(PI*mod(t\,2.2)/1.3))\,0.45*sqrt(sin(PI*(mod(t\,2.2)-1.3)/0.9)))':s=44100:d=8.8" \
+	-af "lowpass=f=450,lowpass=f=450,highpass=f=30,equalizer=f=70:t=q:w=1:g=6" -ac 1 "$OUT/_tors.wav"
+g=$(castig_final "$OUT/_tors.wav" "anull")
+ffmpeg -v error -y -i "$OUT/_tors.wav" -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/pisica_tors.ogg"
+rm -f "$OUT/_tors.wav"
+echo "pisica_tors.ogg  (buclă)"

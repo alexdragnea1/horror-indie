@@ -34,6 +34,10 @@ const MODELE := {
 		"jos": Vector3.ZERO,
 		"ridicare": 0.02,
 		"raft": Vector3(0.0, 0.4, 0.0),
+		# are doar 6 cm și e roșu închis: fără puțin luciu, pe podeaua întunecată era doar un punct negru
+		"stralucitoare": ["Ambalaj", "Bomboana"],
+		"stralucire": 0.45,
+		"marime": 1.5,
 	},
 	"bani_5": {  # bancnota de 5 dolari de la Lexy (lexy_masa.gd); modelul e deja culcat
 		"scena": "res://models/bancnota.glb",
@@ -60,6 +64,7 @@ static func model(id: String) -> Node3D:
 	nod.set("material", load(date.material) if date.has("material") else MATERIAL)
 	if date.has("stralucitoare"):
 		nod.set("stralucitoare", PackedStringArray(date.stralucitoare))
+		nod.set("stralucire", date.get("stralucire", 1.0))
 	return nod
 
 
@@ -74,7 +79,10 @@ static func pune_jos(parinte: Node, id: String, nume: String, punct: Vector3, un
 	obiect.rotation.y = unghi
 	var m := model(id)
 	m.rotation = MODELE[id].jos
-	m.position.y = MODELE[id].ridicare
+	# obiectele foarte mici sunt puțin mai mari pe jos (`marime`), altfel de la înălțimea ochilor nu le vezi
+	var marime: float = MODELE[id].get("marime", 1.0)
+	m.scale = Vector3.ONE * marime
+	m.position.y = MODELE[id].ridicare * marime
 	obiect.add_child(m)
 	# o cutie de prins cu privirea, puțin mai mare decât obiectul (nu te împiedici de ea: e pe alt strat)
 	var cutie := ColiziuneModel.cutie_nod(obiect)
