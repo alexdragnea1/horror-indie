@@ -30,7 +30,7 @@ const NUME_CADAVRU := "Lexy"
 @export var loc_jaf := Vector3(1.55, 0.0, 0.9)
 ## Cât de tare o împinge glonțul (N·s).
 @export var forta_glont := 140.0
-## După „Leave Lexy's House” (sau după ce ai aruncat-o peste gard, vezi gard_cimitir.gd): vine autobuzul spre casă
+## După „Leave Lexy's House” sau după ce o împuști: în 6 s vine autobuzul spre casă
 ## (nodul `AutobuzAcasa`) și primești `sarcina_plecare`.
 @export var marcaj_plecare := "gata_la_lexy"
 @export var sarcina_plecare := "Take the bus home."
@@ -66,6 +66,9 @@ func _ready() -> void:
 		_camera = _cap.get_node("Camera3D")
 	# canapea_lexy.gd o pune pe scaun la primul cadru; abia apoi o lăsăm moartă / speriată
 	await get_tree().process_frame
+	# salvări de dinainte ca autobuzul să vină la împușcare
+	if Stare.e_marcat(marcaj_moarta):
+		pleaca(marcaj_plecare, sarcina_plecare)
 	if Stare.e_marcat(marcaj_luata):
 		lexy.hide()
 		lexy.mort = true
@@ -205,6 +208,7 @@ func _tween() -> Tween:
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
 	if not lexy.mort and Stare.e_marcat(marcaj_jaf) and _sta_pe_scaun():
 		_moare(directie, forta_glont)
+		pleaca(marcaj_plecare, sarcina_plecare)
 
 
 ## Cade de pe scaun ca un ragdoll, iar după ce se oprește o poți lua cu E. Ca Personaj.omoara.

@@ -13,9 +13,6 @@ const MATERIAL := preload("res://shaders/material_model.tres")
 const MIJLOC := 0.9
 
 @export var marcaj_aruncata := "lexy_peste_gard"
-## După aruncare vine autobuzul spre casă, ca după „Leave Lexy's House” (vezi LexyMasa.pleaca).
-@export var marcaj_plecare := "gata_la_lexy"
-@export var sarcina_plecare := "Take the bus home."
 ## Poarta (n-o arunci peste ea: e mai înaltă și are crucea deasupra) și cât de lată e.
 @export var x_poarta := -6.0
 @export var latime_poarta := 3.4
@@ -120,7 +117,6 @@ func interactioneaza() -> void:
 	await get_tree().create_timer(0.6).timeout
 	_in_curs = false
 	await c.opreste()
-	LexyMasa.pleaca(marcaj_plecare, sarcina_plecare)
 
 
 ## Corpul e moale: brațele îi atârnă puțin în lături, picioarele un pic îndoite.
