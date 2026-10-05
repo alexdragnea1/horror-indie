@@ -98,8 +98,17 @@ func _physics_process(delta: float) -> void:
 	velocity.z = move_toward(velocity.z, directie.z * viteza, viteza * 10.0 * delta)
 	var y_inainte := global_position.y
 	var era_pe_podea := is_on_floor()
-	_urca_treapta(delta)
-	move_and_slide()
+	if _urca_treapta(delta):
+		# treapta te-a dus deja înainte cu pasul cadrului ăstuia: move_and_slide face doar restul (gravitația),
+		# altfel pe scări ai merge de două ori mai repede
+		var viteza_plan := Vector2(velocity.x, velocity.z)
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		velocity.x = viteza_plan.x
+		velocity.z = viteza_plan.y
+	else:
+		move_and_slide()
 	# urcat sau coborât brusc o treaptă: corpul sare, dar camera rămâne în urmă și ajunge lin
 	var salt := global_position.y - y_inainte
 	if era_pe_podea and is_on_floor() and absf(salt) > 0.02:
@@ -124,30 +133,35 @@ func _physics_process(delta: float) -> void:
 ## Dacă în față e o muchie joasă (bordură, prag), ridică jucătorul pe ea.
 ## Încearcă: sus cu inaltime_treapta, înainte cu cât ar merge cadrul ăsta, apoi jos până dă de podea.
 ## Urcă doar dacă acolo sus e podea adevărată (nu perete, nu pantă prea abruptă).
-func _urca_treapta(delta: float) -> void:
+## O pantă pe care se poate merge nu e treaptă: pe ea te duce move_and_slide (altfel, pe fiecare pantă, treapta te
+## muta înainte și move_and_slide încă o dată: viteză dublă la urcare). Întoarce true dacă te-a urcat.
+func _urca_treapta(delta: float) -> bool:
 	var miscare := Vector3(velocity.x, 0, velocity.z) * delta
 	if not is_on_floor() or miscare.length() < 0.001:
-		return
+		return false
 	var t := global_transform
-	if not test_move(t, miscare):
-		return  # nimic în față, merge normal
-	var sus := Vector3.UP * inaltime_treapta
 	var lovire := KinematicCollision3D.new()
+	if not test_move(t, miscare, lovire):
+		return false  # nimic în față, merge normal
+	if lovire.get_normal().angle_to(Vector3.UP) <= floor_max_angle:
+		return false  # pantă, nu treaptă
+	var sus := Vector3.UP * inaltime_treapta
 	if test_move(t, sus, lovire):
 		sus = lovire.get_travel()  # tavan jos: urcă doar cât se poate
 	t.origin += sus
 	if test_move(t, miscare):
-		return  # e perete, nu treaptă
+		return false  # e perete, nu treaptă
 	t.origin += miscare
 	if not test_move(t, -sus, lovire):
-		return  # dincolo e gol, nu treaptă
+		return false  # dincolo e gol, nu treaptă
 	if lovire.get_normal().angle_to(Vector3.UP) > floor_max_angle:
-		return
+		return false
 	t.origin += lovire.get_travel()
 	if t.origin.y - global_position.y <= 0.01:
-		return
+		return false
 	global_position = t.origin
 	velocity.y = 0.0
+	return true
 
 
 func _pas(_fuge: bool) -> void:

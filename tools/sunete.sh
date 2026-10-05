@@ -246,14 +246,48 @@ unic pistol_impuscatura "$OUT/_impuscatura.wav"
 unic pistol_primit "Weapons/weapon_pick_up.wav"
 unic corp_cazut "Materials/clothing_thud.wav" mono "lowpass=f=1500,asetrate=44100*0.8,aresample=44100"
 unic corp_luat "Materials/clothing_1.wav"
-unic cazan_plescait "Environment/water_splashing.wav" mono "asetrate=44100*0.7,aresample=44100,lowpass=f=3000"
-# unda de lumină: un sinus care urcă (70 -> 540 Hz) peste un șuierat care crește, cu tremolo și ecou
-ffmpeg -v error -y -f lavfi -i "aevalsrc=0.45*sin(2*PI*(70*t+90*t*t))*min(t*1.5\,1):s=44100:d=2.8" \
-	-f lavfi -i "anoisesrc=c=pink:a=0.35:d=2.8:r=44100" \
-	-filter_complex "[1]lowpass=f=2500,volume='min(t/2.2\,1)':eval=frame[z];[0][z]amix=inputs=2:normalize=0,tremolo=f=9:d=0.35,afade=t=out:st=2.4:d=0.4,aecho=0.8:0.7:90|230:0.3|0.2" \
-	-ac 1 "$OUT/_unda.wav"
-unic vraja_unda "$OUT/_unda.wav"
-unic vraja_bum "Retro/explosion_large.wav" mono "asetrate=44100*0.65,aresample=44100,lowpass=f=900,aecho=0.8:0.7:200|500:0.4|0.25"
+# --- sacrificiul din coven (cazan.gd): ca la trailerele de film, fiecare pas are sunetul lui și cresc unul din altul
+# STEREO: mono -> stereo lat (Haas: dreapta întârziată 13 ms, ecouri diferite pe fiecare parte)
+STEREO="asplit=2[st][dr];[st]aecho=0.8:0.6:230|520:0.25|0.15[st2];[dr]adelay=13,aecho=0.8:0.6:270|610:0.25|0.15[dr2];[st2][dr2]join=inputs=2:channel_layout=stereo"
+# corpul cade în cazan: pleoscăitul greu al poțiunii, carnea care se îneacă și o bufnitură joasă în pieptul tău
+ffmpeg -v error -y -i "$PACHET/Environment/water_splashing.wav" -i "$PACHET/Combat and Gore/squelching_1.wav" -i "$PACHET/Weapons/harsh_thud.wav" \
+	-f lavfi -i "aevalsrc='0.8*sin(2*PI*(55*t-12*t*t))*exp(-t*5)':s=44100:d=1.8" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.62,aresample=44100,lowpass=f=2600[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=80,volume=0.7[b];[2]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=700,volume=0.9[c];[a][b][c][3]amix=inputs=4:normalize=0:duration=longest,aecho=0.7:0.5:110|260:0.3|0.18,atrim=end=1.8,afade=t=out:st=1.3:d=0.5" \
+	-ac 1 "$OUT/_plescait.wav"
+unic cazan_plescait "$OUT/_plescait.wav"
+# corul (poțiunea se face verde, vrăjitoarele ridică brațele, ~3,4 s): un cor de „aaa” pe un acord disonant
+# (re, la, re, fa, sol diez = tritonul), care se umflă; sus, la sfârșit, două soprane la un semiton una de alta.
+# Fiecare voce = un ferăstrău blând (6 armonice) cu vibrato; formanții de „a” îi dă egalizatorul.
+voce() {  # voce FRECVENTA FAZA_VIBRATO
+	local f="$1" ph="$2" s="" k
+	for k in 1 2 3 4 5 6; do s="$s+sin(2*PI*$k*($f*t+$f*0.0025*sin(2*PI*5.3*t+$ph)))/$k"; done
+	echo "(0$s)"
+}
+COR="0.14*($(voce 73.42 0)+$(voce 110 1.1)+$(voce 146.83 2.3)+$(voce 174.61 0.6)+$(voce 207.65 1.7))*pow(min(t/3.4\,1)\,1.6)"
+SOPRANE="0.07*($(voce 587.33 0.4)+$(voce 622.25 2.0))*pow(max(0\,(t-1.8)/1.6)\,2)"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$COR+$SOPRANE':s=44100:d=3.6" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.8:d=3.6:r=44100:s=21" -i "$PACHET/Other/ghost_long.wav" \
+	-filter_complex "[0]equalizer=f=700:t=q:w=1.2:g=8,equalizer=f=1150:t=q:w=1.5:g=5,lowpass=f=3200,chorus=0.6:0.9:40|55|70:0.4|0.35|0.3:0.3|0.4|0.5:2|2.5|1.7[c];[1]lowpass=f=180,volume='pow(t/3.6\,2)*1.6':eval=frame[r];[2]aformat=channel_layouts=mono,areverse,asetrate=44100*0.7,aresample=44100,atrim=end=3.6,highpass=f=500,volume=0.35[g];[c][r][g]amix=inputs=3:normalize=0,afade=t=in:d=0.8,afade=t=out:st=3.35:d=0.25,$STEREO" \
+	-ac 2 "$OUT/_cor.wav"
+unic vraja_cor "$OUT/_cor.wav" stereo
+# unda de lumină (~3,2 s): lovitura „BRAAM” de film (un cluster de ferăstraie foarte jos, zdrențuit, care se stinge
+# încet), pocnitura de aer de la pornire, și pe dedesubt sinusul care urcă (70 -> 540 Hz), șuieratul care crește, stingerul de groază încetinit
+BRAAM="0.22*($(voce 36.71 0)+$(voce 55 1)+$(voce 73.42 2)+$(voce 77.78 3))*min(t/0.02\,1)*exp(-t*0.7)"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$BRAAM':s=44100:d=3.2" \
+	-f lavfi -i "aevalsrc=0.35*sin(2*PI*(70*t+75*t*t))*min(t*1.5\,1):s=44100:d=3.2" -f lavfi -i "anoisesrc=c=pink:a=0.35:d=3.2:r=44100:s=22" \
+	-i "$PACHET/Retro/explosion_large.wav" -i "$PACHET/Musical Effects/horror_sting.wav" -i "$PACHET/Other/whoosh_2.wav" \
+	-filter_complex "[0]acrusher=bits=9:mix=0.35,lowpass=f=1400,volume=1.2[b];[1]tremolo=f=9:d=0.35[s];[2]lowpass=f=2500,volume='min(t/2.6\,1)':eval=frame[z];[3]aformat=channel_layouts=mono,asetrate=44100*0.45,aresample=44100,atrim=end=0.6,afade=t=out:st=0.2:d=0.4,lowpass=f=1000[x];[4]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,volume=0.6[h];[5]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,lowpass=f=2000,volume=0.8[w];[b][s][z][x][h][w]amix=inputs=6:normalize=0:duration=longest,atrim=end=3.2,afade=t=out:st=2.6:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_unda.wav"
+unic vraja_unda "$OUT/_unda.wav" stereo
+# bubuitura de la sfârșit (~5,5 s): explozia mare (încetinită și cea normală, pentru pocnet), un bas care cade
+# (70 -> 25 Hz) și se simte în piept, tunetul care se rostogolește prin pădure, alama de groază, ecoul lung al dealurilor
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_large.wav" -f lavfi -i "aevalsrc='0.9*sin(2*PI*(70*t-4.5*t*t))*min(t/0.01\,1)*exp(-t*0.8)':s=44100:d=5.5" \
+	-f lavfi -i "anoisesrc=c=brown:a=1:d=5.5:r=44100:s=23" -i "$PACHET/Musical Effects/brass_negative_long.wav" \
+	-i "$PACHET/Musical Effects/horror_sting.wav" -i "$PACHET/Combat and Gore/crunch_splat.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asplit=2[e0][e1];[e0]asetrate=44100*0.5,aresample=44100,lowpass=f=1100[e];[e1]highpass=f=200,volume=0.5[p];[2]lowpass=f=240,tremolo=f=2.7:d=0.45,volume='min(t/0.15\,1)*exp(-t*0.55)*1.5':eval=frame[t];[3]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,lowpass=f=1500,adelay=150,volume=0.55[a];[4]aformat=channel_layouts=mono,asetrate=44100*0.45,aresample=44100,adelay=250,volume=0.45[h];[5]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,volume=0.4[g];[e][p][1][t][a][h][g]amix=inputs=7:normalize=0:duration=longest,aecho=0.8:0.7:300|750|1300:0.35|0.25|0.15,atrim=end=5.5,afade=t=out:st=4.3:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_bum.wav"
+unic vraja_bum "$OUT/_bum.wav" stereo
+rm -f "$OUT"/_plescait.wav "$OUT"/_cor.wav "$OUT"/_unda.wav "$OUT"/_bum.wav
 unic matura_scoasa "Other/whoosh_1.wav" mono "lowpass=f=4000"
 unic zbor_decolare "Other/whoosh_2.wav" mono "asetrate=44100*0.6,aresample=44100,lowpass=f=2500"
 # cântecul vrăjitoarelor: un murmur grav din trei voci care se umflă și se sting, fiecare în ritmul ei

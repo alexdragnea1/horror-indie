@@ -8,6 +8,7 @@ import random
 import sys
 
 import bpy
+from mathutils import Vector
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, uneste, exporta, trunchi  # noqa: E402
@@ -29,6 +30,7 @@ PANTALONI = p("2a3c3d")
 CACIULA = p("904a40")
 CACIULA_MANSETA = p("7b383a")
 AUR = p("a18463")
+AUR_UMBRA = p("a56850")
 
 ## Înălțimea șezutului (fața de sus a bușteanului din scenă).
 SEZUT = 0.5
@@ -71,6 +73,41 @@ def _brat(piese, umar, cot, incheietura, culoare, nume):
 	piese.append(os_intre("Manseta", manseta, incheietura, 0.05, HANORAC_UMBRA, laturi=8))
 
 
+def _lant(piese, trunchi_ob, z0):
+	"""Lanțul gros de aur, cu medalion. Trunchiul e lăsat pe spate și rotund, deci zalele nu pot sta pe o curbă
+	„de mână” (ieșeau îngropate în hanorac): fiecare za e pusă unde o rază trasă din față atinge pieptul, puțin
+	deasupra lui (pe normala suprafeței). Gros, cât să se vadă la 480x270."""
+	bpy.context.view_layer.update()
+
+	def pe_piept(x, z, departe):
+		lovit, loc, normala, _ = trunchi_ob.ray_cast((x, -1.0, z), (0, 1, 0))
+		if not lovit:  # pe lângă gât: trece pe după guler
+			return Vector((x, 0.14, z)), Vector((0, -1, 0))
+		return loc + normala * departe, normala
+
+	n = 16
+	puncte = []
+	for k in range(n + 1):
+		s = -1 + 2 * k / n
+		puncte.append(pe_piept(0.085 * s, z0 + 0.42 + 0.125 * s * s, 0.015)[0])
+	# zalele: mărgele turtite pe piept, legate de un „cordon” răsucit (4 laturi)
+	for a, b in zip(puncte, puncte[1:]):
+		piese.append(os_intre("Lant", a, b, 0.008, AUR, laturi=4))
+	# pe după gât (gâtul e la y = 0,14): capetele de pe umeri se închid într-un arc la ceafă
+	ceafa = [Vector((0.095 * math.cos(math.pi * k / 6), 0.14 + 0.085 * math.sin(math.pi * k / 6), z0 + 0.555)) for k in range(7)]
+	for a, b in zip([puncte[-1]] + ceafa, ceafa + [puncte[0]]):
+		piese.append(os_intre("Lant", a, b, 0.008, AUR, laturi=4))
+	for k, c in enumerate(puncte):
+		piese.append(sfera("Za", 0.014 if k % 2 else 0.012, c, AUR, scara=(1.0, 0.6, 1.0), segmente=6, inele=4))
+	# medalionul: o placă mare, culcată pe piept (după normala lui), cu ramă și un „diamant” în mijloc
+	centru, normala = pe_piept(0, z0 + 0.36, 0.02)
+	inclinare = math.atan2(-normala.z, -normala.y)
+	piese.append(os_intre("Agatatoare", puncte[n // 2], centru + Vector((0, 0, 0.035)), 0.007, AUR, laturi=4))
+	piese.append(cub("Medalion", (0.062, 0.016, 0.07), centru, AUR, rot=(inclinare, 0, 0)))
+	piese.append(cub("Rama", (0.046, 0.016, 0.054), centru + normala * 0.004, AUR_UMBRA, rot=(inclinare, 0, 0)))
+	piese.append(sfera("Diamant", 0.013, centru + normala * 0.012, ALB, scara=(1.0, 0.6, 1.0), segmente=6, inele=4))
+
+
 def betiv(cale):
 	"""Bețivul de pe dealul din dreapta: tânăr, negru la piele, mort de beat, tolănit pe buștean cu spatele lăsat,
 	picioarele depărtate, o bere în mâna dreaptă sprijinită pe genunchi, stânga atârnând peste celălalt genunchi.
@@ -106,14 +143,7 @@ def betiv(cale):
 		os_intre("Snur", (-0.035, 0.03, z0 + 0.535), (-0.045, -0.06, z0 + 0.4), 0.007, ALB, laturi=4),
 		os_intre("Snur", (0.035, 0.03, z0 + 0.535), (0.05, -0.055, z0 + 0.38), 0.007, ALB, laturi=4),
 	]
-	# lanțul de aur: zale pe o curbă care atârnă pe piept, cu un medalion
-	for k in range(13):
-		u = math.pi * (0.1 + 0.8 * k / 12)
-		x = math.cos(u) * 0.1
-		cade = math.sin(u)
-		piese.append(cub("Za", (0.016, 0.012, 0.012), (x, 0.06 - cade * 0.1, z0 + 0.55 - cade * 0.09), AUR,
-			rot=(0.6, 0, u)))
-	piese.append(cub("Medalion", (0.034, 0.012, 0.04), (0, -0.05, z0 + 0.44), AUR, rot=(0.35, 0, 0)))
+	_lant(piese, piese[1], z0)
 
 	uneste(piese, "Corp")
 

@@ -136,6 +136,7 @@ Ce se aude acum:
 - **pași** pe podeaua de lemn (uneori scârțâie), mai moi pe covorul cu pentagramă, pe beton afară și foșnind prin frunze uscate în grădină; clic la lanternă;
 - **bâzâit** la becuri, care tace când becul se stinge; **frigiderul** bâzâie, iar la deschidere și închidere se aud garnitura și borcanele;
 - **muzică** în fața blocului: piesa ta „Block” (din `Sound/Music`), în buclă; pornește încet când ieși din casă și o reglezi cu glisorul Music. Dacă schimbi piesa, rulează iar `bash tools/sunete.sh`;
+- **sacrificiul** din pădure, ca la film: corpul cade în cazan cu un pleosc greu și o bufnitură; un cor întunecat se umflă cât poțiunea se face verde; unda pornește cu o lovitură grea, „BRAAM”; la sfârșit, o bubuitură uriașă cu bas care se simte în piept și un tunet care se rostogolește prin pădure;
 - **boombox-ul** de pe deal: piesa ta „Deal” (din `Sound/Music`), în buclă; de departe se aude doar basul, de aproape tot. Dacă tragi în el cu pistolul se strică: plasticul crapă, sar scântei, muzica se îneacă și tace. Berea: clinchet, înghițituri, râgâit;
 - **coven-ul**: vrăjitoarele murmură un cântec grav, cazanul fierbe, focul de sub el trosnește; pistolul bubuie cu ecou prin pădure, corpul cade cu o bufnitură, în cazan face pleosc; unda de lumină urcă cu un vâjâit tot mai ascuțit, apoi bubuie; mătura apare cu un vâjâit, iar la decolare vântul crește;
 - **ușa camerei** scârțâie lung când o deschizi; **ceaunul** fierbe și gâlgâie din când în când; **ceasul** din bucătărie ticăie (e oprit la 11:55);

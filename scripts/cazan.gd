@@ -23,6 +23,7 @@ const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
 const SHADER_RAZA := preload("res://shaders/raza_vraja.gdshader")
 const SUNET_PLESCAIT := preload("res://sunete/cazan_plescait.ogg")
+const SUNET_COR := preload("res://sunete/vraja_cor.ogg")
 const SUNET_UNDA := preload("res://sunete/vraja_unda.ogg")
 const SUNET_BUM := preload("res://sunete/vraja_bum.ogg")
 ## Culoarea vârfurilor poțiunii din model (cea mai deschisă din paletă); materialul o înmulțește până la culoarea dorită.
@@ -30,6 +31,8 @@ const CULOARE_MODEL := Color("83b3b0")
 ## Înălțimea gurii cazanului (unde e poțiunea) și cât de înaltă e unda.
 const GURA := 1.22
 const INALTIME_UNDA := 140.0
+## Corul, unda și bubuitura sunt sunete „de film”: stereo, peste tot (nu din cazan), puțin mai tari decât efectele.
+const VOLUM_VRAJA := Sunet.VOLUM_EFECTE + 3.0
 
 var _lichid: MeshInstance3D
 var _foc: MeshInstance3D
@@ -118,7 +121,8 @@ func interactioneaza() -> void:
 	await _arunca_corpul(gura, model)
 	await get_tree().create_timer(0.5).timeout
 
-	# 2. poțiunea se face verde, fierbe mai tare, vrăjitoarele ridică brațele
+	# 2. poțiunea se face verde, fierbe mai tare, vrăjitoarele ridică brațele, corul se umflă
+	Sunet.reda(SUNET_COR, VOLUM_VRAJA)
 	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
 	tween.tween_method(_seteaza_culoare, culoare_inceput, culoare_vraja, 1.6)
 	tween.tween_method(func(v: float) -> void: _lichid.set_instance_shader_parameter("stralucire", v), 1.6, 3.0, 1.6)
@@ -129,7 +133,7 @@ func interactioneaza() -> void:
 	await get_tree().create_timer(1.5).timeout
 
 	# 3. unda de lumină spre cer
-	Sunet.reda_la(SUNET_UNDA, gura, Sunet.VOLUM_EFECTE)
+	Sunet.reda(SUNET_UNDA, VOLUM_VRAJA)
 	_unda.show()
 	_unda.scale = Vector3(0.3, 0.01, 0.3)
 	_mat_unda.set_shader_parameter("putere", 1.0)
@@ -147,7 +151,7 @@ func interactioneaza() -> void:
 	tween.tween_property(_lumina_unda, "light_energy", 0.0, 0.3)
 	await c.priveste(gura + Vector3.UP * 0.4, 0.5)
 	_unda.hide()
-	Sunet.reda_la(SUNET_BUM, gura, Sunet.VOLUM_EFECTE)
+	Sunet.reda(SUNET_BUM, VOLUM_VRAJA)
 	var bum := _particule(true)
 	bum.emitting = true
 	get_tree().create_timer(4.0).timeout.connect(bum.queue_free)
