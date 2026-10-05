@@ -10,6 +10,8 @@ extends Node
 static var din_casa := false
 
 @export var marcaj_dimineata := "e_dimineata"
+## Seara (după ce te-ai întors de la Lexy) curtea e a lui SearaBloc: aici nu se mai face zi.
+@export var marcaj_seara := "a_urcat_spre_casa"
 @export var mediu: WorldEnvironment
 ## `Luna` din scenă: ziua e soarele (aceeași direcție, altă culoare și putere).
 @export var soare: DirectionalLight3D
@@ -40,7 +42,7 @@ static var din_casa := false
 
 func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
-	if jucator == null or not Stare.e_marcat(marcaj_dimineata):
+	if jucator == null or not Stare.e_marcat(marcaj_dimineata) or Stare.e_marcat(marcaj_seara):
 		din_casa = false
 		return
 	_fa_zi()

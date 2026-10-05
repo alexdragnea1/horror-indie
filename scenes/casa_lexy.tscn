@@ -41,6 +41,11 @@
 [ext_resource type="Script" path="res://scripts/ceata_interior.gd" id="39"]
 [ext_resource type="Script" path="res://scripts/lexy_masa.gd" id="40"]
 [ext_resource type="Script" path="res://scripts/gard_cimitir.gd" id="41"]
+[ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="42"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="43"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="44"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="45"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="46"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -167,6 +172,23 @@ script = ExtResource("26")
 autobuz = NodePath("../Autobuz")
 marcaj = "autobuzul_a_plecat_de_la_lexy"
 sarcina_noua = "Go see Lexy."
+
+[node name="AutobuzAcasa" parent="." instance=ExtResource("25")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -200, 0.04, 14.85)
+
+[node name="SosireAutobuzAcasa" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("42")
+autobuz = NodePath("../AutobuzAcasa")
+marcaj = "gata_la_lexy"
+marcaj_oprire = "a_urcat_spre_casa"
+intarziere = 6.0
+loc_oprire = Vector3(2, 0.04, 14.85)
+scena_drum = "res://scenes/afara_bloc.tscn"
+marcaj_urcare = "a_urcat_spre_casa"
+titlu = "Block M7, Entrance B
+6:57 PM"
+sunete_urcare = Array[AudioStream]([ExtResource("43"), ExtResource("44"), ExtResource("43"), ExtResource("45"), ExtResource("46")])
+sunet_frana = ExtResource("46")
 
 [node name="Jucator" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0.16, 17.9)

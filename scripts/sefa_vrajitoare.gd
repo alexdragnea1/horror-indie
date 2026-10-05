@@ -27,6 +27,8 @@ extends Personaj
 @export var inaltime_matura := 0.88
 @export var loc_ea := 0.35
 @export var loc_tu := 0.5
+## Încotro decolați (zero = dinspre tine spre ea). La bloc: spre stradă, ca să nu zburați în bloc.
+@export var directie_zbor := Vector3.ZERO
 
 const MATERIAL := preload("res://shaders/material_model.tres")
 const MATERIAL_ROZ := preload("res://shaders/material_roz.tres")
@@ -127,6 +129,13 @@ func _zbor_acasa() -> void:
 	Dialog.spune(replici_acasa)
 	if Dialog.activ:
 		await Dialog.terminat
+	var sunete: Array[AudioStream] = [SUNET_ATERIZARE]
+	await _zboara_cu_tine(scena_acasa, titlu_acasa, sunete, marcaj_zbor)
+
+
+## Scoate mătura, se urcă pe ea, tu te urci în spatele ei, decolați, iar la `dupa_decolare` s după decolare: negru,
+## `marcaj` și `Tranzitie` spre `scena_noua` (cu `titlu` și `sunete` pe negru). Folosit și de sefa_seara.gd.
+func _zboara_cu_tine(scena_noua: String, titlu: String, sunete: Array[AudioStream], marcaj: String) -> void:
 	var jucator := _jucator() as CharacterBody3D
 	var c := Cutscena.porneste(self)
 	var cap: Node3D = jucator.get_node("Cap")
@@ -135,6 +144,8 @@ func _zbor_acasa() -> void:
 	var d := global_position - jucator.global_position
 	d.y = 0.0
 	d = d.normalized() if d.length() > 0.01 else global_transform.basis.z
+	if directie_zbor != Vector3.ZERO:
+		d = Vector3(directie_zbor.x, 0.0, directie_zbor.z).normalized()
 	var sol := global_position.y
 
 	# 1. scoate mătura: îi apare în mână, în picioare, cu un fum mov
@@ -226,11 +237,10 @@ func _zbor_acasa() -> void:
 		_tremur = clampf(t * 0.6, 0.0, 1.0), 0.0, dupa_decolare + 2.0, dupa_decolare + 2.0)
 	await get_tree().create_timer(dupa_decolare).timeout
 
-	# 5. ecran negru: te trezești în fața blocului (pe negru: vântul, apoi o bufnitură — ai aterizat)
-	Stare.marcheaza(marcaj_zbor)
+	# 5. ecran negru și scena următoare (de la coven: te trezești în fața blocului, cu o bufnitură pe negru)
+	Stare.marcheaza(marcaj)
 	Stare.meniu_deschis = false
-	var sunete: Array[AudioStream] = [SUNET_ATERIZARE]
-	Tranzitie.mergi_la(scena_acasa, titlu_acasa, sunete)
+	Tranzitie.mergi_la(scena_noua, titlu, sunete)
 
 
 func _process(delta: float) -> void:

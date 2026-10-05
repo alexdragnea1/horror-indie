@@ -1,0 +1,539 @@
+# Sediul coven-ului: conacul gotic din vârful dealului (conac.tscn) și ce e în curtea lui.
+# Le apelează modele.py, dar merge și singur (mai repede, doar astea):
+#   blender --background --factory-startup --python tools/blender/conac.py
+#   blender --background --factory-startup --python tools/blender/conac.py -- conac felinar_conac
+# Axe Blender: Z în sus, fața modelului spre -Y (în Godot devine +Z). Originea = la sol.
+# Conacul: originea e mijlocul fațadei corpului central (y = 0), la sol; corpul se întinde spre +Y.
+import math
+import os
+import random
+import sys
+
+import bpy
+from mathutils import Matrix, Vector
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, uneste, exporta, trunchi  # noqa: E402
+from lexy import prisma, _copii  # noqa: E402
+
+ZID = p("5e5356")             # piatra pereților
+PIATRA = p("6f6d7f")          # ramele, brâiele, colțurile (piatră mai deschisă)
+PIATRA_INCHISA = p("553e4d")  # soclul, coșurile
+ARDEZIE = p("2a3c3d")         # acoperișurile
+FIER = p("262d2f")            # creasta, felinarele, porțile
+LEMN = p("48313b")            # ușa
+GEAM_STINS = p("262d2f")
+GEAM_APRINS = p("a18463")
+GEAM_PORTOCALIU = p("a56850")
+ROSU = p("7b383a")
+IEDERA = p("32453b")
+IEDERA_DESCHISA = p("445d46")
+MUSCHI = p("5b6d4e")
+PIETRIS = p("6f6d7f")
+BORDURA = p("70706e")
+APA = p("295555")
+ALB = p("83b3b0")
+
+PL = 0.9                 # podeaua parterului (soclul)
+ETAJ = 3.5               # înălțimea unui etaj
+NIVELURI = [PL + k * ETAJ for k in range(3)]  # 0,9 / 4,4 / 7,9
+E_C = PL + 3 * ETAJ      # streașina corpului central (11,4)
+E_A = PL + 2 * ETAJ + 0.6  # streașina aripilor (8,5)
+CX = 7.0                 # corpul central: x între -7 și 7
+C_SPATE = 11.0           # adâncimea corpului central
+A_X = 15.6               # aripile: x între 7 și 15,6 (și oglindit)
+A_FATA, A_SPATE = 0.8, 12.6
+GOLF = 2.7               # golul din față (intrarea), x între -2,7 și 2,7
+GOLF_Y = -1.8            # cât iese în față
+TURN = (-15.8, 0.4)      # turnul pătrat (stânga, colțul din față al aripii), latura 4 m
+TURN_L = 2.0
+TURN_H = 18.6
+TURELA = (15.9, 0.7)     # turela rotundă (dreapta)
+TURELA_R = 2.1
+TURELA_H = 15.2
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Unelte
+# ---------------------------------------------------------------------------------------------------------------
+
+def _roteste(obiecte, centru, unghi):
+	"""Rotește piesele deja făcute (vârfurile lor sunt în coordonatele lumii) în jurul axei Z care trece prin `centru`.
+	Așa o fereastră făcută pe un perete cu fața spre -Y ajunge pe un perete lateral sau pe turela rotundă."""
+	c = Vector((centru[0], centru[1], 0.0))
+	m = Matrix.Translation(c) @ Matrix.Rotation(unghi, 4, 'Z') @ Matrix.Translation(-c)
+	for ob in obiecte:
+		ob.data.transform(m)
+		ob.data.update()
+
+
+def _pentagon(x0, x1, z0, z1, arc):
+	"""Conturul unei ferestre gotice (dreptunghi cu arc ascuțit deasupra), în planul XZ, în ordine."""
+	return [(x0, z0), (x1, z0), (x1, z1 - arc), ((x0 + x1) / 2, z1), (x0, z1 - arc)]
+
+
+def _lancet(piese, lumini, cx, yf, z0, lat, inalt, aprinsa, culoare=GEAM_APRINS, traversa=True):
+	"""Fereastră gotică (lancetă) pe un perete cu fața spre -Y (`yf` = fața peretelui): rama de piatră (iese 6 cm),
+	geamul cu 1,5 cm în fața ramei (aprins = în `lumini`, strălucește în joc), montantul și traversa de piatră,
+	pervazul. Întoarce piesele făcute (ca să le poți roti cu _roteste)."""
+	fac = []
+	x0, x1 = cx - lat / 2, cx + lat / 2
+	arc = lat * 0.8
+	z1 = z0 + inalt
+	fac.append(prisma("Rama fereastra", _pentagon(x0 - 0.14, x1 + 0.14, z0 - 0.1, z1 + 0.16, arc + 0.12), "xz",
+		yf - 0.06, yf + 0.05, PIATRA))
+	geam = prisma("Geam", _pentagon(x0, x1, z0, z1, arc), "xz", yf - 0.075, yf - 0.065,
+		culoare if aprinsa else GEAM_STINS)
+	(lumini if aprinsa else piese).append(geam)
+	fac.append(geam)
+	fac.append(cub("Montant", (0.06, 0.02, inalt - arc * 0.35), (cx, yf - 0.08, z0 + (inalt - arc * 0.35) / 2), PIATRA))
+	if traversa:
+		fac.append(cub("Traversa", (lat, 0.02, 0.06), (cx, yf - 0.08, z0 + (inalt - arc) * 0.62), PIATRA))
+	fac.append(cub("Pervaz", (lat + 0.42, 0.2, 0.09), (cx, yf - 0.1, z0 - 0.145), PIATRA))
+	piese += [o for o in fac if o is not geam]
+	return fac
+
+
+def _colturi(piese, xc, yc, sx, sy, z0, z1):
+	"""Pietrele de colț (alternativ lungi pe o parte și pe cealaltă), care ies 3 cm din ambii pereți."""
+	k = 0
+	z = z0
+	while z + 0.46 <= z1:
+		lx, ly = (0.7, 0.4) if k % 2 else (0.4, 0.7)
+		piese.append(cub("Colt", (lx, ly, 0.44), (xc + sx * (0.03 - lx / 2), yc + sy * (0.03 - ly / 2), z + 0.22), PIATRA))
+		z += 0.5
+		k += 1
+
+
+def _acoperis(piese, axa, a0, a1, b0, b1, e, panta, peste=0.4, creasta=True):
+	"""Acoperiș în două ape. axa "x": coama pe X (de la a0 la a1), apele spre y = b0 și b1; axa "y": invers.
+	Dedesubt podul de piatră (frontoanele, puțin sub plăci), deasupra plăcile de ardezie (22 cm), coama de fier și
+	creasta cu vârfuri. Întoarce înălțimea coamei."""
+	bm = (b0 + b1) / 2
+	r = e + (bm - b0) * panta
+	g = 0.22
+	ba, bb = b0 - peste, b1 + peste
+	za = e - peste * panta
+	plan = "yz" if axa == "x" else "xz"
+	piese.append(prisma("Pod", [(b0, e - 0.05), (b1, e - 0.05), (bm, r - 0.15)], plan, a0, a1, ZID))
+	piese.append(prisma("Acoperis", [(ba, za), (bm, r), (bm, r + g), (ba, za + g)], plan, a0 - 0.25, a1 + 0.25, ARDEZIE))
+	piese.append(prisma("Acoperis", [(bm, r), (bb, za), (bb, za + g), (bm, r + g)], plan, a0 - 0.25, a1 + 0.25, ARDEZIE))
+	lung = a1 - a0 + 0.5
+	if axa == "x":
+		piese.append(cub("Coama", (lung, 0.16, 0.14), ((a0 + a1) / 2, bm, r + g + 0.04), FIER))
+	else:
+		piese.append(cub("Coama", (0.16, lung, 0.14), (bm, (a0 + a1) / 2, r + g + 0.04), FIER))
+	if creasta:
+		n = int(lung / 0.55)
+		for k in range(n + 1):
+			a = a0 - 0.25 + k * lung / n
+			loc = (a, bm, r + g + 0.25) if axa == "x" else (bm, a, r + g + 0.25)
+			inalt = 0.42 if k % 3 == 0 else 0.26
+			piese.append(cilindru("Creasta", 0.025, 0.0, inalt, (loc[0], loc[1], r + g + 0.1 + inalt / 2), FIER, laturi=4))
+	return r
+
+
+def _cos(piese, x, y, z0, z1):
+	"""Coș de fum înalt, din piatră închisă, cu brâu, capac și trei olane."""
+	piese += [
+		cub("Cos", (0.9, 1.3, z1 - z0), (x, y, (z0 + z1) / 2), PIATRA_INCHISA),
+		cub("Brau cos", (1.04, 1.44, 0.16), (x, y, z1 - 0.5), PIATRA),
+		cub("Capac cos", (1.12, 1.52, 0.14), (x, y, z1 + 0.07), PIATRA),
+	]
+	for k in (-1, 0, 1):
+		piese.append(cilindru("Olan", 0.12, 0.09, 0.5, (x, y + k * 0.4, z1 + 0.39), ROSU, laturi=6))
+
+
+def _iedera(piese, r, x0, x1, y, z0, z1, spre=-1):
+	"""Iederă cățărată pe un perete cu fața spre -Y: frunzișul din plăci mici (2–4 cm în fața peretelui),
+	mai deasă jos, rărită în sus, cu tulpini."""
+	for k in range(int((x1 - x0) * (z1 - z0) * 3.2)):
+		x = r.uniform(x0, x1)
+		t = r.random() ** 1.6  # mai multă jos
+		z = z0 + t * (z1 - z0)
+		latime = r.uniform(0.25, 0.6) * (1.0 - t * 0.5)
+		piese.append(cub("Iedera", (latime, 0.012, r.uniform(0.18, 0.4)), (x, y + spre * r.choice((0.02, 0.032, 0.044)), z),
+			r.choice((IEDERA, IEDERA, IEDERA_DESCHISA)), rot=(0, r.uniform(-0.5, 0.5), 0)))
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Conacul
+# ---------------------------------------------------------------------------------------------------------------
+
+def conac(cale):
+	"""Conacul gotic al coven-ului, pe trei etaje: corpul central (cu golul intrării în față: ușa dublă sub arc
+	ascuțit, scara de piatră cu parapete și urne, felinarele de perete, rozeta din fronton), două aripi mai joase cu
+	frontoane ascuțite spre față, turnul pătrat din stânga (ceasul care arată 7:12, turla de ardezie cu fleșă și
+	turnulețe la colțuri) și turela rotundă din dreapta (con de ardezie). Acoperișuri abrupte cu creste de fier,
+	lucarne, coșuri înalte, pietre de colț, brâie între etaje, iederă. Ferestrele sunt lancete gotice; cam jumătate
+	sunt aprinse (`Lumini`, strălucesc în joc). Curtea (pietrișul, aleile cu borduri) e tot aici.
+	Piese: `Conac`, `Lumini`, `Coliziune` (pereții, acoperișurile, rampa peste trepte, parapetele)."""
+	curata()
+	r = random.Random(712)
+	piese, lumini = [], []
+
+	def aprinsa():
+		return r.random() < 0.55
+
+	def culoare_aprinsa():
+		return GEAM_PORTOCALIU if r.random() < 0.25 else GEAM_APRINS
+
+	def fereastra(cx, yf, z0, lat=1.0, inalt=2.3, centru=None, unghi=0.0, mereu=None):
+		a = aprinsa() if mereu is None else mereu
+		fac = _lancet(piese, lumini, cx, yf, z0, lat, inalt, a, culoare_aprinsa())
+		if centru is not None:
+			_roteste(fac, centru, unghi)
+
+	# --- corpul central
+	piese += [
+		cub("Zid", (2 * CX, C_SPATE, E_C), (0, C_SPATE / 2, E_C / 2), ZID),
+		cub("Soclu", (2 * CX + 0.2, C_SPATE + 0.2, PL + 0.1), (0, C_SPATE / 2, (PL + 0.1) / 2), PIATRA_INCHISA),
+		cub("Cornisa", (2 * CX + 0.3, C_SPATE + 0.3, 0.3), (0, C_SPATE / 2, E_C - 0.15), PIATRA),
+	]
+	for z in NIVELURI[1:]:
+		piese.append(cub("Brau", (2 * CX + 0.12, C_SPATE + 0.12, 0.14), (0, C_SPATE / 2, z - 0.1), PIATRA))
+	for z0 in NIVELURI:
+		for x in (-5.3, -3.9, 3.9, 5.3):
+			fereastra(x, 0.0, z0 + 0.75, lat=0.9)
+	# spatele corpului central (se vede doar dacă ocolești conacul)
+	for z0 in NIVELURI:
+		for x in (-4.5, -1.5, 1.5, 4.5):
+			fereastra(-x, 0.0, z0 + 0.75, lat=0.9, centru=(0, C_SPATE / 2), unghi=math.pi)
+	_colturi(piese, -CX, 0, -1, -1, PL + 0.1, E_C - 0.3)
+	_colturi(piese, CX, 0, 1, -1, PL + 0.1, E_C - 0.3)
+	r_c = _acoperis(piese, "x", -CX, CX, 0, C_SPATE, E_C, 1.45)
+	# lucarnele de pe apa din față (câte o fereastră aprinsă sub un fronton mic)
+	for x in (-4.8, 4.8):
+		y0 = 1.1
+		z_jos = E_C + (y0 + 0.4) * 1.45 - 0.6
+		piese.append(cub("Lucarna", (1.6, 2.6, 2.4), (x, y0 + 1.3, z_jos + 1.2), ZID))
+		_acoperis(piese, "y", y0 - 0.1, y0 + 2.6, x - 0.8, x + 0.8, z_jos + 2.4, 1.3, peste=0.2, creasta=False)
+		fereastra(x, y0, z_jos + 0.75, lat=0.7, inalt=1.3, mereu=True)
+	_cos(piese, -5.6, 6.2, r_c - 4.0, r_c + 2.2)
+	_cos(piese, 5.6, 6.2, r_c - 4.0, r_c + 2.2)
+
+	# --- golul intrării (iese în față), cu frontonul lui și rozeta
+	piese += [
+		cub("Zid", (2 * GOLF, -GOLF_Y + 0.3, E_C), (0, (GOLF_Y + 0.3) / 2, E_C / 2), ZID),
+		cub("Soclu", (2 * GOLF + 0.2, -GOLF_Y + 0.4, PL + 0.1), (0, (GOLF_Y - 0.1 + 0.3) / 2, (PL + 0.1) / 2), PIATRA_INCHISA),
+		cub("Cornisa", (2 * GOLF + 0.3, -GOLF_Y + 0.15, 0.3), (0, GOLF_Y / 2 - 0.075, E_C - 0.15), PIATRA),
+	]
+	for z in NIVELURI[1:]:
+		piese.append(cub("Brau", (2 * GOLF + 0.12, -GOLF_Y + 0.06, 0.14), (0, GOLF_Y / 2 - 0.03, z - 0.1), PIATRA))
+	_colturi(piese, -GOLF, GOLF_Y, -1, -1, PL + 0.1, E_C - 0.3)
+	_colturi(piese, GOLF, GOLF_Y, 1, -1, PL + 0.1, E_C - 0.3)
+	for z0 in NIVELURI[1:]:
+		fereastra(0, GOLF_Y, z0 + 0.55, lat=1.4, inalt=2.35, mereu=True)
+	r_golf = _acoperis(piese, "y", GOLF_Y, 4.5, -GOLF, GOLF, E_C, 1.65)
+	# rozeta: ramă rotundă de piatră, vitraliu roșu cu mijlocul auriu, spițe
+	rz = E_C + 1.75
+	yr = GOLF_Y
+	piese.append(cilindru("Rama rozeta", 1.2, 1.2, 0.12, (0, yr - 0.01, rz), PIATRA, laturi=16, rot=(math.pi / 2, 0, 0)))
+	lumini.append(cilindru("Rozeta", 1.0, 1.0, 0.01, (0, yr - 0.08, rz), ROSU, laturi=16, rot=(math.pi / 2, 0, 0)))
+	lumini.append(cilindru("Rozeta mijloc", 0.34, 0.34, 0.01, (0, yr - 0.095, rz), GEAM_APRINS, laturi=10, rot=(math.pi / 2, 0, 0)))
+	for k in range(8):
+		u = k * math.pi / 4
+		piese.append(cub("Spita", (0.66, 0.03, 0.07), (math.cos(u) * 0.67, yr - 0.115, rz + math.sin(u) * 0.67), PIATRA, rot=(0, -u, 0)))
+	piese.append(cilindru("Inel rozeta", 0.4, 0.4, 0.03, (0, yr - 0.115, rz), PIATRA, laturi=10, rot=(math.pi / 2, 0, 0)))
+	piese.append(cilindru("Fleșa golf", 0.05, 0.0, 1.2, (0, yr + 1.0, r_golf + 0.8), FIER, laturi=4))
+
+	# --- ușa dublă sub arc ascuțit, portalul, felinarele
+	uy = GOLF_Y
+	piese.append(prisma("Portal", _pentagon(-1.45, 1.45, PL, PL + 3.7, 1.45), "xz", uy - 0.16, uy + 0.05, PIATRA))
+	piese.append(prisma("Usa", _pentagon(-1.05, 1.05, PL, PL + 3.3, 1.05), "xz", uy - 0.18, uy - 0.17, LEMN))
+	for x in (-0.84, -0.63, -0.42, -0.21, 0.21, 0.42, 0.63, 0.84):
+		piese.append(cub("Scandura", (0.02, 0.012, 2.4), (x, uy - 0.188, PL + 1.2), FIER))
+	piese.append(cub("Rost usa", (0.04, 0.012, 3.1), (0, uy - 0.188, PL + 1.55), FIER))
+	for z in (PL + 0.5, PL + 1.7, PL + 2.6):
+		for s in (-1, 1):
+			piese.append(cub("Balama", (0.75, 0.016, 0.08), (s * 0.62, uy - 0.192, z), FIER))
+	for s in (-1, 1):
+		piese.append(cilindru("Ciocan usa", 0.11, 0.11, 0.03, (s * 0.3, uy - 0.2, PL + 1.55), FIER, laturi=8, rot=(math.pi / 2, 0, 0)))
+		# felinarele de perete, de o parte și de alta a ușii
+		x = s * 2.0
+		piese += [
+			cub("Brat felinar", (0.06, 0.3, 0.06), (x, uy - 0.15, PL + 2.75), FIER),
+			cub("Felinar", (0.32, 0.32, 0.04), (x, uy - 0.42, PL + 2.4), FIER),
+			cilindru("Capac felinar", 0.27, 0.0, 0.3, (x, uy - 0.42, PL + 2.95), FIER, laturi=4, rot=(0, 0, math.pi / 4)),
+		]
+		for dx, dy in ((-0.14, -0.14), (0.14, -0.14), (-0.14, 0.14), (0.14, 0.14)):
+			piese.append(cub("Montant felinar", (0.03, 0.03, 0.42), (x + dx, uy - 0.42 + dy, PL + 2.62), FIER))
+		lumini.append(cub("Flacara felinar", (0.24, 0.24, 0.36), (x, uy - 0.42, PL + 2.62), GEAM_APRINS))
+
+	# --- scara: podest, trepte, parapete cu urne
+	piese.append(cub("Podest", (6.0, 1.4, PL), (0, GOLF_Y - 0.7, PL / 2), PIATRA))
+	trepte = 6
+	adanc = 0.42
+	for k in range(trepte):
+		h = PL * (trepte - k) / (trepte + 1)
+		y = GOLF_Y - 1.4 - adanc * (k + 0.5)
+		piese.append(cub("Treapta", (5.2, adanc, h), (0, y, h / 2), PIATRA))
+	capat = GOLF_Y - 1.4 - adanc * trepte
+	for s in (-1, 1):
+		x = s * 3.0
+		piese += [
+			cub("Parapet", (0.45, GOLF_Y - capat, PL + 0.75), (x, (GOLF_Y + capat) / 2, (PL + 0.75) / 2), ZID),
+			cub("Capac parapet", (0.6, GOLF_Y - capat + 0.15, 0.12), (x, (GOLF_Y + capat) / 2 - 0.075, PL + 0.81), PIATRA),
+			cub("Soclu urna", (0.55, 0.55, 0.2), (x, capat + 0.35, PL + 0.97), PIATRA),
+			cilindru("Urna", 0.12, 0.3, 0.45, (x, capat + 0.35, PL + 1.3), PIATRA, laturi=8),
+			cilindru("Buza urna", 0.33, 0.33, 0.08, (x, capat + 0.35, PL + 1.56), PIATRA, laturi=8),
+			cub("Muschi", (0.46, 0.02, 0.35), (x, capat - 0.26, 0.4), MUSCHI),
+		]
+
+	# --- aripile
+	for s in (-1, 1):
+		x0, x1 = (CX, A_X) if s > 0 else (-A_X, -CX)
+		mx = (x0 + x1) / 2
+		lat = x1 - x0
+		piese += [
+			cub("Zid", (lat, A_SPATE - A_FATA, E_A), (mx, (A_FATA + A_SPATE) / 2, E_A / 2), ZID),
+			cub("Soclu", (lat + 0.2, A_SPATE - A_FATA + 0.2, PL + 0.1), (mx, (A_FATA + A_SPATE) / 2, (PL + 0.1) / 2), PIATRA_INCHISA),
+			cub("Cornisa", (lat + 0.3, A_SPATE - A_FATA + 0.3, 0.3), (mx, (A_FATA + A_SPATE) / 2, E_A - 0.15), PIATRA),
+			cub("Brau", (lat + 0.12, A_SPATE - A_FATA + 0.12, 0.14), (mx, (A_FATA + A_SPATE) / 2, NIVELURI[1] - 0.1), PIATRA),
+		]
+		_acoperis(piese, "y", A_FATA, A_SPATE, x0, x1, E_A, 1.55)
+		# fereastra din fronton (mereu aprinsă: cineva stă în pod)
+		fereastra(mx, A_FATA, E_A + 0.5, lat=0.8, inalt=1.9, mereu=s < 0)
+		for z0 in NIVELURI[:2]:
+			for dx in (s * 1.6, -s * 2.2):
+				fereastra(mx + dx, A_FATA, z0 + 0.75)
+		# laturile de afară și spatele
+		latura = (A_X if s > 0 else -A_X)
+		for z0 in NIVELURI[:2]:
+			for y in (5.0, 8.6):
+				fac = _lancet(piese, lumini, s * y, 0.0, z0 + 0.75, 0.9, 2.3, aprinsa(), culoare_aprinsa())
+				# fereastra e făcută pe planul y = 0 la x = y (pe lungul peretelui); o mutăm pe latură
+				_roteste(fac, (0, 0), s * math.pi / 2)
+				for ob in fac:
+					ob.data.transform(Matrix.Translation(Vector((latura, 0, 0))))
+			for x in (mx - 2.0, mx + 2.0):
+				fac = _lancet(piese, lumini, -x, -A_SPATE, z0 + 0.75, 0.9, 2.3, aprinsa(), culoare_aprinsa())
+				_roteste(fac, (0, 0), math.pi)
+		for xc in (x0, x1):
+			if (s < 0 and xc == x0) or (s > 0 and xc == x1):
+				continue  # colțul din față de afară e acoperit de turn / turelă
+			_colturi(piese, xc, A_FATA, -1 if xc < 0 else 1, -1, PL + 0.1, E_A - 0.3)
+		_cos(piese, mx + s * 2.0, A_SPATE - 2.0, E_A + 2.0, E_A + 6.0 + 1.8)
+	_iedera(piese, r, -12.9, -8.0, A_FATA, PL + 0.1, 6.5)
+	_iedera(piese, r, 3.0, 6.6, 0.0, PL + 0.1, 3.6)
+
+	# --- turnul pătrat (stânga): ferestre pe toate etajele, ceasul, turla cu turnulețe
+	tx, ty = TURN
+	l = TURN_L
+	piese += [
+		cub("Turn", (2 * l, 2 * l, TURN_H), (tx, ty, TURN_H / 2), ZID),
+		cub("Soclu", (2 * l + 0.2, 2 * l + 0.2, PL + 0.1), (tx, ty, (PL + 0.1) / 2), PIATRA_INCHISA),
+		cub("Cornisa turn", (2 * l + 0.4, 2 * l + 0.4, 0.35), (tx, ty, TURN_H - 0.175), PIATRA),
+	]
+	for z in NIVELURI[1:] + [PL + 3 * ETAJ]:
+		piese.append(cub("Brau", (2 * l + 0.12, 2 * l + 0.12, 0.14), (tx, ty, z - 0.1), PIATRA))
+	for k in range(int(2 * l / 0.5)):  # consolele de sub cornișă, pe toate laturile
+		u = -l + 0.25 + k * 0.5
+		for cx_, cy_, dx, dy in ((tx + u, ty - l, 0.18, 0.16), (tx + u, ty + l, 0.18, 0.16), (tx - l, ty + u, 0.16, 0.18), (tx + l, ty + u, 0.16, 0.18)):
+			px = cx_ - 0.05 if cx_ == tx - l else cx_ + 0.05 if cx_ == tx + l else cx_
+			py = cy_ - 0.05 if cy_ == ty - l else cy_ + 0.05 if cy_ == ty + l else cy_
+			piese.append(cub("Consola", (dx, dy, 0.3), (px, py, TURN_H - 0.5), PIATRA))
+	for sx in (-1, 1):
+		for sy in (-1, 1):
+			_colturi(piese, tx + sx * l, ty + sy * l, sx, sy, PL + 0.1, TURN_H - 0.7)
+	for k, z0 in enumerate(NIVELURI + [PL + 3 * ETAJ]):
+		# față (spre -Y) și latura din stânga (spre -X); pe ultimul etaj, în față, e ceasul
+		if k < 4:
+			fereastra(tx, ty - l, z0 + 0.7, lat=0.8, inalt=2.0)
+		fac = _lancet(piese, lumini, -ty, 0.0, z0 + 0.7, 0.8, 2.0, aprinsa(), culoare_aprinsa())
+		_roteste(fac, (0, 0), -math.pi / 2)
+		for ob in fac:
+			ob.data.transform(Matrix.Translation(Vector((tx - l, 0, 0))))
+	# ceasul: cadran deschis, cifre-liniuțe, limbile la 7:12
+	zc = PL + 3 * ETAJ + 4.9
+	yc = ty - l
+	piese.append(cilindru("Rama ceas", 1.05, 1.05, 0.16, (tx, yc - 0.02, zc), PIATRA, laturi=16, rot=(math.pi / 2, 0, 0)))
+	piese.append(cilindru("Cadran", 0.88, 0.88, 0.02, (tx, yc - 0.115, zc), ALB, laturi=16, rot=(math.pi / 2, 0, 0)))
+	for k in range(12):
+		u = k * math.pi / 6
+		lung = 0.18 if k % 3 == 0 else 0.1
+		rr = 0.88 - 0.06 - lung / 2
+		piese.append(cub("Cifra", (lung, 0.012, 0.04), (tx + math.sin(u) * rr, yc - 0.132, zc + math.cos(u) * rr), FIER, rot=(0, u - math.pi / 2, 0)))
+	for unghi, lung, gros in ((7.2 / 12 * math.tau, 0.48, 0.07), (12 / 60 * math.tau, 0.72, 0.045)):
+		piese.append(cub("Limba ceas", (lung, 0.014, gros), (tx + math.sin(unghi) * lung * 0.4, yc - 0.15, zc + math.cos(unghi) * lung * 0.4),
+			FIER, rot=(0, unghi - math.pi / 2, 0)))
+	piese.append(cilindru("Ax ceas", 0.06, 0.06, 0.03, (tx, yc - 0.165, zc), FIER, laturi=6, rot=(math.pi / 2, 0, 0)))
+	# turla: piramidă de ardezie, turnulețe în colțuri, fleșa cu giruetă
+	piese.append(cilindru("Turla", (l + 0.25) * math.sqrt(2), 0.0, 10.5, (tx, ty, TURN_H + 5.25), ARDEZIE, laturi=4, rot=(0, 0, math.pi / 4)))
+	for sx in (-1, 1):
+		for sy in (-1, 1):
+			x, y = tx + sx * (l - 0.1), ty + sy * (l - 0.1)
+			piese += [
+				cub("Turnulet", (0.5, 0.5, 1.0), (x, y, TURN_H + 0.5), PIATRA),
+				cilindru("Varf turnulet", 0.38, 0.0, 1.6, (x, y, TURN_H + 1.8), ARDEZIE, laturi=4, rot=(0, 0, math.pi / 4)),
+				sfera("Bila turnulet", 0.07, (x, y, TURN_H + 2.65), FIER, segmente=6, inele=4),
+			]
+	vf = TURN_H + 10.5
+	piese += [
+		cilindru("Flesa", 0.05, 0.03, 2.4, (tx, ty, vf + 0.9), FIER, laturi=4),
+		sfera("Bila flesa", 0.12, (tx, ty, vf + 0.5), FIER, segmente=6, inele=4),
+		cub("Girueta", (0.7, 0.02, 0.25), (tx + 0.25, ty, vf + 1.7), FIER),
+		cilindru("Semiluna", 0.22, 0.22, 0.02, (tx, ty, vf + 2.3), FIER, laturi=10, rot=(math.pi / 2, 0, 0)),
+	]
+	_iedera(piese, r, tx - l + 0.1, tx + l - 0.1, ty - l, PL + 0.1, 7.0)
+
+	# --- turela rotundă (dreapta): 12 laturi, una cu fața spre -Y
+	ux, uy_ = TURELA
+	ur = TURELA_R
+	ap = ur * math.cos(math.pi / 12)  # apotema (distanța până la o latură)
+	piese += [
+		cilindru("Turela", ur, ur, TURELA_H, (ux, uy_, TURELA_H / 2), ZID, laturi=12, rot=(0, 0, math.pi / 12)),
+		cilindru("Soclu turela", ur + 0.1, ur + 0.1, PL + 0.1, (ux, uy_, (PL + 0.1) / 2), PIATRA_INCHISA, laturi=12, rot=(0, 0, math.pi / 12)),
+		cilindru("Cornisa turela", ur + 0.25, ur + 0.25, 0.35, (ux, uy_, TURELA_H - 0.175), PIATRA, laturi=12, rot=(0, 0, math.pi / 12)),
+		cilindru("Con turela", ur + 0.35, 0.0, 9.0, (ux, uy_, TURELA_H + 4.5), ARDEZIE, laturi=12, rot=(0, 0, math.pi / 12)),
+		cilindru("Flesa", 0.05, 0.03, 2.0, (ux, uy_, TURELA_H + 9.7), FIER, laturi=4),
+		sfera("Bila flesa", 0.11, (ux, uy_, TURELA_H + 9.2), FIER, segmente=6, inele=4),
+	]
+	for z in NIVELURI[1:] + [PL + 3 * ETAJ]:
+		piese.append(cilindru("Brau", ur + 0.06, ur + 0.06, 0.14, (ux, uy_, z - 0.1), PIATRA, laturi=12, rot=(0, 0, math.pi / 12)))
+	for z0 in NIVELURI + [PL + 3 * ETAJ]:
+		for unghi in (0.0, math.pi / 3):  # spre -Y și spre +X-față
+			fac = _lancet(piese, lumini, ux, uy_ - ap, z0 + 0.7, 0.62, 1.9, aprinsa(), culoare_aprinsa(), traversa=False)
+			_roteste(fac, (ux, uy_), unghi)
+
+	# --- curtea: pietrișul din fața scării, cercul cu fântâna, aleea spre poartă, borduri
+	fy = -16.0  # fântâna (Godot: z = 6, cu conacul la z = -10)
+	alee = [(capat - 0.02, fy + 6.95, 3.4), (fy - 6.95, -41.0, 3.2)]
+	for y0, y1, lat in alee:
+		piese.append(cub("Pietris", (lat, y0 - y1, 0.04), (0, (y0 + y1) / 2, 0.02), PIETRIS))
+		for s in (-1, 1):
+			piese.append(cub("Bordura", (0.16, y0 - y1, 0.09), (s * (lat / 2 + 0.08), (y0 + y1) / 2, 0.045), BORDURA))
+	piese.append(cilindru("Pietris", 7.0, 7.0, 0.055, (0, fy, 0.0275), PIETRIS, laturi=28))
+	piese.append(inel("Bordura", 7.08, 0.09, (0, fy, 0.03), BORDURA, segmente=28))
+	piese.append(cub("Pietris", (8.0, 1.6, 0.05), (0, capat - 0.8, 0.025), PIETRIS))  # la picioarele scării
+	for k in range(60):  # pietre mai mari în pietriș
+		u = r.uniform(0, math.tau)
+		d = r.uniform(1.0, 6.6)
+		piese.append(cub("Piatra", (r.uniform(0.08, 0.2), r.uniform(0.08, 0.2), 0.03), (math.cos(u) * d, fy + math.sin(u) * d, 0.065), BORDURA,
+			rot=(0, 0, r.uniform(0, 3))))
+
+	# coliziunea: pereții, acoperișurile (să nu sari pe ele, oricum nu poți), parapetele, o rampă peste trepte
+	col = _copii(piese, ("Zid", "Soclu", "Turn", "Turela", "Soclu turela", "Parapet", "Podest", "Pod", "Acoperis", "Lucarna"))
+	col.append(prisma("Rampa", [(capat, 0.0), (GOLF_Y - 1.4, PL - 0.01), (GOLF_Y - 1.4, 0.0)], "yz", -2.6, 2.6, FIER))
+	col.append(cub("Usa coliziune", (2.2, 0.3, 3.6), (0, GOLF_Y - 0.2, PL + 1.8), FIER))
+	uneste(col, "Coliziune")
+	uneste(piese, "Conac")
+	uneste(lumini, "Lumini")
+	exporta(os.path.join(cale, "conac.glb"))
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Curtea
+# ---------------------------------------------------------------------------------------------------------------
+
+def poarta_conac(cale):
+	"""Poarta curții: doi stâlpi groși de piatră (capace, bile), porțile de fier închise cu arc ascuțit deasupra și o
+	pentagramă într-un cerc (e coven-ul). Golul are 3 m, centrat în origine, pe X; gardul de fier (gard_fier.glb)
+	se prinde de stâlpi la x = ±1,9."""
+	curata()
+	piese = []
+	for s in (-1, 1):
+		x = s * 1.85
+		piese += [
+			cub("Stalp poarta", (0.7, 0.7, 2.9), (x, 0, 1.45), ZID),
+			cub("Soclu stalp", (0.84, 0.84, 0.35), (x, 0, 0.175), PIATRA_INCHISA),
+			cub("Capac stalp", (0.86, 0.86, 0.14), (x, 0, 2.97), PIATRA),
+			cilindru("Postament", 0.22, 0.28, 0.3, (x, 0, 3.19), PIATRA, laturi=8),
+			sfera("Bila stalp", 0.3, (x, 0, 3.6), PIATRA, segmente=10, inele=6),
+			cub("Muschi", (0.5, 0.02, 0.5), (x, -0.36, 0.55), MUSCHI),
+		]
+		for k in range(11):  # foile porții
+			xx = s * (0.07 + k * 0.135)
+			inalt = 2.1 + (1.0 - (k / 10.0)) * 0.6  # urcă spre mijloc: arcul
+			piese.append(cub("Zabrea", (0.025, 0.025, inalt), (xx, 0, inalt / 2 + 0.05), FIER))
+			piese.append(cilindru("Sulita", 0.03, 0.0, 0.12, (xx, 0, inalt + 0.11), FIER, laturi=4))
+		piese.append(cub("Bara poarta", (1.48, 0.055, 0.05), (s * 0.75, 0, 0.35), FIER))
+		piese.append(cub("Bara poarta", (1.48, 0.055, 0.05), (s * 0.75, 0, 1.9), FIER))
+	# cercul cu pentagrama, între foi, sus
+	zc = 2.35
+	for k in range(16):
+		u = k * math.tau / 16
+		piese.append(cub("Cerc", (0.13, 0.03, 0.03), (math.cos(u) * 0.42, -0.03, zc + math.sin(u) * 0.42), FIER, rot=(0, -u + math.pi / 2, 0)))
+	varfuri = [(math.cos(math.pi / 2 + k * math.tau / 5) * 0.4, zc + math.sin(math.pi / 2 + k * math.tau / 5) * 0.4) for k in range(5)]
+	for k in range(5):
+		a = varfuri[k]
+		b = varfuri[(k + 2) % 5]
+		lung = math.hypot(b[0] - a[0], b[1] - a[1])
+		u = math.atan2(b[1] - a[1], b[0] - a[0])
+		piese.append(cub("Pentagrama", (lung, 0.025, 0.025), ((a[0] + b[0]) / 2, -0.05, (a[1] + b[1]) / 2), FIER, rot=(0, -u, 0)))
+	piese += [
+		cub("Lant", (0.06, 0.05, 0.25), (0, -0.04, 1.2), BORDURA),
+		cub("Lacat", (0.09, 0.05, 0.1), (0, -0.07, 1.05), GEAM_APRINS),
+	]
+	uneste(piese, "Poarta")
+	exporta(os.path.join(cale, "poarta_conac.glb"))
+
+
+def felinar_conac(cale):
+	"""Felinar de fier pe stâlp (3,2 m): soclu, stâlp cu inele, felinarul cu patru montanți, flacăra (`Lumini`) și
+	capacul piramidal cu bilă. Lumina adevărată o pune Godot (OmniLight) la y = 2,85."""
+	curata()
+	piese, lumini = [], []
+	piese += [
+		cub("Soclu", (0.36, 0.36, 0.3), (0, 0, 0.15), PIATRA),
+		cilindru("Stalp", 0.06, 0.045, 2.5, (0, 0, 1.55), FIER, laturi=6),
+		cilindru("Inel", 0.09, 0.09, 0.08, (0, 0, 0.55), FIER, laturi=6),
+		cilindru("Inel", 0.08, 0.08, 0.06, (0, 0, 2.2), FIER, laturi=6),
+		cub("Fund felinar", (0.36, 0.36, 0.05), (0, 0, 2.6), FIER),
+		cilindru("Capac felinar", 0.32, 0.0, 0.32, (0, 0, 3.24), FIER, laturi=4, rot=(0, 0, math.pi / 4)),
+		cub("Brau capac", (0.38, 0.38, 0.05), (0, 0, 3.06), FIER),
+		sfera("Bila", 0.05, (0, 0, 3.44), FIER, segmente=6, inele=4),
+	]
+	for dx, dy in ((-0.16, -0.16), (0.16, -0.16), (-0.16, 0.16), (0.16, 0.16)):
+		piese.append(cub("Montant", (0.03, 0.03, 0.42), (dx, dy, 2.84), FIER))
+	lumini.append(cub("Flacara", (0.26, 0.26, 0.38), (0, 0, 2.84), GEAM_APRINS))
+	uneste(piese, "Felinar")
+	uneste(lumini, "Lumini")
+	exporta(os.path.join(cale, "felinar_conac.glb"))
+
+
+def fantana(cale):
+	"""Fântâna din mijlocul curții (secată, cu apă stătută verde-închis): bazin octogonal cu buză, stâlp, cupa de sus,
+	iar în vârf o statuie: o vrăjitoare cu glugă, cu brațele ridicate. Mușchi pe bazin."""
+	curata()
+	piese = [
+		cilindru("Bazin", 2.3, 2.3, 0.62, (0, 0, 0.31), PIATRA, laturi=8, rot=(0, 0, math.pi / 8)),
+		cilindru("Buza bazin", 2.45, 2.45, 0.12, (0, 0, 0.68), PIATRA, laturi=8, rot=(0, 0, math.pi / 8)),
+		cilindru("Apa", 2.1, 2.1, 0.02, (0, 0, 0.75), APA, laturi=8, rot=(0, 0, math.pi / 8)),
+		cilindru("Stalp fantana", 0.32, 0.25, 1.4, (0, 0, 1.45), PIATRA, laturi=8),
+		cilindru("Cupa", 0.3, 0.95, 0.35, (0, 0, 2.3), PIATRA, laturi=10),
+		cilindru("Buza cupa", 1.0, 1.0, 0.08, (0, 0, 2.51), PIATRA, laturi=10),
+		cilindru("Postament statuie", 0.32, 0.36, 0.5, (0, 0, 2.8), ZID, laturi=8),
+	]
+	# statuia: roba (trunchi), glugă, brațele ridicate spre cer
+	piese.append(trunchi("Roba", [((0, 0, 3.05), 0.36, 0.34), ((0, 0, 3.6), 0.27, 0.24), ((0, 0, 4.2), 0.2, 0.18),
+		((0, 0, 4.45), 0.16, 0.15)], ZID, laturi=8))
+	piese.append(trunchi("Gluga", [((0, 0.02, 4.4), 0.17, 0.17), ((0, 0.03, 4.7), 0.17, 0.16), ((0, 0.07, 4.95), 0.0, 0.0)], ZID, laturi=8))
+	piese.append(sfera("Fata statuie", 0.11, (0, -0.07, 4.62), PIATRA_INCHISA, segmente=6, inele=4))
+	for s in (-1, 1):
+		piese.append(os_intre("Brat statuie", (s * 0.17, 0, 4.3), (s * 0.42, -0.08, 4.95), 0.06, ZID))
+		piese.append(sfera("Mana statuie", 0.06, (s * 0.44, -0.08, 5.0), ZID, segmente=6, inele=4))
+	r = random.Random(3)
+	for k in range(8):
+		u = (k + 0.5) * math.tau / 8
+		if r.random() < 0.6:
+			piese.append(cub("Muschi", (r.uniform(0.4, 0.9), 0.02, r.uniform(0.15, 0.35)), (math.cos(u) * 2.15, math.sin(u) * 2.15, 0.25), MUSCHI,
+				rot=(0, 0, u + math.pi / 2)))
+	uneste(piese, "Fantana")
+	exporta(os.path.join(cale, "fantana.glb"))
+
+
+def toate(cale):
+	conac(cale)
+	poarta_conac(cale)
+	felinar_conac(cale)
+	fantana(cale)
+
+
+if __name__ == "__main__":
+	cale_modele = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
+	if "--" in sys.argv:
+		for nume in sys.argv[sys.argv.index("--") + 1:]:
+			globals()[nume](cale_modele)
+	else:
+		toate(cale_modele)

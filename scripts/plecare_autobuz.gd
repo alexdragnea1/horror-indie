@@ -13,6 +13,9 @@ extends Node
 @export var marcaj := "autobuzul_a_plecat_din_padure"
 ## Sarcina primită după ce pleacă autobuzul (gol = niciuna).
 @export var sarcina_noua := "Find the coven in Trivale Forest."
+## Gol = mereu. Altfel autobuzul e în stație doar cu marcajul ăsta pus (și doar cu Jucator în scenă), ex. seara la bloc,
+## când te întorci de la Lexy (curtea blocului mai e și fundalul din meniu, ziua și noaptea).
+@export var marcaj_necesar := ""
 
 var _pleaca := false
 var _v := 0.0
@@ -20,6 +23,10 @@ var _mers := 0.0
 
 
 func _ready() -> void:
+	if marcaj_necesar != "" and (not Stare.e_marcat(marcaj_necesar) or not get_parent().has_node("Jucator")):
+		autobuz.queue_free()
+		set_process(false)
+		return
 	if Stare.e_marcat(marcaj):
 		autobuz.queue_free()
 		return

@@ -227,3 +227,9 @@ deal.toate(MODELE)
 
 import coven  # noqa: E402
 coven.toate(MODELE)
+
+import lexy  # noqa: E402
+lexy.toate(MODELE)
+
+import conac  # noqa: E402
+conac.toate(MODELE)

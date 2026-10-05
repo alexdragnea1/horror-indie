@@ -54,6 +54,9 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="zi8"]
 [ext_resource type="Script" path="res://scripts/tomberon.gd" id="tb1"]
 [ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="lx1"]
+[ext_resource type="Script" path="res://scripts/seara_bloc.gd" id="sr1"]
+[ext_resource type="Script" path="res://scripts/sefa_seara.gd" id="sr2"]
+[ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="sr3"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -634,3 +637,31 @@ titlu = "Lexy's place
 1:15 PM"
 sunete_urcare = Array[AudioStream]([ExtResource("34"), ExtResource("35"), ExtResource("34"), ExtResource("36"), ExtResource("33")])
 sunet_frana = ExtResource("33")
+
+[node name="SearaBloc" type="Node" parent="." node_paths=PackedStringArray("mediu", "luna", "doar_noaptea")]
+script = ExtResource("sr1")
+mediu = NodePath("../Mediu")
+luna = NodePath("../Luna")
+doar_noaptea = [NodePath("../Batator")]
+
+[node name="AutobuzSeara" parent="." instance=ExtResource("31")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.5, 0.02, 16.9)
+
+[node name="PlecareAutobuzSeara" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("sr3")
+autobuz = NodePath("../AutobuzSeara")
+marcaj = "autobuzul_a_plecat_seara"
+sarcina_noua = "Talk to the Head Witch."
+marcaj_necesar = "a_urcat_spre_casa"
+
+[node name="HeadWitchSeara" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("zi2")]
+transform = Transform3D(0.825, 0, 0.565, 0, 1, 0, -0.565, 0, 0.825, 1.2, 0.06, 4.6)
+script = ExtResource("sr2")
+replici_vrajitoare = PackedStringArray("You: What the fuck are you doing here bitch?", "Head Witch: There's been an issue, besides you killing a witch.", "You: That was a one time thing and I'm sorry, okay?", "Head Witch: Our coven got attacked by a powerful Warlock.", "You: So what does that have to do with me?", "Head Witch: You're part of the coven now.", "Head Witch: We need all the help we can get.", "You: Aight, let's go bitch.")
+directie_zbor = Vector3(0.3, 0, 1)
+brat = NodePath("Model/BratDrept")
+cap = NodePath("Model/Cap")
+model_matura = ExtResource("zi5")
+distanta_privire = 9.0
+indiciu = "[E] Talk to the Head Witch"
+replici = PackedStringArray("You: What the fuck are you doing here bitch?", "Head Witch: There's been an issue.", "Head Witch: Our coven got attacked by a powerful Warlock.", "You: So what does that have to do with me?", "Head Witch: You're part of the coven now.", "Head Witch: We need all the help we can get.", "You: Aight, let's go bitch.")

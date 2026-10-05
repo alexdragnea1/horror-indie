@@ -2,6 +2,7 @@ extends Interactabil
 ## Ușa scării de bloc (în afara_bloc.tscn). Până te aduce Head Witch acasă (`marcaj_necesar`) spune doar
 ## `replici` („Nope. Mom's still up there.”); după aceea te duce înapoi în casă (`scena_acasa`), prin Tranzitie,
 ## cu pașii pe scări și ușa apartamentului pe ecranul negru. Ziua (`marcaj_dimineata`) scrie altă oră.
+## Seara, după Lexy (`marcaj_seara`), nu te lasă sus: te așteaptă Head Witch (`replici_seara`).
 ## Casa te pune lângă ușa de la intrare (`intrat_pe_usa`, citit de acasa_noaptea.gd).
 
 ## Adevărat de la deschiderea ușii până te pune casa pe hol.
@@ -12,6 +13,8 @@ static var intrat_pe_usa := false
 @export_multiline var titlu_acasa := "Home\n1:16 AM"
 @export var marcaj_dimineata := "e_dimineata"
 @export_multiline var titlu_acasa_dimineata := "Home"
+@export var marcaj_seara := "a_urcat_spre_casa"
+@export_multiline var replici_seara: PackedStringArray = ["You: What the fuck does she want now..."]
 ## Ce se aude pe negru: ușa blocului, scările, ușa apartamentului.
 @export var sunete_tranzitie: Array[AudioStream] = []
 @export var sunet_usa: AudioStream
@@ -20,6 +23,9 @@ static var intrat_pe_usa := false
 func interactioneaza() -> void:
 	if not Stare.e_marcat(marcaj_necesar):
 		super.interactioneaza()
+		return
+	if Stare.e_marcat(marcaj_seara):
+		Dialog.spune(replici_seara)
 		return
 	Sunet.reda_la(sunet_usa, global_position + Vector3.UP, Sunet.VOLUM_EFECTE, 0.05)
 	folosit.emit()

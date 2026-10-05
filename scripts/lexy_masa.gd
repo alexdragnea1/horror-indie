@@ -30,6 +30,10 @@ const NUME_CADAVRU := "Lexy"
 @export var loc_jaf := Vector3(1.55, 0.0, 0.9)
 ## Cât de tare o împinge glonțul (N·s).
 @export var forta_glont := 140.0
+## După „Leave Lexy's House” (sau după ce ai aruncat-o peste gard, vezi gard_cimitir.gd): vine autobuzul spre casă
+## (nodul `AutobuzAcasa`) și primești `sarcina_plecare`.
+@export var marcaj_plecare := "gata_la_lexy"
+@export var sarcina_plecare := "Take the bus home."
 @export var sunet_cadere: AudioStream = preload("res://sunete/corp_cazut.ogg")
 @export var sunet_luat: AudioStream = preload("res://sunete/corp_luat.ogg")
 @export var sunet_bancnota: AudioStream = preload("res://sunete/bancnota.ogg")
@@ -102,6 +106,7 @@ func interactioneaza() -> void:
 		await _jefuieste()
 	else:
 		await _spune(replici_plecare_dupa_jaf if Stare.e_marcat(marcaj_jaf) else replici_plecare)
+		pleaca(marcaj_plecare, sarcina_plecare)
 	_in_curs = false
 
 
@@ -226,3 +231,12 @@ func _luata() -> void:
 	Sunet.reda(sunet_luat, Sunet.VOLUM_EFECTE, 0.05)
 	_cadavru.queue_free()
 	lexy.hide()
+
+
+## Gata la Lexy: autobuzul spre casă vine în stație (o singură dată primești sarcina).
+static func pleaca(marcaj: String, sarcina: String) -> void:
+	if Stare.e_marcat(marcaj):
+		return
+	Stare.marcheaza(marcaj)
+	if sarcina != "":
+		Stare.seteaza_sarcina(sarcina)
