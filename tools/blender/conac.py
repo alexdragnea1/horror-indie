@@ -13,7 +13,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, uneste, exporta, trunchi  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, inel, uneste, exporta, trunchi, text  # noqa: E402
 from lexy import prisma, _copii  # noqa: E402
 
 ZID = p("5e5356")             # piatra pereților
@@ -523,11 +523,120 @@ def fantana(cale):
 	exporta(os.path.join(cale, "fantana.glb"))
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Easter egg-ul din spatele conacului
+# ---------------------------------------------------------------------------------------------------------------
+
+AUR = p("a18463")
+AUR_INCHIS = p("a56850")
+NEGRU = p("262d2f")
+
+
+def pistol_aur(cale):
+	"""Pistolul placat cu aur (un Desert Eagle): țeava lungă cu șină pe ea, închizătorul cu zimți, cocoșul, plăsele
+	negre cu un medalion de aur, gravuri pe laterale. Aurul e din paletă (a18463, umbrele a56850); `Luciu` (muchiile
+	de sus, medalioanele) e separat și strălucește puțin în joc, ca să sclipească. Ca la pistolul roz: țeava spre +Y
+	(în Godot: -Z, înainte), originea = locul unde îl ții (sus pe mâner), gura țevii la (0, 0,19, 0,046)."""
+	curata()
+	piese, luciu = [], []
+	piese += [
+		# cadrul de jos
+		cub("Cadru", (0.026, 0.2, 0.024), (0, 0.05, 0.012), AUR),
+		# blocul țevii (în față) și închizătorul (în spate), puțin mai lat
+		cub("Teava", (0.03, 0.15, 0.036), (0, 0.105, 0.042), AUR),
+		cub("Inchizator", (0.032, 0.09, 0.04), (0, -0.015, 0.044), AUR),
+		cub("Gura tevii", (0.012, 0.012, 0.012), (0, 0.184, 0.046), NEGRU),
+		cub("Catare", (0.008, 0.008, 0.008), (0, 0.172, 0.0665), AUR_INCHIS),
+		cub("Inaltator", (0.02, 0.01, 0.01), (0, -0.05, 0.069), AUR_INCHIS),
+		cub("Fereastra", (0.004, 0.04, 0.016), (0.017, 0.0, 0.05), NEGRU),
+		cub("Cocos", (0.01, 0.014, 0.018), (0, -0.064, 0.054), AUR_INCHIS, rot=(-0.4, 0, 0)),
+		# mânerul, înclinat spre spate, cu talpa magaziei
+		cub("Maner", (0.03, 0.055, 0.115), (0, -0.03, -0.045), AUR, rot=(-0.28, 0, 0)),
+		cub("Talpa magazie", (0.034, 0.06, 0.014), (0, -0.046, -0.103), AUR_INCHIS, rot=(-0.28, 0, 0)),
+		# trăgaciul și apărătoarea
+		cub("Tragaci", (0.008, 0.008, 0.024), (0, 0.032, -0.012), NEGRU, rot=(0.3, 0, 0)),
+		cub("Aparatoare", (0.012, 0.064, 0.008), (0, 0.042, -0.032), AUR),
+		cub("Aparatoare", (0.01, 0.008, 0.032), (0, 0.072, -0.016), AUR),
+	]
+	for sx in (-1, 1):
+		# plăsele negre pe mâner, cu medalionul de aur
+		x = sx * 0.0165
+		piese.append(cub("Plasea", (0.004, 0.045, 0.09), (x, -0.028, -0.043), NEGRU, rot=(-0.28, 0, 0)))
+		luciu.append(cilindru("Medalion", 0.008, 0.008, 0.003, (sx * 0.0195, -0.022, -0.035), AUR, laturi=8, rot=(0, math.pi / 2, 0)))
+		# zimții închizătorului
+		for k in range(5):
+			piese.append(cub("Zimt", (0.004, 0.004, 0.03), (sx * 0.0175, -0.056 + k * 0.007, 0.044), AUR_INCHIS))
+		# gravurile de pe țeavă: o liniuță lungă și volute mici
+		piese.append(cub("Gravura", (0.004, 0.11, 0.003), (sx * 0.0165, 0.11, 0.032), AUR_INCHIS))
+		for k in range(4):
+			piese.append(cub("Voluta", (0.004, 0.008, 0.008), (sx * 0.0165, 0.07 + k * 0.025, 0.05), AUR_INCHIS, rot=(0.785, 0, 0)))
+	# muchiile de sus: șina de pe țeavă și marginile închizătorului (sclipesc)
+	luciu.append(cub("Sina", (0.012, 0.15, 0.006), (0, 0.105, 0.063), AUR))
+	luciu.append(cub("Muchie", (0.034, 0.088, 0.004), (0, -0.015, 0.066), AUR))
+	uneste(piese, "Pistol")
+	uneste(luciu, "Luciu")
+	exporta(os.path.join(cale, "pistol_aur.glb"))
+
+
+def masa_pistol(cale):
+	"""Masa din spatele conacului, cu easter egg-ul: o măsuță de grădină din scânduri strâmbe, pe ea un carton îndoit
+	(„Free shit”, scris cu markerul), o pernuță de catifea verde-închis pe care stă pistolul de aur (îl pune jocul, la
+	(0,18, -0,12, 0,77) în Blender), câteva gloanțe și o lumânare într-un borcan (`Lumini` = flacăra).
+	Originea la sol, în mijlocul mesei; fața spre -Y. `Coliziune` = o cutie cât masa."""
+	curata()
+	r = random.Random(5)
+	piese, lumini = [], []
+	h = 0.74  # fața mesei
+	for k in range(5):  # scândurile blatului, cu rosturi
+		y = -0.32 + k * 0.16
+		piese.append(cub("Scandura", (1.2 + r.uniform(-0.03, 0.03), 0.15, 0.035), (r.uniform(-0.02, 0.02), y, h - 0.0175),
+			LEMN if k % 2 else p("5e363e"), rot=(0, 0, r.uniform(-0.01, 0.01))))
+	for sx in (-1, 1):
+		piese.append(cub("Traversa", (0.05, 0.74, 0.05), (sx * 0.5, 0, h - 0.06), LEMN))
+		for sy in (-1, 1):
+			piese.append(cub("Picior", (0.06, 0.06, h - 0.085), (sx * 0.52, sy * 0.3, (h - 0.085) / 2), LEMN,
+				rot=(sy * 0.04, sx * 0.04, 0)))
+	for sy in (-1, 1):
+		piese.append(cub("Bara", (0.98, 0.04, 0.04), (0, sy * 0.3, 0.18), LEMN))
+	# cartonul îndoit (ca un cort), cu scrisul pe fața din față
+	t = 0.35
+	lat, inalt = 0.46, 0.27
+	for s in (-1, 1):
+		piese.append(cub("Carton", (lat, 0.006, inalt), (-0.24, s * inalt / 2 * math.sin(t), h + inalt / 2 * math.cos(t)),
+			AUR_INCHIS if s < 0 else p("904a40"), rot=(s * t, 0, 0)))
+	normala = Vector((0, -math.cos(t), math.sin(t)))
+	centru = Vector((-0.24, -inalt / 2 * math.sin(t), h + inalt / 2 * math.cos(t))) + normala * 0.012
+	piese.append(text("Scris", "Free shit", tuple(centru), 0.085, NEGRU, rot=(math.pi / 2 - t, 0, 0)))
+	# pernuța de catifea și gloanțele
+	piese.append(cub("Perna", (0.3, 0.2, 0.03), (0.18, -0.12, h + 0.015), APA, rot=(0, 0, 0.08)))
+	for k, (x, y, u) in enumerate(((0.38, -0.25, 0.3), (0.42, -0.16, 1.2), (0.37, 0.02, 2.4))):
+		piese.append(cilindru("Glont", 0.006, 0.006, 0.022, (x, y, h + 0.006), AUR, laturi=6, rot=(math.pi / 2, 0, u)))
+		piese.append(cilindru("Varf glont", 0.006, 0.0, 0.01, (x + math.sin(u) * 0.016, y - math.cos(u) * 0.016, h + 0.006), AUR_INCHIS,
+			laturi=6, rot=(math.pi / 2, 0, u)))
+	# lumânarea în borcan
+	piese += [
+		cilindru("Lumanare", 0.03, 0.03, 0.09, (0.45, 0.2, h + 0.045), ALB, laturi=8),
+		cilindru("Fitil", 0.003, 0.003, 0.015, (0.45, 0.2, h + 0.097), NEGRU, laturi=4),
+	]
+	for k in range(6):  # pereții borcanului: șase plăci subțiri (sticla nu acoperă lumânarea)
+		u = k * math.tau / 6
+		piese.append(cub("Borcan", (0.045, 0.004, 0.12), (0.45 + math.cos(u) * 0.045, 0.2 + math.sin(u) * 0.045, h + 0.06),
+			p("30716f"), rot=(0, 0, u + math.pi / 2)))
+	lumini.append(sfera("Flacara", 0.012, (0.45, 0.2, h + 0.118), GEAM_APRINS, scara=(1, 1, 1.8), segmente=6, inele=4))
+	col = [cub("Coliziune", (1.2, 0.76, h), (0, 0, h / 2), LEMN)]
+	uneste(col, "Coliziune")
+	uneste(piese, "Masa")
+	uneste(lumini, "Lumini")
+	exporta(os.path.join(cale, "masa_pistol.glb"))
+
+
 def toate(cale):
 	conac(cale)
 	poarta_conac(cale)
 	felinar_conac(cale)
 	fantana(cale)
+	pistol_aur(cale)
+	masa_pistol(cale)
 
 
 if __name__ == "__main__":

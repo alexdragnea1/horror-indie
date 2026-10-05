@@ -31,6 +31,8 @@ const LUNGIME_GARD := 2.4
 @export var energie_felinar := 1.6
 ## Mormintele: unde e micul cimitir al familiei (colțul din stânga față al curții).
 @export var cimitir := Rect2(-25, 4, 8, 13)
+## Grosimea trunchiului copacilor morți de pe platou (raza, la mărimea 1), pentru coliziune.
+@export var raza_trunchi := 0.25
 ## Pădurea de pe coaste: de la ce rază începe, până unde merge și cât de deasă e.
 @export var padure_de_la := 41.0
 @export var padure_pana_la := 200.0
@@ -104,7 +106,7 @@ func _gardul() -> void:
 		var bucata := _pune(GARD, p, unghi)
 		bucata.scale.x = d.length() / LUNGIME_GARD
 		var baza := Basis(Vector3.UP, unghi)
-		_cutie(Vector3(d.length(), 3.0, 0.3), Transform3D(baza, (p + q) * 0.5 + Vector3.UP * 1.5))
+		_cutie(Vector3(d.length(), 3.0, 0.12), Transform3D(baza, (p + q) * 0.5 + Vector3.UP * 1.5))
 
 
 func _felinare() -> void:
@@ -140,11 +142,18 @@ func _cimitirul() -> void:
 			var nod := _pune(MORMINTE[_r.randi() % MORMINTE.size()], Vector3(x, 0.0, z), PI * 0.5 + _r.randf_range(-0.15, 0.15))
 			nod.rotation.z = _r.randf_range(-0.05, 0.05)
 			ColiziuneModel.pentru_nod(nod, false)
-	# copaci morți pe platou, lângă gard
+	# copaci morți pe platou, lângă gard; coliziune doar cât trunchiul (un cilindru cât toată coroana ar fi un perete
+	# nevăzut de câțiva metri între curte și gard)
 	for p in [Vector3(-26, 0, 1), Vector3(-21, 0, 21), Vector3(24, 0, 14), Vector3(26, 0, -14), Vector3(-25, 0, -18)]:
 		var copac := _pune(COPACI_PLATOU[_r.randi() % COPACI_PLATOU.size()], p, _r.randf_range(0, TAU))
 		copac.scale = Vector3.ONE * _r.randf_range(1.1, 1.5)
-		ColiziuneModel.pentru_nod(copac, true)
+		var forma := CollisionShape3D.new()
+		var trunchi := CylinderShape3D.new()
+		trunchi.radius = raza_trunchi * copac.scale.x
+		trunchi.height = 4.0
+		forma.shape = trunchi
+		forma.position = p + Vector3.UP * 2.0
+		_corp.add_child(forma)
 
 
 func _padurea() -> void:

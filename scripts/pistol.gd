@@ -1,6 +1,6 @@
 class_name Pistol
 extends Node3D
-## Pistolul roz de la Head Witch, în mâna ta dreaptă (la persoana întâi). Îl pune jucator.gd sub cameră; se vede
+## Pistolul roz de la Head Witch (sau cel de aur, `auriu()`), în mâna ta dreaptă (la persoana întâi). Îl pune jucator.gd sub cameră; se vede
 ## doar cât îl ții în mână (`Stare.in_mana` = `ID`; îl alegi din inventar). Click stânga (acțiunea "trage") = tragi: un glonț omoară pe loc doar
 ## personajele `omorabil` (Personaj.impuscat: bețivul) și, după ce ți-a cerut bețivul, vrăjitoarele din cerc; pe ceilalți nu-i
 ## atinge. Orice are `impuscat(directie, punct)` primește glonțul (ex. boombox-ul se strică). Un cadavru îl împinge,
@@ -15,6 +15,13 @@ const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const SUNET := preload("res://sunete/pistol_impuscatura.ogg")
 ## Gura țevii, în coordonatele modelului.
 const GURA_TEVII := Vector3(0, 0.037, -0.155)
+## Pistolul placat cu aur (easter egg-ul din spatele conacului, pistol_aur_masa.gd): trage la fel, dar e alt obiect
+## în inventar. `Luciu` (muchiile de sus, medalioanele) sclipește puțin.
+const ID_AUR := "pistol_aur"
+const MODEL_AUR := preload("res://models/pistol_aur.glb")
+## Modelul e în aurul din paletă; materialul ăsta îl face mai auriu (ca rozul la pistolul roz).
+const MATERIAL_AUR := preload("res://shaders/material_aur.tres")
+const GURA_TEVII_AUR := Vector3(0, 0.046, -0.19)
 
 ## O scenă din cod (sefa_antrenament.gd) îl poate ține la vedere cât merge ea (altfel coboară cât e Stare.meniu_deschis)
 ## și îl poate înclina pe o parte („gangsta”, radiani pe Z).
@@ -39,18 +46,37 @@ var _gata := 0.0
 var _timp := 0.0
 var _lumina: OmniLight3D
 var _flacara: MeshInstance3D
+## Care pistol e (jucator.gd pune câte unul din fiecare; se vede doar cel din mână).
+var id := ID
+var _scena: PackedScene = MODEL
+var _material: Material = MATERIAL_ROZ
+var _stralucitoare := PackedStringArray(["Strasuri"])
+var _stralucire := 1.4
+var _gura := GURA_TEVII
+
+
+## Pistolul de aur.
+static func auriu() -> Pistol:
+	var p := Pistol.new()
+	p.id = ID_AUR
+	p._scena = MODEL_AUR
+	p._material = MATERIAL_AUR
+	p._stralucitoare = PackedStringArray(["Luciu"])
+	p._stralucire = 0.6
+	p._gura = GURA_TEVII_AUR
+	return p
 
 
 func _ready() -> void:
 	_camera = get_parent() as Camera3D
 	_cap = _camera.get_parent() as Node3D
 	_jucator = _cap.get_parent() as CharacterBody3D
-	_model = MODEL.instantiate()
+	_model = _scena.instantiate()
 	_model.set_script(SCRIPT_MODEL)
-	_model.set("material", MATERIAL_ROZ)
+	_model.set("material", _material)
 	_model.set("umbre", false)
-	_model.set("stralucitoare", PackedStringArray(["Strasuri"]))
-	_model.set("stralucire", 1.4)
+	_model.set("stralucitoare", _stralucitoare)
+	_model.set("stralucire", _stralucire)
 	add_child(_model)
 	# țeava puțin spre mijlocul ecranului, ca la jocurile vechi
 	_model.rotation = Vector3(0.04, 0.07, 0.0)
@@ -68,21 +94,21 @@ func _ready() -> void:
 	mat.disable_fog = true
 	_flacara.material_override = mat
 	_flacara.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_flacara.position = GURA_TEVII + Vector3(0, 0, -0.03)
+	_flacara.position = _gura + Vector3(0, 0, -0.03)
 	_flacara.hide()
 	_model.add_child(_flacara)
 	_lumina = OmniLight3D.new()
 	_lumina.light_color = Color(1.0, 0.75, 0.45)
 	_lumina.light_energy = 0.0
 	_lumina.omni_range = 6.0
-	_lumina.position = GURA_TEVII
+	_lumina.position = _gura
 	_model.add_child(_lumina)
 	visible = false
 
 
 func _process(delta: float) -> void:
 	_timp += delta
-	var are := Stare.in_mana == ID
+	var are := Stare.in_mana == id
 	var jos := not are or (Stare.meniu_deschis and not in_scena) or Tranzitie.activa
 	_inclinat = move_toward(_inclinat, inclinare, delta * 4.0)
 	_jos = move_toward(_jos, 1.0 if jos else 0.0, delta * 3.5)

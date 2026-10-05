@@ -15,6 +15,14 @@ const MODELE := {
 		"ridicare": 0.025,
 		"raft": Vector3(0.0, 0.0, PI / 2.0),
 	},
+	"pistol_aur": {  # easter egg-ul din spatele conacului (pistol_aur_masa.gd)
+		"scena": "res://models/pistol_aur.glb",
+		"material": "res://shaders/material_aur.tres",
+		"stralucitoare": ["Luciu"],
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.02,
+		"raft": Vector3(0.0, 0.0, PI / 2.0),
+	},
 	"matura": {
 		"scena": "res://models/matura.glb",
 		"jos": Vector3(PI / 2.0, 0.0, 0.0),  # culcată pe podea
