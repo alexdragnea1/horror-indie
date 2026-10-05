@@ -233,3 +233,6 @@ lexy.toate(MODELE)
 
 import conac  # noqa: E402
 conac.toate(MODELE)
+
+import demon  # noqa: E402
+demon.demon(MODELE)

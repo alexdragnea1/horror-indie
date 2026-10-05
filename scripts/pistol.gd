@@ -134,6 +134,11 @@ func _poate_trage() -> bool:
 		and not Dialog.activ and not Stare.meniu_deschis and not Tranzitie.activa and not get_tree().paused
 
 
+## O scenă din cod trage singură (ceaun_acasa.gd, în demon): cu pistolul ridicat (`in_scena`), spre mijlocul ecranului.
+func trage_acum() -> void:
+	_trage()
+
+
 func _trage() -> void:
 	_gata = pauza
 	_recul = 1.0

@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/demon.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/demon.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+
+[sub_resource type="CylinderShape3D" id="forma"]
+height = 2.2
+radius = 0.42
+
+[node name="Demon" type="StaticBody3D"]
+script = ExtResource("1")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi", "Pecete")
+stralucire = 2.2
+
+[node name="Forma" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0.05)
+shape = SubResource("forma")
+
+[node name="Lumina" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0.9)
+light_color = Color(1, 0.3, 0.18, 1)
+light_energy = 0.7
+omni_range = 3.5

@@ -3,7 +3,8 @@ extends Node3D
 ## O minge de foc (vraja Fireball, de la Helga): un miez alb-galben într-un halou portocaliu, cu o dâră de flăcări care se
 ## face fum, o lumină caldă care merge cu ea și un vuiet. Zboară drept; unde lovește explodează (flăcări, scântei, fum,
 ## un fulger de lumină, o bubuitură). Ce lovește primește `impuscat(directie, punct)`, ca de la un glonț (Pistol): aceleași
-## reguli (bețivul, vrăjitoarele din cerc), manechinul se clatină, boombox-ul se strică; un cadavru e împins.
+## reguli (bețivul, vrăjitoarele din cerc), manechinul se clatină, boombox-ul se strică; un cadavru e împins. Cine are
+## `lovit_de_foc(directie, punct)` primește asta în loc de `impuscat` (pisica: arde).
 ##   var m := MingeFoc.creeaza(self, 0.6)      # ținută în palmă (nu zboară), crește cu `marime_vizibila`
 ##   m.lanseaza(directie, [jucator.get_rid()])  # pleacă
 ##   MingeFoc.arunca(self, de_la, directie, 0.6, [rid])  # direct
@@ -182,7 +183,9 @@ func _physics_process(delta: float) -> void:
 func _explodeaza(punct: Vector3, normala: Vector3, tinta: Object) -> void:
 	_gata = true
 	global_position = punct + normala * 0.05
-	if tinta and tinta.has_method("impuscat"):
+	if tinta and tinta.has_method("lovit_de_foc"):
+		tinta.lovit_de_foc(directie, punct)
+	elif tinta and tinta.has_method("impuscat"):
 		tinta.impuscat(directie, punct)
 	elif tinta is RigidBody3D:
 		var corp := tinta as RigidBody3D

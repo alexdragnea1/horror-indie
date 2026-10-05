@@ -403,3 +403,62 @@ g=$(castig_final "$OUT/_tors.wav" "anull")
 ffmpeg -v error -y -i "$OUT/_tors.wav" -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/pisica_tors.ogg"
 rm -f "$OUT/_tors.wav"
 echo "pisica_tors.ogg  (buclă)"
+
+# --- pisica moartă, ceaunul de acasă care explodează și demonul de pe pentagramă (ceaun_acasa.gd, demon.gd)
+# pisica împușcată: un miorlăit de durere, sintetizat (în pachet nu e nicio pisică): fundamentala urcă repede de la
+# 650 la 950 Hz („mia-”), apoi coboară lung spre 450 („-uuu”), cu vibrato; armonicele trec prin „formanții” unei guri mici
+FAZA="(if(lt(t\,0.15)\,650*t+1000*t*t\,120+950*(t-0.15)-384.6*(t-0.15)*(t-0.15))+0.4*sin(2*PI*7*t))"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*$FAZA)+sin(4*PI*$FAZA)/2+sin(6*PI*$FAZA)/3+sin(8*PI*$FAZA)/4+sin(10*PI*$FAZA)/5)*min(1\,t/0.03)*if(gt(t\,0.55)\,max(0\,(0.85-t)/0.3)\,1)+(random(0)*2-1)*0.08*min(1\,t/0.03)*max(0\,1-t/0.85)':s=44100:d=0.85" \
+	-af "equalizer=f=1200:t=q:w=1.5:g=9,equalizer=f=2700:t=q:w=2:g=5,highpass=f=350,lowpass=f=6500,aecho=0.6:0.3:25:0.2" -ac 1 "$OUT/_miau.wav"
+unic pisica_moare "$OUT/_miau.wav"
+# ceaunul se încinge (~4 s): fierberea tot mai repede, un huruit care crește și metalul care pocnește și scârțâie
+ffmpeg -v error -y -i "$PACHET/Environment/water_boiling_loop.wav" -f lavfi -i "anoisesrc=c=brown:a=0.8:d=4.3:r=44100:s=11" \
+	-i "$PACHET/Materials/metal_clang.wav" -i "$PACHET/Materials/pottery_clang.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,atrim=end=3.2,asetrate=44100*1.35,aresample=44100,afade=t=in:d=0.5,volume='0.5+0.5*t/2.4':eval=frame[f];[1]lowpass=f=160,volume='pow(t/4.3\,2)*2.2':eval=frame[h];[2]aformat=channel_layouts=mono,asplit=2[c0][c1];[c0]asetrate=44100*0.55,aresample=44100,lowpass=f=1800,adelay=1600,volume=0.45[m1];[3]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,adelay=3000,volume=0.5[m2];[c1]asetrate=44100*0.45,aresample=44100,lowpass=f=1200,adelay=3700,volume=0.6[m3];[f][h][m1][m2][m3]amix=inputs=5:normalize=0,atrim=end=4.3,afade=t=out:st=4.1:d=0.2" \
+	-ac 1 "$OUT/_incins.wav"
+unic ceaun_incins "$OUT/_incins.wav"
+# explozia ceaunului: bubuitura mare (încetinită), fonta care se sparge, poțiunea care plesnește, apoi cioburile care
+# cad prin cameră și un vuiet lung care se stinge, cu ecoul camerei
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_large.wav" -i "$PACHET/Materials/metal_clang.wav" \
+	-i "$PACHET/Combat and Gore/crunch_splat.wav" -i "$PACHET/Materials/pottery_clang.wav" -f lavfi -i "anoisesrc=c=brown:a=1:d=3.5:r=44100:s=12" \
+	-i "$PACHET/Materials/metal_blunt_tap.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=1600[b];[1]aformat=channel_layouts=mono,asplit=2[k0][k1];[k0]asetrate=44100*0.8,aresample=44100,volume=0.7[m];[2]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,volume=0.6[s];[3]aformat=channel_layouts=mono,asetrate=44100*1.1,aresample=44100,adelay=650,volume=0.35[c1];[k1]asetrate=44100*1.4,aresample=44100,adelay=900,volume=0.25[c2];[5]aformat=channel_layouts=mono,asetrate=44100*1.2,aresample=44100,adelay=1250,volume=0.3[c3];[4]lowpass=f=220,volume='exp(-t*1.3)*1.6':eval=frame[v];[b][m][s][c1][c2][c3][v]amix=inputs=7:normalize=0,aecho=0.7:0.5:70|160:0.3|0.2,atrim=end=3.5,afade=t=out:st=2.7:d=0.8" \
+	-ac 1 "$OUT/_explozie.wav"
+unic ceaun_explozie "$OUT/_explozie.wav"
+# țiuitul din urechi după explozie: două sinusuri înalte, apropiate (bat ușor între ele), care se sting în 3,5 s
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*3700*t)+0.6*sin(2*PI*3745*t))*min(1\,t/0.05)*exp(-t*0.9)':s=44100:d=3.5" \
+	-af "afade=t=out:st=2.8:d=0.7" -ac 1 "$OUT/_tiuit.wav"
+unic tiuit "$OUT/_tiuit.wav"
+# chemarea demonului (~8 s): un bas adânc care urcă din podea (două sinusuri joase care bat, zgomot maro), peste o
+# fantomă întoarsă și încetinită, tot mai tare, cu un val la sfârșit
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*(38+6*t/8)*t)+0.7*sin(2*PI*(57+9*t/8)*t)+0.4*sin(2*PI*76*t))*min(1\,t/2.5)':s=44100:d=8" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.8:d=8:r=44100:s=13" -i "$PACHET/Other/ghost_long.wav" \
+	-filter_complex "[0]volume=0.5,tremolo=f=0.6:d=0.3[s];[1]lowpass=f=260,volume='0.3+0.9*t/8':eval=frame[z];[2]aformat=channel_layouts=mono,areverse,asetrate=44100*0.55,aresample=44100,lowpass=f=1500,adelay=1200,volume=0.8[g];[s][z][g]amix=inputs=3:normalize=0,aecho=0.6:0.5:90|200:0.3|0.2,atrim=end=8,afade=t=in:d=1.5,afade=t=out:st=6.8:d=1.2" \
+	-ac 1 "$OUT/_chemare.wav"
+unic demon_chemare "$OUT/_chemare.wav"
+# răcnetul demonului: o voce de bărbat încetinită de 2,5-3 ori, dublată de un mârâit (zgomot pe benzile vocii, „frânt” de
+# un tremolo rapid) și un bas, cu ecoul camerei
+ffmpeg -v error -y -i "$PACHET/Human/man_6.wav" -i "$PACHET/Human/man_4.wav" -f lavfi -i "anoisesrc=c=pink:a=0.8:d=2.2:r=44100:s=14" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.38,aresample=44100,lowpass=f=2000[v1];[1]aformat=channel_layouts=mono,asetrate=44100*0.32,aresample=44100,lowpass=f=1500,volume=0.8[v2];[2]bandpass=f=400:t=h:w=500,tremolo=f=38:d=0.9,volume='if(lt(t\,0.15)\,t/0.15\,exp(-(t-0.15)*1.6))':eval=frame[g];[v1][v2][g]amix=inputs=3:normalize=0,acrusher=bits=10:mix=0.25,equalizer=f=90:t=q:w=1:g=6,aecho=0.6:0.5:60|150:0.35|0.2,atrim=start=0.3:end=2.2,asetpts=PTS-STARTPTS,afade=t=out:st=1.4:d=0.5" \
+	-ac 1 "$OUT/_raget.wav"
+unic demon_raget "$OUT/_raget.wav"
+# glonțul intră în demon: carne (pleoscăit gros), o pocnitură de os și un mormăit scurt de durere, foarte jos
+ffmpeg -v error -y -i "$PACHET/Combat and Gore/squelching_3.wav" -i "$PACHET/Combat and Gore/bone_snap.wav" -i "$PACHET/Human/man_2.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,volume=0.9[a];[1]aformat=channel_layouts=mono,volume=0.5[b];[2]aformat=channel_layouts=mono,asetrate=44100*0.42,aresample=44100,lowpass=f=1500,adelay=60,volume=0.8[c];[a][b][c]amix=inputs=3:normalize=0,atrim=end=1.0,afade=t=out:st=0.7:d=0.3" \
+	-ac 1 "$OUT/_lovit.wav"
+unic demon_lovit "$OUT/_lovit.wav"
+# se dezintegrează (~4 s): urletul (vocea încetinită, din ce în ce mai jos), flacăra care îl cuprinde, sfârâitul
+# și pârâitul jarului, apoi scrumul care se risipește
+ffmpeg -v error -y -i "$PACHET/Human/man_6.wav" -i "$PACHET/Human/man_9.wav" -i "$PACHET/Environment/fire_lighting.wav" \
+	-f lavfi -i "anoisesrc=c=white:a=0.5:d=4.2:r=44100:s=15" -i "$OUT/foc_trosnet.ogg" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.33,aresample=44100,lowpass=f=1800[u1];[1]aformat=channel_layouts=mono,asetrate=44100*0.26,aresample=44100,lowpass=f=1400,adelay=1100,volume=0.9[u2];[2]aformat=channel_layouts=mono,asetrate=44100*0.45,aresample=44100,volume=0.8[f];[3]highpass=f=3000,lowpass=f=9000,volume='0.25*min(1\,t/0.8)*max(0\,1-(t-2.4)/1.8)':eval=frame[s];[4]aformat=channel_layouts=mono,aresample=44100,atrim=end=4.2,volume='min(1\,t/0.6)*max(0\,1-(t-2.5)/1.7)':eval=frame[j];[u1][u2][f][s][j]amix=inputs=5:normalize=0,acrusher=bits=11:mix=0.2,aecho=0.6:0.5:70|170:0.3|0.2,atrim=end=4.2,afade=t=out:st=3.4:d=0.8" \
+	-ac 1 "$OUT/_dezintegrare.wav"
+unic demon_dezintegrare "$OUT/_dezintegrare.wav"
+# se teleportează: un vâjâit care se strânge (zgomot care crește tot mai repede, ~0,5 s), o pocnitură de aer și o
+# bufnitură joasă, apoi ecoul
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.8:d=0.55:r=44100:s=16" -i "$PACHET/Environment/air_burst.wav" -i "$PACHET/Weapons/harsh_thud.wav" \
+	-filter_complex "[0]bandpass=f=900:t=h:w=1400,volume='pow(t/0.55\,3)*1.4':eval=frame[w];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=520,volume=0.9[a];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=900,adelay=520,volume=0.9[t];[w][a][t]amix=inputs=3:normalize=0:duration=longest,aecho=0.6:0.5:80|190:0.35|0.2,atrim=end=1.8,afade=t=out:st=1.3:d=0.5" \
+	-ac 1 "$OUT/_teleport.wav"
+unic demon_teleport "$OUT/_teleport.wav"
+rm -f "$OUT"/_miau.wav "$OUT"/_incins.wav "$OUT"/_explozie.wav "$OUT"/_tiuit.wav "$OUT"/_chemare.wav "$OUT"/_raget.wav \
+	"$OUT"/_lovit.wav "$OUT"/_dezintegrare.wav "$OUT"/_teleport.wav

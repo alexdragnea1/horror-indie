@@ -21,15 +21,18 @@ var bucati: Array[RigidBody3D] = []
 
 var _impuls := Vector3.ZERO
 var _cadre := 0
+var _masa := 30.0
 
 
 ## Face ragdoll din `model` (îl golește: bucățile lui trec în corpurile fizice) și îi dă un brânci `impuls`
-## (N·s, în coordonate globale) în piept. Ragdoll-ul intră în scenă lângă model.
-static func din_model(model: Node3D, impuls: Vector3, lipite: PackedStringArray = []) -> Ragdoll:
+## (N·s, în coordonate globale) în piept. Ragdoll-ul intră în scenă lângă model. `masa` = cât cântărește trunchiul (kg;
+## un om: 30, pisica: 3); membrele se iau după mărimea lor, dar nu mai grele decât trunchiul.
+static func din_model(model: Node3D, impuls: Vector3, lipite: PackedStringArray = [], masa := 30.0) -> Ragdoll:
 	var r := Ragdoll.new()
 	r.name = "Cadavru"
 	model.get_parent().get_parent().add_child(r)
 	r.global_transform = Transform3D.IDENTITY
+	r._masa = masa
 	var corpuri := {}
 	r._fa_bucati(model, model, null, corpuri, lipite)
 	r._leaga(corpuri)
@@ -77,8 +80,8 @@ func _corp_pentru(mesh: MeshInstance3D) -> RigidBody3D:
 	forma.shape = box
 	forma.position = cutie.get_center()
 	corp.add_child(forma)
-	# un om de vreo 70 kg: trunchiul greu, membrele ușoare
-	corp.mass = 30.0 if mesh.name == "Corp" else clampf(cutie.size.x * cutie.size.y * cutie.size.z * 150.0, 2.0, 8.0)
+	# trunchiul greu (un om: 30 kg), membrele ușoare
+	corp.mass = _masa if mesh.name == "Corp" else clampf(cutie.size.x * cutie.size.y * cutie.size.z * 150.0, minf(2.0, _masa * 0.1), minf(8.0, _masa * 0.3))
 	mesh.reparent(corp, true)
 	if mesh.name == "Corp":
 		trunchi = corp

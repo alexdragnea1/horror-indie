@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="1"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="2"]
@@ -22,6 +22,7 @@
 [ext_resource type="AudioStream" path="res://sunete/matura_scoasa.ogg" id="m2"]
 [ext_resource type="PackedScene" path="res://models/raft_depozit.glb" id="rd1"]
 [ext_resource type="Script" path="res://scripts/raft_depozit.gd" id="rd2"]
+[ext_resource type="Script" path="res://scripts/ceaun_acasa.gd" id="ca1"]
 
 [sub_resource type="CylinderShape3D" id="forma_matura"]
 height = 1.6
@@ -95,6 +96,7 @@ shape = SubResource("forma_raft")
 
 [node name="Ceaun" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9, 0.02, 1.7)
+script = ExtResource("ca1")
 
 [node name="Model" parent="Ceaun" instance=ExtResource("7")]
 script = ExtResource("1")

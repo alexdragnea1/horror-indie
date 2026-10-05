@@ -28,7 +28,13 @@ instance uniform float stralucire = 0.0;
 // ModelPS2.disparitie(nod, valoare).
 instance uniform float disparitie = 0.0;
 
+// Metalul încins la roșu (ceaunul de acasă, înainte să explodeze; ceaun_acasa.gd): rgb = culoarea jarului,
+// a = cât de încins (0..1). Se încinge de jos în sus, după înălțimea vârfului în model (originea = podeaua):
+// la a = 0,5 arde doar fundul, la 1 tot ceaunul. Pete mai calde și mai reci, după textura de murdărie.
+instance uniform vec4 incins = vec4(0.0);
+
 varying vec3 uv_afin;
+varying float inaltime_model;
 
 void vertex() {
 	if (uv_din_lume) {
@@ -43,6 +49,7 @@ void vertex() {
 		vec2 grila = vec2(rezolutie_tremur, rezolutie_tremur * VIEWPORT_SIZE.y / VIEWPORT_SIZE.x);
 		clip.xy = round(clip.xy / clip.w * grila) / grila * clip.w;
 	}
+	inaltime_model = VERTEX.y;
 	POSITION = clip;
 	uv_afin = vec3(UV * clip.w, clip.w);
 }
@@ -59,4 +66,10 @@ void fragment() {
 	// COLOR = culorile vârfurilor din modelele făcute în Blender (albe la pereții din CSG).
 	ALBEDO = texture(textura, uv).rgb * culoare.rgb * COLOR.rgb;
 	EMISSION = ALBEDO * stralucire;
+	if (incins.a > 0.0) {
+		float jar = clamp(incins.a * 1.7 - inaltime_model * 1.3, 0.0, 1.0);
+		jar *= mix(0.6, 1.25, texture(textura, uv * 3.0).r);
+		ALBEDO = mix(ALBEDO, incins.rgb, jar * 0.6);
+		EMISSION += incins.rgb * jar * jar * 3.0;
+	}
 }

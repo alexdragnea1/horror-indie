@@ -4,9 +4,10 @@ import math
 import os
 import random
 
+import bpy
 from mathutils import Vector
 
-from unelte import p, curata, cub, cilindru, sfera, sfera_deschisa, inel, linie, text, os_intre, uneste, exporta
+from unelte import p, curata, cub, cilindru, sfera, sfera_deschisa, inel, linie, text, os_intre, uneste, exporta, _coloreaza
 
 LEMN = p("5e363e")
 LEMN_INCHIS = p("48313b")
@@ -160,18 +161,95 @@ def lumanare(cale):
 
 
 def covor(cale):
-	"""Covor rotund cu pentagramă. Vârfurile stelei sunt la raza 0,92 (acolo stau lumânările)."""
+	"""Covor rotund cu pentagramă. Vârfurile stelei sunt la raza 0,92 (acolo stau lumânările). Liniile stelei sunt
+	separate (`Pentagrama`): la chemarea demonului (ceaun_acasa.gd) se înroșesc și ard."""
 	curata()
-	piese = [
+	uneste([
 		cilindru("Margine", 1.0, 1.0, 0.01, (0, 0, 0.005), AUR, laturi=20),
 		cilindru("Covor", 0.96, 0.96, 0.012, (0, 0, 0.006), LEMN_INCHIS, laturi=20),
-	]
+	], "Covor")
 	varfuri = [(0.92 * math.cos(math.radians(90 + 72 * i)), 0.92 * math.sin(math.radians(90 + 72 * i)))
 		for i in range(5)]
-	for i in range(5):
-		piese.append(linie("Linie", varfuri[i], varfuri[(i + 2) % 5], 0.03, 0.014, 0.007, AUR))
-	uneste(piese, "Covor")
+	uneste([linie("Linie", varfuri[i], varfuri[(i + 2) % 5], 0.03, 0.014, 0.007, AUR) for i in range(5)], "Pentagrama")
 	exporta(os.path.join(cale, "covor.glb"))
+
+
+def _sparge(ob, grupa, prefix):
+	"""Împarte obiectul `ob` în bucăți după `grupa(centrul fetei)` (o cheie pentru fiecare bucată). Fiecare bucată
+	devine un obiect `prefix` + număr, cu originea în mijlocul ei (acolo se rotește când zboară). `ob` se șterge."""
+	import bmesh
+	bm = bmesh.new()
+	bm.from_mesh(ob.data)
+	grupuri = {}
+	for f in bm.faces:
+		grupuri.setdefault(grupa(f.calc_center_median()), set()).add(f.index)
+	bm.free()
+	bucati = []
+	for i, cheie in enumerate(sorted(grupuri)):
+		bm = bmesh.new()
+		bm.from_mesh(ob.data)
+		bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.index not in grupuri[cheie]], context='FACES')
+		me = bpy.data.meshes.new(prefix + str(i + 1))
+		bm.to_mesh(me)  # culorile vârfurilor (atributul Col) vin odată cu fețele
+		bm.free()
+		bucata = bpy.data.objects.new(prefix + str(i + 1), me)
+		bpy.context.scene.collection.objects.link(bucata)
+		bpy.ops.object.select_all(action='DESELECT')
+		bucata.select_set(True)
+		bpy.context.view_layer.objects.active = bucata
+		bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
+		bpy.ops.object.shade_flat()
+		bucati.append(bucata)
+	bpy.data.objects.remove(ob)
+	return bucati
+
+
+def _pata(nume, raza_min, raza_max, z, culoare, r, colturi=16):
+	"""Pată plată, zdrențuită (poligon cu raza la întâmplare), cu fața în sus: arsura și balta de pe podea."""
+	import bmesh
+	bm = bmesh.new()
+	puncte = []
+	for k in range(colturi):
+		u = k * math.tau / colturi + r.uniform(-0.12, 0.12)
+		d = r.uniform(raza_min, raza_max) * (1.0 if k % 2 == 0 else 0.78)
+		puncte.append(bm.verts.new((math.cos(u) * d, math.sin(u) * d, z)))
+	bm.faces.new(puncte)
+	me = bpy.data.meshes.new(nume)
+	bm.to_mesh(me)
+	bm.free()
+	ob = bpy.data.objects.new(nume, me)
+	bpy.context.scene.collection.objects.link(ob)
+	_coloreaza(ob, culoare)
+	return ob
+
+
+def ceaun_spart(cale):
+	"""Ceaunul după ce a explodat (ceaun_acasa.gd): aceleași piese ca `ceaun`, dar sparte. Cioburile corpului (`Ciob*`,
+	5 sus și 3 jos, cu marginile ondulate), buza ruptă în 3 (`Buza*`), picioarele (`Picior*`) și urechile (`Ureche*`)
+	zboară prin cameră ca bucăți fizice. Pe podea rămân `Arsura` (pata neagră) și `Balta` (poțiunea roșie vărsată).
+	Bucățile stau unde erau în ceaunul întreg, deci la început arată exact ca el."""
+	curata()
+	r = random.Random(666)
+	corp = sfera_deschisa("Corp", 0.35, (0, 0, 0.4), NEGRU, z_taiere=0.58, scara=(1, 1, 0.85))
+
+	def grupa_corp(c):
+		u = math.atan2(c.y, c.x) + 0.3 * math.sin(c.z * 19.0) + math.pi
+		if c.z < 0.27 + 0.05 * math.sin(u * 3.0):
+			return (0, int(u / (math.tau / 3)) % 3)
+		return (1, int((u + 0.4) / (math.tau / 5)) % 5)
+	_sparge(corp, grupa_corp, "Ciob")
+	buza = inel("Buza", 0.27, 0.03, (0, 0, 0.58), NEGRU)
+	_sparge(buza, lambda c: int((math.atan2(c.y, c.x) + math.pi + 0.5) / (math.tau / 3)) % 3, "Buza")
+	for i in range(3):
+		a = i * 2 * math.pi / 3
+		picior = os_intre("Picior", (0.2 * math.cos(a), 0.2 * math.sin(a), 0.16), (0.25 * math.cos(a), 0.25 * math.sin(a), 0.0),
+			0.03, NEGRU, laturi=4)
+		uneste([picior], "Picior%d" % (i + 1), (0.225 * math.cos(a), 0.225 * math.sin(a), 0.08))
+	for i, s in enumerate((1, -1)):
+		uneste([inel("Ureche", 0.05, 0.012, (0.3 * s, 0, 0.52), NEGRU, segmente=6)], "Ureche%d" % (i + 1), (0.3 * s, 0, 0.52))
+	uneste([_pata("Arsura", 0.55, 0.8, 0.004, NEGRU, r, colturi=18)], "Arsura")
+	uneste([_pata("Balta", 0.3, 0.45, 0.013, p("7b383a"), r, colturi=14)], "Balta")
+	exporta(os.path.join(cale, "ceaun_spart.glb"))
 
 
 def matura(cale):
@@ -244,5 +322,5 @@ def raft_depozit(cale):
 
 
 def toate(cale):
-	for f in (pat, noptiera, raft, ceaun, lumanare, covor, matura, usa, raft_depozit):
+	for f in (pat, noptiera, raft, ceaun, ceaun_spart, lumanare, covor, matura, usa, raft_depozit):
 		f(cale)
