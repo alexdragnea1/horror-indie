@@ -7,3 +7,7 @@ __pycache__/
 Sound/
 # pozele originale ale tablourilor (owner-ul); în joc intră textures/tablou_*.png
 /textures/Tablouri/
+# exportul jocului (spells.exe / .pck), făcut în folderul proiectului
+/spells.exe
+/spells.console.exe
+/spells.pck

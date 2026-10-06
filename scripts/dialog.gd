@@ -16,7 +16,7 @@ const NUME_JUCATOR := ["You", "Tu", "Eu"]
 ## „Vocea”: un bip scurt la fiecare câteva litere, ca în jocurile vechi.
 const VOCE := preload("res://sunete/dialog_voce.ogg")
 ## Înălțimea vocii pentru fiecare personaj (1 = normal, mai mic = mai gros).
-const INALTIME_VOCI := {"MOM": 0.62, "OLD HAG": 0.78, "DRIVER": 0.5, "DRUNKARD": 0.55, "HEAD WITCH": 0.7, "LEXY": 1.12, "HELGA": 0.82, "DEMON": 0.32, "OLD BITCH": 0.85}
+const INALTIME_VOCI := {"MOM": 0.62, "OLD HAG": 0.78, "DRIVER": 0.5, "DRUNKARD": 0.55, "HEAD WITCH": 0.7, "LEXY": 1.12, "HELGA": 0.82, "DEMON": 0.32, "OLD BITCH": 0.85, "GUN CLERK": 0.62}
 const INALTIME_JUCATOR := 1.25
 ## Pentru replicile fără nume (descrieri, naratorul).
 const INALTIME_FARA_NUME := 0.9
@@ -168,6 +168,11 @@ func _input(event: InputEvent) -> void:
 ## pe butonul selectat). Cât alegi, jucătorul stă pe loc și mouse-ul se vede.
 ## Cu `replica` goală apar doar butoanele, fără casetă (ex. ce-i spui lui Lexy la masă).
 func intreaba(replica: String, optiuni: PackedStringArray) -> int:
+	# multe butoane (ex. Gun Clerk, 5) ocupă tot rândul de jos: caseta crește, ca replica să rămână deasupra lor
+	var inalta := not replica.is_empty() and "".join(optiuni).length() > 32
+	_panou.offset_top = -80 if inalta else -64
+	_eticheta.offset_top = -95 if inalta else -79
+	_eticheta.offset_bottom = -80 if inalta else -64
 	if replica.is_empty():
 		activ = true
 		_text.text = ""
@@ -195,6 +200,9 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_panou.hide()
 	_eticheta.hide()
+	_panou.offset_top = -64
+	_eticheta.offset_top = -79
+	_eticheta.offset_bottom = -64
 	activ = false
 	terminat.emit()
 	return ales

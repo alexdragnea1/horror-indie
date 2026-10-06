@@ -718,3 +718,63 @@ bucla uscator "$OUT/_uscator.wav" 1.0 mono
 ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.4:d=8:r=44100:s=11" -af "lowpass=f=700,highpass=f=60,volume='0.75+0.25*sin(2*PI*3.1*t)':eval=frame" -ac 2 "$OUT/_camera.wav"
 bucla camera_joc "$OUT/_camera.wav" 1.0 stereo
 rm -f "$OUT/_role.wav" "$OUT/_masina.wav" "$OUT/_uscator.wav" "$OUT/_camera.wav"
+
+# --- magazinul de arme „Freedom” (Gun Store): armele (cuțitul, shotgun-ul, AK-47, bazooka cu explozia), vânzătorul.
+# Rulează doar secțiunea asta cu funcțiile de sus. Împușcăturile sunt sintetizate peste „shot_muffled” (în pachet nu
+# sunt arme de foc), ca pistolul roz; explozia e „de film”, ca vraja din coven.
+TINTA_LUFS=-20
+unic arma_scoasa "Weapons/weapon_equip.wav"
+unic arma_pe_tejghea "Weapons/weapon_drop.wav" mono "lowpass=f=4000"
+unic tub_cazut "Materials/metal_blunt_tap.wav" mono "asetrate=44100*1.7,aresample=44100,highpass=f=900,atrim=end=0.25"
+unic cutit_fasait "Combat and Gore/swipe.wav" mono "highpass=f=300"
+ffmpeg -v error -y -i "$PACHET/Combat and Gore/squelching_2.wav" -i "$PACHET/Materials/cork_stabbed.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,atrim=end=0.6,volume=0.8[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100[b];[a][b]amix=inputs=2:normalize=0,afade=t=out:st=0.4:d=0.2" \
+	-ac 1 "$OUT/_carne.wav"
+unic cutit_carne "$OUT/_carne.wav"
+unic cutit_perete "Weapons/sword_clash.wav" mono "asetrate=44100*1.15,aresample=44100,atrim=end=0.5,afade=t=out:st=0.3:d=0.2"
+# shotgun-ul: bubuitura (zgomot care se stinge, un bas care cade 215 -> 35 Hz), „shot_muffled” încetinit pentru corp,
+# ecoul lung al străzii; apoi pompa: clic-clac (alunecarea înapoi, apoi înainte)
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=1:d=2.2:r=44100:s=31" \
+	-f lavfi -i "aevalsrc=1.0*sin(2*PI*(35+180*exp(-t*18))*t)*exp(-t*4.5):s=44100:d=2.2" -i "$PACHET/Weapons/shot_muffled.wav" \
+	-filter_complex "[0]volume='exp(-t*14)':eval=frame,highpass=f=180,lowpass=f=7000[c];[1]lowpass=f=320[b];[2]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,apad=pad_dur=2.2,atrim=end=2.2[m];[c][b][m]amix=inputs=3:normalize=0,aecho=0.8:0.65:110|290|640:0.4|0.26|0.14,afade=t=out:st=1.6:d=0.6" \
+	-ac 1 "$OUT/_shotgun.wav"
+unic shotgun_foc "$OUT/_shotgun.wav"
+ffmpeg -v error -y -i "$PACHET/Other/slide_and_click.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asplit=2[a][b];[a]asetrate=44100*0.8,aresample=44100,atrim=end=0.22[a2];[b]asetrate=44100*1.0,aresample=44100,atrim=end=0.25,adelay=170[b2];[a2][b2]amix=inputs=2:normalize=0:duration=longest,lowpass=f=6000" \
+	-ac 1 "$OUT/_pompa.wav"
+unic shotgun_pompa "$OUT/_pompa.wav"
+# AK-47: un pocnet scurt și sec (zgomot care piere în 25 ms, un bas care cade, „shot_muffled” mai sus), ecou scurt
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=1:d=0.7:r=44100:s=37" \
+	-f lavfi -i "aevalsrc=0.9*sin(2*PI*(55+420*exp(-t*45))*t)*exp(-t*11):s=44100:d=0.7" -i "$PACHET/Weapons/shot_muffled.wav" \
+	-filter_complex "[0]volume='exp(-t*38)':eval=frame,highpass=f=450,lowpass=f=8000[c];[1]lowpass=f=500[b];[2]aformat=channel_layouts=mono,asetrate=44100*1.15,aresample=44100,apad=pad_dur=0.7,atrim=end=0.7,volume=0.8[m];[c][b][m]amix=inputs=3:normalize=0,aecho=0.7:0.5:70|170:0.3|0.15,afade=t=out:st=0.45:d=0.25" \
+	-ac 1 "$OUT/_ak.wav"
+unic ak_foc "$OUT/_ak.wav"
+unic ak_incarcator_scos "Weapons/weapon_unequip.wav"
+unic ak_incarcator_pus "Environment/lock_quick.wav" mono "asetrate=44100*0.85,aresample=44100"
+unic ak_armat "Other/slide_and_click.wav" mono "asetrate=44100*1.2,aresample=44100"
+# bazooka: lansarea (bufnitura joasă, aerul care țâșnește, vâjâitul care pleacă), reîncărcarea (clinchet metalic, zăvor)
+ffmpeg -v error -y -i "$PACHET/Environment/air_burst.wav" -i "$PACHET/Other/whoosh_2.wav" \
+	-f lavfi -i "aevalsrc=1.0*sin(2*PI*(40+120*exp(-t*12))*t)*exp(-t*5):s=44100:d=2.0" -f lavfi -i "anoisesrc=c=pink:a=0.8:d=2.0:r=44100:s=41" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=60[w];[2]lowpass=f=260[b];[3]bandpass=f=1600:t=h:w=2400,volume='exp(-t*2.2)*0.9':eval=frame[z];[a][w][b][z]amix=inputs=4:normalize=0:duration=longest,aecho=0.7:0.5:150|380:0.3|0.15,atrim=end=2.0,afade=t=out:st=1.4:d=0.6" \
+	-ac 1 "$OUT/_lansare.wav"
+unic bazooka_lansare "$OUT/_lansare.wav"
+ffmpeg -v error -y -i "$PACHET/Materials/metal_clang.wav" -i "$PACHET/Environment/lock_lock.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,atrim=end=0.6,volume=0.6[a];[1]aformat=channel_layouts=mono,adelay=120[b];[a][b]amix=inputs=2:normalize=0:duration=longest,afade=t=out:st=0.6:d=0.3" \
+	-ac 1 "$OUT/_incarcare.wav"
+unic bazooka_incarcare "$OUT/_incarcare.wav"
+# racheta în zbor: un șuierat de motor (zgomot în bandă, cu un tremur rapid) peste un huruit, buclă de 2 s
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=0.7:d=4:r=44100:s=43" -f lavfi -i "anoisesrc=c=brown:a=0.6:d=4:r=44100:s=47" \
+	-filter_complex "[0]bandpass=f=2200:t=h:w=2600,tremolo=f=23:d=0.35[s];[1]lowpass=f=200[h];[s][h]amix=inputs=2:normalize=0" -ac 1 "$OUT/_racheta.wav"
+bucla racheta_zbor "$OUT/_racheta.wav" 0.5 mono
+# explozia rachetei (~6 s, „super powerful”): bubuitura mare (explozia încetinită + pocnetul normal), basul care cade
+# 55 -> 18 Hz și se simte în piept, vuietul care se rostogolește, molozul și sticla care cad, ecoul lung al străzii
+TINTA_LUFS=-13
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_large.wav" -f lavfi -i "aevalsrc='1.3*sin(2*PI*(55*t-3*t*t))*min(t/0.006\,1)*exp(-t*0.7)':s=44100:d=6.5" \
+	-f lavfi -i "anoisesrc=c=brown:a=1:d=6.5:r=44100:s=53" -i "$PACHET/Materials/stone_push_short.wav" -i "$PACHET/Combat and Gore/crunch_splat.wav" \
+	-i "$PACHET/Materials/glass_ping_big.wav" -i "$PACHET/Retro/explosion_medium.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asplit=2[e0][e1];[e0]asetrate=44100*0.45,aresample=44100,lowpass=f=1000,volume=1.5[e];[e1]volume=0.9[p];[2]lowpass=f=220,tremolo=f=2.4:d=0.5,volume='min(t/0.05\,1)*exp(-t*0.5)*2':eval=frame[t];[3]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=700,volume=0.7[s];[4]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,adelay=120,volume=0.6[c];[5]aformat=channel_layouts=mono,asetrate=44100*1.1,aresample=44100,adelay=900,volume=0.25[g];[6]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=40,volume=0.7[m];[e][p][1][t][s][c][g][m]amix=inputs=8:normalize=0:duration=longest,$DENS,aecho=0.8:0.75:260|680|1300:0.4|0.28|0.15,atrim=end=6.5,afade=t=out:st=4.8:d=1.7,$STEREO" \
+	-ac 2 "$OUT/_bazooka_bum.wav"
+unic bazooka_explozie "$OUT/_bazooka_bum.wav" stereo
+TINTA_LUFS=-20
+rm -f "$OUT"/_carne.wav "$OUT"/_shotgun.wav "$OUT"/_pompa.wav "$OUT"/_ak.wav "$OUT"/_lansare.wav "$OUT"/_incarcare.wav \
+	"$OUT"/_racheta.wav "$OUT"/_bazooka_bum.wav

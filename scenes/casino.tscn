@@ -785,9 +785,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.42, 1.65, 2.85)
 script = ExtResource("51_je2ju")
 sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Lexy\'s Place", "Gun Store")
-scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "")
-titluri = PackedStringArray("Block M7, Entrance B", "Lexy\'s place", "")
-replici_indisponibil = PackedStringArray("You: Nah, not today.")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn")
+titluri = PackedStringArray("Block M7, Entrance B", "Lexy's place", "Freedom Gun Store")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarCasino" unique_id=1163489932]

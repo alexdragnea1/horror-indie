@@ -59,6 +59,11 @@ func _ready() -> void:
 	vraja.name = "VrajaFoc"  # helga.gd o caută după nume (lecția)
 	_camera.add_child(vraja)
 	_camera.add_child(ObiectInMana.new())
+	# armele de la Gun Store (magazin_arme.tscn), fiecare cu animația ei de tras
+	_camera.add_child(Cutit.new())
+	_camera.add_child(Shotgun.new())
+	_camera.add_child(AK47.new())
+	_camera.add_child(Bazooka.new())
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
 	# ce ai aruncat pe jos aici data trecută

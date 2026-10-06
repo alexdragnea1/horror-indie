@@ -40,8 +40,9 @@ func _afiseaza() -> void:
 		var x := PRIMUL + i * PAS
 		if date.get("sprijinita", false):
 			# rezemată de etajeră, pe podea, în fața compartimentului
-			model.position = Vector3(x, 0.0, 0.32)
-			model.rotation = Vector3(-0.2, 0.0, 0.05)
+			# (armele lungi stau în picioare, cu patul jos: `sprijin` = rotația, `sprijin_y` = cât le ridici)
+			model.position = Vector3(x, date.get("sprijin_y", 0.0), 0.32)
+			model.rotation = date.get("sprijin", Vector3(-0.2, 0.0, 0.05))
 		else:
 			model.position = Vector3(x, FUND + date.ridicare, -0.02)
 			model.rotation = date.get("raft", date.jos)

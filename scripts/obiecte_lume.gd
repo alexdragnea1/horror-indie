@@ -39,6 +39,38 @@ const MODELE := {
 		"stralucire": 0.45,
 		"marime": 1.5,
 	},
+	# armele de la Gun Store (magazin_arme.tscn): pe jos culcate pe o parte; pe raft cuțitul stă în compartiment, cele
+	# lungi în picioare în fața lui, cu patul pe podea, rezemate
+	"cutit": {
+		"scena": "res://models/cutit.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.016,
+		"raft": Vector3(0.0, 0.0, PI / 2.0),
+	},
+	"shotgun": {
+		"scena": "res://models/shotgun.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.026,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.2, 0.0, 0.0),
+		"sprijin_y": 0.45,
+	},
+	"ak47": {
+		"scena": "res://models/ak47.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.026,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.2, 0.0, 0.0),
+		"sprijin_y": 0.47,
+	},
+	"bazooka": {
+		"scena": "res://models/bazooka.glb",
+		"jos": Vector3(0.0, 0.0, -PI / 2.0),
+		"ridicare": 0.066,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.15, 0.0, 0.0),
+		"sprijin_y": 0.92,
+	},
 	"bani_5": {  # bancnota de 5 dolari de la Lexy (lexy_masa.gd); modelul e deja culcat
 		"scena": "res://models/bancnota.glb",
 		"jos": Vector3.ZERO,

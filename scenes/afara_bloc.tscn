@@ -697,8 +697,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 1.6, 13.8)
 script = ExtResource("or1")
 sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Sketchy Laundromat", "Lexy's Place", "Gun Store")
-scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "")
-titluri = PackedStringArray("Sketchy Laundromat", "Lexy's place", "")
+scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn")
+titluri = PackedStringArray("Sketchy Laundromat", "Lexy's place", "Freedom Gun Store")
 
 [node name="Forma" type="CollisionShape3D" parent="OrarBloc"]
 shape = SubResource("forma_orar")
