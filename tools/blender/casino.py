@@ -70,6 +70,28 @@ def _text(nume, continut, loc, marime, culoare, rot=(1.5708, 0, 0), lat=None):
 	return ob
 
 
+def _text_o_fata(nume, continut, loc, marime, culoare, rot=(1.5708, 0, 0)):
+	"""Text plat, cu o singură față (cea din față): din spate nu se vede deloc (shader-ul are cull_back), deci nu apare
+	scris invers. Pentru autocolantele de pe geamuri, puse câte unul pe fiecare parte a sticlei."""
+	bpy.ops.object.text_add(location=loc, rotation=rot)
+	ob = bpy.context.active_object
+	ob.data.body = continut
+	ob.data.size = marime
+	ob.data.extrude = 0.0
+	ob.data.fill_mode = 'FRONT'
+	ob.data.resolution_u = 1
+	ob.data.align_x = 'CENTER'
+	ob.data.align_y = 'CENTER'
+	bpy.ops.object.convert(target='MESH')
+	ob = bpy.context.active_object
+	# toate fețele spre +Z local (adică spre partea dorită, după rotație)
+	for f in ob.data.polygons:
+		if f.normal.z < 0:
+			f.flip()
+	ob.data.update()
+	return _termina(ob, nume, culoare)
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Clădirea și strada
 # ---------------------------------------------------------------------------------------------------------------
@@ -215,9 +237,9 @@ def cladire(cale):
 	piese.append(cub("Tavan camera", (2 * W, Y2 - Y1 - G, 0.1), (0, (Y1 + G + Y2) / 2, HC + 0.05), NEGRU))
 	for y in (14.5, 17.1, 19.7):
 		piese.append(cub("Grinda", (2 * W, 0.22, 0.18), (0, y, HC - 0.09), LEMN_INCHIS))
-	# aplicele de pe pereții laterali (un abajur roșu, becul strălucește)
+	# aplicele de pe pereții laterali (un abajur roșu, becul strălucește); în stânga, prima e lângă ușă, înaintea păcănelelor
 	for s in (-1, 1):
-		for y in (16.0, 20.5):
+		for y in ((12.95, 20.5) if s < 0 else (16.0, 20.5)):
 			xa = s * (W - 0.12)
 			piese.append(cub("Aplica", (0.04, 0.12, 0.2), (s * (W - 0.02), y, 2.05), AUR))
 			piese.append(trunchi("Abajur", [((xa, y, 2.12), 0.06, 0.06), ((xa, y, 2.3), 0.1, 0.1)], ROSU, laturi=8, capete=False))
@@ -250,10 +272,12 @@ def cladire(cale):
 			piese.append(cub("Montant vitrina", (0.05, 0.08, FER_Z[1] - FER_Z[0]), (x, g2, (FER_Z[0] + FER_Z[1]) / 2), CROM))
 		# pervazul de dinăuntru, cu un ghiveci și reviste
 		piese.append(cub("Pervaz", (b - a, 0.3, 0.04), ((a + b) / 2, G + 0.15, FER_Z[0] - 0.02), ALB))
-	# autocolantele de pe geamuri (în fața geamului, pe dinafară): „OPEN 24 HOURS”, „SELF SERVICE”, „COIN LAUNDRY”
+	# autocolantele lipite pe geamuri, câte unul pe fiecare parte a sticlei, cu o singură față: se citesc drept și de afară,
+	# și dinăuntru („SELF SERVICE”, „COIN LAUNDRY”, „OPEN 24 HOURS”, „WASH DRY FOLD”)
 	for continut, x, z, marime, cul in (("SELF SERVICE", -3.65, 2.45, 0.2, ALB), ("COIN LAUNDRY", 3.65, 2.45, 0.2, ALB),
 			("OPEN 24 HOURS", 3.65, 1.0, 0.13, ROSU), ("WASH  DRY  FOLD", -3.65, 1.0, 0.13, ALB)):
-		piese.append(_text("Autocolant", continut, (x, -0.012, z), marime, cul))
+		piese.append(_text_o_fata("Autocolant", continut, (x, g2 - 0.009, z), marime, cul))
+		piese.append(_text_o_fata("Autocolant", continut, (x, g2 + 0.009, z), marime, cul, rot=(1.5708, 0, 3.14159)))
 
 	# --- firma de pe parapet: placa, rama, literele (strălucesc); bannerul cu mașina de spălat în dreapta
 	piese.append(cub("Parapet", (2 * W + 2 * G, G, 1.0), (0, G / 2, TOP + 0.5), TENCUIALA))
@@ -391,6 +415,32 @@ def strada(cale):
 				aprins = r.random() < 0.15
 				(lumini if aprins else piese).append(cub("Geam bloc", (1.2, 0.02, 1.2), (bx - 6 + fx * 3, -14.99, 2.5 + fz * 3),
 					p("a18463") if aprins else GEAM))
+		# aleea de beton de la trotuar până la ușa scării (sub geamurile de la parter)
+		piese.append(cub("Alee bloc", (2.0, 0.8, 0.04), (bx, -14.6, 0.0), p("70706e")))
+		piese.append(cub("Usa bloc", (1.4, 0.02, 1.8), (bx, -14.97, 0.9), METAL_INCHIS))
+	# terenul de sub tot (iarbă), ca nimic să nu stea în aer: vizavi, între blocuri, în spatele vecinilor
+	piese.append(cub("Teren", (L, 110.0, 0.1), (0, -15.0, -0.11), p("5b6d4e")))
+	# între blocuri: aleile de asfalt spre parcările din spate, cu dungi
+	for k in range(4):
+		px = -30 + k * 20
+		piese.append(cub("Parcare", (3.6, 10.8, 0.04), (px, -20.0, -0.04), NEGRU))
+		piese.append(cub("Dunga parcare", (0.1, 10.8, 0.01), (px, -20.0, -0.015), p("a18463")))
+	# copacii de toamnă din trotuarul de vizavi (groapa cu pământ, trunchiul, ramuri, coroana rară)
+	for k in range(9):
+		tx = -44 + k * 11 + r.uniform(-1.5, 1.5)
+		piese.append(cub("Groapa copac", (1.0, 1.0, 0.02), (tx, -13.4, FL), LEMN_INCHIS))
+		piese.append(cilindru("Trunchi copac", 0.13, 0.09, 3.2, (tx, -13.4, FL + 1.6), LEMN_INCHIS, laturi=6))
+		for j in range(3):
+			a = j * 2.1 + r.uniform(0, 1)
+			piese.append(os_intre("Ramura", (tx, -13.4, FL + 2.3 + j * 0.3),
+				(tx + 0.8 * math.cos(a), -13.4 + 0.6 * math.sin(a), FL + 3.1 + j * 0.25), 0.04, LEMN_INCHIS, laturi=4))
+		# coroana: smocuri mici de frunze în culori de toamnă, în jurul capetelor ramurilor (nu o singură bilă)
+		for j in range(7):
+			a = j * 0.9 + r.uniform(0, 0.5)
+			dist = r.uniform(0.25, 0.75)
+			cul = r.choice((p("a18463"), p("a18463"), p("7b383a"), p("904a40"), p("5b6d4e")))
+			piese.append(sfera("Coroana", r.uniform(0.38, 0.6), (tx + dist * math.cos(a), -13.4 + dist * 0.7 * math.sin(a),
+				FL + 3.2 + r.uniform(0.0, 0.9)), cul, scara=(1, 1, 0.75), segmente=6, inele=4))
 	uneste(piese, "Strada")
 	uneste(lumini, "Lumini")
 	uneste(col, "Coliziune")
@@ -547,11 +597,11 @@ def decor_spalatorie(cale):
 	piese.append(cub("Panou preturi", (0.02, 1.6, 0.6), (W - 0.012, 6.0, 2.6), ALB))
 	piese.append(cub("Rama preturi", (0.025, 1.64, 0.04), (W - 0.014, 6.0, 2.9), ROSU))
 	piese.append(_text("Preturi", "WASH ...... $2.50\nEXTRA ..... $0.75\nDRY ....... $1.00", (W - 0.026, 6.0, 2.55), 0.1, NEGRU,
-		rot=(1.5708, 0, 1.5708)))
+		rot=(1.5708, 0, -1.5708)))
 	piese.append(cub("Panou", (0.02, 1.4, 0.4), (-W + 0.012, 6.0, 2.65), ROSU))
-	piese.append(_text("Avertisment", "NO DYEING\nNO PETS", (-W + 0.026, 6.0, 2.65), 0.1, ALB, rot=(1.5708, 0, -1.5708)))
+	piese.append(_text("Avertisment", "NO DYEING\nNO PETS", (-W + 0.026, 6.0, 2.65), 0.1, ALB, rot=(1.5708, 0, 1.5708)))
 	piese.append(cub("Panou", (0.02, 1.8, 0.3), (-W + 0.012, 9.6, 2.65), ALB))
-	piese.append(_text("Avertisment", "DO NOT LEAVE LAUNDRY\nUNATTENDED", (-W + 0.026, 9.6, 2.65), 0.07, NEGRU, rot=(1.5708, 0, -1.5708)))
+	piese.append(_text("Avertisment", "DO NOT LEAVE LAUNDRY\nUNATTENDED", (-W + 0.026, 9.6, 2.65), 0.07, NEGRU, rot=(1.5708, 0, 1.5708)))
 
 	# televizorul vechi din colțul din față-dreapta, pe un suport
 	tx, ty, tz = 6.55, 0.7, 2.75

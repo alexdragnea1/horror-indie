@@ -370,11 +370,19 @@ def om(cale, nume, s, saminta):
 	bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 	_parinte(ob_cap, ob_corp)
 
-	# brațele, pe masă: cotul pe marginea ei, palma pe postav
+	# brațele, pe masă: cotul sprijinit SUS pe bordura capitonată (la masa de poker e la 0,36…0,40 m în fața omului și
+	# urcă la 0,10 peste postav), palma pe postav, dincolo de bordură; așa antebrațul trece peste ea, nu prin ea.
+	# La tejgheaua bătrânei (`masa` dat, fără bordură) cotul stă pe blat.
+	gros = s.get("gros_brat", 1.0)
+	bordura = "masa" not in s
 	for k, l in ((-1, "D"), (1, "S")):
 		umar = (0.19 * k, 0.01, z0 + 0.555)
-		cot = (0.24 * k, -0.27, masa + 0.045)
-		inch = (0.11 * k, -0.52, masa + 0.03)
+		if bordura:
+			cot = (0.24 * k, -0.38, masa + 0.12 + 0.05 * gros)
+			inch = (0.11 * k, -0.62, masa + 0.035)
+		else:
+			cot = (0.24 * k, -0.27, masa + 0.045)
+			inch = (0.11 * k, -0.52, masa + 0.03)
 		if s.get("poza_" + l):  # altă poză de repaus pentru brațul ăsta
 			cot, inch = s["poza_" + l]
 		brat, antebrat = [], []

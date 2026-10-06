@@ -420,7 +420,7 @@ light_volumetric_fog_energy = 0.0
 omni_range = 3.5
 
 [node name="Aplica" type="OmniLight3D" parent="Lumini" unique_id=1775943245]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7424, 2.2, -16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7424, 2.2, -12.95)
 light_color = Color(1, 0.62, 0.4, 1)
 light_energy = 0.55
 light_volumetric_fog_energy = 0.0

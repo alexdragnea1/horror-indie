@@ -508,9 +508,9 @@ sunet_frana = ExtResource("46")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.64, 17.95)
 script = ExtResource("or1")
 sosire = NodePath("../SosireOras")
-optiuni = PackedStringArray("Home", "Casino", "Gun Store")
+optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Gun Store")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "")
-titluri = PackedStringArray("Block M7, Entrance B", "Wash Your Clothes Laundromat", "")
+titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "")
 
 [node name="Forma" type="CollisionShape3D" parent="OrarLexy"]
 shape = SubResource("forma_orar")
