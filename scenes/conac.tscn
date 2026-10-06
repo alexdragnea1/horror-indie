@@ -32,6 +32,8 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="30"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="31"]
 [ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="32"]
+[ext_resource type="Script" path="res://scripts/atac_conac.gd" id="33"]
+[ext_resource type="Script" path="res://scripts/sefa_ruine.gd" id="34"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("11")
@@ -253,3 +255,29 @@ script = ExtResource("27")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.1, 13.5)
 suprafata_implicita = "frunze"
 pasi_poteca = Array[AudioStream]([ExtResource("18"), ExtResource("19"), ExtResource("20"), ExtResource("21")])
+
+[node name="HeadWitchRuine" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("6")]
+transform = Transform3D(-0.887, 0, -0.462, 0, 1, 0, 0.462, 0, -0.887, 4.62, 0.05, 3.55)
+script = ExtResource("34")
+indiciu = "[E] Talk to the Head Witch"
+replici = PackedStringArray("Head Witch: Are you alright?", "You: That was the warlock?", "Head Witch: Yes..It seems he is even more powerful than we imagined..", "You: Don't worry bitch, I know what do to.", "Head Witch: Please don't do anything rash!", "Head Witch: You're going to get yourself killed...", "You: Fly me home, I'll decide what's best for me bitch.")
+brat = NodePath("Model/BratDrept")
+cap = NodePath("Model/Cap")
+model_matura = ExtResource("8")
+distanta_privire = 6.0
+marcaj_zbor = "a_zburat_acasa_dupa_atac"
+titlu_acasa = "Block M7, Entrance B
+11:38 PM"
+
+[node name="AtacConac" type="Node3D" parent="." node_paths=PackedStringArray("conac", "usa", "sefa", "mediu", "luna", "afara", "deal", "lumini_conac", "vant", "sperieturi")]
+script = ExtResource("33")
+conac = NodePath("../ConacModel")
+usa = NodePath("../UsaConac")
+sefa = NodePath("../HeadWitchRuine")
+mediu = NodePath("../Mediu")
+luna = NodePath("../Luna")
+afara = NodePath("../Afara")
+deal = NodePath("../Deal")
+lumini_conac = [NodePath("../LuminaUsaStanga"), NodePath("../LuminaUsaDreapta"), NodePath("../LuminaGeamuri")]
+vant = NodePath("../Vant")
+sperieturi = NodePath("../Sperieturi")

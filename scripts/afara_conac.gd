@@ -43,6 +43,8 @@ var _r := RandomNumberGenerator.new()
 var _instante: Dictionary = {}
 var _corp: StaticBody3D
 var _flacari: Array[OmniLight3D] = []
+var _modele_felinare: Array[Node3D] = []
+var _poarta: Node3D
 
 
 func _ready() -> void:
@@ -92,7 +94,7 @@ func _punct_gard(a: float) -> Vector3:
 func _gardul() -> void:
 	# poarta, în față (a = 0)
 	var la_poarta := _punct_gard(0.0)
-	_pune(POARTA, la_poarta, 0.0)
+	_poarta = _pune(POARTA, la_poarta, 0.0)
 	_cutie(Vector3(jumatate_poarta * 2.0, 3.2, 0.8), Transform3D(Basis(), la_poarta + Vector3.UP * 1.6))
 	# gardul: coarde egale de la un stâlp al porții la celălalt, de jur împrejur
 	var a0 := asin(jumatate_poarta / raza_gard)
@@ -112,7 +114,7 @@ func _gardul() -> void:
 func _felinare() -> void:
 	for f in felinare:
 		var poz := Vector3(f.x, 0.0, f.y)
-		_pune(FELINAR, poz, _r.randf_range(-0.2, 0.2), PackedStringArray(["Lumini"]))
+		_modele_felinare.append(_pune(FELINAR, poz, _r.randf_range(-0.2, 0.2), PackedStringArray(["Lumini"])))
 		var lumina := OmniLight3D.new()
 		lumina.light_color = culoare_felinar
 		lumina.light_energy = energie_felinar
@@ -129,6 +131,27 @@ func _felinare() -> void:
 		forma.shape = cilindru
 		forma.position = poz + Vector3.UP * 1.6
 		_corp.add_child(forma)
+
+
+## Atacul Warlock-ului (atac_conac.gd): flăcările din felinare se sting (`animat` = una câte una, cu pâlpâit și un fum mic).
+func stinge_felinarele(animat: bool) -> void:
+	for i in _flacari.size():
+		if animat:
+			await get_tree().create_timer(randf_range(0.12, 0.3)).timeout
+			for k in 3:  # pâlpâie de câteva ori înainte să se stingă
+				_flacari[i].visible = k % 2 == 1
+				await get_tree().create_timer(0.06).timeout
+		_flacari[i].visible = false
+		var model := _modele_felinare[i]
+		var flacara := model.get_node_or_null("Lumini") as GeometryInstance3D
+		if flacara:
+			flacara.visible = false
+
+
+## Prima vrajă a Warlock-ului sparge poarta: dispare (coliziunea rămâne, acolo e molozul ei).
+func strica_poarta() -> void:
+	if is_instance_valid(_poarta):
+		_poarta.hide()
 
 
 func _cimitirul() -> void:

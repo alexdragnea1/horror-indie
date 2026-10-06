@@ -1,4 +1,4 @@
-[gd_scene load_steps=86 format=3]
+[gd_scene load_steps=87 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -57,6 +57,7 @@
 [ext_resource type="Script" path="res://scripts/seara_bloc.gd" id="sr1"]
 [ext_resource type="Script" path="res://scripts/sefa_seara.gd" id="sr2"]
 [ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="sr3"]
+[ext_resource type="Script" path="res://scripts/intoarcere_noaptea.gd" id="no1"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -665,3 +666,7 @@ model_matura = ExtResource("zi5")
 distanta_privire = 9.0
 indiciu = "[E] Talk to the Head Witch"
 replici = PackedStringArray("You: What the fuck are you doing here bitch?", "Head Witch: There's been an issue.", "Head Witch: Our coven got attacked by a powerful Warlock.", "You: So what does that have to do with me?", "Head Witch: You're part of the coven now.", "Head Witch: We need all the help we can get.", "You: Aight, let's go bitch.")
+
+[node name="IntoarcereNoaptea" type="Node" parent="."]
+script = ExtResource("no1")
+replici = PackedStringArray("You: Tomorrow I will go to the gun store.", "You: Maybe I can find something to defeat the warlock..")

@@ -160,26 +160,31 @@ def _iedera(piese, r, x0, x1, y, z0, z1, spre=-1):
 # Conacul
 # ---------------------------------------------------------------------------------------------------------------
 
-def conac(cale):
+def conac(cale, distrus=False):
 	"""Conacul gotic al coven-ului, pe trei etaje: corpul central (cu golul intrării în față: ușa dublă sub arc
 	ascuțit, scara de piatră cu parapete și urne, felinarele de perete, rozeta din fronton), două aripi mai joase cu
 	frontoane ascuțite spre față, turnul pătrat din stânga (ceasul care arată 7:12, turla de ardezie cu fleșă și
 	turnulețe la colțuri) și turela rotundă din dreapta (con de ardezie). Acoperișuri abrupte cu creste de fier,
 	lucarne, coșuri înalte, pietre de colț, brâie între etaje, iederă. Ferestrele sunt lancete gotice; cam jumătate
 	sunt aprinse (`Lumini`, strălucesc în joc). Curtea (pietrișul, aleile cu borduri) e tot aici.
-	Piese: `Conac`, `Lumini`, `Coliziune` (pereții, acoperișurile, rampa peste trepte, parapetele)."""
+	Piese: `Conac`, `Lumini`, `Coliziune` (pereții, acoperișurile, rampa peste trepte, parapetele).
+	`distrus` = același conac după atacul Warlock-ului (`conac_distrus.glb`, vezi _distruge): ferestrele rămase sunt stinse
+	sau roșii de focul dinăuntru, iar `Lumini` sunt jarul și ferestrele în flăcări."""
 	curata()
 	r = random.Random(712)
+	r_foc = random.Random(1913)  # separat: așa conacul distrus are aceleași ferestre și aceeași iederă ca cel întreg
 	piese, lumini = [], []
 
 	def aprinsa():
-		return r.random() < 0.55
+		a = r.random() < 0.55
+		return r_foc.random() < 0.2 if distrus else a
 
 	def culoare_aprinsa():
-		return GEAM_PORTOCALIU if r.random() < 0.25 else GEAM_APRINS
+		c = GEAM_PORTOCALIU if r.random() < 0.25 else GEAM_APRINS
+		return GEAM_PORTOCALIU if distrus else c
 
 	def fereastra(cx, yf, z0, lat=1.0, inalt=2.3, centru=None, unghi=0.0, mereu=None):
-		a = aprinsa() if mereu is None else mereu
+		a = aprinsa() if mereu is None else (r_foc.random() < 0.2 if distrus else mereu)
 		fac = _lancet(piese, lumini, cx, yf, z0, lat, inalt, a, culoare_aprinsa())
 		if centru is not None:
 			_roteste(fac, centru, unghi)
@@ -412,14 +417,232 @@ def conac(cale):
 		piese.append(cub("Piatra", (r.uniform(0.08, 0.2), r.uniform(0.08, 0.2), 0.03), (math.cos(u) * d, fy + math.sin(u) * d, 0.065), BORDURA,
 			rot=(0, 0, r.uniform(0, 3))))
 
+	col_moloz = _distruge(piese, lumini, r_foc) if distrus else []
+
 	# coliziunea: pereții, acoperișurile (să nu sari pe ele, oricum nu poți), parapetele, o rampă peste trepte
 	col = _copii(piese, ("Zid", "Soclu", "Turn", "Turela", "Soclu turela", "Parapet", "Podest", "Pod", "Acoperis", "Lucarna"))
 	col.append(prisma("Rampa", [(capat, 0.0), (GOLF_Y - 1.4, PL - 0.01), (GOLF_Y - 1.4, 0.0)], "yz", -2.6, 2.6, FIER))
-	col.append(cub("Usa coliziune", (2.2, 0.3, 3.6), (0, GOLF_Y - 0.2, PL + 1.8), FIER))
-	uneste(col, "Coliziune")
+	if not distrus:
+		col.append(cub("Usa coliziune", (2.2, 0.3, 3.6), (0, GOLF_Y - 0.2, PL + 1.8), FIER))
+	uneste(col + col_moloz, "Coliziune")
 	uneste(piese, "Conac")
 	uneste(lumini, "Lumini")
-	exporta(os.path.join(cale, "conac.glb"))
+	exporta(os.path.join(cale, "conac_distrus.glb" if distrus else "conac.glb"))
+
+
+def conac_distrus(cale):
+	conac(cale, distrus=True)
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Conacul după atacul Warlock-ului
+# ---------------------------------------------------------------------------------------------------------------
+
+NEGRU_ARS = p("262d2f")    # piatra arsă, golurile
+FUNINGINE = p("553e4d")    # pereții afumați din jurul găurilor
+JAR = p("a56850")          # jarul din moloz (strălucește)
+JAR_ROSU = p("904a40")
+LEMN_ARS = p("48313b")
+
+# Unde a lovit (centrul în coordonatele conacului, raza): vraja mare a Warlock-ului a intrat pe ușă și a scos mijlocul
+# corpului central până la acoperiș; vrăjile mici au spart aripile, vârful turelei și turla turnului (căzută în curte).
+CRATERE = [
+	((0.0, 1.8, 8.6), 7.4),
+	((-4.2, 6.5, 12.6), 4.0),
+	((9.6, 0.8, 7.6), 3.3),
+	((-11.2, 2.6, 8.0), 2.8),
+	((15.9, 0.7, 16.8), 3.4),
+	((-15.8, 0.4, 21.2), 3.6),
+]
+GROSIME_ZID = 0.45
+# Ce stă sus, pe acoperișuri și turnuri: lângă o gaură cade de tot (vezi _distruge).
+DE_PE_ACOPERIS = ("Cos", "Brau cos", "Capac cos", "Olan", "Con turela", "Flesa", "Bila flesa", "Turla", "Girueta", "Semiluna",
+	"Fleșa golf", "Cornisa turn", "Consola")
+
+
+def _raza_crater(i, d):
+	"""Raza zdrențuită a craterului `i` pe direcția `d` (vector unitar): marginea găurii nu e o sferă, ci o margine
+	ruptă (zgomot pe sferă)."""
+	from mathutils import noise
+	c, raza = CRATERE[i]
+	o = Vector((i * 13.7, i * 7.1, i * 3.3))
+	return raza * (1.0 + 0.2 * noise.noise(d * 1.7 + o) + 0.1 * noise.noise(d * 4.3 + o))
+
+
+def _taietor(i):
+	"""Sfera zdrențuită a craterului `i`, colorată în negru ars: fețele tăiate în piatră primesc culoarea ei."""
+	from unelte import _coloreaza
+	c, _ = CRATERE[i]
+	bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=1.0, location=(0, 0, 0))
+	ob = bpy.context.active_object
+	for v in ob.data.vertices:
+		d = v.co.normalized()
+		v.co = Vector(c) + d * _raza_crater(i, d)
+	ob.data.update()
+	ob.name = "Taietor"
+	_coloreaza(ob, NEGRU_ARS)
+	return ob
+
+
+def _cutie_piesa(ob):
+	vs = [v.co for v in ob.data.vertices]
+	return (Vector((min(v.x for v in vs), min(v.y for v in vs), min(v.z for v in vs))),
+		Vector((max(v.x for v in vs), max(v.y for v in vs), max(v.z for v in vs))))
+
+
+def _scade(ob, taietor):
+	"""ob - taietor (boolean exact); fețele noi iau culoarea tăietorului."""
+	mod = ob.modifiers.new("taie", 'BOOLEAN')
+	mod.operation = 'DIFFERENCE'
+	mod.object = taietor
+	mod.solver = 'EXACT'
+	bpy.context.view_layer.objects.active = ob
+	bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def _sterge(ob, liste):
+	for lista in liste:
+		if ob in lista:
+			lista.remove(ob)
+	bpy.data.objects.remove(ob, do_unlink=True)
+
+
+def _distruge(piese, lumini, r):
+	"""Face din conacul întreg ruina de după atac:
+	 - zidurile pline (`Zid`, `Turn`, `Turela`) devin pereți goi pe dinăuntru (cu podelele etajelor), ca prin găuri să se
+	   vadă camerele arse, nu piatră plină;
+	 - craterele (`CRATERE`) taie tot ce ating: piesele mari cu boolean (marginea ruptă, neagră), cele mici dispar;
+	 - pereții din jurul găurilor se înnegresc de fum;
+	 - moloz în grămezi (piatră, ardezie, grinzi arse, jar care strălucește), turla turnului prăbușită în curte,
+	   arsuri pe pietriș.
+	Întoarce piesele de coliziune ale molozului."""
+	# 1. ziduri goale pe dinăuntru, cu podelele etajelor
+	for ob in [o for o in piese if o.name.split(".")[0] in ("Zid", "Turn")]:
+		mn, mx = _cutie_piesa(ob)
+		g = GROSIME_ZID
+		gol = cub("Gol", (mx.x - mn.x - 2 * g, mx.y - mn.y - 2 * g, mx.z - PL - 0.4), ((mn.x + mx.x) / 2, (mn.y + mx.y) / 2,
+			(PL + mx.z - 0.4) / 2), NEGRU_ARS)
+		_scade(ob, gol)
+		bpy.data.objects.remove(gol, do_unlink=True)
+		for z in NIVELURI[1:]:
+			if z < mx.z - 1.0:
+				piese.append(cub("Podea", (mx.x - mn.x - 2 * g - 0.02, mx.y - mn.y - 2 * g - 0.02, 0.24),
+					((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, z - 0.13), LEMN_ARS))
+	for ob in [o for o in piese if o.name.split(".")[0] == "Turela"]:
+		gol = cilindru("Gol", TURELA_R - 0.4, TURELA_R - 0.4, TURELA_H - PL - 0.4, (TURELA[0], TURELA[1], (PL + TURELA_H - 0.4) / 2),
+			NEGRU_ARS, laturi=12, rot=(0, 0, math.pi / 12))
+		_scade(ob, gol)
+		bpy.data.objects.remove(gol, do_unlink=True)
+
+	# 2. craterele
+	taietori = [_taietor(i) for i in range(len(CRATERE))]
+	for lista in (piese, lumini):
+		for ob in list(lista):
+			mn, mx = _cutie_piesa(ob)
+			marime = max(mx - mn)
+			for i, (c, raza) in enumerate(CRATERE):
+				c = Vector(c)
+				# turnurile subțiri de deasupra găurii (coșuri cu capace și olane, conul turelei, turla, fleșele) cad întregi:
+				# tăiate, bucata de sus ar rămâne în aer (oricât de sus ar fi, deci înaintea testului de distanță)
+				xy = (Vector(((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, 0)) - Vector((c.x, c.y, 0))).length
+				if ob.name.split(".")[0] in DE_PE_ACOPERIS and xy < raza * 1.3 and mn.z > c.z - raza:
+					_sterge(ob, (piese, lumini))
+					break
+				aproape = Vector((min(max(c.x, mn.x), mx.x), min(max(c.y, mn.y), mx.y), min(max(c.z, mn.z), mx.z)))
+				if (aproape - c).length > raza * 1.35:
+					continue
+				if marime > 1.2 and lista is piese:
+					_scade(ob, taietori[i])
+					if len(ob.data.polygons) == 0:
+						_sterge(ob, (piese, lumini))
+						break
+				else:
+					d = (mn + mx) / 2 - c
+					if d.length < _raza_crater(i, d.normalized() if d.length > 0.001 else Vector((0, 0, 1))) * 0.97:
+						_sterge(ob, (piese, lumini))
+						break
+	for t in taietori:
+		bpy.data.objects.remove(t, do_unlink=True)
+
+	# 3. funinginea din jurul găurilor: fețele de piatră de lângă un crater se înnegresc (pe sărite, ca petele de fum)
+	for ob in piese:
+		col = ob.data.color_attributes.get("Col")
+		if col is None:
+			continue
+		for poly in ob.data.polygons:
+			c = poly.center
+			for i, (cc, raza) in enumerate(CRATERE):
+				d = c - Vector(cc)
+				if d.length < 0.001:
+					continue
+				margine = d.length - _raza_crater(i, d.normalized())
+				if margine < 1.6 + r.uniform(-0.5, 0.6):
+					k = FUNINGINE if margine > 0.6 or hash((round(c.x, 1), round(c.z, 1))) % 3 else NEGRU_ARS
+					for li in poly.loop_indices:
+						col.data[li].color_srgb = (k[0], k[1], k[2], 1.0)
+					break
+
+	# 4. molozul: grămezi de pietre la picioarele găurilor, cu ardezie din acoperiș, grinzi arse și jar
+	col_moloz = []
+	gramezi = [  # (x, y, raza pe x, raza pe y, înălțimea în mijloc, câte bucăți)
+		(0.0, -1.6, 6.2, 4.0, 2.6, 420),
+		(0.5, 5.0, 5.5, 4.0, 1.8, 160),
+		(9.8, -0.6, 2.6, 1.6, 1.1, 70),
+		(-11.0, -0.6, 2.3, 1.5, 0.9, 60),
+		(14.6, -2.6, 2.2, 2.0, 0.9, 60),
+	]
+	culori_piatra = (ZID, ZID, PIATRA, PIATRA_INCHISA, NEGRU_ARS, FUNINGINE)
+	for gx, gy, rx, ry, h, n in gramezi:
+		for _ in range(n):
+			u = r.uniform(0, math.tau)
+			t = math.sqrt(r.random())
+			x = gx + math.cos(u) * rx * t
+			y = gy + math.sin(u) * ry * t
+			sus = h * (1.0 - t * t) ** 1.3
+			z = r.uniform(0.0, 1.0) ** 0.5 * sus
+			if r.random() < 0.2:
+				piese.append(cub("Ardezie", (r.uniform(0.4, 0.9), r.uniform(0.3, 0.6), 0.05), (x, y, z + 0.03), ARDEZIE,
+					rot=(r.uniform(-0.9, 0.9), r.uniform(-0.9, 0.9), r.uniform(0, math.pi))))
+			else:
+				m = r.uniform(0.18, 0.75)
+				piese.append(cub("Moloz", (m * r.uniform(0.8, 1.6), m * r.uniform(0.7, 1.3), m * r.uniform(0.5, 1.0)), (x, y, z + m * 0.25),
+					r.choice(culori_piatra), rot=(r.uniform(-0.6, 0.6), r.uniform(-0.6, 0.6), r.uniform(0, math.pi))))
+			if r.random() < 0.09:
+				m = r.uniform(0.06, 0.16)
+				lumini.append(cub("Jar", (m, m * 0.8, m * 0.6), (x + r.uniform(-0.2, 0.2), y + r.uniform(-0.2, 0.2), z + 0.12),
+					r.choice((JAR, JAR, JAR_ROSU)), rot=(r.uniform(-1, 1), r.uniform(-1, 1), r.uniform(0, 3))))
+		# grinzile arse care ies din grămadă
+		for _ in range(int(n / 30)):
+			u = r.uniform(0, math.tau)
+			x = gx + math.cos(u) * rx * 0.5
+			y = gy + math.sin(u) * ry * 0.5
+			lung = r.uniform(2.0, 4.2)
+			piese.append(cub("Grinda", (0.22, 0.22, lung), (x, y, lung * 0.32), r.choice((LEMN_ARS, NEGRU_ARS)),
+				rot=(r.uniform(0.5, 1.2) * r.choice((-1, 1)), r.uniform(-0.4, 0.4), r.uniform(0, math.pi))))
+		# coliziunea grămezii: o treaptă prea înaltă ca s-o urci (nu intri în ruină)
+		col_moloz.append(cub("Moloz coliziune", (rx * 2.0, ry * 2.0, max(h, 0.8)), (gx, gy, max(h, 0.8) / 2), NEGRU_ARS))
+
+	# 5. turla turnului, ruptă și căzută în curte (culcată, cu vârful spre față)
+	tx, ty = TURN
+	baza = Vector((tx + 2.2, ty - 4.0, 1.5))
+	spre = Vector((0.55, -0.83, -0.09)).normalized()
+	rot = Vector((0, 0, 1)).rotation_difference(spre).to_euler()
+	raza_turla = (TURN_L + 0.25) * math.sqrt(2)
+	piese.append(cilindru("Turla cazuta", raza_turla, 0.0, 10.5, tuple(baza + spre * 5.25), ARDEZIE, laturi=4, rot=rot))
+	piese.append(cilindru("Ciot turla", raza_turla + 0.05, raza_turla * 0.8, 2.4, tuple(baza - spre * 0.6), NEGRU_ARS, laturi=4, rot=rot))
+	piese.append(cilindru("Flesa", 0.05, 0.03, 2.4, tuple(baza + spre * 11.6), FIER, laturi=4, rot=rot))
+	col_moloz.append(cilindru("Turla coliziune", raza_turla, 0.2, 10.5, tuple(baza + spre * 5.25), NEGRU_ARS, laturi=4, rot=rot))
+	for _ in range(40):  # ardezia ruptă din turlă, împrăștiată
+		x = baza.x + spre.x * r.uniform(0, 10) + r.uniform(-2.5, 2.5)
+		y = baza.y + spre.y * r.uniform(0, 10) + r.uniform(-2.5, 2.5)
+		piese.append(cub("Ardezie", (r.uniform(0.3, 0.7), r.uniform(0.2, 0.5), 0.04), (x, y, 0.1 + r.uniform(0, 0.15)), ARDEZIE,
+			rot=(r.uniform(-0.5, 0.5), r.uniform(-0.5, 0.5), r.uniform(0, 3))))
+
+	# 6. arsurile de pe pietriș (pietrișul e la 4–5,5 cm): discuri negre neregulate, fiecare la altă înălțime
+	for k, (x, y, raza) in enumerate(((0.0, -8.5, 3.2), (4.5, -12.0, 2.0), (-4.5, -10.5, 2.2), (0.0, -16.0, 1.6), (6.5, -6.0, 1.8))):
+		piese.append(cilindru("Arsura", raza, raza * 0.9, 0.02, (x, y, 0.075 + k * 0.012), NEGRU_ARS, laturi=9,
+			rot=(0, 0, r.uniform(0, 3))))
+	return col_moloz
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -632,6 +855,7 @@ def masa_pistol(cale):
 
 def toate(cale):
 	conac(cale)
+	conac_distrus(cale)
 	poarta_conac(cale)
 	felinar_conac(cale)
 	fantana(cale)

@@ -236,3 +236,6 @@ conac.toate(MODELE)
 
 import demon  # noqa: E402
 demon.demon(MODELE)
+
+import warlock  # noqa: E402
+warlock.toate(MODELE)

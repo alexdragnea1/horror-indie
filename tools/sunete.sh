@@ -539,3 +539,140 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.8:d=0.55:r=44100:s=16" -i "
 unic demon_teleport "$OUT/_teleport.wav"
 rm -f "$OUT"/_miau.wav "$OUT"/_incins.wav "$OUT"/_explozie.wav "$OUT"/_tiuit.wav "$OUT"/_chemare.wav "$OUT"/_raget.wav \
 	"$OUT"/_lovit.wav "$OUT"/_dezintegrare.wav "$OUT"/_teleport.wav
+
+# --- atacul Warlock-ului asupra conacului (atac_conac.gd, sefa_ruine.gd): o scenă de film de ~50 s, deci sunete „de film”
+# ca la sacrificiu: cele mari stereo, la -13 LUFS, comprimate ($DENS). Cele care vin dintr-un loc (fulgerele, vrăjile care
+# lovesc, apariția vrăjitorilor) sunt mono (3D), puțin mai jos. Muzica tristă de după e la -20, ca restul muzicii.
+TINTA_NORMALA=$TINTA_LUFS
+TINTA_LUFS=-13
+# taiko T AMPLITUDINE -> o lovitură de tobă mare de război la secunda T: tonul cade de la ~130 la 40 Hz, plus pielea (zgomot scurt)
+taiko() {
+	local T="$1" A="$2"
+	local P="(40*(t-$T)+3*(1-exp(-(t-$T)*30)))"
+	printf "+%s*gte(t\\\\,%s)*(sin(2*PI*%s)*exp(-(t-%s)*6)+0.35*(random(0)*2-1)*exp(-(t-%s)*40))" "$A" "$T" "$P" "$T" "$T"
+}
+# 1. tunetul de departe (~6 s): se rostogolește prin dealuri, fără pocnet
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=1:d=6:r=44100:s=41" -f lavfi -i "anoisesrc=c=pink:a=0.6:d=6:r=44100:s=42" \
+	-filter_complex "[0]lowpass=f=260,tremolo=f=2.3:d=0.55,volume='min(t/0.35\,1)*exp(-t*0.55)*2.2':eval=frame[a];[1]bandpass=f=500:t=h:w=600,tremolo=f=6:d=0.7,volume='min(t/0.2\,1)*exp(-t*1.4)*0.5':eval=frame[b];[a][b]amix=inputs=2:normalize=0,$DENS,aecho=0.8:0.7:400|900:0.3|0.2,atrim=end=6,afade=t=out:st=4.8:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_tunet.wav"
+unic atac_tunet "$OUT/_tunet.wav" stereo
+# 2. fulgerul care lovește aproape (~3 s, 3D): pocnetul (zgomot alb de 40 ms + pârâit de scântei), bubuitul jos și
+# huruitul tunetului care se stinge
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(1)*2-1)*(exp(-t*90)+0.5*gt(random(2)\,0.93)*exp(-t*6))':s=44100:d=3" \
+	-f lavfi -i "aevalsrc='1.1*sin(2*PI*(48*t+2*(1-exp(-t*20))))*min(t/0.005\,1)*exp(-t*3.5)':s=44100:d=3" -f lavfi -i "anoisesrc=c=brown:a=1:d=3:r=44100:s=43" \
+	-filter_complex "[0]highpass=f=900,volume=1.2[c];[2]lowpass=f=220,tremolo=f=4:d=0.5,volume='min(t/0.05\,1)*exp(-t*1.2)*1.8':eval=frame[r];[c][1][r]amix=inputs=3:normalize=0,$DENS,aecho=0.7:0.6:260|640:0.3|0.18,atrim=end=3,afade=t=out:st=2.3:d=0.7" \
+	-ac 1 "$OUT/_fulger.wav"
+TINTA_LUFS=-15
+unic atac_fulger "$OUT/_fulger.wav"
+TINTA_LUFS=-13
+# 3. cornul de război (~5 s): două alămuri grave (re, apoi la peste ea), care se umflă încet, cu ecoul dealurilor
+CORN="0.3*($(voce 73.42 0)*min(t/0.8\,1)+0.8*$(voce 110 1.3)*min(max(t-0.9\,0)/0.6\,1))*if(lt(t\,3.6)\,1\,max(0\,1-(t-3.6)/0.9))"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$CORN':s=44100:d=5" \
+	-af "equalizer=f=480:t=q:w=1:g=7,equalizer=f=950:t=q:w=1.4:g=4,lowpass=f=2200,chorus=0.6:0.9:30|45:0.4|0.3:0.3|0.45:1.5|2,$DENS,aecho=0.8:0.75:500|1100|1800:0.35|0.25|0.15,afade=t=out:st=4.4:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_corn.wav"
+unic atac_corn "$OUT/_corn.wav" stereo
+# 4. apare un vrăjitor (~1,3 s, 3D): un vâjâit întors care se strânge spre el, o bufnitură joasă și un sfârâit
+ffmpeg -v error -y -i "$PACHET/Other/whoosh_1.wav" -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,areverse,asetrate=44100*0.8,aresample=44100,lowpass=f=3000[w];[1]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=900,adelay=600,volume=1.2[t];[2]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=620,volume=0.5[f];[w][t][f]amix=inputs=3:normalize=0:duration=longest,atrim=end=1.4,afade=t=out:st=1.0:d=0.4" \
+	-ac 1 "$OUT/_aparitie.wav"
+TINTA_LUFS=-16
+unic atac_aparitie "$OUT/_aparitie.wav"
+TINTA_LUFS=-13
+# 5. sosirea Warlock-ului (~7 s): un vuiet care coboară din cer (3 s, tot mai tare), un cor grav care se umflă, apoi
+# aterizarea: bubuitura mare, basul care cade, alama de groază încetinită, ecoul lung
+COR_JOS="0.12*($(voce 36.71 0)+$(voce 55 1)+$(voce 73.42 2)+$(voce 77.78 0.5)+$(voce 110 1.7))*min(t/3\,1)*if(lt(t\,3)\,1\,exp(-(t-3)*0.7))"
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=1:d=7:r=44100:s=44" -f lavfi -i "aevalsrc='$COR_JOS':s=44100:d=7" \
+	-i "$PACHET/Retro/explosion_large.wav" -f lavfi -i "aevalsrc='1.2*gte(t\,3)*sin(2*PI*(60*(t-3)-4*(t-3)*(t-3)))*exp(-(t-3)*0.8)':s=44100:d=7" \
+	-i "$PACHET/Musical Effects/horror_sting.wav" \
+	-filter_complex "[0]lowpass=f=400,volume='if(lt(t\,3)\,pow(t/3\,2.5)*1.6\,exp(-(t-3)*1.5)*1.6)':eval=frame[v];[1]equalizer=f=600:t=q:w=1.2:g=6,lowpass=f=2500,chorus=0.6:0.9:40|55:0.4|0.35:0.3|0.4:2|2.5[c];[2]aformat=channel_layouts=mono,asetrate=44100*0.42,aresample=44100,lowpass=f=1200,adelay=3000,volume=1.3[e];[4]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,adelay=3100,volume=0.6[h];[v][c][e][3][h]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.8:0.7:350|800|1400:0.35|0.25|0.15,atrim=end=7,afade=t=out:st=5.8:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_sosire.wav"
+unic warlock_sosire "$OUT/_sosire.wav" stereo
+# 6. o vrajă aruncată (~1 s, 3D): vâjâit scurt și sfârâitul focului
+ffmpeg -v error -y -i "$PACHET/Other/whoosh_2.wav" -i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,highpass=f=200[w];[1]aformat=channel_layouts=mono,asetrate=44100*1.5,aresample=44100,volume=0.6[f];[w][f]amix=inputs=2:normalize=0:duration=longest,atrim=end=1.1,afade=t=out:st=0.7:d=0.4" \
+	-ac 1 "$OUT/_vraja.wav"
+TINTA_LUFS=-16
+unic atac_vraja "$OUT/_vraja.wav"
+# 7. vraja lovește piatra (~2,4 s, 3D): explozia, pietrele care se rup și cad, praful
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_medium.wav" -i "$PACHET/Materials/stone_push_short.wav" -i "$PACHET/Combat and Gore/crunch.wav" \
+	-i "$PACHET/Materials/concrete_scrape.wav" -f lavfi -i "anoisesrc=c=brown:a=1:d=2.4:r=44100:s=45" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,volume=1.1[e];[1]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,adelay=120,volume=0.8[s];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,adelay=60,volume=0.7[c];[3]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=400,volume=0.5[r];[4]lowpass=f=200,volume='exp(-t*2)*1.4':eval=frame[v];[e][s][c][r][v]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.7:0.5:180|420:0.3|0.18,atrim=end=2.4,afade=t=out:st=1.8:d=0.6" \
+	-ac 1 "$OUT/_impact.wav"
+TINTA_LUFS=-14
+unic atac_impact "$OUT/_impact.wav"
+TINTA_LUFS=-13
+# 8. tobele de război (buclă de 4,8 s, 100 bpm): taiko-uri mari în ritm de marș. Facem trei măsuri cu ecou și o păstrăm pe
+# cea din mijloc: ecoul măsurii dinainte cade peste începutul ei, deci bucla se leagă singură.
+TOBE="0"
+for m in 0 1 2; do
+	for x in "0:1" "0.6:0.55" "0.9:0.5" "1.2:0.9" "2.4:1" "3.0:0.55" "3.3:0.5" "3.6:0.8" "4.2:0.7" "4.5:0.4"; do
+		TOBE="$TOBE$(taiko $(awk -v a="${x%%:*}" -v m=$m 'BEGIN { printf "%.2f", a + m * 4.8 }') ${x##*:})"
+	done
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.45*($TOBE)':s=44100:d=14.4" \
+	-af "lowpass=f=1800,equalizer=f=70:t=q:w=1:g=5,$DENS,aecho=0.8:0.6:220|520:0.3|0.18,atrim=start=4.8:end=9.6,asetpts=PTS-STARTPTS,$STEREO,atrim=end=4.8" \
+	-ac 2 "$OUT/_tobe.wav"
+TINTA_LUFS=-17
+g=$(castig_final "$OUT/_tobe.wav" "anull")
+ffmpeg -v error -y -i "$OUT/_tobe.wav" -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/atac_tobe.ogg"
+echo "atac_tobe.ogg  (buclă, 4,8 s)"
+TINTA_LUFS=-13
+# 9. scutul lui Head Witch (~1,6 s): un acord înalt care sclipește (tremolo repede) și urcă, cu un vâjâit
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.2*(sin(2*PI*(660+220*t)*t)+sin(2*PI*(990+330*t)*t)+0.7*sin(2*PI*(1320+440*t)*t))*(0.6+0.4*sin(2*PI*17*t))*min(t/0.3\,1)*exp(-t*1.2)':s=44100:d=1.6" \
+	-i "$PACHET/Other/whoosh_1.wav" \
+	-filter_complex "[1]aformat=channel_layouts=mono,asetrate=44100*1.2,aresample=44100,volume=0.5[w];[0][w]amix=inputs=2:normalize=0:duration=first,chorus=0.6:0.9:20|35:0.4|0.3:0.4|0.5:2|3,aecho=0.6:0.5:120|260:0.3|0.2,afade=t=out:st=1.2:d=0.4,$STEREO" \
+	-ac 2 "$OUT/_scut.wav"
+unic scut "$OUT/_scut.wav" stereo
+# 10. scutul se sparge (~2 s): sticla (clinchete înalte, multe), pocnitura și zgomotul care se împrăștie
+ffmpeg -v error -y -i "$PACHET/Materials/glass_ping_big.wav" -i "$PACHET/Materials/glass_ping_small.wav" -i "$PACHET/Combat and Gore/crunch_splat_2.wav" \
+	-f lavfi -i "anoisesrc=c=white:a=0.8:d=2:r=44100:s=46" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asplit=2[g0][g1];[g0]asetrate=44100*0.8,aresample=44100[a];[g1]asetrate=44100*1.3,aresample=44100,adelay=90,volume=0.7[b];[1]aformat=channel_layouts=mono,asetrate=44100*1.6,aresample=44100,adelay=160,volume=0.6[c];[2]aformat=channel_layouts=mono,asetrate=44100*1.2,aresample=44100,volume=0.6[d];[3]highpass=f=2500,volume='exp(-t*5)*0.6':eval=frame[n];[a][b][c][d][n]amix=inputs=5:normalize=0:duration=longest,aecho=0.6:0.5:90|210:0.35|0.2,atrim=end=2,afade=t=out:st=1.4:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_spart.wav"
+unic scut_spart "$OUT/_spart.wav" stereo
+# 11. vraja mare se încarcă (~8,5 s): un vuiet care crește, un sinus care urcă (40 -> 160 Hz), pârâit de energie tot mai
+# des, corul grav care se umflă și o inimă care bate tot mai repede. Se termină în vârf (pleacă vraja).
+COR_URCA="0.1*($(voce 55 0.3)+$(voce 73.42 0)+$(voce 77.78 1.1)+$(voce 110 2.3)+$(voce 116.54 0.6))*pow(t/8.5\,1.6)"
+INIMA_URCA="0$(inima 0.8 0.3)$(inima 2.0 0.35)$(inima 3.0 0.4)$(inima 3.8 0.48)$(inima 4.5 0.55)$(inima 5.1 0.62)$(inima 5.6 0.7)$(inima 6.05 0.76)$(inima 6.45 0.82)$(inima 6.8 0.88)$(inima 7.12 0.94)$(inima 7.42 1.0)$(inima 7.7 1.0)$(inima 7.96 1.0)"
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=1:d=8.5:r=44100:s=47" -f lavfi -i "aevalsrc='0.45*sin(2*PI*(40*t+7*t*t))*pow(t/8.5\,1.3)':s=44100:d=8.5" \
+	-f lavfi -i "aevalsrc='(random(3)*2-1)*gt(random(4)\,0.995-0.04*t/8.5)*pow(t/8.5\,1.2)':s=44100:d=8.5" -f lavfi -i "aevalsrc='$COR_URCA':s=44100:d=8.5" \
+	-f lavfi -i "aevalsrc='$INIMA_URCA':s=44100:d=8.5" \
+	-filter_complex "[0]lowpass=f=350,volume='pow(t/8.5\,1.8)*2':eval=frame[v];[2]highpass=f=1500,volume=0.5[p];[3]equalizer=f=650:t=q:w=1.2:g=7,lowpass=f=2800,chorus=0.6:0.9:40|55|70:0.4|0.35|0.3:0.3|0.4|0.5:2|2.5|1.7[c];[4]lowpass=f=300,volume=1.5[i];[v][1][p][c][i]amix=inputs=5:normalize=0,$DENS,afade=t=in:d=1,$STEREO,atrim=end=8.5" \
+	-ac 2 "$OUT/_incarcare.wav"
+unic orb_incarcare "$OUT/_incarcare.wav" stereo
+# 12. vraja mare zboară pe deasupra ta (~2,6 s): un vâjâit uriaș care vine din față, trece și pleacă (tonul cade, ca la
+# o mașină care trece), cu vuietul focului
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=1:d=2.6:r=44100:s=48" -f lavfi -i "aevalsrc='0.6*sin(2*PI*(110*t-18*t*t))*exp(-pow((t-1.3)/0.55\,2))':s=44100:d=2.6" \
+	-i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]lowpass=f=1800,highpass=f=80,volume='exp(-pow((t-1.3)/0.5\,2))*2.2':eval=frame[w];[2]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,adelay=900,volume=0.7[f];[w][1][f]amix=inputs=3:normalize=0:duration=first,$DENS,afade=t=out:st=2.2:d=0.4,$STEREO" \
+	-ac 2 "$OUT/_orb_zbor.wav"
+unic orb_zbor "$OUT/_orb_zbor.wav" stereo
+# 13. vraja mare lovește conacul (~8 s): bubuitura (explozia încetinită de 2,5 ori + pocnetul normal), basul care cade
+# 60 -> 18 Hz și se simte în piept, zidurile care se prăbușesc (piatră, sticlă), tunetul care se rostogolește, alama de groază
+ffmpeg -v error -y -i "$PACHET/Retro/explosion_large.wav" -f lavfi -i "aevalsrc='1.3*sin(2*PI*(60*t-3*t*t))*min(t/0.008\,1)*exp(-t*0.6)':s=44100:d=8" \
+	-f lavfi -i "anoisesrc=c=brown:a=1:d=8:r=44100:s=49" -i "$PACHET/Materials/stone_push_long.wav" -i "$PACHET/Combat and Gore/crunch_splat.wav" \
+	-i "$PACHET/Materials/glass_ping_big.wav" -i "$PACHET/Musical Effects/brass_negative_long.wav" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asplit=2[e0][e1];[e0]asetrate=44100*0.4,aresample=44100,lowpass=f=900,volume=1.4[e];[e1]volume=0.8[p];[2]lowpass=f=200,tremolo=f=2.2:d=0.5,volume='min(t/0.1\,1)*exp(-t*0.4)*2':eval=frame[t];[3]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=1500,adelay=500,volume=0.9[s];[4]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,adelay=200,volume=0.7[c];[5]aformat=channel_layouts=mono,asetrate=44100*0.9,aresample=44100,adelay=350,volume=0.35[g];[6]aformat=channel_layouts=mono,asetrate=44100*0.45,aresample=44100,lowpass=f=1200,adelay=300,volume=0.5[a];[e][p][1][t][s][c][g][a]amix=inputs=8:normalize=0:duration=longest,$DENS,aecho=0.8:0.75:300|750|1400:0.4|0.28|0.16,atrim=end=8,afade=t=out:st=6:d=2,$STEREO" \
+	-ac 2 "$OUT/_orb_bum.wav"
+unic orb_explozie "$OUT/_orb_bum.wav" stereo
+# 14. leșinul: inima care încetinește (~5 s), înfundată ca prin vată
+INIMA_LENTA="0$(inima 0.1 1.0)$(inima 1.15 0.85)$(inima 2.45 0.65)$(inima 4.0 0.45)"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$INIMA_LENTA':s=44100:d=5" -af "lowpass=f=220,aecho=0.6:0.4:90:0.25,afade=t=out:st=4.4:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_inima.wav"
+unic inima_lenta "$OUT/_inima.wav" stereo
+TINTA_LUFS=$TINTA_NORMALA
+# 15. muzica de după atac (buclă de 32 s): un pad trist în re minor (Dm - Bb - Gm - A), câte 8 s pe acord, cu tranziții
+# lungi între ele, un bas jos și ecou de catedrală. Ferestrele acordurilor se socotesc cu mod(t, 32), deci se leagă singură.
+acord() {  # acord START NOTE... -> vocile acordului care ține de la START la START+8 (fereastră netedă pe 32 s)
+	local s="$1"; shift
+	local w="pow(sin(PI*min(max(mod(t-$s+1+32\,32)/10\,0)\,1))\,2)"
+	local v="" f
+	for f in "$@"; do v="$v+(sin(2*PI*$f*t)+0.3*sin(4*PI*$f*t)+0.12*sin(6*PI*$f*t))"; done
+	echo "+$w*(0$v)"
+}
+PAD="0.07*(0$(acord 0 73.42 146.83 174.61 220 293.66)$(acord 8 58.27 116.54 146.83 174.61 233.08)$(acord 16 49 98 116.54 146.83 196)$(acord 24 55 110 138.59 164.81 220))"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$PAD*(0.85+0.15*sin(2*PI*0.25*t))':s=44100:d=34" \
+	-af "lowpass=f=1600,chorus=0.6:0.9:45|60|75:0.4|0.35|0.3:0.25|0.35|0.45:2|2.5|1.7,aecho=0.8:0.8:700|1500|2600:0.35|0.25|0.18,atrim=end=34,$STEREO" \
+	-ac 2 "$OUT/_tristete.wav"
+bucla atac_tristete "$OUT/_tristete.wav" 2 stereo anull tri
+rm -f "$OUT"/_tunet.wav "$OUT"/_fulger.wav "$OUT"/_corn.wav "$OUT"/_aparitie.wav "$OUT"/_sosire.wav "$OUT"/_vraja.wav "$OUT"/_impact.wav \
+	"$OUT"/_tobe.wav "$OUT"/_scut.wav "$OUT"/_spart.wav "$OUT"/_incarcare.wav "$OUT"/_orb_zbor.wav "$OUT"/_orb_bum.wav "$OUT"/_inima.wav "$OUT"/_tristete.wav

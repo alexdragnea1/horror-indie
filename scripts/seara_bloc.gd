@@ -11,6 +11,8 @@ const CER := preload("res://shaders/cer_amurg.gdshader")
 
 @export var marcaj_seara := "a_urcat_spre_casa"
 @export var marcaj_coborat := "a_coborat_seara_la_bloc"
+## După atacul de la conac te aduce Head Witch acasă la 11:38 PM: atunci curtea e iar noapte (vezi intoarcere_noaptea.gd).
+@export var marcaj_noapte := "a_zburat_acasa_dupa_atac"
 @export var mediu: WorldEnvironment
 ## `Luna` din scenă: seara e lumina rece a cerului.
 @export var luna: DirectionalLight3D
@@ -41,7 +43,7 @@ const CER := preload("res://shaders/cer_amurg.gdshader")
 
 func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
-	if jucator == null or not Stare.e_marcat(marcaj_seara):
+	if jucator == null or not Stare.e_marcat(marcaj_seara) or Stare.e_marcat(marcaj_noapte):
 		return
 	_fa_seara()
 	await get_tree().process_frame

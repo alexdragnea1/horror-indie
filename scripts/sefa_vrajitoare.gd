@@ -146,6 +146,22 @@ func _zboara_cu_tine(scena_noua: String, titlu: String, sunete: Array[AudioStrea
 	d = d.normalized() if d.length() > 0.01 else global_transform.basis.z
 	if directie_zbor != Vector3.ZERO:
 		d = Vector3(directie_zbor.x, 0.0, directie_zbor.z).normalized()
+	var mijloc := await _urcati_pe_matura(c, d)
+
+	# 4. plutește o clipă, apoi decolați
+	var tween := create_tween().set_trans(Tween.TRANS_SINE)
+	tween.tween_property(_matura, "global_position:y", mijloc.y + 0.12, 0.45)
+	tween.tween_property(_matura, "global_position:y", mijloc.y - 0.05, 0.4)
+	await tween.finished
+	await _decolare(c, d, camera, scena_noua, titlu, sunete, marcaj)
+
+
+## Pașii 1–3 ai zborului: scoate mătura (fum mov), o culcă în aer pe direcția `d` cât șoldul ei, se urcă pe ea, apoi tu
+## în spatele ei (`seteaza_purtat`), cu privirea pe lângă umărul ei. Întoarce mijlocul măturii. După asta `_pe_matura`
+## vă ține pe amândoi pe ea oriunde o muți (îl folosește și zborul lung de la conacul distrus, sefa_ruine.gd).
+func _urcati_pe_matura(c: Cutscena, d: Vector3) -> Vector3:
+	var jucator := _jucator() as CharacterBody3D
+	var cap: Node3D = jucator.get_node("Cap")
 	var sol := global_position.y
 
 	# 1. scoate mătura: îi apare în mână, în picioare, cu un fum mov
@@ -196,12 +212,12 @@ func _zboara_cu_tine(scena_noua: String, titlu: String, sunete: Array[AudioStrea
 	_ea_pe_matura = _matura.to_local(global_position)
 	_tu_pe_matura = _matura.to_local(jucator.global_position)
 	_pe_matura = true
+	return mijloc
 
-	# 4. plutește o clipă, apoi decolați
-	tween = create_tween().set_trans(Tween.TRANS_SINE)
-	tween.tween_property(_matura, "global_position:y", mijloc.y + 0.12, 0.45)
-	tween.tween_property(_matura, "global_position:y", mijloc.y - 0.05, 0.4)
-	await tween.finished
+
+## Pașii 4–5: decolați (sus, apoi înainte și tot mai sus), iar la `dupa_decolare` s: negru și scena următoare.
+func _decolare(c: Cutscena, d: Vector3, camera: Camera3D, scena_noua: String, titlu: String, sunete: Array[AudioStream],
+		marcaj: String) -> void:
 	Sunet.reda(SUNET_DECOLARE, Sunet.VOLUM_EFECTE)
 	var vant := AudioStreamPlayer.new()
 	vant.stream = SUNET_VANT
@@ -226,7 +242,7 @@ func _zboara_cu_tine(scena_noua: String, titlu: String, sunete: Array[AudioStrea
 	c.roteste(atan2(-d.x, -d.z) - 0.25, 0.1, 2.5)
 	var start := _matura.global_position
 	var baza := _matura.global_basis
-	tween = create_tween()
+	var tween := create_tween()
 	tween.tween_method(func(t: float) -> void:
 		# întâi sare drept în sus, apoi o ia înainte și tot mai sus, tot mai repede
 		var sus := 1.6 * ease(minf(t / 0.7, 1.0), 0.4) + maxf(t - 0.5, 0.0) * maxf(t - 0.5, 0.0) * 3.5 + maxf(t - 0.5, 0.0) * 3.0
