@@ -11,11 +11,13 @@ extends "res://scripts/sefa_vrajitoare.gd"
 
 @export var marcaj_atac := "conacul_atacat"
 @export var marcaj_trezit := "s_a_trezit_dupa_atac"
-## Punctele zborului spre casă (în lume): sus peste ruină, un ocol în jurul ei, apoi departe peste pădure.
-@export var drum_acasa := PackedVector3Array([Vector3(9, 7, -2), Vector3(18, 15, -16), Vector3(6, 20, -34), Vector3(-14, 21, -30),
-	Vector3(-22, 22, -10), Vector3(-12, 25, 16), Vector3(8, 30, 60), Vector3(30, 36, 130)])
+## Punctele zborului spre casă (în lume): sus peste ruină, un ocol larg în jurul ei, apoi departe peste pădure.
+## Drumul ține cel puțin 3 m de ruină (turela din dreapta e la x 15,9, z -10,7; turnul din stânga la x -15,8):
+## dacă îl muți, nu-l strânge spre conac, că treceți prin ziduri.
+@export var drum_acasa := PackedVector3Array([Vector3(9, 6, -1), Vector3(24, 14, -7), Vector3(27, 20, -27), Vector3(7, 23, -42),
+	Vector3(-19, 24, -37), Vector3(-30, 25, -14), Vector3(-18, 27, 12), Vector3(8, 31, 60), Vector3(30, 36, 130)])
 ## Cât durează zborul până se face negru (secunde).
-@export var durata_drum := 17.0
+@export var durata_drum := 19.5
 ## Încotro te uiți cât ocoliți ruina (mijlocul ei).
 @export var priveste_ruina := Vector3(0, 6, -13)
 ## Cât stă culcată mai sus de pământ (spatele robei), ca să nu intre în pietriș.
@@ -71,6 +73,10 @@ func apari_langa(poz: Vector3, spre: Vector3) -> void:
 	rotation.y = atan2(d.x, d.z)
 	_model.scale = Vector3(0.05, 1.3, 0.05)
 	show()
+	# până la atac era ascunsă, cu coliziunea oprită (_ready): fără ea nu poți apăsa E pe ea după atac
+	for copil in get_children():
+		if copil is CollisionShape3D:
+			copil.set_deferred("disabled", false)
 	var unde := poz + Vector3.UP * 1.0
 	Sunet.reda_la(SUNET_MATURA, unde, Sunet.VOLUM_EFECTE, 0.05)
 	for k in 3:
