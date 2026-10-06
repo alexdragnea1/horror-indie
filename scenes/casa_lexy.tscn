@@ -1,4 +1,4 @@
-[gd_scene load_steps=60 format=3]
+[gd_scene load_steps=62 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -46,6 +46,8 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="44"]
 [ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="45"]
 [ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="46"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_lexy.ogg" id="muzica_loc_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -461,10 +463,11 @@ mediu = NodePath("../Mediu")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -3.8)
 shape = SubResource("forma_interior")
 
-[node name="LexyMasa" type="StaticBody3D" parent="." node_paths=PackedStringArray("lexy")]
+[node name="LexyMasa" type="StaticBody3D" parent="." node_paths=PackedStringArray("lexy", "muzica")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.05, 0.45, -2.3)
 script = ExtResource("40")
 lexy = NodePath("../Lexy")
+muzica = NodePath("../MuzicaCasa")
 
 [node name="Forma" type="CollisionShape3D" parent="LexyMasa"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
@@ -477,3 +480,10 @@ script = ExtResource("41")
 [node name="Forma" type="CollisionShape3D" parent="GardCimitir"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, -0.15)
 shape = SubResource("forma_gard_cimitir")
+
+[node name="MuzicaCasa" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+stream = ExtResource("muzica_loc_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+zona = NodePath("../CeataInterior")
+marcaje_liniste = PackedStringArray("a_jefuit_lexy")

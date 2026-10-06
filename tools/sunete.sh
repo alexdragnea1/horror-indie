@@ -229,6 +229,13 @@ unic muzica_bloc "Sound/Music/Block.mp3" stereo "atrim=end=226,afade=t=out:st=22
 # --- dealul din dreapta: boombox-ul bețivului (adusă de owner: Sound/Music/Deal.mp3, Ion feat. Herodot).
 # Piesa se termină la 7:05, apoi sunt aproape 5 s de liniște: le tăiem, ca bucla să reînceapă repede.
 unic muzica_deal "Sound/Music/Deal.mp3" stereo "atrim=end=426,afade=t=out:st=425.3:d=0.7"
+# --- muzica locurilor (adusă de owner, toate în buclă din import): pădurea, curtea conacului, conacul pe dinăuntru,
+# casa lui Lexy. Timpii de tăiere sunt după liniștea de la început (silenceremove): coada de liniște iese, ca bucla
+# să reînceapă repede; pădurea n-are liniște la capăt, doar o stingere scurtă, să nu pocnească la reluare.
+unic muzica_padure "Sound/Music/Forest.mp3" stereo "afade=t=out:st=359.2:d=0.35"
+unic muzica_conac_afara "Sound/Music/Outside of the Manor.mp3" stereo "atrim=end=170.4,afade=t=out:st=169.7:d=0.7"
+unic muzica_conac_interior "Sound/Music/Inside of the Manor.mp3" stereo "atrim=end=99.6,afade=t=out:st=98.9:d=0.7"
+unic muzica_lexy "Sound/Music/Lexy's House.mp3" stereo "atrim=end=230.6,afade=t=out:st=229.9:d=0.7"
 # --- berea de la bețiv: clinchetul sticlei, înghițiturile, râgâitul
 unic bere_clinchet "Materials/glass_ping_small.wav"
 unic bere_inghititura "Other/drink_slurp.wav"

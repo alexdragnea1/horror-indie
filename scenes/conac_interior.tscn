@@ -32,6 +32,8 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_poteca_2.ogg" id="30"]
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="31"]
 [ext_resource type="PackedScene" path="res://scenes/pisica.tscn" id="32"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_conac_interior.ogg" id="muzica_loc_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -576,3 +578,8 @@ suprafata_implicita = "lemn"
 
 [node name="Pisica" parent="." instance=ExtResource("32")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2, 3.615, -11.3)
+
+[node name="Muzica" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("muzica_loc_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")

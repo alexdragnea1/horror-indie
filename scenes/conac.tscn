@@ -34,6 +34,8 @@
 [ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="32"]
 [ext_resource type="Script" path="res://scripts/atac_conac.gd" id="33"]
 [ext_resource type="Script" path="res://scripts/sefa_ruine.gd" id="34"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_conac_afara.ogg" id="muzica_loc_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("11")
@@ -281,3 +283,9 @@ deal = NodePath("../Deal")
 lumini_conac = [NodePath("../LuminaUsaStanga"), NodePath("../LuminaUsaDreapta"), NodePath("../LuminaGeamuri")]
 vant = NodePath("../Vant")
 sperieturi = NodePath("../Sperieturi")
+
+[node name="Muzica" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("muzica_loc_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+marcaje_liniste = PackedStringArray("a_invatat_fireball")

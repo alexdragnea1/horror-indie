@@ -35,6 +35,9 @@ const ROTIRE_SARITURA := Vector3(0.0, 0.3, 0.04)
 var stricat := false
 
 var ritm := 0.0
+## Cât de tare se aude acum (0..1, după distanță; 0 după ce e stricat): muzica pădurii (muzica_loc.gd, `cedeaza`)
+## coboară atât cât urcă el, ca să nu se bată două piese între ele.
+var acoperire := 0.0
 
 @onready var _muzica: AudioStreamPlayer3D = $Muzica
 @onready var _difuzoare: Array[Node3D] = [$Model/DifuzorS, $Model/DifuzorD]
@@ -63,6 +66,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if stricat:
 		ritm = lerpf(ritm, 0.0, 1.0 - exp(-delta * 6.0))
+		# muzica pădurii revine încet după ce a murit caseta
+		acoperire = move_toward(acoperire, 0.0, delta / 3.0)
 		return
 	_actualizeaza_volum()
 	# basul (40-160 Hz) de pe canal, fără volumul nostru, ca pulsul să nu depindă de cât de departe ești
@@ -86,6 +91,7 @@ func _actualizeaza_volum() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var d := INF if jucator == null else global_position.distance_to(jucator.global_position)
 	var cat := 1.0 - smoothstep(aproape, departe, d)
+	acoperire = cat
 	_muzica.volume_db = volum_db + linear_to_db(maxf(cat, 0.0001))
 	if _canal >= 0:
 		var filtru := AudioServer.get_bus_effect(_canal, 0) as AudioEffectLowPassFilter

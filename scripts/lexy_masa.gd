@@ -37,6 +37,8 @@ const NUME_CADAVRU := "Lexy"
 @export var sunet_cadere: AudioStream = preload("res://sunete/corp_cazut.ogg")
 @export var sunet_luat: AudioStream = preload("res://sunete/corp_luat.ogg")
 @export var sunet_bancnota: AudioStream = preload("res://sunete/bancnota.ogg")
+## Muzica din casă (muzica_loc.gd): se oprește când alegi jaful.
+@export var muzica: Node
 
 @export_group("Replici")
 @export_multiline var replici_jaf_inceput: PackedStringArray = ["You: Put your hands up bitch!"]
@@ -124,6 +126,9 @@ func _spune(replici: PackedStringArray) -> void:
 # ---------------------------------------------------------------- jaful
 
 func _jefuieste() -> void:
+	# muzica din casă se oprește brusc: de aici e serios
+	if muzica:
+		muzica.opreste(0.3)
 	var c := Cutscena.porneste(self)
 	_jucator.seteaza_purtat(true)
 	# scoți pistolul și o ții la țintă (rămâne la vedere cât ține scena); faci un pas în fața ei
