@@ -16,6 +16,12 @@ extends Node
 ## Gol = mereu. Altfel autobuzul e în stație doar cu marcajul ăsta pus (și doar cu Jucator în scenă), ex. seara la bloc,
 ## când te întorci de la Lexy (curtea blocului mai e și fundalul din meniu, ziua și noaptea).
 @export var marcaj_necesar := ""
+## Bifat = autobuzul e în stație doar când ai venit cu un autobuz chemat de la orar (`OrarAutobuz.cu_autobuzul`),
+## de câte ori se întâmplă (fără `marcaj`); atunci te pune și pe tine în stație, la `loc_jucator`.
+@export var doar_din_orar := false
+@export var loc_jucator := Vector3.ZERO
+## Încotro te uiți (radiani; 0 = spre -Z).
+@export var unghi_jucator := 0.0
 
 var _pleaca := false
 var _v := 0.0
@@ -23,6 +29,19 @@ var _mers := 0.0
 
 
 func _ready() -> void:
+	if doar_din_orar:
+		var jucator := get_parent().get_node_or_null("Jucator") as Node3D
+		if jucator == null or not OrarAutobuz.cu_autobuzul:
+			autobuz.queue_free()
+			set_process(false)
+			return
+		OrarAutobuz.cu_autobuzul = false
+		await get_tree().process_frame
+		jucator.global_position = loc_jucator
+		jucator.rotation.y = unghi_jucator
+		jucator.get_node("Cap").rotation.x = 0.0
+		await _pleaca_din_statie()
+		return
 	if marcaj_necesar != "" and (not Stare.e_marcat(marcaj_necesar) or not get_parent().has_node("Jucator")):
 		autobuz.queue_free()
 		set_process(false)
@@ -31,6 +50,10 @@ func _ready() -> void:
 		autobuz.queue_free()
 		return
 	await get_tree().process_frame
+	await _pleaca_din_statie()
+
+
+func _pleaca_din_statie() -> void:
 	autobuz.usi_deschise_deja()
 	while Tranzitie.activa:
 		await get_tree().process_frame
@@ -49,7 +72,8 @@ func _process(delta: float) -> void:
 	_mers += pas
 	if _mers > distanta:
 		_pleaca = false
-		Stare.marcheaza(marcaj)
+		if marcaj != "":
+			Stare.marcheaza(marcaj)
 		if sarcina_noua != "":
 			Stare.seteaza_sarcina(sarcina_noua)
 		autobuz.queue_free()

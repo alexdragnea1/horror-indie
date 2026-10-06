@@ -48,6 +48,19 @@ const NUME_CADAVRU := "Lexy"
 @export_multiline var replici_plecare_dupa_jaf: PackedStringArray = ["You: Imma head out..",
 	"Lexy: Don't come here again you piece of shit.."]
 
+@export_group("Ziua în oraș")
+## Ziua de după atac (`marcaj_zi_oras`): dacă n-ai jefuit-o, E pornește direct împrumutul (`replici_imprumut`, apoi îți
+## întinde bancnota de 5 dolari și o iei, apoi `replici_dupa_bani`); `marcaj_imprumut` după. Ziua asta „Leave Lexy's
+## House” nu mai cheamă autobuzul: pleci de la orarul din stație.
+@export var marcaj_zi_oras := "ziua_orasului"
+@export var marcaj_imprumut := "a_imprumutat_de_la_lexy"
+@export var sarcina_dupa_imprumut := "Go to the casino."
+@export_multiline var replici_imprumut: PackedStringArray = ["You: Hey bitch can you lend me some money?",
+	"Lexy: What for?", "You: My mother lost the rent money and I need it ASAP.",
+	"You: I promise I will give it back, you know me..", "Lexy: Ok bitch..Here's some money."]
+@export_multiline var replici_dupa_bani: PackedStringArray = ["You: This is only 5 dollars bitch..",
+	"Lexy: All I had.", "You: Kill yourself."]
+
 var _in_curs := false
 var _cadavru: Ragdoll
 var _jucator: CharacterBody3D
@@ -99,10 +112,22 @@ func _sta_pe_scaun() -> bool:
 func interactioneaza() -> void:
 	if not poate_fi_folosit():
 		return
+	var zi_oras := Stare.e_marcat(marcaj_zi_oras)
+	if zi_oras and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut):
+		# bancnota trebuie să încapă în inventar (altfel nici nu începe conversația, ca la Helga)
+		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(ID_BANI):
+			Stare.adauga_obiect(ID_BANI, NUME_BANI)
+			return
+		_in_curs = true
+		folosit.emit()
+		await _imprumuta()
+		_in_curs = false
+		return
 	_in_curs = true
 	folosit.emit()
 	var optiuni: PackedStringArray = []
-	var poate_jefui := Stare.are_obiect(Pistol.ID) and not Stare.e_marcat(marcaj_jaf)
+	# în ziua în oraș, după împrumut, n-are ce să-i mai iei („All I had.”)
+	var poate_jefui := Stare.are_obiect(Pistol.ID) and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut)
 	if poate_jefui:
 		optiuni.append(optiune_jaf)
 	optiuni.append(optiune_plecare)
@@ -111,7 +136,8 @@ func interactioneaza() -> void:
 		await _jefuieste()
 	else:
 		await _spune(replici_plecare_dupa_jaf if Stare.e_marcat(marcaj_jaf) else replici_plecare)
-		pleaca(marcaj_plecare, sarcina_plecare)
+		if not zi_oras:
+			pleaca(marcaj_plecare, sarcina_plecare)
 	_in_curs = false
 
 
@@ -155,13 +181,26 @@ func _jefuieste() -> void:
 	var bancnota := await lexy.scoate_bancnota(predare)
 	await c.priveste(predare + Vector3.UP * 0.05, 0.35)
 	await get_tree().create_timer(0.3).timeout
-	# o iei: ți-o aduci în fața ochilor, te uiți la ea, o bagi în buzunar
+	lexy.du_mana("S", lexy.global_position + Vector3.UP * 0.35 + (predare - lexy.global_position) * 0.3, 0.6)
+	await _ia_bancnota(bancnota)
+	Stare.marcheaza(marcaj_jaf)
+	# lasă mâinile jos, încet, și pune felia înapoi în cutie; de acum doar se uită la tine
+	await c.priveste(_la_ea(), 0.5)
+	await lexy.maini_jos(1.3)
+	lexy.frica = 0.6
+	lexy.lasa_felia()
+	Pistol.in_scena = false
+	_jucator.seteaza_purtat(false)
+	await c.opreste()
+
+
+## Iei bancnota din mâna ei: ți-o aduci în fața ochilor, te uiți la ea, o bagi în buzunar („$5” în inventar).
+func _ia_bancnota(bancnota: Node3D) -> void:
 	bancnota.reparent(_camera, true)
 	# lipită de cameră n-o prinde nicio lumină: un pic de luciu, ca să se vadă desenul
 	for m in bancnota.find_children("*", "MeshInstance3D", true, false):
 		(m as MeshInstance3D).set_instance_shader_parameter("stralucire", 0.45)
 	Sunet.reda(sunet_bancnota, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-	lexy.du_mana("S", lexy.global_position + Vector3.UP * 0.35 + (predare - lexy.global_position) * 0.3, 0.6)
 	var t := _tween()
 	t.tween_property(bancnota, "position", Vector3(-0.03, -0.06, -0.3), 0.55)
 	t.tween_property(bancnota, "basis", Basis(Vector3.RIGHT, PI / 2.0 - 0.25) * Basis(Vector3.UP, 0.05), 0.55)
@@ -173,15 +212,35 @@ func _jefuieste() -> void:
 	await t.finished
 	bancnota.queue_free()
 	Stare.adauga_obiect(ID_BANI, NUME_BANI)
-	Stare.marcheaza(marcaj_jaf)
-	# lasă mâinile jos, încet, și pune felia înapoi în cutie; de acum doar se uită la tine
-	await c.priveste(_la_ea(), 0.5)
-	await lexy.maini_jos(1.3)
-	lexy.frica = 0.6
-	lexy.lasa_felia()
-	Pistol.in_scena = false
+
+
+# ---------------------------------------------------------------- împrumutul (ziua în oraș)
+
+## Ziua de după atac: îi ceri bani. Se oprește din mâncat, te ascultă, scoate bancnota din buzunar și ți-o dă.
+func _imprumuta() -> void:
+	var c := Cutscena.porneste(self)
+	_jucator.seteaza_purtat(true)
+	lexy.mananca = false
+	lexy.privire = _cap
+	await c.priveste(lexy.global_position + Vector3.UP * 0.75, 0.6)
+	await _spune(replici_imprumut)
+	var predare := _predare()
+	c.priveste(lexy.global_position + Vector3.UP * 0.6, 0.8)
+	var bancnota := await lexy.scoate_bancnota(predare)
+	await c.priveste(predare + Vector3.UP * 0.05, 0.35)
+	await get_tree().create_timer(0.3).timeout
+	lexy.lasa_mana("S", 0.8)
+	await _ia_bancnota(bancnota)
+	Stare.marcheaza(marcaj_imprumut)
+	await c.priveste(lexy.global_position + Vector3.UP * 0.75, 0.5)
+	await _spune(replici_dupa_bani)
+	# se apucă iar de pizza (dacă mai are felia în mână)
+	if is_instance_valid(lexy.felie):
+		lexy.mananca = true
 	_jucator.seteaza_purtat(false)
 	await c.opreste()
+	if sarcina_dupa_imprumut != "":
+		Stare.seteaza_sarcina(sarcina_dupa_imprumut)
 
 
 ## Unde te uiți la ea: între față și mâinile ridicate.

@@ -1,0 +1,822 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="1_b4xki"]
+[ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="2_ety3g"]
+[ext_resource type="PackedScene" path="res://models/casino_strada.glb" id="3_keh2u"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="4_baxj7"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="5_3uy0y"]
+[ext_resource type="PackedScene" path="res://models/casino_cladire.glb" id="6_ndt7u"]
+[ext_resource type="PackedScene" path="res://models/decor_spalatorie.glb" id="7_03dey"]
+[ext_resource type="PackedScene" path="res://models/decor_casino.glb" id="8_q8j7k"]
+[ext_resource type="Script" path="res://scripts/usa.gd" id="9_c4dvf"]
+[ext_resource type="AudioStream" path="res://sunete/clopotel_usa.ogg" id="10_0xn3e"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="11_46uy0"]
+[ext_resource type="PackedScene" path="res://models/usa_spalatorie.glb" id="12_ylt8r"]
+[ext_resource type="AudioStream" path="res://sunete/usa_scartait.ogg" id="13_kuxcy"]
+[ext_resource type="PackedScene" path="res://models/usa_casino.glb" id="14_00ba0"]
+[ext_resource type="PackedScene" path="res://scenes/masina_spalat.tscn" id="15_o7j6w"]
+[ext_resource type="Script" path="res://scripts/masina_spalat.gd" id="16_y5kly"]
+[ext_resource type="AudioStream" path="res://sunete/uscator.ogg" id="17_xnoc7"]
+[ext_resource type="AudioStream" path="res://sunete/bec_bazait.ogg" id="18_ywmv5"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="19_qs56e"]
+[ext_resource type="Script" path="res://scripts/rotire.gd" id="20_40as3"]
+[ext_resource type="PackedScene" path="res://models/ventilator.glb" id="21_588o6"]
+[ext_resource type="AudioStream" path="res://sunete/camera_joc.ogg" id="22_rbx4t"]
+[ext_resource type="PackedScene" path="res://models/masa_poker.glb" id="23_ca7na"]
+[ext_resource type="PackedScene" path="res://models/scaun_poker.glb" id="24_hqlrs"]
+[ext_resource type="Script" path="res://scripts/om_la_masa.gd" id="25_pivrv"]
+[ext_resource type="PackedScene" path="res://models/jucator_poker_1.glb" id="26_ll506"]
+[ext_resource type="PackedScene" path="res://models/jucator_poker_2.glb" id="27_sfhwx"]
+[ext_resource type="PackedScene" path="res://models/jucator_poker_3.glb" id="28_ru3ay"]
+[ext_resource type="PackedScene" path="res://models/jucator_poker_4.glb" id="29_hbwy8"]
+[ext_resource type="PackedScene" path="res://models/jucator_poker_5.glb" id="30_musbi"]
+[ext_resource type="PackedScene" path="res://models/scrumiera.glb" id="31_llvj6"]
+[ext_resource type="PackedScene" path="res://models/bere.glb" id="32_sgd5f"]
+[ext_resource type="Script" path="res://scripts/masa_poker.gd" id="33_2l8hr"]
+[ext_resource type="PackedScene" path="res://scenes/pacanea.tscn" id="34_0hklu"]
+[ext_resource type="Script" path="res://scripts/pacanea_joc.gd" id="35_bt2io"]
+[ext_resource type="Script" path="res://scripts/batrana_casino.gd" id="36_nxryw"]
+[ext_resource type="PackedScene" path="res://models/batrana_casino.glb" id="37_t4sds"]
+[ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="38_jaqc7"]
+[ext_resource type="Script" path="res://scripts/ceata_interior.gd" id="39_f0p3j"]
+[ext_resource type="Script" path="res://scripts/gand_lexy.gd" id="40_r88aj"]
+[ext_resource type="PackedScene" path="res://scenes/statie.tscn" id="41_k4anp"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="42_h33h5"]
+[ext_resource type="Script" path="res://scripts/autobuz.gd" id="43_dynaa"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="44_s1ytp"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="45_ql5ye"]
+[ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="46_cki8b"]
+[ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="47_c0q2m"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="48_2lnvt"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="49_fs82w"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="50_b6ngs"]
+[ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="51_je2ju"]
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="52_7rfn0"]
+[ext_resource type="Script" path="res://scripts/jucator.gd" id="53_ei6x2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="54_pjnjc"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="55_051eg"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_3.ogg" id="56_6xvlj"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_4.ogg" id="57_fiytq"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_1.ogg" id="58_r6e6e"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="59_a46k6"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_3.ogg" id="60_gd046"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_4.ogg" id="61_0d508"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_2.ogg" id="62_1e6b1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="63_5bfdc"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="64_jmn4e"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="65_dxnei"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="66_hcrh6"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="67_pyxud"]
+[ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="68_cgdtf"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="69_abvj1"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="70_hn16x"]
+
+[sub_resource type="Environment" id="Environment_1sto5"]
+background_mode = 1
+background_color = Color(0.66, 0.68, 0.7, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.78, 0.8, 0.84, 1)
+ambient_light_energy = 0.8
+fog_enabled = true
+fog_light_color = Color(0.64, 0.66, 0.69, 1)
+fog_density = 0.04
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.012
+volumetric_fog_albedo = Color(0.86, 0.87, 0.89, 1)
+volumetric_fog_length = 40.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ge5ae"]
+size = Vector3(1.1, 2.3, 0.06)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ecv4l"]
+size = Vector3(1.05, 2.15, 0.06)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0k3wq"]
+size = Vector3(0.56, 1.1, 0.56)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_q8u3u"]
+radius = 0.3
+height = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ko0u7"]
+size = Vector3(14, 1.2, 9.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xsemi"]
+size = Vector3(5.6, 1.2, 4.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xipbr"]
+size = Vector3(14, 3.4, 21.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_leuyf"]
+size = Vector3(3, 2, 1.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_g0n04"]
+size = Vector3(0.1, 0.45, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_s37ba"]
+size = Vector3(0.5, 8, 22)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ufvoe"]
+size = Vector3(0.5, 8, 22)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ybnhu"]
+size = Vector3(48, 8, 0.5)
+
+[node name="Casino" type="Node3D" unique_id=523571760]
+
+[node name="Mediu" type="WorldEnvironment" parent="." unique_id=1853368085]
+environment = SubResource("Environment_1sto5")
+
+[node name="Soare" type="DirectionalLight3D" parent="." unique_id=922811659]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 20, 0)
+light_color = Color(1, 0.95, 0.88, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.4
+shadow_enabled = true
+
+[node name="Acustica" type="Node" parent="." unique_id=1357108043]
+script = ExtResource("1_b4xki")
+marime_camera = 0.4
+amortizare = 0.45
+ecou = 0.16
+
+[node name="Vant" type="AudioStreamPlayer" parent="." unique_id=651949353]
+stream = ExtResource("2_ety3g")
+volume_db = -18.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Strada" type="Node3D" parent="." unique_id=1318285371 instance=ExtResource("3_keh2u")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Lumini")
+coliziune = 3
+
+[node name="Cladire" type="Node3D" parent="." unique_id=78337142 instance=ExtResource("6_ndt7u")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Lumini")
+sticla = "Geam"
+coliziune = 3
+
+[node name="DecorSpalatorie" type="Node3D" parent="." unique_id=143860690 instance=ExtResource("7_03dey")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Lumini")
+sticla = "Geam"
+coliziune = 3
+
+[node name="DecorCasino" type="Node3D" parent="." unique_id=1952323727 instance=ExtResource("8_q8j7k")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Lumini")
+coliziune = 3
+
+[node name="UsaFata" type="StaticBody3D" parent="." unique_id=2023311285]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.15, -0.125)
+script = ExtResource("9_c4dvf")
+replici_incuiata = PackedStringArray("It\'s locked.")
+replici_descuiere = PackedStringArray()
+replici_fara_marcaj = PackedStringArray()
+sunet_deschidere = ExtResource("10_0xn3e")
+sunet_inchidere = ExtResource("11_46uy0")
+indiciu = "[E] Open"
+replici = PackedStringArray()
+
+[node name="Model" type="Node3D" parent="UsaFata" unique_id=366356825 instance=ExtResource("12_ylt8r")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+sticla = "Geam"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaFata" unique_id=603516520]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 1.15, 0)
+shape = SubResource("BoxShape3D_ge5ae")
+
+[node name="UsaSpate" type="StaticBody3D" parent="." unique_id=146660741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0.15, -12.125)
+script = ExtResource("9_c4dvf")
+replici_incuiata = PackedStringArray("It\'s locked.")
+replici_descuiere = PackedStringArray()
+replici_fara_marcaj = PackedStringArray()
+sunet_deschidere = ExtResource("13_kuxcy")
+sunet_inchidere = ExtResource("11_46uy0")
+indiciu = "[E] Open"
+replici = PackedStringArray()
+
+[node name="Model" type="Node3D" parent="UsaSpate" unique_id=304596956 instance=ExtResource("14_00ba0")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+sticla = "Geam"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaSpate" unique_id=586360294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.525, 1.075, 0)
+shape = SubResource("BoxShape3D_ecv4l")
+
+[node name="Masini" type="Node3D" parent="." unique_id=407785301]
+
+[node name="MasinaS1" type="Node3D" parent="Masini" unique_id=1809271687 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -1.9)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaS2" type="Node3D" parent="Masini" unique_id=1822326017 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -2.68)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaS3" type="Node3D" parent="Masini" unique_id=1985152294 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -3.46)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaS4" type="Node3D" parent="Masini" unique_id=2146417182 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -4.24)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaS5" type="Node3D" parent="Masini" unique_id=236296139 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -5.02)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaS6" type="Node3D" parent="Masini" unique_id=1917810078 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -5.8)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaS7" type="Node3D" parent="Masini" unique_id=825636179 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -6.58)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaS8" type="Node3D" parent="Masini" unique_id=1176352895 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -7.36)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaS9" type="Node3D" parent="Masini" unique_id=795921384 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -8.14)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaS10" type="Node3D" parent="Masini" unique_id=1152543870 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -8.92)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaS11" type="Node3D" parent="Masini" unique_id=1875043364 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -9.7)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaS12" type="Node3D" parent="Masini" unique_id=700890894 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.62, 0.15, -10.48)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaD1" type="Node3D" parent="Masini" unique_id=387753282 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -1.9)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaD2" type="Node3D" parent="Masini" unique_id=2140512614 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -2.68)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaD3" type="Node3D" parent="Masini" unique_id=1735014616 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -3.46)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaD4" type="Node3D" parent="Masini" unique_id=1984804403 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -4.24)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaD5" type="Node3D" parent="Masini" unique_id=1243938438 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -5.02)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaD6" type="Node3D" parent="Masini" unique_id=1413952958 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -5.8)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaD7" type="Node3D" parent="Masini" unique_id=1061790449 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -6.58)
+script = ExtResource("16_y5kly")
+usa_deschisa = true
+
+[node name="MasinaD8" type="Node3D" parent="Masini" unique_id=2068879367 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -7.36)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaD9" type="Node3D" parent="Masini" unique_id=1904955503 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -8.14)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaD10" type="Node3D" parent="Masini" unique_id=1273961318 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -8.92)
+script = ExtResource("16_y5kly")
+
+[node name="MasinaD11" type="Node3D" parent="Masini" unique_id=358791747 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -9.7)
+script = ExtResource("16_y5kly")
+merge = true
+
+[node name="MasinaD12" type="Node3D" parent="Masini" unique_id=353714370 instance=ExtResource("15_o7j6w")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6.62, 0.15, -10.48)
+script = ExtResource("16_y5kly")
+
+[node name="Uscatoare" type="AudioStreamPlayer3D" parent="." unique_id=690056073]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2, 1, -11.5)
+stream = ExtResource("17_xnoc7")
+volume_db = -14.0
+unit_size = 2.5
+autoplay = true
+bus = &"Ambianta"
+
+[node name="BazaitNeon" type="AudioStreamPlayer3D" parent="." unique_id=1843861125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, -6)
+stream = ExtResource("18_ywmv5")
+volume_db = -20.0
+unit_size = 4.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Lumini" type="Node3D" parent="." unique_id=1345301040]
+
+[node name="Neon" type="OmniLight3D" parent="Lumini" unique_id=1046609054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 3.1, -2)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="@OmniLight3D@2" type="OmniLight3D" parent="Lumini" unique_id=363005473]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 3.1, -5.2)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 6.0
+
+[node name="@OmniLight3D@3" type="OmniLight3D" parent="Lumini" unique_id=1264222640]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 3.1, -8.4)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="@OmniLight3D@4" type="OmniLight3D" parent="Lumini" unique_id=1419731274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 3.1, -11)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="@OmniLight3D@5" type="OmniLight3D" parent="Lumini" unique_id=1266648710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 3.1, -2)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="@OmniLight3D@6" type="OmniLight3D" parent="Lumini" unique_id=1562067634]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 3.1, -5.2)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="@OmniLight3D@7" type="OmniLight3D" parent="Lumini" unique_id=481516419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 3.1, -8.4)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+script = ExtResource("19_qs56e")
+energie_normala = 0.9
+sansa_stingere = 0.06
+
+[node name="@OmniLight3D@8" type="OmniLight3D" parent="Lumini" unique_id=538692841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4, 3.1, -11)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+[node name="LampaMasa" type="SpotLight3D" parent="Lumini" unique_id=272815461]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 2, -17.6)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 4.0
+light_volumetric_fog_energy = 0.6
+shadow_enabled = true
+spot_range = 3.5
+spot_angle = 52.0
+
+[node name="LampaMasaRoi" type="OmniLight3D" parent="Lumini" unique_id=455087616]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, -17.6)
+light_color = Color(1, 0.8, 0.55, 1)
+light_energy = 0.6
+light_volumetric_fog_energy = 0.0
+omni_range = 3.5
+
+[node name="Aplica" type="OmniLight3D" parent="Lumini" unique_id=1775943245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7424, 2.2, -16)
+light_color = Color(1, 0.62, 0.4, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+omni_range = 3.2
+
+[node name="@OmniLight3D@9" type="OmniLight3D" parent="Lumini" unique_id=929070020]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.7424, 2.2, -20.5)
+light_color = Color(1, 0.62, 0.4, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+omni_range = 3.2
+
+[node name="@OmniLight3D@10" type="OmniLight3D" parent="Lumini" unique_id=729365697]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7424, 2.2, -16)
+light_color = Color(1, 0.62, 0.4, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+omni_range = 3.2
+
+[node name="@OmniLight3D@11" type="OmniLight3D" parent="Lumini" unique_id=1457651133]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.7424, 2.2, -20.5)
+light_color = Color(1, 0.62, 0.4, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+omni_range = 3.2
+
+[node name="NeonPoker" type="OmniLight3D" parent="Lumini" unique_id=372771126]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.55, -21.6)
+light_color = Color(0.9, 0.3, 0.3, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 4.5
+
+[node name="LampaCasa" type="OmniLight3D" parent="Lumini" unique_id=1375768476]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.3, 1.9, -13.6)
+light_color = Color(1, 0.8, 0.55, 1)
+light_energy = 0.7
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 3.0
+
+[node name="LuminaPortret" type="OmniLight3D" parent="Lumini" unique_id=691319249]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.3, 2.75, -21.8)
+light_color = Color(1, 0.8, 0.55, 1)
+light_energy = 0.35
+light_volumetric_fog_energy = 0.0
+omni_range = 2.0
+
+[node name="Bar" type="OmniLight3D" parent="Lumini" unique_id=308353965]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -21.4)
+light_color = Color(1, 0.75, 0.5, 1)
+light_energy = 0.4
+light_volumetric_fog_energy = 0.0
+omni_range = 3.5
+
+[node name="Ventilator" type="Node3D" parent="." unique_id=1685681750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 3.35, -17)
+script = ExtResource("20_40as3")
+
+[node name="Model" type="Node3D" parent="Ventilator" unique_id=349899619 instance=ExtResource("21_588o6")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Lumini")
+
+[node name="CameraJoc" type="AudioStreamPlayer3D" parent="." unique_id=625362200]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 2.5, -17)
+stream = ExtResource("22_rbx4t")
+volume_db = -16.0
+unit_size = 3.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="MasaPoker" type="Node3D" parent="." unique_id=515839150 instance=ExtResource("23_ca7na")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -17.6)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="LocuriMasa" type="Node3D" parent="." unique_id=601711390]
+
+[node name="Loc0" type="Marker3D" parent="LocuriMasa" unique_id=217703940]
+transform = Transform3D(1, 0, 3.5893633e-17, 0, 1, 0, -3.5893633e-17, 0, 1, 7.693906e-17, 0.92499995, -17.08)
+
+[node name="Loc1" type="Marker3D" parent="LocuriMasa" unique_id=2084641961]
+transform = Transform3D(0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, 0.7017042, -1.0206223, 0.92499995, -17.406563)
+
+[node name="Loc2" type="Marker3D" parent="LocuriMasa" unique_id=18549002]
+transform = Transform3D(-0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, -0.7017042, -1.0206223, 0.92499995, -17.793438)
+
+[node name="Loc3" type="Marker3D" parent="LocuriMasa" unique_id=1334664203]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -2.308172e-16, 0.92499995, -18.12)
+
+[node name="Loc4" type="Marker3D" parent="LocuriMasa" unique_id=757741682]
+transform = Transform3D(-0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, -0.7017042, 1.0206223, 0.92499995, -17.793438)
+
+[node name="Loc5" type="Marker3D" parent="LocuriMasa" unique_id=139232288]
+transform = Transform3D(0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, 0.7017042, 1.0206223, 0.92499995, -17.406563)
+
+[node name="Centru" type="Marker3D" parent="LocuriMasa" unique_id=270565491]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92499995, -17.6)
+
+[node name="LocJucator" type="Marker3D" parent="LocuriMasa" unique_id=1120474089]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 9.9552054e-17, 0.15, -16.37)
+
+[node name="ScaunPoker0" type="Node3D" parent="." unique_id=1073456388 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 9.9552054e-17, 0.15, -16.45)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="ScaunPoker1" type="Node3D" parent="." unique_id=2041578104 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(-0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, -0.7017042, -1.4694774, 0.15, -16.964489)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="ScaunPoker2" type="Node3D" parent="." unique_id=1400520944 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, 0.7017042, -1.4694774, 0.15, -18.235512)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="ScaunPoker3" type="Node3D" parent="." unique_id=641083175 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(1, 0, 1.07680896e-16, 0, 1, 0, -1.07680896e-16, 0, 1, -2.9865617e-16, 0.15, -18.75)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="ScaunPoker4" type="Node3D" parent="." unique_id=87288492 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, 0.7017042, 1.4694774, 0.15, -18.235512)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="ScaunPoker5" type="Node3D" parent="." unique_id=876886691 instance=ExtResource("24_hqlrs")]
+transform = Transform3D(-0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, -0.7017042, 1.4694774, 0.15, -16.964489)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="Jucatori" type="Node3D" parent="." unique_id=292279925]
+
+[node name="BigSal" type="Node3D" parent="Jucatori" unique_id=476512884]
+transform = Transform3D(-0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, -0.7017042, -1.4694774, 0.15, -16.964489)
+script = ExtResource("25_pivrv")
+
+[node name="Model" type="Node3D" parent="Jucatori/BigSal" unique_id=1968255939 instance=ExtResource("26_ll506")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Jar")
+
+[node name="SlickTony" type="Node3D" parent="Jucatori" unique_id=1434382434]
+transform = Transform3D(0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, 0.7017042, -1.4694774, 0.15, -18.235512)
+script = ExtResource("25_pivrv")
+
+[node name="Model" type="Node3D" parent="Jucatori/SlickTony" unique_id=336817802 instance=ExtResource("27_sfhwx")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Jar")
+
+[node name="OldGheorghe" type="Node3D" parent="Jucatori" unique_id=943186651]
+transform = Transform3D(1, 0, 1.07680896e-16, 0, 1, 0, -1.07680896e-16, 0, 1, -2.9865617e-16, 0.15, -18.75)
+script = ExtResource("25_pivrv")
+
+[node name="Model" type="Node3D" parent="Jucatori/OldGheorghe" unique_id=371812808 instance=ExtResource("28_ru3ay")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Jar")
+
+[node name="Sharon" type="Node3D" parent="Jucatori" unique_id=3696793]
+transform = Transform3D(0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, 0.7017042, 1.4694774, 0.15, -18.235512)
+script = ExtResource("25_pivrv")
+
+[node name="Model" type="Node3D" parent="Jucatori/Sharon" unique_id=66103425 instance=ExtResource("29_hbwy8")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Jar")
+
+[node name="Florin" type="Node3D" parent="Jucatori" unique_id=1407344282]
+transform = Transform3D(-0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, -0.7017042, 1.4694774, 0.15, -16.964489)
+script = ExtResource("25_pivrv")
+
+[node name="Model" type="Node3D" parent="Jucatori/Florin" unique_id=1848277950 instance=ExtResource("30_musbi")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray("Jar")
+
+[node name="PeMasa1" type="Node3D" parent="." unique_id=1544456456 instance=ExtResource("31_llvj6")]
+transform = Transform3D(-0.5748829, 0, -0.81823564, 0, 1, 0, 0.81823564, 0, -0.5748829, -1.3166296, 0.92499995, -17.536098)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="PeMasa2" type="Node3D" parent="." unique_id=808929262 instance=ExtResource("31_llvj6")]
+transform = Transform3D(-0.99978983, 0, 0.020501997, 0, 1, 0, -0.020501997, 0, -0.99978983, -0.8956072, 0.92499995, -18.091383)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="PeMasa3" type="Node3D" parent="." unique_id=2138266641 instance=ExtResource("32_sgd5f")]
+transform = Transform3D(-0.45409772, 0, -0.8909519, 0, 1, 0, 0.8909519, 0, -0.45409772, 0.3, 0.92499995, -18.240002)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="PeMasa5" type="Node3D" parent="." unique_id=869386518 instance=ExtResource("32_sgd5f")]
+transform = Transform3D(0.8476111, 0, 0.53061795, 0, 1, 0, -0.53061795, 0, 0.8476111, 0.8956072, 0.92499995, -17.108618)
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="LocLiber" type="StaticBody3D" parent="." unique_id=470013113 node_paths=PackedStringArray("jucatori", "locuri", "centru", "loc_jucator")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 9.9552054e-17, 0.15, -16.45)
+script = ExtResource("33_2l8hr")
+jucatori = [NodePath("../Jucatori/BigSal"), NodePath("../Jucatori/SlickTony"), NodePath("../Jucatori/OldGheorghe"), NodePath("../Jucatori/Sharon"), NodePath("../Jucatori/Florin")]
+locuri = [NodePath("../LocuriMasa/Loc0"), NodePath("../LocuriMasa/Loc1"), NodePath("../LocuriMasa/Loc2"), NodePath("../LocuriMasa/Loc3"), NodePath("../LocuriMasa/Loc4"), NodePath("../LocuriMasa/Loc5")]
+centru = NodePath("../LocuriMasa/Centru")
+loc_jucator = NodePath("../LocuriMasa/LocJucator")
+nume_jucatori = PackedStringArray("Big Sal", "Slick Tony", "Old Gheorghe", "Sharon", "Florin")
+bani_jucatori = PackedInt32Array(4200, 2600, 1850, 3300, 2900)
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="LocLiber" unique_id=691561304]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+shape = SubResource("BoxShape3D_0k3wq")
+
+[node name="Pacanele" type="Node3D" parent="." unique_id=1403834829]
+
+[node name="Pacanea1" type="StaticBody3D" parent="Pacanele" unique_id=1051058120 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -14)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="Pacanea2" type="StaticBody3D" parent="Pacanele" unique_id=91666845 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -15.15)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="Pacanea3" type="StaticBody3D" parent="Pacanele" unique_id=1537023125 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -16.3)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="Pacanea4" type="StaticBody3D" parent="Pacanele" unique_id=839940883 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -17.45)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="Pacanea5" type="StaticBody3D" parent="Pacanele" unique_id=409953624 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -18.6)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="Pacanea6" type="StaticBody3D" parent="Pacanele" unique_id=1578019079 instance=ExtResource("34_0hklu")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.66, 0.15, -19.75)
+script = ExtResource("35_bt2io")
+replici = PackedStringArray()
+
+[node name="BatranaCasino" type="StaticBody3D" parent="." unique_id=2133475082 node_paths=PackedStringArray("om", "ghiseu", "cutie_bani", "tava")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.95, 0, -13.7)
+script = ExtResource("36_nxryw")
+om = NodePath("Om")
+ghiseu = NodePath("../Ghiseu")
+cutie_bani = NodePath("../CutieBani")
+tava = NodePath("../Tava")
+replici_inceput = PackedStringArray("Old bitch: Hey sweetie, you can exchange cash here.", "Old bitch: Do you have any?")
+replici_fara_bani = PackedStringArray("Old bitch: Come here when you have money poor bitch.", "You: Kill yourself.")
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="BatranaCasino" unique_id=489150583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+shape = SubResource("CapsuleShape3D_q8u3u")
+
+[node name="Om" type="Node3D" parent="BatranaCasino" unique_id=2060462825]
+script = ExtResource("25_pivrv")
+fumeaza = false
+
+[node name="Model" type="Node3D" parent="BatranaCasino/Om" unique_id=766305781 instance=ExtResource("37_t4sds")]
+script = ExtResource("4_baxj7")
+material = ExtResource("5_3uy0y")
+stralucitoare = PackedStringArray()
+
+[node name="Ghiseu" type="Marker3D" parent="." unique_id=1009294062]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.36, 1.075, -13.675)
+
+[node name="CutieBani" type="Marker3D" parent="." unique_id=1468798438]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.83, 1.18, -12.8)
+
+[node name="Tava" type="Marker3D" parent="." unique_id=172555134]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.77, 1.12, -14.35)
+
+[node name="Lemn" type="Area3D" parent="." unique_id=1096253207]
+script = ExtResource("38_jaqc7")
+suprafata = "lemn"
+
+[node name="Forma" type="CollisionShape3D" parent="Lemn" unique_id=1907705413]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -17.1)
+shape = SubResource("BoxShape3D_ko0u7")
+
+[node name="Covor" type="Area3D" parent="." unique_id=1147098296]
+script = ExtResource("38_jaqc7")
+
+[node name="Forma" type="CollisionShape3D" parent="Covor" unique_id=1334640497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -17.6)
+shape = SubResource("BoxShape3D_xsemi")
+
+[node name="CeataInterior" type="Area3D" parent="." unique_id=787824035 node_paths=PackedStringArray("mediu")]
+script = ExtResource("39_f0p3j")
+mediu = NodePath("../Mediu")
+
+[node name="Forma" type="CollisionShape3D" parent="CeataInterior" unique_id=164288298]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, -11.1)
+shape = SubResource("BoxShape3D_xipbr")
+
+[node name="GandLexy" type="Area3D" parent="." unique_id=2026546964]
+script = ExtResource("40_r88aj")
+replici = PackedStringArray("You: Maybe Lexy could lend me some money..")
+
+[node name="Forma" type="CollisionShape3D" parent="GandLexy" unique_id=1089195732]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1.4)
+shape = SubResource("BoxShape3D_leuyf")
+
+[node name="Statie" type="StaticBody3D" parent="." unique_id=836542364 instance=ExtResource("41_k4anp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.15, 2.4)
+
+[node name="AutobuzOrasSosit" type="AnimatableBody3D" parent="." unique_id=1952108831 instance=ExtResource("42_h33h5")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 9, 0, 5.95)
+sync_to_physics = false
+script = ExtResource("43_dynaa")
+sunet_usi_deschise = ExtResource("44_s1ytp")
+sunet_usi_inchise = ExtResource("45_ql5ye")
+
+[node name="Autobuz" type="AnimatableBody3D" parent="." unique_id=123949656 instance=ExtResource("42_h33h5")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 200, 0, 5.95)
+sync_to_physics = false
+script = ExtResource("43_dynaa")
+sunet_usi_deschise = ExtResource("44_s1ytp")
+sunet_usi_inchise = ExtResource("45_ql5ye")
+
+[node name="CoborareOras" type="Node" parent="." unique_id=1204322095 node_paths=PackedStringArray("autobuz")]
+script = ExtResource("46_cki8b")
+autobuz = NodePath("../AutobuzOrasSosit")
+marcaj = ""
+sarcina_noua = ""
+doar_din_orar = true
+loc_jucator = Vector3(6.2, 0.17, 3.1)
+unghi_jucator = 0.35
+
+[node name="SosireOras" type="Node" parent="." unique_id=1977038871 node_paths=PackedStringArray("autobuz")]
+script = ExtResource("47_c0q2m")
+autobuz = NodePath("../Autobuz")
+marcaj = ""
+marcaj_oprire = ""
+intarziere = 4.0
+loc_oprire = Vector3(9, 0, 5.95)
+marcaj_urcare = ""
+sunete_urcare = Array[AudioStream]([ExtResource("48_2lnvt"), ExtResource("49_fs82w"), ExtResource("48_2lnvt"), ExtResource("45_ql5ye"), ExtResource("50_b6ngs")])
+sunet_frana = ExtResource("50_b6ngs")
+
+[node name="OrarCasino" type="StaticBody3D" parent="." unique_id=1925786650 node_paths=PackedStringArray("sosire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.42, 1.65, 2.85)
+script = ExtResource("51_je2ju")
+sosire = NodePath("../SosireOras")
+optiuni = PackedStringArray("Home", "Lexy\'s Place", "Gun Store")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "")
+titluri = PackedStringArray("Block M7, Entrance B", "Lexy\'s place", "")
+replici_indisponibil = PackedStringArray("You: Nah, not today.")
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="OrarCasino" unique_id=1163489932]
+shape = SubResource("BoxShape3D_g0n04")
+
+[node name="Limite" type="StaticBody3D" parent="." unique_id=1901572585]
+
+[node name="Stanga" type="CollisionShape3D" parent="Limite" unique_id=993857987]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 4, 4)
+shape = SubResource("BoxShape3D_s37ba")
+
+[node name="Dreapta" type="CollisionShape3D" parent="Limite" unique_id=1320670403]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 4, 4)
+shape = SubResource("BoxShape3D_ufvoe")
+
+[node name="Fata" type="CollisionShape3D" parent="Limite" unique_id=1668467886]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 12.6)
+shape = SubResource("BoxShape3D_ybnhu")
+
+[node name="Jucator" type="CharacterBody3D" parent="." unique_id=1246672742 groups=["jucator"] instance=ExtResource("52_7rfn0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.17, 2.9)
+floor_constant_speed = true
+floor_snap_length = 0.3
+script = ExtResource("53_ei6x2")
+pasi_lemn = Array[AudioStream]([ExtResource("54_pjnjc"), ExtResource("55_051eg"), ExtResource("56_6xvlj"), ExtResource("57_fiytq")])
+pasi_covor = Array[AudioStream]([ExtResource("58_r6e6e"), ExtResource("59_a46k6"), ExtResource("60_gd046"), ExtResource("61_0d508")])
+pasi_beton = Array[AudioStream]([ExtResource("48_2lnvt"), ExtResource("62_1e6b1"), ExtResource("49_fs82w"), ExtResource("63_5bfdc")])
+pasi_frunze = Array[AudioStream]([ExtResource("64_jmn4e"), ExtResource("65_dxnei"), ExtResource("66_hcrh6"), ExtResource("67_pyxud")])
+scartait_podea = ExtResource("68_cgdtf")
+lanterna_pornita = ExtResource("69_abvj1")
+lanterna_oprita = ExtResource("70_hn16x")
+suprafata_implicita = "beton"

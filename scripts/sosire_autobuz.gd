@@ -4,6 +4,8 @@ extends Node
 ## Când urci ([E] la o ușă), pornește scena din autobuz (`scena_drum`), prin Tranzitie.
 ## Dacă pornești jocul cu marcajul deja pus (Continue), autobuzul vine din nou după `intarziere`.
 ## Al doilea nod (`AutobuzLexy`, ziua): vine după mesajul de pe telefon și te duce la Lexy (`scena_drum` = casa ei).
+## Cu `marcaj` gol (`SosireOras`) nu vine singur: îl cheamă orarul din stație (`OrarAutobuz`, `cheama(scena, titlu)`),
+## de câte ori vrei; la urcare pune `OrarAutobuz.cu_autobuzul`, ca scena următoare să te lase în stație.
 
 ## Autobuzul din scenă (scenes/autobuz.tscn), cu fața spre direcția din care vine.
 @export var autobuz: Autobuz
@@ -38,6 +40,7 @@ var _stare := ASTEAPTA
 var _viteza := 0.0
 var _directie := Vector3.ZERO
 var _frana_pornita := false
+var _pregatit := false
 
 func _ready() -> void:
 	autobuz.visible = false
@@ -49,6 +52,9 @@ func _ready() -> void:
 	if Stare.e_marcat(marcaj_oprire):
 		return
 	autobuz.urcare.connect(_urca)
+	_pregatit = true
+	if marcaj == "":
+		return
 	if Stare.e_marcat(marcaj):
 		_porneste()
 	else:
@@ -108,5 +114,22 @@ func _urca() -> void:
 	if _stare != OPRIT or Tranzitie.activa:
 		return
 	_stare = PLECAT
-	Stare.marcheaza(marcaj_urcare)
+	if marcaj_urcare != "":
+		Stare.marcheaza(marcaj_urcare)
+	if marcaj == "":
+		OrarAutobuz.cu_autobuzul = true
 	Tranzitie.mergi_la(scena_drum, titlu, sunete_urcare)
+
+
+## Pentru orarul din stație: autobuzul nu e deja pe drum sau în stație.
+func poate_fi_chemat() -> bool:
+	return _pregatit and marcaj == "" and _stare == ASTEAPTA
+
+
+## Vine (după `intarziere`) și te duce în `scena`, cu `titlu_nou` jos în stânga. Doar cu `marcaj` gol (vezi OrarAutobuz).
+func cheama(scena: String, titlu_nou: String) -> void:
+	if not poate_fi_chemat():
+		return
+	scena_drum = scena
+	titlu = titlu_nou
+	_porneste()

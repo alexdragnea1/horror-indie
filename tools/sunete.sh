@@ -685,3 +685,36 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc='$PAD*(0.85+0.15*sin(2*PI*0.25*t))':s=4
 bucla atac_tristete "$OUT/_tristete.wav" 2 stereo anull tri
 rm -f "$OUT"/_tunet.wav "$OUT"/_fulger.wav "$OUT"/_corn.wav "$OUT"/_aparitie.wav "$OUT"/_sosire.wav "$OUT"/_vraja.wav "$OUT"/_impact.wav \
 	"$OUT"/_tobe.wav "$OUT"/_scut.wav "$OUT"/_spart.wav "$OUT"/_incarcare.wav "$OUT"/_orb_zbor.wav "$OUT"/_orb_bum.wav "$OUT"/_inima.wav "$OUT"/_tristete.wav
+
+# --- casino-ul din spălătorie (poker, păcănele, mașini de spălat); rulează doar secțiunea asta cu funcțiile de sus
+TINTA_LUFS=-20
+unic carti_amestecate "Card and Board/card_fan.wav"
+unic carte_impartita "Card and Board/card_draw_1.wav"
+unic carte_intoarsa "Card and Board/card_draw_3.wav" mono "asetrate=44100*1.15,aresample=44100"
+unic jetoane_puse "Card and Board/chips_place_1.wav"
+unic jetoane_stranse "Card and Board/chips_gather.wav"
+unic bataie_masa "Other/subtle_knock.wav" mono "lowpass=f=2500"
+unic poker_castig "Musical Effects/vibraphone_chime_positive.wav" stereo
+unic poker_pierdere "Musical Effects/vibraphone_negative_quick.wav" stereo
+unic pacanea_oprire "UI/click_double_off.wav" stereo "lowpass=f=3500,asetrate=44100*0.8,aresample=44100"
+unic pacanea_castig "Musical Effects/8_bit_chime_positive.wav" stereo
+unic pacanea_numarare "Retro/coin.wav" stereo
+unic clopotel_usa "Items/jingle_bells_1.wav" mono "atrim=end=1.2,afade=t=out:st=0.8:d=0.4"
+# rolele care se învârt: clicuri dese (18 pe secundă) peste un vâjâit subțire, buclă de 2 s
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.6*exp(-mod(t\,1/18)*180)*sin(2*PI*2400*t)':s=44100:d=4" -f lavfi -i "anoisesrc=c=pink:a=0.12:d=4:r=44100" \
+	-filter_complex "[1]bandpass=f=1800:t=h:w=1500[z];[0][z]amix=inputs=2:normalize=0,lowpass=f=6000" -ac 2 "$OUT/_role.wav"
+bucla pacanea_rulare "$OUT/_role.wav" 0.3 stereo
+# mașina de spălat: motorul (50 Hz + armonice), apa care plescăie în tambur (în ritmul învârtitului), huruitul carcasei
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.22*sin(2*PI*50*t)+0.1*sin(2*PI*100*t)+0.05*sin(2*PI*150*t)':s=44100:d=8" \
+	-i "$PACHET/Environment/water_babbling_loop.wav" -f lavfi -i "anoisesrc=c=brown:a=0.3:d=8:r=44100" \
+	-filter_complex "[1]aformat=channel_layouts=mono,aloop=loop=-1:size=2e6,atrim=end=8,lowpass=f=1500,volume='0.6+0.4*sin(2*PI*0.5*t)':eval=frame[a];[2]lowpass=f=180,volume='0.7+0.3*sin(2*PI*0.5*t)':eval=frame[h];[0][a][h]amix=inputs=3:normalize=0" \
+	-ac 1 "$OUT/_masina.wav"
+bucla masina_spalat "$OUT/_masina.wav" 1.0 mono
+# uscătoarele: huruit jos și rufele care cad în tambur (bufnituri moi, neregulate)
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=0.5:d=8:r=44100:s=7" -f lavfi -i "aevalsrc='0.5*exp(-mod(t\,0.83)*25)*sin(2*PI*70*t)+0.3*exp(-mod(t+0.31\,1.21)*30)*sin(2*PI*90*t)':s=44100:d=8" \
+	-filter_complex "[0]lowpass=f=250[h];[h][1]amix=inputs=2:normalize=0,lowpass=f=600" -ac 1 "$OUT/_uscator.wav"
+bucla uscator "$OUT/_uscator.wav" 1.0 mono
+# camera de joc: liniștea unei încăperi închise, ventilatorul din tavan (vâjâit care pulsează)
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.4:d=8:r=44100:s=11" -af "lowpass=f=700,highpass=f=60,volume='0.75+0.25*sin(2*PI*3.1*t)':eval=frame" -ac 2 "$OUT/_camera.wav"
+bucla camera_joc "$OUT/_camera.wav" 1.0 stereo
+rm -f "$OUT/_role.wav" "$OUT/_masina.wav" "$OUT/_uscator.wav" "$OUT/_camera.wav"

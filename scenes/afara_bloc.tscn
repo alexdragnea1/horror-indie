@@ -59,6 +59,9 @@
 [ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="sr3"]
 [ext_resource type="Script" path="res://scripts/intoarcere_noaptea.gd" id="no1"]
 
+[ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
+[ext_resource type="Script" path="res://scripts/replica_la_sosire.gd" id="or2"]
+
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
 background_color = Color(0.149, 0.176, 0.184, 1)
@@ -190,6 +193,9 @@ billboard_keep_scale = true
 [sub_resource type="QuadMesh" id="frunza"]
 material = SubResource("mat_frunza")
 size = Vector2(0.12, 0.09)
+
+[sub_resource type="BoxShape3D" id="forma_orar"]
+size = Vector3(0.1, 0.45, 0.6)
 
 [node name="AfaraBloc" type="Node3D"]
 
@@ -670,3 +676,41 @@ replici = PackedStringArray("You: What the fuck are you doing here bitch?", "Hea
 [node name="IntoarcereNoaptea" type="Node" parent="."]
 script = ExtResource("no1")
 replici = PackedStringArray("You: Tomorrow I will go to the gun store.", "You: Maybe I can find something to defeat the warlock..")
+
+[node name="ZiOras" type="Node" parent="."]
+script = ExtResource("or2")
+replici = PackedStringArray("You: I should check the bus schedule to go into town.")
+sarcina_noua = "Check the bus schedule."
+
+[node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("32")
+autobuz = NodePath("../Autobuz")
+marcaj = ""
+marcaj_oprire = ""
+intarziere = 4.0
+marcaj_urcare = ""
+sunete_urcare = Array[AudioStream]([ExtResource("34"), ExtResource("35"), ExtResource("34"), ExtResource("36"), ExtResource("33")])
+sunet_frana = ExtResource("33")
+
+[node name="OrarBloc" type="StaticBody3D" parent="." node_paths=PackedStringArray("sosire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 1.6, 13.8)
+script = ExtResource("or1")
+sosire = NodePath("../SosireOras")
+optiuni = PackedStringArray("Casino", "Lexy's Place", "Gun Store")
+scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "")
+titluri = PackedStringArray("Wash Your Clothes Laundromat", "Lexy's place", "")
+
+[node name="Forma" type="CollisionShape3D" parent="OrarBloc"]
+shape = SubResource("forma_orar")
+
+[node name="AutobuzOras" parent="." instance=ExtResource("31")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.5, 0.02, 16.9)
+
+[node name="CoborareOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("sr3")
+autobuz = NodePath("../AutobuzOras")
+marcaj = ""
+sarcina_noua = ""
+doar_din_orar = true
+loc_jucator = Vector3(6.8, 0.12, 14.7)
+unghi_jucator = 0.5

@@ -49,6 +49,8 @@
 [ext_resource type="AudioStream" path="res://sunete/muzica_lexy.ogg" id="muzica_loc_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
+[ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
+
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
 background_color = Color(0.66, 0.68, 0.7, 1)
@@ -120,6 +122,9 @@ size = Vector3(30, 1.75, 0.4)
 
 [sub_resource type="BoxShape3D" id="forma_interior"]
 size = Vector3(13.8, 2.8, 7.4)
+
+[sub_resource type="BoxShape3D" id="forma_orar"]
+size = Vector3(0.1, 0.45, 0.6)
 
 [node name="CasaLexy" type="Node3D"]
 
@@ -487,3 +492,36 @@ bus = &"Muzica"
 script = ExtResource("muzica_loc_gd")
 zona = NodePath("../CeataInterior")
 marcaje_liniste = PackedStringArray("a_jefuit_lexy")
+
+[node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("42")
+autobuz = NodePath("../AutobuzAcasa")
+marcaj = ""
+marcaj_oprire = ""
+intarziere = 4.0
+loc_oprire = Vector3(2, 0.04, 14.85)
+marcaj_urcare = ""
+sunete_urcare = Array[AudioStream]([ExtResource("43"), ExtResource("44"), ExtResource("43"), ExtResource("45"), ExtResource("46")])
+sunet_frana = ExtResource("46")
+
+[node name="OrarLexy" type="StaticBody3D" parent="." node_paths=PackedStringArray("sosire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.6, 1.64, 17.95)
+script = ExtResource("or1")
+sosire = NodePath("../SosireOras")
+optiuni = PackedStringArray("Home", "Casino", "Gun Store")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "")
+titluri = PackedStringArray("Block M7, Entrance B", "Wash Your Clothes Laundromat", "")
+
+[node name="Forma" type="CollisionShape3D" parent="OrarLexy"]
+shape = SubResource("forma_orar")
+
+[node name="AutobuzOras" parent="." instance=ExtResource("25")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 2, 0.04, 14.85)
+
+[node name="CoborareOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("26")
+autobuz = NodePath("../AutobuzOras")
+marcaj = ""
+sarcina_noua = ""
+doar_din_orar = true
+loc_jucator = Vector3(3.6, 0.16, 17.9)

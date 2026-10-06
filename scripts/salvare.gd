@@ -19,6 +19,7 @@ const NUME_LOCURI := {
 	"res://scenes/casa_lexy.tscn": "Lexy's place",
 	"res://scenes/conac.tscn": "Coven Headquarters",
 	"res://scenes/conac_interior.tscn": "Coven Headquarters",
+	"res://scenes/casino.tscn": "Wash Your Clothes",
 }
 ## La câte secunde se salvează singur, fără mesaj.
 const PAUZA_SALVARE := 60.0

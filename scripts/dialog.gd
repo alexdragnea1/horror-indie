@@ -16,7 +16,7 @@ const NUME_JUCATOR := ["You", "Tu", "Eu"]
 ## „Vocea”: un bip scurt la fiecare câteva litere, ca în jocurile vechi.
 const VOCE := preload("res://sunete/dialog_voce.ogg")
 ## Înălțimea vocii pentru fiecare personaj (1 = normal, mai mic = mai gros).
-const INALTIME_VOCI := {"MOM": 0.62, "OLD HAG": 0.78, "DRIVER": 0.5, "DRUNKARD": 0.55, "HEAD WITCH": 0.7, "LEXY": 1.12, "HELGA": 0.82, "DEMON": 0.32}
+const INALTIME_VOCI := {"MOM": 0.62, "OLD HAG": 0.78, "DRIVER": 0.5, "DRUNKARD": 0.55, "HEAD WITCH": 0.7, "LEXY": 1.12, "HELGA": 0.82, "DEMON": 0.32, "OLD BITCH": 0.85}
 const INALTIME_JUCATOR := 1.25
 ## Pentru replicile fără nume (descrieri, naratorul).
 const INALTIME_FARA_NUME := 0.9

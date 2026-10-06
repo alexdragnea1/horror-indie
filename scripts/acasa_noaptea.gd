@@ -28,16 +28,33 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 @export_multiline var replici_usa_dimineata: PackedStringArray = ["You: Hold up. Somebody's in the kitchen."]
 @export_multiline var titlu_afara_dimineata := "Block M7, Entrance B\n12:41 PM"
 
+@export_group("A doua noapte și ziua în oraș")
+## După atacul de la conac (`marcaj_noapte_2`): intri pe ușă (`marcaj_venit_2`, aceeași `sarcina_noua`), casa e goală,
+## ușa de la intrare nu te lasă afară până dormi (pat.gd pune `marcaj_zi_oras` dimineața, 9:58 AM).
+@export var marcaj_noapte_2 := "a_ajuns_acasa_dupa_atac"
+@export var marcaj_venit_2 := "a_venit_acasa_dupa_atac"
+@export var marcaj_zi_oras := "ziua_orasului"
+## Ce scrie afară prima dată în ziua aia (după `marcaj_oras`, fără oră: ai mai fost afară).
+@export_multiline var titlu_afara_zi_oras := "Block M7, Entrance B\n10:04 AM"
+@export_multiline var titlu_afara_zi_oras_dupa := "Block M7, Entrance B"
+@export var marcaj_oras := "vrea_in_oras"
+
 
 func _ready() -> void:
 	if not Stare.e_marcat(marcaj_trezit):
 		return
 	if is_instance_valid(mama):
 		mama.queue_free()
+	var noaptea_2 := Stare.e_marcat(marcaj_noapte_2) and not Stare.e_marcat(marcaj_zi_oras)
 	if usa_intrare:
 		usa_intrare.marcaj_necesar = marcaj_iesire
 		usa_intrare.replici_fara_marcaj = replici_usa
-		if Stare.e_marcat(marcaj_dimineata):
+		if Stare.e_marcat(marcaj_zi_oras):
+			usa_intrare.marcaj_necesar = ""
+			usa_intrare.titlu_locatie = titlu_afara_zi_oras_dupa if Stare.e_marcat(marcaj_oras) else titlu_afara_zi_oras
+		elif noaptea_2:
+			usa_intrare.marcaj_necesar = marcaj_zi_oras
+		elif Stare.e_marcat(marcaj_dimineata):
 			usa_intrare.marcaj_necesar = marcaj_iesire_dimineata
 			usa_intrare.replici_fara_marcaj = replici_usa_dimineata
 			usa_intrare.titlu_locatie = titlu_afara_dimineata
@@ -47,14 +64,15 @@ func _ready() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var pe_usa: bool = USA_BLOC.intrat_pe_usa
 	USA_BLOC.intrat_pe_usa = false
-	if jucator == null or (Stare.e_marcat(marcaj_venit) and not pe_usa):
+	var venit := marcaj_venit_2 if noaptea_2 else marcaj_venit
+	if jucator == null or (Stare.e_marcat(venit) and not pe_usa):
 		return
 	jucator.global_position = loc_intrare
 	jucator.rotation.y = unghi_intrare
 	jucator.get_node("Cap").rotation.x = 0.0
-	if Stare.e_marcat(marcaj_venit):
+	if Stare.e_marcat(venit):
 		return
-	Stare.marcheaza(marcaj_venit)
+	Stare.marcheaza(venit)
 	while Tranzitie.activa:
 		await get_tree().process_frame
 	await get_tree().create_timer(0.8).timeout
