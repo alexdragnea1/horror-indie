@@ -108,7 +108,18 @@ func _physics_process(delta: float) -> void:
 		velocity.x = viteza_plan.x
 		velocity.z = viteza_plan.y
 	else:
+		var de_unde := global_position
+		var viteza_dorita := Vector2(velocity.x, velocity.z)
 		move_and_slide()
+		# blocat de un „perete” la o muchie fantomă (îmbinarea pantă–podea, sus pe treptele lui Lexy): fizica oprește
+		# corpul deși drumul e liber; încearcă trecerea ca la o treaptă, fără verificarea de pantă
+		if is_on_wall() and viteza_dorita.length() > 0.5 \
+				and Vector2(global_position.x - de_unde.x, global_position.z - de_unde.z).length() < 0.002:
+			velocity.x = viteza_dorita.x
+			velocity.z = viteza_dorita.y
+			var vy := velocity.y
+			if not _urca_treapta(delta, true):
+				velocity = Vector3(0.0, vy, 0.0)
 	# urcat sau coborât brusc o treaptă: corpul sare, dar camera rămâne în urmă și ajunge lin
 	var salt := global_position.y - y_inainte
 	if era_pe_podea and is_on_floor() and absf(salt) > 0.02:
@@ -132,10 +143,12 @@ func _physics_process(delta: float) -> void:
 
 ## Dacă în față e o muchie joasă (bordură, prag), ridică jucătorul pe ea.
 ## Încearcă: sus cu inaltime_treapta, înainte cu cât ar merge cadrul ăsta, apoi jos până dă de podea.
-## Urcă doar dacă acolo sus e podea adevărată (nu perete, nu pantă prea abruptă).
+## Urcă doar dacă acolo sus e podea adevărată (nu perete, nu pantă prea abruptă). Tot de aici treci peste muchiile
+## „fantomă” de la același nivel (fizica le vede ca pe un perete).
 ## O pantă pe care se poate merge nu e treaptă: pe ea te duce move_and_slide (altfel, pe fiecare pantă, treapta te
 ## muta înainte și move_and_slide încă o dată: viteză dublă la urcare). Întoarce true dacă te-a urcat.
-func _urca_treapta(delta: float) -> bool:
+## `muchie_fantoma` = move_and_slide te-a oprit deja deși în față e o pantă/podea: sari peste verificarea de pantă.
+func _urca_treapta(delta: float, muchie_fantoma := false) -> bool:
 	var miscare := Vector3(velocity.x, 0, velocity.z) * delta
 	if not is_on_floor() or miscare.length() < 0.001:
 		return false
@@ -143,7 +156,7 @@ func _urca_treapta(delta: float) -> bool:
 	var lovire := KinematicCollision3D.new()
 	if not test_move(t, miscare, lovire):
 		return false  # nimic în față, merge normal
-	if lovire.get_normal().angle_to(Vector3.UP) <= floor_max_angle:
+	if lovire.get_normal().angle_to(Vector3.UP) <= floor_max_angle and not muchie_fantoma:
 		return false  # pantă, nu treaptă
 	var sus := Vector3.UP * inaltime_treapta
 	if test_move(t, sus, lovire):
@@ -157,7 +170,9 @@ func _urca_treapta(delta: float) -> bool:
 	if lovire.get_normal().angle_to(Vector3.UP) > floor_max_angle:
 		return false
 	t.origin += lovire.get_travel()
-	if t.origin.y - global_position.y <= 0.01:
+	# dincolo e tot la nivelul tău (±1 cm): nu e treaptă, ci o muchie „fantomă” (îmbinarea dintre o pantă și o podea,
+	# ca sus pe treptele lui Lexy, unde fizica raportează un perete și oprește corpul). Te duce peste ea, nu te lasă blocat.
+	if t.origin.y - global_position.y < -0.01:
 		return false
 	global_position = t.origin
 	velocity.y = 0.0

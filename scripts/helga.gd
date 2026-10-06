@@ -7,7 +7,8 @@ extends Personaj
 ##   3. încerci și tu: îți ridici mâna (VrajaFoc, `demonstratie`), întâi doar scântei, apoi se aprinde un foc mic
 ##      și împingi palma: mingea ta, mai mică, lovește și ea manechinul;
 ##   4. `replici_final`; primești vraja („Fireball Spell”, VrajaFoc.ID) în inventar și în mână (`marcaj_lectie`).
-## După lecție nu mai are ce să-ți spună. Dacă aveai inventarul plin, la E încearcă din nou să ți-o dea.
+## Cu inventarul plin (5 obiecte, fără vrajă), E nu pornește conversația: doar „Inventory full” (cerut de owner).
+## După lecție nu mai are ce să-ți spună. Dacă vraja nu mai e în inventar, la E ți-o dă din nou.
 ## Replicile sunt ale owner-ului: nu le corecta.
 
 @export var brat: Node3D
@@ -44,6 +45,10 @@ func poate_fi_folosit() -> bool:
 
 func interactioneaza() -> void:
 	if not poate_fi_folosit():
+		return
+	# inventarul plin: nici nu începe lecția (vraja n-ar avea unde să intre), doar scrie „Inventory full” (ca tomberonul)
+	if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(VrajaFoc.ID):
+		Stare.adauga_obiect(VrajaFoc.ID, VrajaFoc.NUME)
 		return
 	_vorbeste = true
 	folosit.emit()

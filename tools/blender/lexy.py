@@ -419,12 +419,18 @@ def casa_lexy(cale):
 	# coliziunea: doar ce ține (pereți, podele, acoperișuri, stâlpi), o cutie pe balustradă și o rampă peste trepte,
 	# ca să urci lin; detaliile (rosturi, preș, ornamente, dovleci) n-au coliziune, să nu te agăți de ele
 	col = _copii(piese, ("Fundatie", "Podea", "Siding", "Perete", "Tavan", "Usa dormitor", "Acoperis", "Fronton", "Fronton intrare",
-		"Acoperis fronton", "Cos", "Veranda", "Stalp", "Balansoar"))
+		"Acoperis fronton", "Cos", "Stalp", "Balansoar"))
 	for a, b in ((-3.3, -1.2), (1.2, 3.3)):
 		col.append(cub("Coliziune balustrada", (b - a, 0.1, 1.0), ((a + b) / 2, -2.0, FL + 0.5), NEGRU))
 	for x in (-3.3, 3.3):
 		col.append(cub("Coliziune balustrada", (0.1, 2.0, 1.0), (x, -1.0, FL + 0.5), NEGRU))
-	col.append(prisma("Rampa", [(-2.9, 0.0), (-2.2, 0.0), (-2.2, FL - 0.01)], "yz", -1.0, 1.0, NEGRU))
+	# veranda + rampa peste trepte: pe culoarul treptelor (x -1,1..1,1) sunt O SINGURĂ piesă (rampa urcă din fața
+	# treptelor și continuă cu podeaua verandei până la casă), iar în lateral, cutii. Altfel, muchia din față a verandei
+	# cădea fix în colțul unde se termina rampa și te agățai de ea: la mers (când vârful rampei era 1 cm mai jos) sau
+	# în fugă (când era la fel de sus).
+	col.append(prisma("Rampa", [(-2.9, 0.0), (0.0, 0.0), (0.0, FL), (-2.2, FL)], "yz", -1.1, 1.1, NEGRU))
+	for s in (-1, 1):
+		col.append(cub("Coliziune veranda", (2.5, 2.2, FL), (s * 2.25, -1.1, FL / 2), NEGRU))
 	uneste(col, "Coliziune")
 	uneste(piese, "Casa")
 	uneste(geamuri, "Geamuri")
