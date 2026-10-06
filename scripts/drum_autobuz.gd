@@ -38,7 +38,7 @@ extends Node3D
 ## Ce zici după ce te așezi, înainte să apară creatura (le-a scris owner-ul).
 @export_multiline var replici_inainte: PackedStringArray = ["You: Why is my mom such a bitch..", "You: I should be selling weed instead of this witch bullshit.."]
 ## Ce zici când o vezi (le-a scris owner-ul).
-@export_multiline var replici_creatura: PackedStringArray = ["You: Why is grandma always doing this...", "You: Always forgets her meds and running naked through the forest."]
+@export_multiline var replici_creatura: PackedStringArray = ["You: Why is grandma always doing this...", "You: Always forgets her meds and starts running naked through the forest..."]
 ## La câte secunde după ce creatura apare pe ecran pornesc replicile de mai sus.
 @export var intarziere_replici := 2.5
 ## După câte secunde de la dispariția creaturii ajungi la stația din fața pădurii.
