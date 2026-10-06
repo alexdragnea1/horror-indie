@@ -31,8 +31,15 @@ const CULOARE_MODEL := Color("83b3b0")
 ## Înălțimea gurii cazanului (unde e poțiunea) și cât de înaltă e unda.
 const GURA := 1.22
 const INALTIME_UNDA := 140.0
-## Corul, unda și bubuitura sunt sunete „de film”: stereo, peste tot (nu din cazan), puțin mai tari decât efectele.
-const VOLUM_VRAJA := Sunet.VOLUM_EFECTE + 3.0
+## Corul, unda și bubuitura sunt sunete „de film”: stereo, peste tot (nu din cazan). Tăria lor mai mare (-13 LUFS față de
+## -20) e deja în fișiere (tools/sunete.sh), deci aici volumul e cel comun.
+const VOLUM_VRAJA := Sunet.VOLUM_EFECTE
+## vraja_unda.ogg durează exact atât: se termină cu 80 ms de liniște, iar bubuitura vine fix după ea.
+const DURATA_SUNET_UNDA := 2.5
+## Cât de jos coboară ambianța și muzica (cântecul vrăjitoarelor, focul, pădurea) cât ține vraja, ca la mixajul de film.
+const DUCK_LUME := -14.0
+## Canalele pe care le coboară (Efecte nu: acolo sunt chiar sunetele vrăjii).
+const CANALE_LUME: Array[StringName] = [&"Ambianta", &"Muzica"]
 
 var _lichid: MeshInstance3D
 var _foc: MeshInstance3D
@@ -47,6 +54,7 @@ var _scantei: CPUParticles3D
 var _timp := 0.0
 var _in_vraja := false
 var _cadavru: Node  # al cui cadavru e în inventar (vezi _cadavru_din_inventar)
+var _duck: Array = []  # [index canal, AudioEffectAmplify] cât ține vraja
 
 @onready var _fierbere: AudioStreamPlayer3D = $Fierbere
 
@@ -107,6 +115,7 @@ func interactioneaza() -> void:
 	Stare.scoate_obiect(_cadavru.id_cadavru)
 	var model: PackedScene = _cadavru.model_cadavru()
 	var c := Cutscena.porneste(self)
+	_coboara_lumea(true, 1.2)
 	var gura := global_position + Vector3.UP * GURA
 	# faci un pas spre cazan, ca să vezi poțiunea dinăuntru
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
@@ -132,8 +141,9 @@ func interactioneaza() -> void:
 	get_tree().call_group("vrajitoare_cerc", "ridica_bratele", true, 1.4)
 	await get_tree().create_timer(1.5).timeout
 
-	# 3. unda de lumină spre cer
+	# 3. unda de lumină spre cer; sunetul ei „trage aerul” și se taie în liniște fix înainte de bubuitură
 	Sunet.reda(SUNET_UNDA, VOLUM_VRAJA)
+	var pana_la_bum := get_tree().create_timer(DURATA_SUNET_UNDA)
 	_unda.show()
 	_unda.scale = Vector3(0.3, 0.01, 0.3)
 	_mat_unda.set_shader_parameter("putere", 1.0)
@@ -149,9 +159,12 @@ func interactioneaza() -> void:
 	tween.tween_property(_unda, "scale:x", 0.05, 0.3)
 	tween.tween_property(_unda, "scale:z", 0.05, 0.3)
 	tween.tween_property(_lumina_unda, "light_energy", 0.0, 0.3)
-	await c.priveste(gura + Vector3.UP * 0.4, 0.5)
+	c.priveste(gura + Vector3.UP * 0.4, 0.5)
+	if pana_la_bum.time_left > 0.0:
+		await pana_la_bum.timeout
 	_unda.hide()
 	Sunet.reda(SUNET_BUM, VOLUM_VRAJA)
+	_zguduie(1.0, 1.4)
 	var bum := _particule(true)
 	bum.emitting = true
 	get_tree().create_timer(4.0).timeout.connect(bum.queue_free)
@@ -164,6 +177,8 @@ func interactioneaza() -> void:
 	tween.tween_property(_fierbere, "pitch_scale", 1.0, 2.0)
 	get_tree().call_group("vrajitoare_cerc", "ridica_bratele", false, 1.6)
 	await get_tree().create_timer(1.8).timeout
+	# lumea revine încet, cât se stinge ecoul bubuiturii (vezi vraja_bum în sunete.sh: inima bate la 3,1 și 4,3 s)
+	_coboara_lumea(false, 4.0)
 
 	Stare.marcheaza(marcaj_vraja)
 	Stare.seteaza_sarcina(sarcina_dupa)
@@ -200,6 +215,54 @@ func _arunca_corpul(gura: Vector3, model: PackedScene) -> void:
 	tween.tween_property(corp, "global_position", sus + Vector3.DOWN * 1.6, 0.9)
 	await tween.finished
 	corp.queue_free()
+
+
+## Mixajul de film: coboară ambianța și muzica (`jos` = true) cu `DUCK_LUME` dB, sau le aduce înapoi, în `durata` secunde.
+## Nu atinge volumul canalelor (ăla e al setărilor jucătorului): pune pe ele un AudioEffectAmplify, scos la sfârșit.
+func _coboara_lumea(jos: bool, durata: float) -> void:
+	if jos and _duck.is_empty():
+		for nume in CANALE_LUME:
+			var i := AudioServer.get_bus_index(nume)
+			if i >= 0:
+				var a := AudioEffectAmplify.new()
+				AudioServer.add_bus_effect(i, a)
+				_duck.append([i, a])
+	var t := create_tween()
+	t.tween_method(func(db: float) -> void:
+		for x in _duck:
+			(x[1] as AudioEffectAmplify).volume_db = db, 0.0 if jos else DUCK_LUME, DUCK_LUME if jos else 0.0, durata)
+	if not jos:
+		await t.finished
+		_scoate_duck()
+
+
+func _scoate_duck() -> void:
+	for x in _duck:
+		var i: int = x[0]
+		for k in range(AudioServer.get_bus_effect_count(i) - 1, -1, -1):
+			if AudioServer.get_bus_effect(i, k) == x[1]:
+				AudioServer.remove_bus_effect(i, k)
+	_duck.clear()
+
+
+## Dacă scena se schimbă în mijlocul vrajei, canalele nu rămân coborâte.
+func _exit_tree() -> void:
+	_scoate_duck()
+
+
+## Camera se zguduie la bubuitură (`putere` 1 = puternic) și se liniștește în `durata` secunde (ca ceaun_acasa.gd).
+func _zguduie(putere: float, durata: float) -> void:
+	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
+	if jucator == null:
+		return
+	var camera: Camera3D = jucator.get_node("Cap/Camera3D")
+	var t := create_tween()
+	t.tween_method(func(v: float) -> void:
+		camera.h_offset = randf_range(-1.0, 1.0) * 0.04 * putere * v * v
+		camera.v_offset = randf_range(-1.0, 1.0) * 0.04 * putere * v * v, 1.0, 0.0, durata)
+	await t.finished
+	camera.h_offset = 0.0
+	camera.v_offset = 0.0
 
 
 func _seteaza_culoare(c: Color) -> void:
