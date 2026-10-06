@@ -12,6 +12,8 @@ signal lovit(punct: Vector3)
 
 const SUNET_ARUNCA := preload("res://sunete/atac_vraja.ogg")
 const SUNET_LOVIT := preload("res://sunete/atac_impact.ogg")
+## Cât înfundă distanța sunetul (Godot implicit: -24 dB, care la 40 m lasă doar un huruit). Vezi sunet_la.
+const FILTRU_DEPARTE_DB := -6.0
 ## [miezul, culoarea vrăjii, fumul] pentru fiecare fel.
 const CULORI := {
 	"foc": [Color(1.0, 0.92, 0.7), Color(1.0, 0.5, 0.18), Color(0.36, 0.3, 0.28)],
@@ -56,6 +58,9 @@ static func trage(nod: Node, de_la: Vector3, la: Vector3, fel_ := "foc", marime_
 
 
 ## Un AudioStreamPlayer3D care se aude de departe (Sunet.reda_la se oprește la 25 m; câmpul de luptă are 50).
+## Mixaj de film, nu de simulare: armata stă la 36–42 m de tine, iar la căderea reală (1/distanță) vrăjile, fulgerele și
+## teleporturile ei s-ar pierde sub tobe. De aceea `marime_sunet` e mare la cei care cheamă (14–18: la 40 m doar ~7–9 dB
+## mai încet decât de aproape) și filtrul de distanță e blând (FILTRU_DEPARTE_DB), ca sunetele să rămână clare, nu înfundate.
 static func sunet_la(nod: Node, stream: AudioStream, pozitie: Vector3, volum := 0.0, marime_sunet := 8.0, variatie := 0.08) -> void:
 	var s := AudioStreamPlayer3D.new()
 	s.stream = stream
@@ -63,6 +68,7 @@ static func sunet_la(nod: Node, stream: AudioStream, pozitie: Vector3, volum := 
 	s.volume_db = volum
 	s.unit_size = marime_sunet
 	s.max_distance = 160.0
+	s.attenuation_filter_db = FILTRU_DEPARTE_DB
 	s.pitch_scale = 1.0 + randf_range(-variatie, variatie)
 	s.finished.connect(s.queue_free)
 	nod.get_tree().current_scene.add_child(s)
@@ -89,7 +95,7 @@ func _ready() -> void:
 	_dara.preprocess = 0.5
 	_dara.emitting = true
 	if cu_sunet:
-		sunet_la(self, SUNET_ARUNCA, _de_la, Sunet.VOLUM_EFECTE, 5.0, 0.12)
+		sunet_la(self, SUNET_ARUNCA, _de_la, Sunet.VOLUM_EFECTE, 14.0 * marime, 0.12)
 
 
 func _sfera(raza: float, culoare: Color, aditiv: bool) -> MeshInstance3D:
@@ -193,7 +199,7 @@ func _explodeaza() -> void:
 	_dara.emitting = false
 	var spre := (_de_la - _la).normalized()
 	if cu_sunet:
-		sunet_la(self, SUNET_LOVIT, _la, Sunet.VOLUM_EFECTE, 7.0 * marime, 0.12)
+		sunet_la(self, SUNET_LOVIT, _la, Sunet.VOLUM_EFECTE, 10.0 * marime, 0.12)
 	# energia / flăcările care se umflă și se fac fum
 	var foc := particule(self, int(40 * marime) + 10, 0.8, 0.5 * marime, [Color(c[0], 1.0), Color(c[1], 0.9), Color(c[2], 0.6), Color(c[2], 0.0)])
 	foc.one_shot = true

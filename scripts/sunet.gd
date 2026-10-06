@@ -14,6 +14,9 @@ const VOLUM_EFECTE := 0.0
 const VOLUM_AMBIANTA := -14.0
 ## Volumul TUTUROR muzicilor (meniu, fața blocului, boombox-ul): cerut de owner, la fel de tare ca efectele.
 const VOLUM_MUZICA := VOLUM_EFECTE
+## Pașii TĂI (jucător, și în cutscene): 65% din amplitudinea de acum (cerut de owner) = -3,74 dB. Se aud tot timpul,
+## deci stau sub restul efectelor, ca să nu obosească urechea.
+const VOLUM_PASI := VOLUM_EFECTE - 3.74
 
 
 ## variatie = cât de mult se schimbă înălțimea la întâmplare (0,05 = ±5%), ca să nu sune identic.

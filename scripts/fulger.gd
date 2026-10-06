@@ -23,7 +23,7 @@ static func loveste(nod: Node, sus: Vector3, jos: Vector3, culoare_ := Color(1.0
 	nod.get_tree().current_scene.add_child(f)
 	f._construieste(sus, jos, putere_lumina)
 	if sunet:
-		VrajaAtac.sunet_la(f, SUNET, jos, Sunet.VOLUM_EFECTE, 10.0, 0.15)
+		VrajaAtac.sunet_la(f, SUNET, jos, Sunet.VOLUM_EFECTE, 18.0, 0.15)
 	return f
 
 

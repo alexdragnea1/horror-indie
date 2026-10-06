@@ -549,7 +549,8 @@ rm -f "$OUT"/_miau.wav "$OUT"/_incins.wav "$OUT"/_explozie.wav "$OUT"/_tiuit.wav
 
 # --- atacul Warlock-ului asupra conacului (atac_conac.gd, sefa_ruine.gd): o scenă de film de ~50 s, deci sunete „de film”
 # ca la sacrificiu: cele mari stereo, la -13 LUFS, comprimate ($DENS). Cele care vin dintr-un loc (fulgerele, vrăjile care
-# lovesc, apariția vrăjitorilor) sunt mono (3D), puțin mai jos. Muzica tristă de după e la -20, ca restul muzicii.
+# lovesc, teleporturile) sunt mono (3D), tot la -13 (vrajă aruncată -14, sunt multe): armata e la 40 m, deci trebuie să
+# răzbată (vezi și VrajaAtac.sunet_la: mixaj de film, distanța „trișată”). Muzica tristă de după e la -20, ca restul muzicii.
 TINTA_NORMALA=$TINTA_LUFS
 TINTA_LUFS=-13
 # taiko T AMPLITUDINE -> o lovitură de tobă mare de război la secunda T: tonul cade de la ~130 la 40 Hz, plus pielea (zgomot scurt)
@@ -569,22 +570,23 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(1)*2-1)*(exp(-t*90)+0.5*gt(ran
 	-f lavfi -i "aevalsrc='1.1*sin(2*PI*(48*t+2*(1-exp(-t*20))))*min(t/0.005\,1)*exp(-t*3.5)':s=44100:d=3" -f lavfi -i "anoisesrc=c=brown:a=1:d=3:r=44100:s=43" \
 	-filter_complex "[0]highpass=f=900,volume=1.2[c];[2]lowpass=f=220,tremolo=f=4:d=0.5,volume='min(t/0.05\,1)*exp(-t*1.2)*1.8':eval=frame[r];[c][1][r]amix=inputs=3:normalize=0,$DENS,aecho=0.7:0.6:260|640:0.3|0.18,atrim=end=3,afade=t=out:st=2.3:d=0.7" \
 	-ac 1 "$OUT/_fulger.wav"
-TINTA_LUFS=-15
 unic atac_fulger "$OUT/_fulger.wav"
-TINTA_LUFS=-13
 # 3. cornul de război (~5 s): două alămuri grave (re, apoi la peste ea), care se umflă încet, cu ecoul dealurilor
 CORN="0.3*($(voce 73.42 0)*min(t/0.8\,1)+0.8*$(voce 110 1.3)*min(max(t-0.9\,0)/0.6\,1))*if(lt(t\,3.6)\,1\,max(0\,1-(t-3.6)/0.9))"
 ffmpeg -v error -y -f lavfi -i "aevalsrc='$CORN':s=44100:d=5" \
 	-af "equalizer=f=480:t=q:w=1:g=7,equalizer=f=950:t=q:w=1.4:g=4,lowpass=f=2200,chorus=0.6:0.9:30|45:0.4|0.3:0.3|0.45:1.5|2,$DENS,aecho=0.8:0.75:500|1100|1800:0.35|0.25|0.15,afade=t=out:st=4.4:d=0.6,$STEREO" \
 	-ac 2 "$OUT/_corn.wav"
 unic atac_corn "$OUT/_corn.wav" stereo
-# 4. apare un vrăjitor (~1,3 s, 3D): un vâjâit întors care se strânge spre el, o bufnitură joasă și un sfârâit
-ffmpeg -v error -y -i "$PACHET/Other/whoosh_1.wav" -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Environment/fire_lighting.wav" \
-	-filter_complex "[0]aformat=channel_layouts=mono,areverse,asetrate=44100*0.8,aresample=44100,lowpass=f=3000[w];[1]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=900,adelay=600,volume=1.2[t];[2]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=620,volume=0.5[f];[w][t][f]amix=inputs=3:normalize=0:duration=longest,atrim=end=1.4,afade=t=out:st=1.0:d=0.4" \
+# 4. teleportul: apare un vrăjitor / o vrăjitoare (~1,4 s, 3D). Lovitura e la t = 0, exact când îl vezi (codul pornește
+# sunetul în clipa apariției): pocnetul de aer, un bas care cade 95 -> 40 Hz (în piept), bufnitura, apoi aerul împins în
+# afară (vâjâitul), pârâitul de energie care se stinge și sfârâitul focului, cu ecou.
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(1)*2-1)*exp(-t*70)':s=44100:d=1.4" \
+	-f lavfi -i "aevalsrc='0.9*sin(2*PI*(95*t-45*t*t))*min(t/0.004\,1)*exp(-t*4)':s=44100:d=1.4" \
+	-i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Other/whoosh_1.wav" \
+	-f lavfi -i "aevalsrc='lt(random(3)\,0.012)*(random(4)*2-1)*exp(-t*3)':s=44100:d=1.4" -i "$PACHET/Environment/fire_lighting.wav" \
+	-filter_complex "[0]highpass=f=1200[c];[2]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=900[t];[3]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,volume=0.7[w];[4]highpass=f=2500,volume=0.7[p];[5]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,volume=0.4[f];[c][1][t][w][p][f]amix=inputs=6:normalize=0:duration=first,$DENS,aecho=0.7:0.5:90|220:0.3|0.18,atrim=end=1.4,afade=t=out:st=1.0:d=0.4" \
 	-ac 1 "$OUT/_aparitie.wav"
-TINTA_LUFS=-16
 unic atac_aparitie "$OUT/_aparitie.wav"
-TINTA_LUFS=-13
 # 5. sosirea Warlock-ului (~7 s): un vuiet care coboară din cer (3 s, tot mai tare), un cor grav care se umflă, apoi
 # aterizarea: bubuitura mare, basul care cade, alama de groază încetinită, ecoul lung
 COR_JOS="0.12*($(voce 36.71 0)+$(voce 55 1)+$(voce 73.42 2)+$(voce 77.78 0.5)+$(voce 110 1.7))*min(t/3\,1)*if(lt(t\,3)\,1\,exp(-(t-3)*0.7))"
@@ -594,20 +596,20 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=brown:a=1:d=7:r=44100:s=44" -f lavfi
 	-filter_complex "[0]lowpass=f=400,volume='if(lt(t\,3)\,pow(t/3\,2.5)*1.6\,exp(-(t-3)*1.5)*1.6)':eval=frame[v];[1]equalizer=f=600:t=q:w=1.2:g=6,lowpass=f=2500,chorus=0.6:0.9:40|55:0.4|0.35:0.3|0.4:2|2.5[c];[2]aformat=channel_layouts=mono,asetrate=44100*0.42,aresample=44100,lowpass=f=1200,adelay=3000,volume=1.3[e];[4]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,adelay=3100,volume=0.6[h];[v][c][e][3][h]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.8:0.7:350|800|1400:0.35|0.25|0.15,atrim=end=7,afade=t=out:st=5.8:d=1.2,$STEREO" \
 	-ac 2 "$OUT/_sosire.wav"
 unic warlock_sosire "$OUT/_sosire.wav" stereo
-# 6. o vrajă aruncată (~1 s, 3D): vâjâit scurt și sfârâitul focului
+# 6. o vrajă aruncată (~1 s, 3D): o bufnitură joasă la lansare (85 -> 55 Hz, „recul”), vâjâitul și sfârâitul focului
 ffmpeg -v error -y -i "$PACHET/Other/whoosh_2.wav" -i "$PACHET/Environment/fire_lighting.wav" \
-	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,highpass=f=200[w];[1]aformat=channel_layouts=mono,asetrate=44100*1.5,aresample=44100,volume=0.6[f];[w][f]amix=inputs=2:normalize=0:duration=longest,atrim=end=1.1,afade=t=out:st=0.7:d=0.4" \
+	-f lavfi -i "aevalsrc='0.7*sin(2*PI*(85*t-30*t*t))*min(t/0.005\,1)*exp(-t*9)':s=44100:d=1.1" \
+	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,highpass=f=200[w];[1]aformat=channel_layouts=mono,asetrate=44100*1.5,aresample=44100,volume=0.6[f];[w][f][2]amix=inputs=3:normalize=0:duration=longest,$DENS,atrim=end=1.1,afade=t=out:st=0.7:d=0.4" \
 	-ac 1 "$OUT/_vraja.wav"
-TINTA_LUFS=-16
+TINTA_LUFS=-14
 unic atac_vraja "$OUT/_vraja.wav"
 # 7. vraja lovește piatra (~2,4 s, 3D): explozia, pietrele care se rup și cad, praful
 ffmpeg -v error -y -i "$PACHET/Retro/explosion_medium.wav" -i "$PACHET/Materials/stone_push_short.wav" -i "$PACHET/Combat and Gore/crunch.wav" \
 	-i "$PACHET/Materials/concrete_scrape.wav" -f lavfi -i "anoisesrc=c=brown:a=1:d=2.4:r=44100:s=45" \
 	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,volume=1.1[e];[1]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,adelay=120,volume=0.8[s];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,adelay=60,volume=0.7[c];[3]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=400,volume=0.5[r];[4]lowpass=f=200,volume='exp(-t*2)*1.4':eval=frame[v];[e][s][c][r][v]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.7:0.5:180|420:0.3|0.18,atrim=end=2.4,afade=t=out:st=1.8:d=0.6" \
 	-ac 1 "$OUT/_impact.wav"
-TINTA_LUFS=-14
-unic atac_impact "$OUT/_impact.wav"
 TINTA_LUFS=-13
+unic atac_impact "$OUT/_impact.wav"
 # 8. tobele de război (buclă de 4,8 s, 100 bpm): taiko-uri mari în ritm de marș. Facem trei măsuri cu ecou și o păstrăm pe
 # cea din mijloc: ecoul măsurii dinainte cade peste începutul ei, deci bucla se leagă singură.
 TOBE="0"

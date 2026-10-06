@@ -32,12 +32,17 @@ const CULOARE_MODEL := Color("83b3b0")
 const GURA := 1.22
 const INALTIME_UNDA := 140.0
 ## Corul, unda și bubuitura sunt sunete „de film”: stereo, peste tot (nu din cazan). Tăria lor mai mare (-13 LUFS față de
-## -20) e deja în fișiere (tools/sunete.sh), deci aici volumul e cel comun.
+## -20) e deja în fișiere (tools/sunete.sh), deci corul are volumul comun.
 const VOLUM_VRAJA := Sunet.VOLUM_EFECTE
+## Laserul (unda) și explozia: momentele mari, cerute de owner mai tari. Fișierele au vârfurile aproape de 0 dB, deci
+## câștigul ăsta îl prinde limitatorul de pe Master (-0,5 dB): lovitura sună mai „plină”, nu distorsionată.
+const VOLUM_UNDA := Sunet.VOLUM_EFECTE + 5.0
+const VOLUM_BUM := Sunet.VOLUM_EFECTE + 4.5
 ## vraja_unda.ogg durează exact atât: se termină cu 80 ms de liniște, iar bubuitura vine fix după ea.
 const DURATA_SUNET_UNDA := 2.5
-## Cât de jos coboară ambianța și muzica (cântecul vrăjitoarelor, focul, pădurea) cât ține vraja, ca la mixajul de film.
-const DUCK_LUME := -14.0
+## Cât de jos coboară ambianța și muzica (cântecul vrăjitoarelor, focul, pădurea) cât ține vraja, ca la mixajul de film:
+## cu cât lumea tace mai mult, cu atât laserul și bubuitura par mai mari.
+const DUCK_LUME := -18.0
 ## Canalele pe care le coboară (Efecte nu: acolo sunt chiar sunetele vrăjii).
 const CANALE_LUME: Array[StringName] = [&"Ambianta", &"Muzica"]
 
@@ -142,7 +147,7 @@ func interactioneaza() -> void:
 	await get_tree().create_timer(1.5).timeout
 
 	# 3. unda de lumină spre cer; sunetul ei „trage aerul” și se taie în liniște fix înainte de bubuitură
-	Sunet.reda(SUNET_UNDA, VOLUM_VRAJA)
+	Sunet.reda(SUNET_UNDA, VOLUM_UNDA)
 	var pana_la_bum := get_tree().create_timer(DURATA_SUNET_UNDA)
 	_unda.show()
 	_unda.scale = Vector3(0.3, 0.01, 0.3)
@@ -163,7 +168,7 @@ func interactioneaza() -> void:
 	if pana_la_bum.time_left > 0.0:
 		await pana_la_bum.timeout
 	_unda.hide()
-	Sunet.reda(SUNET_BUM, VOLUM_VRAJA)
+	Sunet.reda(SUNET_BUM, VOLUM_BUM)
 	_zguduie(1.0, 1.4)
 	var bum := _particule(true)
 	bum.emitting = true

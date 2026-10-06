@@ -68,7 +68,7 @@ func _process(delta: float) -> void:
 ## Apare dintr-o dată (fulgerul îl face scena): pe pixeli, cu un fum roșu la picioare.
 func apare() -> void:
 	show()
-	VrajaAtac.sunet_la(self, SUNET_APARE, global_position + Vector3.UP, Sunet.VOLUM_EFECTE, 6.0, 0.15)
+	VrajaAtac.sunet_la(self, SUNET_APARE, global_position + Vector3.UP, Sunet.VOLUM_EFECTE, 16.0, 0.15)
 	var fum := VrajaAtac.particule(self, 22, 1.4, 0.7, [Color(0.6, 0.12, 0.1, 0.8), Color(0.3, 0.08, 0.08, 0.5), Color(0.12, 0.05, 0.06, 0.0)])
 	fum.position = Vector3.UP * 0.4
 	fum.one_shot = true

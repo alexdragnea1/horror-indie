@@ -20,8 +20,8 @@ extends CharacterBody3D
 @export var pasi_frunze: Array[AudioStream] = []
 ## Pe poteca din pădure (pământ bătătorit și pietriș).
 @export var pasi_poteca: Array[AudioStream] = []
-## 0 = volumul comun al efectelor (Sunet.VOLUM_EFECTE); schimbă doar dacă vrei intenționat altfel.
-@export var volum_pasi_db := 0.0
+## Implicit Sunet.VOLUM_PASI (65% din volumul de înainte); schimbă doar dacă vrei intenționat altfel.
+@export var volum_pasi_db := Sunet.VOLUM_PASI
 ## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
 @export var scartait_podea: AudioStream
 @export_range(0.0, 1.0) var sansa_scartait := 0.07

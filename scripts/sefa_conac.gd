@@ -188,7 +188,7 @@ func _aterizare() -> void:
 	coborare.tween_property(jucator, "global_position", jos, 0.6)
 	_c.priveste(unde_sta + Vector3.UP * 1.5, 0.6)
 	await coborare.finished
-	Sunet.reda(SUNET_PAS, Sunet.VOLUM_EFECTE, 0.05)
+	Sunet.reda(SUNET_PAS, Sunet.VOLUM_PASI, 0.05)
 	camera.position = Vector3.ZERO
 	camera.rotation.z = 0.0
 	jucator.seteaza_purtat(false)

@@ -702,7 +702,7 @@ func _trezire(din_atac: bool) -> void:
 	t.tween_property(cap, "position:y", inaltime_ochi, 1.0)
 	t.parallel().tween_property(cap, "rotation", Vector3.ZERO, 1.0)
 	await t.finished
-	Sunet.reda(PASI[1], Sunet.VOLUM_EFECTE, 0.05)
+	Sunet.reda(PASI[1], Sunet.VOLUM_PASI, 0.05)
 	_hud(true)
 	# te uiți în jur: vrăjitoarele moarte, Head Witch pe jos
 	await _c.priveste(MORTI[0][0] + Vector3.UP * 0.3, 1.6)
@@ -767,7 +767,7 @@ func _mergi_pas(k: float, jucator: CharacterBody3D, cap: Node3D, puncte: Array, 
 	# un pas la fiecare 0,75 m (pietrișul, piatra scării)
 	if s > _pas_urmator:
 		_pas_urmator += 0.75
-		Sunet.reda(PASI[randi() % PASI.size()], Sunet.VOLUM_EFECTE, 0.07)
+		Sunet.reda(PASI[randi() % PASI.size()], Sunet.VOLUM_PASI, 0.07)
 
 
 ## Unde apar vrăjitorii: două rânduri în arc, pe deal, dincolo de gard (lângă Warlock rămâne loc).
@@ -814,7 +814,7 @@ func _fulger_departe(p: Vector3) -> void:
 ## Fulger în conac (turnul, turela): lovește, pocnește piatra.
 func _fulger_in(p: Vector3) -> void:
 	Fulger.loveste(self, p + Vector3(randf_range(-5, 5), 32.0, randf_range(-4, 4)), p, Color(1.0, 0.4, 0.35), 0.35, true, 1.5)
-	VrajaAtac.sunet_la(self, SUNET_IMPACT, p, Sunet.VOLUM_EFECTE, 10.0)
+	VrajaAtac.sunet_la(self, SUNET_IMPACT, p, Sunet.VOLUM_EFECTE, 16.0)
 	_zguduie(0.4, 0.6)
 
 
@@ -850,6 +850,8 @@ func _vrajitoare_lupta(poz: Vector3) -> Node3D:
 	for k in 3:
 		_fum_mov(unde + Vector3(0, k * 0.4 - 0.4, 0))
 	Sunet.reda_la(preload("res://sunete/matura_scoasa.ogg"), unde, Sunet.VOLUM_EFECTE, 0.1)
+	# se teleportează în curte: aceeași apariție ca vrăjitorii Warlock-ului
+	VrajaAtac.sunet_la(self, preload("res://sunete/atac_aparitie.ogg"), unde, Sunet.VOLUM_EFECTE - 2.0, 10.0, 0.0)
 	create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).tween_property(model, "scale", Vector3.ONE, 0.35)
 	return model
 
