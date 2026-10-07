@@ -70,6 +70,7 @@
 [ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="68_cgdtf"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="69_abvj1"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="70_hn16x"]
+[ext_resource type="PackedScene" path="res://scenes/amanet.tscn" id="71_amanet"]
 
 [sub_resource type="Environment" id="Environment_1sto5"]
 background_mode = 1
@@ -797,6 +798,8 @@ replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarCasino" unique_id=1163489932]
 shape = SubResource("BoxShape3D_g0n04")
+
+[node name="Amanet" parent="." instance=ExtResource("71_amanet")]
 
 [node name="Limite" type="StaticBody3D" parent="." unique_id=1901572585]
 

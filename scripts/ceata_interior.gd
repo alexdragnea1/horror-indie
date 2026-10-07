@@ -13,6 +13,11 @@ var _tween: Tween
 
 
 func _ready() -> void:
+	if mediu == null:  # pusă într-o scenă instanțiată (amanet.tscn): mediul e al scenei mari în care stă
+		var sus: Node = self
+		while sus.get_parent() != get_tree().root:
+			sus = sus.get_parent()
+		mediu = sus.find_children("*", "WorldEnvironment", true, false)[0]
 	_ceata = mediu.environment.fog_density
 	_ceata_volum = mediu.environment.volumetric_fog_density
 	body_entered.connect(func(corp: Node3D) -> void:

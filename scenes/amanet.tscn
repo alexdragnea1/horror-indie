@@ -1,0 +1,165 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://models/amanet.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2_ps2"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="3_mat"]
+[ext_resource type="Script" path="res://scripts/usa.gd" id="4_usa"]
+[ext_resource type="AudioStream" path="res://sunete/clopotel_usa.ogg" id="5_clopotel"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="6_inchisa"]
+[ext_resource type="PackedScene" path="res://models/usa_amanet.glb" id="7_usa_model"]
+[ext_resource type="Script" path="res://scripts/johnny_amanet.gd" id="8_johnny"]
+[ext_resource type="Script" path="res://scripts/om_la_masa.gd" id="9_om"]
+[ext_resource type="PackedScene" path="res://models/johnny.glb" id="10_johnny_model"]
+[ext_resource type="Script" path="res://scripts/lumina_palpaie.gd" id="11_palpaie"]
+[ext_resource type="AudioStream" path="res://sunete/bec_bazait.ogg" id="12_bazait"]
+[ext_resource type="Script" path="res://scripts/ceata_interior.gd" id="13_ceata"]
+[ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="14_suprafata"]
+
+[sub_resource type="BoxShape3D" id="Box_usa"]
+size = Vector3(1, 2.25, 0.06)
+
+[sub_resource type="CapsuleShape3D" id="Capsula_johnny"]
+radius = 0.3
+height = 1.8
+
+[sub_resource type="BoxShape3D" id="Box_interior"]
+size = Vector3(7.05, 3.2, 6.35)
+
+[sub_resource type="BoxShape3D" id="Box_podea"]
+size = Vector3(7.05, 1.2, 6.35)
+
+[node name="Amanet" type="Node3D"]
+
+[node name="Model" type="Node3D" parent="." instance=ExtResource("1_model")]
+script = ExtResource("2_ps2")
+material = ExtResource("3_mat")
+stralucitoare = PackedStringArray("Lumini")
+sticla = "Geam"
+coliziune = 3
+
+[node name="Usa" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.1, 0.15, -0.125)
+script = ExtResource("4_usa")
+replici_incuiata = PackedStringArray("It\'s locked.")
+replici_descuiere = PackedStringArray()
+replici_fara_marcaj = PackedStringArray()
+sunet_deschidere = ExtResource("5_clopotel")
+sunet_inchidere = ExtResource("6_inchisa")
+indiciu = "[E] Open"
+replici = PackedStringArray()
+
+[node name="Model" type="Node3D" parent="Usa" instance=ExtResource("7_usa_model")]
+script = ExtResource("2_ps2")
+material = ExtResource("3_mat")
+stralucitoare = PackedStringArray()
+sticla = "Geam"
+
+[node name="Forma" type="CollisionShape3D" parent="Usa"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.125, 0)
+shape = SubResource("Box_usa")
+
+[node name="Johnny" type="StaticBody3D" parent="." node_paths=PackedStringArray("om", "pe_tejghea", "plata")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.8, 0.15, -4.62)
+script = ExtResource("8_johnny")
+om = NodePath("Om")
+pe_tejghea = NodePath("../PeTejghea")
+plata = NodePath("../Plata")
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="Johnny"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("Capsula_johnny")
+
+[node name="Om" type="Node3D" parent="Johnny"]
+script = ExtResource("9_om")
+fumeaza = false
+
+[node name="Model" type="Node3D" parent="Johnny/Om" instance=ExtResource("10_johnny_model")]
+script = ExtResource("2_ps2")
+material = ExtResource("3_mat")
+stralucitoare = PackedStringArray()
+
+[node name="PeTejghea" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.8, 1.13, -3.98)
+
+[node name="Plata" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.3, 1.13, -4.02)
+
+[node name="Lumini" type="Node3D" parent="."]
+
+[node name="NeonFata" type="OmniLight3D" parent="Lumini" node_paths=PackedStringArray("bazait")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.1, -2.1)
+light_color = Color(0.86, 0.95, 0.97, 1)
+light_energy = 1.1
+light_volumetric_fog_energy = 0.0
+omni_range = 5.0
+script = ExtResource("11_palpaie")
+energie_normala = 1.1
+sansa_stingere = 0.06
+bazait = NodePath("../../BazaitNeon")
+
+[node name="NeonStanga" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 3.1, -2.1)
+light_color = Color(0.86, 0.95, 0.97, 1)
+light_energy = 1.1
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="NeonTejghea" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.3, 3.1, -5.2)
+light_color = Color(0.86, 0.95, 0.97, 1)
+light_energy = 1.0
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 4.5
+
+[node name="LampaTejghea" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.4, 1.38, -4.06)
+light_color = Color(1, 0.82, 0.55, 1)
+light_energy = 0.9
+light_volumetric_fog_energy = 0.0
+omni_range = 1.8
+
+[node name="NeonJohnny" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2.8, -6.3)
+light_color = Color(1, 0.35, 0.3, 1)
+light_energy = 0.7
+light_volumetric_fog_energy = 0.0
+omni_range = 2.2
+
+[node name="NeonOpen" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6, 1.55, -0.45)
+light_color = Color(1, 0.35, 0.3, 1)
+light_energy = 0.5
+light_volumetric_fog_energy = 0.0
+omni_range = 1.6
+
+[node name="Firma" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 3, 0.7)
+light_color = Color(1, 0.85, 0.55, 1)
+light_energy = 0.7
+omni_range = 3.0
+
+[node name="BazaitNeon" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.2, -2.1)
+stream = ExtResource("12_bazait")
+volume_db = -22.0
+unit_size = 3.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="CeataAmanet" type="Area3D" parent="."]
+script = ExtResource("13_ceata")
+
+[node name="Forma" type="CollisionShape3D" parent="CeataAmanet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.225, 1.75, -3.425)
+shape = SubResource("Box_interior")
+
+[node name="Lemn" type="Area3D" parent="."]
+script = ExtResource("14_suprafata")
+suprafata = "lemn"
+
+[node name="Forma" type="CollisionShape3D" parent="Lemn"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.225, 0.5, -3.425)
+shape = SubResource("Box_podea")

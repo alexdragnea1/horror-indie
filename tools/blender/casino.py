@@ -377,22 +377,27 @@ def strada(cale):
 		cub("Parcometru cap", (0.18, 0.12, 0.3), (8.2, -3.1, FL + 1.2), METAL_INCHIS),
 		cub("Parcometru geam", (0.12, 0.012, 0.08), (8.2, -3.165, FL + 1.25), FAIANTA),
 	]
-	# vecinul din stânga: amanetul (cărămidă, două etaje, gratii, firma „PAWN”)
-	vx0, vx1 = -22.0, -7.4
-	piese.append(cub("Vecin stanga", (vx1 - vx0, 14.0, 7.2), ((vx0 + vx1) / 2, 7.0, 3.6), ROSU))
-	_cutie_coliziune(col, (vx1 - vx0, 14.0, 7.2), ((vx0 + vx1) / 2, 7.0, 3.6))
+	# vecinul din stânga: clădirea de cărămidă cu două etaje; parterul din dreapta (x de la -15 la -7,4, până la 3,6 m)
+	# e amanetul lui Johnny, cu fațada și interiorul lui (amanet.py), deci aici e doar restul clădirii
+	vx0, vx1, ax0, az1 = -22.0, -7.4, -15.0, 3.6
+	piese.append(cub("Vecin stanga", (ax0 - vx0, 14.0, 7.2), ((vx0 + ax0) / 2, 7.0, 3.6), ROSU))
+	_cutie_coliziune(col, (ax0 - vx0, 14.0, 7.2), ((vx0 + ax0) / 2, 7.0, 3.6))
+	piese.append(cub("Vecin stanga", (vx1 - ax0, 14.0, 7.2 - az1), ((ax0 + vx1) / 2, 7.0, (az1 + 7.2) / 2), ROSU))
+	_cutie_coliziune(col, (vx1 - ax0, 14.0, 7.2 - az1), ((ax0 + vx1) / 2, 7.0, (az1 + 7.2) / 2))
+	piese.append(cub("Cornisa", (vx1 - ax0 + 0.1, 0.2, 0.12), ((ax0 + vx1) / 2, -0.1, az1 + 0.06), p("7e8d87")))
 	for k in range(int((vx1 - vx0) / 0.6)):
-		piese.append(cub("Rost caramida", (0.6, 0.01, 0.012), (vx0 + 0.3 + k * 0.6, -0.006, 0.0 + 0.25 * (k % 28)), p("5e363e")))
+		z = 0.25 * (k % 28)
+		x = vx0 + 0.3 + k * 0.6
+		if x > ax0 and z < az1 + 0.1:
+			continue
+		piese.append(cub("Rost caramida", (0.6, 0.01, 0.012), (x, -0.006, z), p("5e363e")))
 	for x in (-19.5, -16.0, -12.5, -9.2):
 		lumini.append(cub("Geam etaj", (1.2, 0.02, 1.4), (x, -0.012, 5.0), p("a18463") if x in (-16.0,) else GEAM))
 		piese.append(cub("Pervaz", (1.35, 0.12, 0.06), (x, -0.06, 4.27), p("7e8d87")))
-	piese.append(cub("Vitrina amanet", (4.4, 0.02, 1.9), (-12.0, -0.012, 1.55), GEAM))
-	for k in range(12):
-		piese.append(cub("Gratie", (0.03, 0.04, 1.9), (-14.1 + k * 0.38, -0.035, 1.55), NEGRU))
-	piese.append(cub("Firma amanet", (3.2, 0.12, 0.7), (-12.0, -0.06, 3.1), NEGRU))
-	lumini.append(_text("Litere amanet", "PAWN", (-12.6, -0.125, 3.08), 0.5, AUR))
-	lumini.append(_text("Litere amanet", "$", (-10.9, -0.125, 3.08), 0.5, p("5b6d4e")))
-	piese.append(cub("Usa amanet", (1.0, 0.04, 2.2), (-8.6, -0.02, 1.1), LEMN_INCHIS))
+	# parterul din stânga amanetului: o vitrină goală, cu hârtie lipită pe geam
+	piese.append(cub("Vitrina goala", (3.4, 0.02, 1.8), (-18.5, -0.012, 1.5), GEAM))
+	for k in range(4):
+		piese.append(cub("Hartie geam", (0.7, 0.012, 1.6), (-19.6 + k * 0.75, -0.02, 1.5), p("a18463") if k % 2 else p("7e8d87")))
 	# vecinul din dreapta: magazinul închis, cu oblon tras și un „FOR RENT”
 	dx0, dx1 = 7.4, 21.0
 	piese.append(cub("Vecin dreapta", (dx1 - dx0, 14.0, 5.0), ((dx0 + dx1) / 2, 7.0, 2.5), p("70706e")))

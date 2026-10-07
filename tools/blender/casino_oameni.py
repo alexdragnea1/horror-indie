@@ -123,6 +123,14 @@ def _cap(piese, gat, s, r):
 	if s.get("barba"):
 		piese.append(trunchi("Barba", [(P(0, -0.04, 0.03), 0.0, 0.0), (P(0, -0.042, 0.045), 0.05, 0.048),
 			(P(0, -0.03, 0.08), 0.07, 0.072), (P(0, -0.02, 0.11), 0.078, 0.086)], s["barba"], laturi=12, capete=False))
+	if s.get("barbison"):  # cioc: barbă doar pe bărbie, legată de mustață pe lângă gură
+		piese.append(cub("Barbison", (0.04, 0.022, 0.045), P(0, fy + 0.016, 0.07), s["barbison"]))
+		for k in (-1, 1):
+			piese.append(cub("Barbison", (0.01, 0.014, 0.03), P(0.026 * k, fy + 0.006, 0.098), s["barbison"]))
+	if s.get("lupa"):  # lupa de bijutier ridicată pe frunte, pe o bandă elastică în jurul capului
+		piese.append(trunchi("Banda lupa", [(P(0, 0.0, 0.222), 0.086, 0.1), (P(0, 0.0, 0.238), 0.086, 0.1)], NEGRU, laturi=12, capete=False))
+		piese.append(cilindru("Lupa", 0.02, 0.016, 0.045, P(0.03, fy - 0.02, 0.24), NEGRU, laturi=8, rot=(1.25, 0, 0)))
+		piese.append(cilindru("Lentila lupa", 0.016, 0.016, 0.004, P(0.03, fy - 0.042, 0.248), p("438b88"), laturi=8, rot=(1.25, 0, 0)))
 	if s.get("mustata_potcoava"):  # mustață „potcoavă” (cowboy): coborâtă pe lângă gură până la bărbie
 		for k in (-1, 1):
 			piese.append(cub("Mustata", (0.014, 0.014, 0.06), P(0.03 * k, fy + 0.004, 0.085), s["mustata_potcoava"], rot=(0, 0.12 * k, 0)))
@@ -307,14 +315,21 @@ def _brat(piese_brat, piese_antebrat, umar, cot, incheietura, s, latura):
 	haina, umbra = s["haina"], s["haina_umbra"]
 	maneca = s.get("maneca", haina)
 	gros = s.get("gros_brat", 1.0)
+	scurta = s.get("maneca_scurta")  # mânecă scurtă: de la jumătatea brațului în jos e pielea
 	piese_brat.append(sfera("Umar", 0.062 * gros, _add(umar, (0, 0, -0.01)), maneca, segmente=8, inele=5))
 	piese_brat.append(trunchi("Brat", [(umar, 0.068 * gros, 0.068 * gros), (_lerp(umar, cot, 0.5), 0.062 * gros, 0.058 * gros),
-		(cot, 0.056 * gros, 0.054 * gros)], maneca if not s.get("brate_goale") else s["piele"], laturi=8, ref=(0, 0, 1)))
-	piese_antebrat.append(sfera("Cot", 0.056 * gros, cot, maneca if not s.get("brate_goale") else s["piele"], segmente=8, inele=5))
+		(cot, 0.056 * gros, 0.054 * gros)], maneca if not (s.get("brate_goale") or scurta) else s["piele"], laturi=8, ref=(0, 0, 1)))
+	if scurta:
+		piese_brat.append(trunchi("Maneca scurta", [(umar, 0.078 * gros, 0.078 * gros), (_lerp(umar, cot, 0.55), 0.074 * gros, 0.07 * gros)],
+			maneca, laturi=8, ref=(0, 0, 1)))
+		for t, cul in ((0.2, s["flori"][0]), (0.4, s["flori"][1])):
+			piese_brat.append(sfera("Floare", 0.018, _add(_lerp(umar, cot, t), (0, -0.07 * gros, 0)), cul, scara=(1, 0.4, 1), segmente=6, inele=3))
+	goale = s.get("brate_goale") or scurta
+	piese_antebrat.append(sfera("Cot", 0.056 * gros, cot, maneca if not goale else s["piele"], segmente=8, inele=5))
 	capat = _lerp(cot, incheietura, 0.92)
 	piese_antebrat.append(trunchi("Antebrat", [(cot, 0.054 * gros, 0.052 * gros), (_lerp(cot, incheietura, 0.5), 0.05 * gros, 0.046 * gros),
-		(capat, 0.046 * gros, 0.042 * gros)], maneca if not s.get("brate_goale") else s["piele"], laturi=8, ref=(0, 0, 1)))
-	if not s.get("brate_goale"):
+		(capat, 0.046 * gros, 0.042 * gros)], maneca if not goale else s["piele"], laturi=8, ref=(0, 0, 1)))
+	if not goale:
 		if s.get("manseta"):
 			piese_antebrat.append(os_intre("Manseta", _lerp(cot, incheietura, 0.9), _lerp(cot, incheietura, 1.0), 0.04, s["manseta"], laturi=8))
 		else:
@@ -403,6 +418,31 @@ def _tors(piese, z0, s, picioare=None):
 				piese.append(cub("Snur bolo", (0.005, 0.006, 0.17), (0.012 * k, fata(0.4, 0.016), z0 + 0.4 * h), NEGRU))
 			piese.append(sfera("Bolo", 0.024, (0, fata(0.49, 0.02), z0 + 0.49 * h), s["bolo"], scara=(1, 0.4, 1.2), segmente=8, inele=5))
 			piese.append(sfera("Rama bolo", 0.028, (0, fata(0.49, 0.014), z0 + 0.49 * h), AUR, scara=(1, 0.3, 1.2), segmente=8, inele=5))
+	elif stil == "hawaiana":  # cămașă hawaiiană descheiată la gât (Johnny): pielea în V, nasturii, florile imprimate
+		for z, w in ((0.53, 0.1), (0.48, 0.08), (0.43, 0.055), (0.39, 0.03)):
+			piese.append(cub("Decolteu", (w, 0.012, 0.055), (0, fata(z), z0 + z * h), s["piele"]))
+		if s.get("par_piept"):
+			for k in range(9):
+				piese.append(cub("Par piept", (0.006, 0.004, 0.006), ((k % 3 - 1) * 0.018, fata(0.48 - 0.03 * (k // 3), 0.004),
+					z0 + (0.49 - 0.03 * (k // 3)) * h), s["par_piept"]))
+		for k in (-1, 1):
+			piese.append(cub("Guler", (0.07, 0.03, 0.05), (0.07 * k, fata(0.53, -0.012), z0 + 0.535 * h), umbra, rot=(0.35, 0, 0.55 * k)))
+			piese.append(cub("Margine camasa", (0.012, 0.012, 0.16), (0.035 * k, fata(0.44, 0.002), z0 + 0.445 * h), umbra, rot=(0, -0.3 * k, 0)))
+		for z in (0.33, 0.24, 0.15):
+			piese.append(cilindru("Nasture", 0.009, 0.009, 0.008, (0, fata(z, 0.004), z0 + z * h), s.get("nasturi", ALB), laturi=6, rot=(1.5708, 0, 0)))
+		# florile: pete rotunde pe față și pe laterale, puse pe suprafața elipsei inelului cel mai apropiat
+		rr = random.Random(7)
+		for k in range(34):
+			z = rr.uniform(0.05, 0.5)
+			x = rr.uniform(-0.17, 0.17)
+			if abs(x) < 0.06 and z > 0.37:
+				continue  # decolteul
+			zz, y, rx, ry = min(inele, key=lambda t: abs(t[0] - z))
+			if abs(x) > rx * 0.92:
+				continue
+			yf = y - ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2)) - 0.004
+			cul = s["flori"][k % len(s["flori"])] if k % 3 else s.get("frunze", umbra)
+			piese.append(sfera("Floare", rr.uniform(0.016, 0.026), (x, yf, z0 + z * h), cul, scara=(1.0, 0.35, 1.0), segmente=6, inele=3))
 	if s.get("curea"):  # cureaua lată cu catarama mare, de rodeo
 		piese.append(trunchi("Curea", [((0, 0.03, z0 + 0.0 * h), 0.178, 0.138), ((0, 0.03, z0 + 0.045 * h), 0.18, 0.14)], s["curea"],
 			laturi=12, capete=False))

@@ -37,6 +37,8 @@ var _inaltime_voce := 1.0
 var _litere_auzite := 0
 var _regex_nume := RegEx.create_from_string("^([^:\"]{1,14}):\\s+(.*)$")
 var _optiuni: HBoxContainer
+var _optiuni_sus: HBoxContainer
+var _flag_text: int  # cum stă replica în casetă (pe două rânduri de butoane o urcăm sus)
 var _cu_optiuni := false
 
 
@@ -90,6 +92,17 @@ func _ready() -> void:
 	_optiuni.offset_bottom = -15
 	add_child(_optiuni)
 	_optiuni.hide()
+	# al doilea rând, deasupra (doar când butoanele nu încap pe unul; pozițiile i le dă `intreaba`)
+	_optiuni_sus = HBoxContainer.new()
+	_optiuni_sus.theme = _optiuni.theme
+	_optiuni_sus.add_theme_constant_override("separation", 6)
+	_optiuni_sus.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_optiuni_sus.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_optiuni_sus.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_optiuni_sus.offset_right = -22
+	add_child(_optiuni_sus)
+	_optiuni_sus.hide()
+	_flag_text = _text.size_flags_vertical
 
 
 func spune(replici: PackedStringArray) -> void:
@@ -182,19 +195,38 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	_cu_optiuni = true
 	while _text.visible_ratio < 1.0:
 		await get_tree().process_frame
-	for copil in _optiuni.get_children():
+	for copil in _optiuni.get_children() + _optiuni_sus.get_children():
 		# scos imediat: altfel butonul vechi (șters abia la sfârșitul cadrului) e încă primul și primește focusul
-		_optiuni.remove_child(copil)
+		copil.get_parent().remove_child(copil)
 		copil.queue_free()
 	for i in optiuni.size():
 		var buton := TemaMeniu.buton(_optiuni, optiuni[i], func() -> void: _ales.emit(i))
 		buton.add_theme_font_size_override("font_size", 11)
+	# prea multe butoane pentru un rând (ex. Johnny de la amanet, cu inventarul plin): prima jumătate urcă pe un rând
+	# deasupra, iar caseta crește încă un rând
+	var rand := _optiuni.get_combined_minimum_size()
+	var doua_randuri := rand.x > get_viewport().get_visible_rect().size.x - 44
+	if doua_randuri:
+		for k in (optiuni.size() + 1) / 2:
+			var b := _optiuni.get_child(0)
+			_optiuni.remove_child(b)
+			_optiuni_sus.add_child(b)
+		_optiuni_sus.offset_top = _optiuni.offset_bottom - 2 * rand.y - 4
+		_optiuni_sus.offset_bottom = _optiuni.offset_bottom - rand.y - 4
+		var sus := int(rand.y) + 4
+		_panou.offset_top = -86 - sus
+		_eticheta.offset_top = -101 - sus
+		_eticheta.offset_bottom = -86 - sus
+		_text.size_flags_vertical = Control.SIZE_SHRINK_BEGIN  # replica sus, deasupra celor două rânduri
+		_optiuni_sus.show()
 	_optiuni.show()
 	Stare.meniu_deschis = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	(_optiuni.get_child(0) as Button).grab_focus.call_deferred()
+	((_optiuni_sus if doua_randuri else _optiuni).get_child(0) as Button).grab_focus.call_deferred()
 	var ales: int = await _ales
 	_optiuni.hide()
+	_optiuni_sus.hide()
+	_text.size_flags_vertical = _flag_text
 	_cu_optiuni = false
 	Stare.meniu_deschis = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
