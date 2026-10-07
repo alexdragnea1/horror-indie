@@ -7,6 +7,9 @@ extends Node3D
 const SCENA_FUNDAL := "res://scenes/afara_bloc.tscn"
 const SUNET_STING := preload("res://sunete/ui_sting.ogg")
 const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
+## Numele jocului din meniu. Nu e `application/config/name` („Horror Indie”): pe ăla îl folosește Godot și pentru
+## folderul salvărilor (app_userdata\Horror Indie), deci dacă l-am schimba s-ar pierde salvările.
+const TITLU := "Unlucky Spells"
 
 ## De unde se uită camera și spre ce (în coordonatele scenei de afară).
 @export var pozitie_camera := Vector3(1.2, 1.35, 10.4)
@@ -143,7 +146,7 @@ func _ecran_principal(parinte: Control) -> Control:
 	ecran.add_child(coloana)
 
 	_titlu = Label.new()
-	_titlu.text = String(ProjectSettings.get_setting("application/config/name")).to_upper()
+	_titlu.text = TITLU.to_upper()
 	_titlu.add_theme_font_size_override("font_size", 26)
 	_titlu.add_theme_color_override("font_color", TemaMeniu.ACCENT)
 	_titlu.add_theme_color_override("font_shadow_color", Color("7b383a"))
