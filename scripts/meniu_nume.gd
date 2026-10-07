@@ -4,7 +4,7 @@ extends CanvasLayer
 ##   var meniu := MeniuNume.new()
 ##   get_tree().root.add_child(meniu)
 ##   var nume: String = await meniu.ales
-## După nume vine o întrebare cu OK / No. Orice răspunde, meniul se închide la fel.
+## După nume vine o întrebare cu Yes / No. Orice răspunde, meniul se închide la fel.
 
 signal ales(nume: String)
 
@@ -63,7 +63,7 @@ func _ready() -> void:
 	rand.alignment = BoxContainer.ALIGNMENT_CENTER
 	rand.add_theme_constant_override("separation", 12)
 	_pas_intrebare.add_child(rand)
-	_buton(rand, "OK", _termina)
+	_buton(rand, "Yes", _termina)
 	_buton(rand, "No", _termina)
 	_pas_intrebare.hide()
 

@@ -28,6 +28,8 @@ var _randuri_salvari: VBoxContainer
 var _confirmare_text: Label
 var _de_sters := 0
 var _setari: PanouSetari
+var _grila_controale: GridContainer
+var _buton_joaca: Button
 var _timp := 0.0
 var _plecat := false
 
@@ -108,6 +110,7 @@ func _interfata() -> void:
 	_ecrane["salvari"] = _ecran_salvari(radacina)
 	_ecrane["confirmare"] = _ecran_confirmare(radacina)
 	_ecrane["setari"] = _ecran_setari(radacina)
+	_ecrane["controale"] = _ecran_controale(radacina)
 
 
 func _arata(nume: String) -> void:
@@ -124,6 +127,9 @@ func _arata(nume: String) -> void:
 			_setari.deschide()
 		"confirmare":
 			_confirmare_text.text = "Delete File %d?\nThis can't be undone." % _de_sters
+		"controale":
+			_actualizeaza_controale()
+			_buton_joaca.grab_focus.call_deferred()
 
 
 func _ecran_principal(parinte: Control) -> Control:
@@ -168,6 +174,11 @@ func _actualizeaza_principal() -> void:
 
 
 func _start() -> void:
+	# joc nou: întâi ecranul cu toate tastele, abia de acolo pornește jocul
+	if not Salvare.exista(Setari.slot) and _ecran_curent != "controale":
+		Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
+		_arata("controale")
+		return
 	if _plecat:
 		return
 	_plecat = true
@@ -262,6 +273,53 @@ func _ecran_setari(parinte: Control) -> Control:
 	_setari.inapoi.connect(func() -> void: _arata("principal"))
 	parinte.add_child(_setari)
 	return _setari
+
+
+# -------- controalele (apar o dată, la un joc nou)
+
+func _ecran_controale(parinte: Control) -> Control:
+	var panou := _panou(parinte, "CONTROLS")
+	_grila_controale = GridContainer.new()
+	_grila_controale.columns = 4  # două perechi tastă / ce face pe fiecare rând, ca să încapă pe înălțime
+	_grila_controale.add_theme_constant_override("h_separation", 10)
+	_grila_controale.add_theme_constant_override("v_separation", 3)
+	panou.add_child(_grila_controale)
+	panou.add_child(_spatiu(4))
+	var rand := HBoxContainer.new()
+	rand.alignment = BoxContainer.ALIGNMENT_CENTER
+	rand.add_theme_constant_override("separation", 12)
+	panou.add_child(rand)
+	TemaMeniu.buton(rand, "Back", func() -> void: _arata("principal"))
+	_buton_joaca = TemaMeniu.buton(rand, "Start", _start)
+	return panou.get_parent().get_parent()
+
+
+## Tastele se citesc din Setari la fiecare deschidere (pot fi schimbate din Settings).
+func _actualizeaza_controale() -> void:
+	for copil in _grila_controale.get_children():
+		copil.queue_free()
+	var randuri := []
+	for pereche in Setari.ACTIUNI:
+		randuri.append([Setari.nume_tasta(pereche[0]), pereche[1]])
+	randuri.append_array([
+		["Mouse", "Look around"],
+		["Left Click", "Shoot / use what you hold"],
+		["Left Click", "Inventory: hold in hand"],
+		["Right Click", "Inventory: drop"],
+		["Esc", "Pause"],
+		["F11", "Fullscreen"],
+	])
+	for rand in randuri:
+		var tasta := Label.new()
+		tasta.text = rand[0]
+		tasta.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		tasta.add_theme_font_size_override("font_size", 10)
+		tasta.add_theme_color_override("font_color", TemaMeniu.ACCENT)
+		_grila_controale.add_child(tasta)
+		var ce_face := Label.new()
+		ce_face.text = rand[1]
+		ce_face.add_theme_font_size_override("font_size", 10)
+		_grila_controale.add_child(ce_face)
 
 
 # -------- bucăți comune
