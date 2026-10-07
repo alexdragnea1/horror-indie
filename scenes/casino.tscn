@@ -694,7 +694,7 @@ ghiseu = NodePath("../Ghiseu")
 cutie_bani = NodePath("../CutieBani")
 tava = NodePath("../Tava")
 replici_inceput = PackedStringArray("Old bitch: Hey sweetie, you can exchange cash here.", "Old bitch: Do you have any?")
-replici_fara_bani = PackedStringArray("Old bitch: Come here when you have money poor bitch.", "You: Kill yourself.")
+replici_fara_bani = PackedStringArray("Old bitch: Come here when you have money poor bitch.", "You: Kill yourself.", "Old lady: Try the pawn shop next door.")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="BatranaCasino" unique_id=489150583]
@@ -794,6 +794,7 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Lexy\'s Place", "Gun Store")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn")
 titluri = PackedStringArray("Block M7, Entrance B", "Lexy's place", "Freedom Gun Store")
+ascunse_dupa = PackedStringArray("", "lexy_moarta", "")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarCasino" unique_id=1163489932]

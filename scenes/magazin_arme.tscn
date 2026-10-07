@@ -388,6 +388,7 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Lexy\'s Place")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn")
 titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Lexy\'s place")
+ascunse_dupa = PackedStringArray("", "", "lexy_moarta")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarArme"]

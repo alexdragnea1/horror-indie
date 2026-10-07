@@ -354,10 +354,11 @@ def autobuz(cale):
 	exporta(os.path.join(cale, "autobuz.glb"))
 
 
-def statie(cale):
+def statie(cale, nume="STATIE", fisier="statie.glb"):
 	"""Stația de autobuz: copertină de tablă pe stâlpi, perete de plexiglas în spate (un panou lateral spart),
 	bancă de lemn, afiș cu reclamă, orarul, tomberonaș și stâlpul cu plăcuța liniei 13.
-	Lată pe X (3 m), deschisă spre -Y (spre stradă). Geamurile sunt separate (Geam*), cum sunt la autobuz."""
+	Lată pe X (3 m), deschisă spre -Y (spre stradă). Geamurile sunt separate (Geam*), cum sunt la autobuz.
+	`nume` = ce scrie pe frontonul din față (stația lui Lexy: „BASCOV”, statie_bascov.glb)."""
 	curata()
 	r = random.Random(7)
 	piese = []
@@ -431,11 +432,11 @@ def statie(cale):
 		cub("Roti desenate", (0.25, 0.012, 0.04), (2.1, -0.733, 2.5), p("295555")),
 		cub("Placuta linie", (0.3, 0.03, 0.22), (2.1, -0.71, 2.12), p("a18463")),
 		text("Numar linie", "13", (2.1, -0.735, 2.12), 0.16, NEGRU),
-		text("Statie", "STATIE", (0, -0.83, 2.32), 0.12, ALB),
+		text("Statie", nume, (0, -0.83, 2.32), 0.12, ALB),
 	]
 	uneste(piese, "Statie")
 	uneste(geamuri, "Geamuri")
-	exporta(os.path.join(cale, "statie.glb"))
+	exporta(os.path.join(cale, fisier))
 
 
 def sofer(cale):
@@ -625,6 +626,7 @@ def stalp_lemn(cale):
 def toate(cale):
 	autobuz(cale)
 	statie(cale)
+	statie(cale, "BASCOV", "statie_bascov.glb")
 	sofer(cale)
 	creatura(cale)
 	brad(cale, "brad_1", 4, 9.0, 6)

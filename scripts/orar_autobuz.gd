@@ -17,6 +17,9 @@ static var cu_autobuzul := false
 @export var scene: PackedStringArray = []
 ## Ce scrie jos în stânga după drum (Enter = rând nou).
 @export var titluri: PackedStringArray = []
+## Marcajul după care locul dispare din orar, în aceeași ordine (gol = rămâne mereu; ex. Lexy's Place după
+## `lexy_moarta`).
+@export var ascunse_dupa: PackedStringArray = []
 @export var optiune_anulare := "Not now"
 ## Locurile fără scenă (scrise de Claude, owner-ul le poate schimba).
 @export_multiline var replici_indisponibil: PackedStringArray = ["You: Nah, not today."]
@@ -41,10 +44,18 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
-	var butoane := optiuni.duplicate()
+	# doar locurile care se mai văd: `locuri[k]` = indexul din `optiuni` al butonului k
+	var locuri: Array[int] = []
+	var butoane := PackedStringArray()
+	for i in optiuni.size():
+		if i < ascunse_dupa.size() and ascunse_dupa[i] != "" and Stare.e_marcat(ascunse_dupa[i]):
+			continue
+		locuri.append(i)
+		butoane.append(optiuni[i])
 	butoane.append(optiune_anulare)
-	var ales := await Dialog.intreaba("", butoane)
-	if ales >= 0 and ales < optiuni.size():
+	var buton := await Dialog.intreaba("", butoane)
+	var ales := locuri[buton] if buton >= 0 and buton < locuri.size() else -1
+	if ales >= 0:
 		var scena := scene[ales] if ales < scene.size() else ""
 		if scena == "":
 			Dialog.spune(replici_indisponibil)

@@ -57,8 +57,19 @@ func opreste(durata := 0.3) -> void:
 
 
 func _zona(corp: Node3D, intra: bool) -> void:
-	if corp.is_in_group("jucator") and not _oprita:
-		_spre(1.0 if intra else 0.0, intrare if intra else iesire)
+	if not corp.is_in_group("jucator") or _oprita:
+		return
+	var forma := corp.get_node_or_null("Coliziune") as CollisionShape3D
+	if not intra and forma and forma.disabled:
+		# într-o scenă din cod (ex. conversația de pe canapea) jucătorul e „purtat”, fără coliziune, iar zona îl
+		# pierde: muzica merge mai departe și se stinge doar dacă, la final, chiar nu mai ești în zonă
+		while is_instance_valid(forma) and forma.disabled:
+			await get_tree().physics_frame
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		if not is_instance_valid(corp) or _oprita or zona.overlaps_body(corp):
+			return
+	_spre(1.0 if intra else 0.0, intrare if intra else iesire)
 
 
 func _spre(tinta: float, durata: float) -> void:
