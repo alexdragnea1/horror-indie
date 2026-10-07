@@ -1,7 +1,7 @@
 extends Node3D
 ## Sperietura de pe poteca spre vale (spre vrăjitoare): când treci pe sub una din păpușile de paie din partea de jos,
 ## pădurea tace o clipă, sfoara scârțâie și se rupe, păpușa îți cade lângă picioare (bubuitura + „sting”-ul, camera
-## tresare), iar în spatele tău creatura trece în goană prin pădure, dintr-o parte în alta, cu un țipăt. După ea îți
+## tresare), iar prin fața ta creatura trece în goană prin pădure, dintr-o parte în alta, cu un țipăt. După ea îți
 ## bate inima. O singură dată (`marcaj`); la Continue păpușa e deja pe jos.
 ## Sunetele sunt făcute în tools/sunete.sh (secțiunea „pădurea, poteca spre vale”).
 
@@ -13,8 +13,8 @@ extends Node3D
 ## Cât de aproape de păpușă (pe orizontală) trebuie să treci.
 @export var raza := 2.6
 @export var marcaj := "papusa_a_cazut"
-## Pe unde trece creatura: la câți metri în spatele tău, cât de lung e drumul ei și cât de repede aleargă.
-@export var distanta_spate := 7.5
+## Pe unde trece creatura: la câți metri în fața ta, cât de lung e drumul ei și cât de repede aleargă.
+@export var distanta_fata := 6.0
 @export var lungime_goana := 28.0
 @export var viteza_creatura := 13.0
 
@@ -96,7 +96,7 @@ func _sperie(jucator: Node3D) -> void:
 	culcat.tween_property(_pivot, "rotation", Vector3(PI / 2.0 * signf(randf() - 0.5), _pivot.rotation.y, 0.0), 0.35) \
 		.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	culcat.tween_property(_pivot, "global_position:y", jos + 0.12, 0.35).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	# 3. în spatele tău, creatura trece în goană prin pădure
+	# 3. prin fața ta, creatura trece în goană prin pădure
 	await get_tree().create_timer(0.35).timeout
 	Sunet.reda(sunet_inima, -4.0)
 	await _goana(jucator)
@@ -126,7 +126,7 @@ func _goana(jucator: Node3D) -> void:
 	inainte.y = 0.0
 	inainte = inainte.normalized()
 	var dreapta := inainte.cross(Vector3.UP).normalized() * (1.0 if randf() < 0.5 else -1.0)
-	var centru := jucator.global_position - inainte * distanta_spate
+	var centru := jucator.global_position + inainte * distanta_fata
 	var start := centru - dreapta * lungime_goana * 0.5
 	var c := creatura.instantiate() as Node3D
 	add_child(c)
