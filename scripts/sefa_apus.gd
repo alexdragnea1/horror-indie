@@ -7,9 +7,18 @@ extends "res://scripts/sefa_vrajitoare.gd"
 ##  3. ea îți arată scutul: ridică brațul, energia mov i se adună în palmă, scutul crește din palma ei în jurul ei
 ##     (cu o undă mov pe asfalt), îl ține, apoi îl lasă să se destrame; arma ta rămâne ridicată spre ea;
 ##  4. `replici_dupa_scut`, apoi marcajul `ScutJucator.MARCAJ`: pe ecran apare „Press Ctrl to use shield”.
+## După lecție, E pe ea: `replici_motel` (Warlock-ul e în orașul vecin), apoi plecați pe mătură spre stradă
+## (`directie_zbor`), negru și aterizați la motel (`scena_motel`, `titlu_motel`; aterizarea e în sefa_motel.gd).
 ## Replicile sunt ale owner-ului: nu le corecta.
 
 @export var marcaj_apus := "a_primit_mesajul_sefei"
+## După zborul spre motel nu mai e aici.
+@export var marcaj_plecare := "a_zburat_la_motel"
+@export_file("*.tscn") var scena_motel := "res://scenes/motel.tscn"
+@export_multiline var titlu_motel := "Paradise Motel\n8:03 PM"
+@export_multiline var replici_motel: PackedStringArray = []
+## Sarcina după lecție (a lui Claude).
+@export var sarcina_dupa_lectie := "Talk to the Head Witch."
 @export_multiline var replica_arma := "You: I got offensive magic right here."
 @export_multiline var replica_bazooka := "You: Do I look like I need defensive magic?"
 @export_multiline var replica_fara_arme := "You: Teach me bitch."
@@ -32,14 +41,14 @@ var _c: Cutscena
 
 func _ready() -> void:
 	super()
-	if not get_parent().has_node("Jucator") or not Stare.e_marcat(marcaj_apus):
+	if not get_parent().has_node("Jucator") or not Stare.e_marcat(marcaj_apus) or Stare.e_marcat(marcaj_plecare):
 		queue_free()
 		return
 	indiciu = "[E] Talk to the Head Witch"
 
 
 func poate_fi_folosit() -> bool:
-	return not _vorbeste and not mort and not Stare.e_marcat(ScutJucator.MARCAJ)
+	return not _vorbeste and not mort and not Stare.e_marcat(marcaj_plecare)
 
 
 func interactioneaza() -> void:
@@ -50,6 +59,12 @@ func interactioneaza() -> void:
 	var intoarcere := intoarce_spre(_jucator())
 	if intoarcere:
 		await intoarcere.finished
+	if Stare.e_marcat(ScutJucator.MARCAJ):
+		await _spune(replici_motel)
+		Stare.seteaza_sarcina("")
+		var sunete: Array[AudioStream] = [SUNET_DECOLARE]
+		await _zboara_cu_tine(scena_motel, titlu_motel, sunete, marcaj_plecare)
+		return
 	await _spune(replici)
 	# răspunsul tău, cu arma scoasă
 	var arma := _arma_de_scos()
@@ -70,6 +85,8 @@ func interactioneaza() -> void:
 	await _c.opreste()
 	_vorbeste = false
 	Stare.marcheaza(ScutJucator.MARCAJ)
+	if sarcina_dupa_lectie != "":
+		Stare.seteaza_sarcina(sarcina_dupa_lectie)
 
 
 func _spune(linii: PackedStringArray) -> void:

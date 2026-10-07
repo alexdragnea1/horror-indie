@@ -2,10 +2,12 @@ class_name ScutJucator
 extends Node3D
 ## Scutul tău (magie defensivă, te învață Head Witch la apus, sefa_apus.gd): după `MARCAJ`, tasta "scut" (Ctrl)
 ## ridică o sferă mov în jurul tău (același shader ca scutul ei de la conac, shaders/scut.gdshader).
-## Ești începător (ca la Fireball, când focul nu ți-a ieșit din prima): te încordezi (camera tremură, scântei mov se
-## adună spre tine), scutul apare tremurat, cu goluri, pâlpâie, se umflă ca o gelatină, apoi se stabilizează. Prima
-## dată îți scapă o dată înainte să-ți iasă (crăpăturile din shader nu se folosesc aici: din interior ies dale uriașe). Ține `durata` secunde, la sfârșit pâlpâie și se sparge. După aceea mai
-## poți abia după `pauza` secunde (owner: 2 s); dacă apeși înainte, ies doar câteva scântei și se stinge.
+## Prima dată ești începător (ca la Fireball, când focul nu ți-a ieșit din prima): te încordezi (camera tremură, scântei
+## mov se adună în fața ta), îți scapă o dată, apoi scutul apare tremurat, pâlpâie, se umflă ca o gelatină și la sfârșit
+## se sparge (crăpăturile din shader nu se folosesc: din interior ies dale uriașe). De a doua oară îți iese curat
+## (owner: „să meargă bine de fiecare dată după ce l-ai învățat”): un puls scurt, scutul se deschide rotund și stabil,
+## ține `durata` secunde și se stinge lin. După aceea mai poți abia după `pauza` secunde (owner: 2 s); dacă apeși
+## înainte, ies doar câteva scântei și se stinge.
 ## Până la prima folosire, jos pe ecran scrie „Press Ctrl to use shield” (cu tasta aleasă în setări).
 ## Îl pune jucator.gd pe jucător (nu pe cameră). `activ` / `lovit()` sunt pentru vrăjile de mai târziu.
 
@@ -164,22 +166,60 @@ func _fasait() -> void:
 
 func _ridica() -> void:
 	_ocupat = true
-	var prima_data := not Stare.e_marcat(MARCAJ_FOLOSIT)
-	if prima_data:
+	if Stare.e_marcat(MARCAJ_FOLOSIT):
+		await _ridica_stapanit()
+	else:
 		Stare.marcheaza(MARCAJ_FOLOSIT)
 		_ascunde_indiciul()
+		await _ridica_prima_data()
+	activ = false
+	_pauza_ramasa = pauza
+	_ocupat = false
+
+
+## De la a doua folosire îți iese curat: un puls scurt, scutul se deschide rotund și stabil, ține `durata` și se stinge lin.
+func _ridica_stapanit() -> void:
+	Sunet.reda(SUNET_SCUT, Sunet.VOLUM_EFECTE - 3.0, 0.06)
+	activ = true
+	_sfera.visible = true
+	_lumina.visible = true
+	_gelatina = 0.0
+	_marime = 0.6
+	_sfera.scale = Vector3.ONE * 0.6
+	_mat.set_shader_parameter("lovit", 0.5)
+	var forma := create_tween().set_parallel()
+	forma.tween_property(self, "_marime", 1.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	forma.tween_method(_seteaza_parametru.bind("lovit"), 0.5, 0.0, 0.3)
+	forma.tween_method(_seteaza_parametru.bind("putere"), 0.0, putere, 0.2)
+	forma.tween_property(_lumina, "light_energy", 0.9, 0.2)
+	forma.tween_property(self, "_tremur", 0.2, 0.08)
+	forma.chain().tween_property(self, "_tremur", 0.0, 0.15)
+	await forma.finished
+	await get_tree().create_timer(maxf(durata - 0.6, 0.1)).timeout
+	if not is_inside_tree():
+		return
+	var stins := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
+	stins.tween_method(_seteaza_parametru.bind("putere"), putere, 0.0, 0.35)
+	stins.tween_property(_lumina, "light_energy", 0.0, 0.35)
+	stins.tween_property(self, "_marime", 1.06, 0.35)
+	await stins.finished
+	_sfera.visible = false
+	_lumina.visible = false
+	_mat.set_shader_parameter("lovit", 0.0)
+
+
+## Prima dată (abia ai învățat): te încordezi, îți scapă o dată, apoi îți iese tremurat, cu pâlpâieli, și se sparge.
+func _ridica_prima_data() -> void:
 	# 1. te încordezi: „flex every muscle in your body”
 	Sunet.reda(SUNET_SCANTEI, Sunet.VOLUM_EFECTE - 6.0, 0.05)
 	_adunare.emitting = true
-	var incordare := 0.85 if prima_data else 0.32
 	var t := create_tween()
-	t.tween_property(self, "_tremur", 1.0, incordare).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	t.tween_property(self, "_tremur", 1.0, 0.85).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await t.finished
-	if prima_data:
-		await _scapa()
-		t = create_tween()
-		t.tween_property(self, "_tremur", 1.0, 0.45)
-		await t.finished
+	await _scapa()
+	t = create_tween()
+	t.tween_property(self, "_tremur", 1.0, 0.45)
+	await t.finished
 	_adunare.emitting = false
 	# 2. îți iese: crește tremurat (gelatina), cu un fulger alb, pâlpâind până se stabilizează
 	Sunet.reda(SUNET_SCUT, Sunet.VOLUM_EFECTE - 3.0, 0.06)
@@ -228,9 +268,6 @@ func _ridica() -> void:
 	_sfera.visible = false
 	_lumina.visible = false
 	_mat.set_shader_parameter("lovit", 0.0)
-	activ = false
-	_pauza_ramasa = pauza
-	_ocupat = false
 
 
 ## Prima dată: scutul apare o clipă, pe jumătate, și se stinge („nu l-a făcut din prima”).
