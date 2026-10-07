@@ -51,7 +51,9 @@ def statie_rurala(cale):
 		cub("Perete stanga", (0.15, 1.15, 2.3), (-1.425, 0.075, 1.25), BETON),
 		cub("Perete dreapta", (0.15, 1.15, 2.3), (1.425, 0.075, 1.25), BETON),
 		cub("Acoperis", (3.4, 1.9, 0.14), (0, -0.15, 2.47), BETON_DESCHIS),
-		cub("Streasina", (3.4, 0.06, 0.1), (0, -1.13, 2.45), METAL_INCHIS),
+		cub("Streasina", (3.4, 0.06, 0.18), (0, -1.13, 2.42), METAL_INCHIS),
+		# numele stației pe streașină, ca frontonul stațiilor din oraș
+		text("Statie", "TRIVALE", (0, -1.175, 2.42), 0.12, ALB),
 	]
 	# mozaicul de pe peretele din spate (un soare stilizat, cu plăcuțe lipsă); plăcuțele la 1,5 cm în față
 	culori = [p("a56850"), p("a18463"), p("30716f"), p("438b88"), p("7b383a")]

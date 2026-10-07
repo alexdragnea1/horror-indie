@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3]
 
-[ext_resource type="PackedScene" path="res://models/statie.glb" id="1"]
+[ext_resource type="PackedScene" path="res://models/statie_prundu.glb" id="1"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="2"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="3"]
 

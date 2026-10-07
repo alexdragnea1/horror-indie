@@ -20,7 +20,7 @@ extends Interactabil
 @export_multiline var replici_inceput: PackedStringArray = ["Old bitch: Hey sweetie, you can exchange cash here.",
 	"Old bitch: Do you have any?"]
 @export_multiline var replici_fara_bani: PackedStringArray = ["Old bitch: Come here when you have money poor bitch.",
-	"You: Kill yourself.", "Old lady: Try the pawn shop next door."]
+	"You: Kill yourself.", "Old bitch: Try the pawn shop next door."]
 ## Butoanele când ai jetoane (`%s` = cât valorează jetoanele).
 @export var optiune_schimb := "Exchange cash"
 @export var optiune_cash_out := "Cash out (%s)"

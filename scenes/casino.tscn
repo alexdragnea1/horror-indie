@@ -40,7 +40,7 @@
 [ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="38_jaqc7"]
 [ext_resource type="Script" path="res://scripts/ceata_interior.gd" id="39_f0p3j"]
 [ext_resource type="Script" path="res://scripts/gand_lexy.gd" id="40_r88aj"]
-[ext_resource type="PackedScene" path="res://scenes/statie.tscn" id="41_k4anp"]
+[ext_resource type="PackedScene" path="res://scenes/statie_prundu.tscn" id="41_k4anp"]
 [ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="42_h33h5"]
 [ext_resource type="Script" path="res://scripts/autobuz.gd" id="43_dynaa"]
 [ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="44_s1ytp"]
@@ -694,7 +694,7 @@ ghiseu = NodePath("../Ghiseu")
 cutie_bani = NodePath("../CutieBani")
 tava = NodePath("../Tava")
 replici_inceput = PackedStringArray("Old bitch: Hey sweetie, you can exchange cash here.", "Old bitch: Do you have any?")
-replici_fara_bani = PackedStringArray("Old bitch: Come here when you have money poor bitch.", "You: Kill yourself.", "Old lady: Try the pawn shop next door.")
+replici_fara_bani = PackedStringArray("Old bitch: Come here when you have money poor bitch.", "You: Kill yourself.", "Old bitch: Try the pawn shop next door.")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="BatranaCasino" unique_id=489150583]

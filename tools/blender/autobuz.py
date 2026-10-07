@@ -354,11 +354,12 @@ def autobuz(cale):
 	exporta(os.path.join(cale, "autobuz.glb"))
 
 
-def statie(cale, nume="STATIE", fisier="statie.glb"):
+def statie(cale, nume, fisier):
 	"""Stația de autobuz: copertină de tablă pe stâlpi, perete de plexiglas în spate (un panou lateral spart),
 	bancă de lemn, afiș cu reclamă, orarul, tomberonaș și stâlpul cu plăcuța liniei 13.
 	Lată pe X (3 m), deschisă spre -Y (spre stradă). Geamurile sunt separate (Geam*), cum sunt la autobuz.
-	`nume` = ce scrie pe frontonul din față (stația lui Lexy: „BASCOV”, statie_bascov.glb)."""
+	`nume` = ce scrie pe frontonul din față, numele stației (NORD la bloc, PRUNDU la laundromat, FREEDOM la
+	Gun Store, BASCOV la Lexy), exportată în `fisier` (statie_nord.glb etc.)."""
 	curata()
 	r = random.Random(7)
 	piese = []
@@ -625,7 +626,9 @@ def stalp_lemn(cale):
 
 def toate(cale):
 	autobuz(cale)
-	statie(cale)
+	statie(cale, "NORD", "statie_nord.glb")
+	statie(cale, "PRUNDU", "statie_prundu.glb")
+	statie(cale, "FREEDOM", "statie_freedom.glb")
 	statie(cale, "BASCOV", "statie_bascov.glb")
 	sofer(cale)
 	creatura(cale)
