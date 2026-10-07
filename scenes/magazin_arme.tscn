@@ -394,6 +394,7 @@ titluri_noi_pana_la = "a_invatat_scutul"
 titluri_noi = PackedStringArray("Block M7, Entrance B
 7:24 PM", "", "")
 ascunse_dupa = PackedStringArray("", "", "lexy_moarta")
+vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarArme"]

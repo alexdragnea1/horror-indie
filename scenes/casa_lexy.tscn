@@ -512,6 +512,7 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Gun Store")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/magazin_arme.tscn")
 titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Freedom Gun Store")
+vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "")
 titluri_noi_de_la = "a_primit_mesajul_sefei"
 titluri_noi_pana_la = "a_invatat_scutul"
 titluri_noi = PackedStringArray("Block M7, Entrance B

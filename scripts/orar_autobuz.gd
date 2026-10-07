@@ -20,6 +20,9 @@ static var cu_autobuzul := false
 ## Marcajul după care locul dispare din orar, în aceeași ordine (gol = rămâne mereu; ex. Lexy's Place după
 ## `lexy_moarta`).
 @export var ascunse_dupa: PackedStringArray = []
+## Marcajul fără de care locul nu apare încă în orar, în aceeași ordine (gol = apare de la început; ex. Home abia
+## după mesajul lui Head Witch, `a_primit_mesajul_sefei`).
+@export var vizibile_dupa: PackedStringArray = []
 @export var optiune_anulare := "Not now"
 ## Locurile fără scenă (scrise de Claude, owner-ul le poate schimba).
 @export_multiline var replici_indisponibil: PackedStringArray = ["You: Nah, not today."]
@@ -55,6 +58,8 @@ func interactioneaza() -> void:
 	var butoane := PackedStringArray()
 	for i in optiuni.size():
 		if i < ascunse_dupa.size() and ascunse_dupa[i] != "" and Stare.e_marcat(ascunse_dupa[i]):
+			continue
+		if i < vizibile_dupa.size() and vizibile_dupa[i] != "" and not Stare.e_marcat(vizibile_dupa[i]):
 			continue
 		locuri.append(i)
 		butoane.append(optiuni[i])
