@@ -3,11 +3,14 @@ extends RefCounted
 ## Banii adevărați (cash), ca Jetoane: suma e în cenți, ținută în marcajul `MARCAJ` (deci intră în salvare), iar în
 ## inventar apar ca un obiect („Cash ($12.50)”, id `ID`), care dispare când rămâi fără ei.
 ## Îi primești de la bătrâna de la casino, când dai „Cash out” pe jetoane (batrana_casino.gd); cu ei plătești la Gun Store
-## (vanzator_arme.gd), unde se socotește și bancnota de 5 dolari de la Lexy (`LexyMasa.ID_BANI`).
+## (vanzator_arme.gd). Bancnota de 5 dolari de la Lexy intră și ea aici (`BANCNOTA`): toți banii sunt un singur obiect.
 ## Aruncați pe jos (ObiecteLume), suma rămâne în obiectul de pe jos: `suma()` numără doar ce ai în inventar.
 
 const ID := "cash"
 const MARCAJ := "cash_suma"
+## Bancnota de 5 dolari de la Lexy (`LexyMasa.ID_BANI`), în cenți: n-are obiect al ei, intră mereu în cash
+## (Stare.adauga_obiect o adună, Stare.importa unește salvările vechi).
+const BANCNOTA := 500
 
 
 static func suma() -> int:
@@ -39,17 +42,10 @@ static func nume(centi: int) -> String:
 	return "Cash (%s)" % Jetoane.bani(centi)
 
 
-## Tot ce poți plăti: cash-ul plus bancnota de 5 dolari.
+## Tot ce poți plăti (bancnota de 5 dolari e deja în cash).
 static func de_platit() -> int:
-	return suma() + (500 if Stare.are_obiect(LexyMasa.ID_BANI) else 0)
+	return suma()
 
 
-## Plătește `centi`: întâi din cash, apoi bancnota de 5 dolari (restul, dacă rămâne, intră în cash).
 static func plateste(centi: int) -> void:
-	var din_cash := mini(centi, suma())
-	var rest := centi - din_cash
-	if rest > 0 and Stare.are_obiect(LexyMasa.ID_BANI):
-		Stare.scoate_obiect(LexyMasa.ID_BANI)
-		seteaza(suma() - din_cash + 500 - rest)
-	else:
-		seteaza(suma() - din_cash)
+	seteaza(suma() - centi)

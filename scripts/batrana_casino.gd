@@ -1,10 +1,10 @@
 extends Interactabil
 ## Bătrâna de la casa camerei de joc („Old bitch”, la tejghea, imediat după ușă). La început e singura cu care poți
 ## vorbi (masa de poker și păcănelele merg doar cu jetoane). E → `replici` (ale owner-ului), apoi:
-##  - cu bancnota de 5 dolari (`LexyMasa.ID_BANI`, de la jaf sau împrumutată de la Lexy): o scoți și i-o întinzi prin
-##    ghișeu, ea o ia, o bagă în cutia de bani și îți împinge pe tejghea un teanc de jetoane; le iei („Chips ($5.00)”);
+##  - cu bani (cash, `Bani`; bancnota de 5 dolari de la Lexy e și ea în el): îi scoți și i-i întinzi prin ghișeu (o
+##    bancnotă), ea îi ia, îi bagă în cutia de bani și îți împinge pe tejghea un teanc de jetoane cât toată suma;
 ##  - fără: `replici_fara_bani` (owner).
-## Cu jetoane în inventar, E = direct butoanele (cu prima replică deasupra): `optiune_schimb` (doar cu bancnota sau cash,
+## Cu jetoane în inventar, E = direct butoanele (cu prima replică deasupra): `optiune_schimb` (doar cu cash,
 ## schimbă tot), `optiune_cash_out` (toate jetoanele → „Cash ($X)”, Bani; `_cash_out`), `optiune_nimic`.
 ## După prima conversație: `marcaj_vorbit` (de el depinde și gândul „Maybe Lexy could lend me some money..” de la ieșire).
 
@@ -13,8 +13,6 @@ extends Interactabil
 @export var ghiseu: Marker3D
 @export var cutie_bani: Marker3D
 @export var tava: Marker3D
-## Cât valorează bancnota în jetoane (cenți).
-@export var valoare_bancnota := 500
 @export var marcaj_vorbit := "a_vorbit_cu_batrana_casino"
 @export var marcaj_schimb := "a_schimbat_banii"
 @export_multiline var replici_inceput: PackedStringArray = ["Old bitch: Hey sweetie, you can exchange cash here.",
@@ -55,7 +53,7 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
-	var ai_cash := Stare.are_obiect(LexyMasa.ID_BANI) or Bani.suma() > 0
+	var ai_cash := Bani.suma() > 0
 	if Jetoane.suma() <= 0:
 		# fără jetoane, ca la început: replicile owner-ului, apoi schimbul (sau „poor bitch”)
 		await _spune(replici_inceput)
@@ -89,9 +87,8 @@ func _spune(replici: PackedStringArray) -> void:
 
 ## Bancnota pe jetoane: tu o întinzi prin ghișeu, ea o ia și o bagă în cutie, apoi îți împinge jetoanele.
 func _schimba() -> void:
-	# bancnota de 5 dolari de la Lexy, sau (dacă n-o ai) tot cash-ul
-	var cu_bancnota := Stare.are_obiect(LexyMasa.ID_BANI)
-	var valoare := valoare_bancnota if cu_bancnota else Bani.suma()
+	# tot cash-ul (și bancnota de 5 dolari de la Lexy e în el)
+	var valoare := Bani.suma()
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	var cap: Node3D = jucator.get_node("Cap")
 	var camera: Camera3D = cap.get_node("Camera3D")
@@ -125,10 +122,7 @@ func _schimba() -> void:
 	# o ia: bancnota trece în mâna ei
 	b.reparent(om.nod_mana("D"), true)
 	Sunet.reda_la(sunet_bancnota, predare, Sunet.VOLUM_EFECTE - 3.0, 0.05)
-	if cu_bancnota:
-		Stare.scoate_obiect(LexyMasa.ID_BANI)
-	else:
-		Bani.seteaza(0)
+	Bani.seteaza(0)
 	await c.priveste(om.global_position + Vector3.UP * 1.3, 0.5)
 	await om.du_mana("D", cutie_bani.global_position + Vector3.UP * 0.12, 0.6)
 	b.queue_free()

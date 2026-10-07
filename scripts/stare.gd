@@ -127,15 +127,33 @@ func importa(date: Dictionary) -> void:
 	lanterna = date.get("lanterna", true)
 	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
 	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
+	# salvările de dinainte ca bancnota de 5 dolari să intre în cash: o adunăm acum
+	if obiecte.has(LexyMasa.ID_BANI):
+		var mana_pe_bancnota := in_mana == LexyMasa.ID_BANI
+		obiecte.erase(LexyMasa.ID_BANI)
+		var suma := Bani.suma() + Bani.BANCNOTA
+		marcaje[Bani.MARCAJ] = suma
+		obiecte[Bani.ID] = Bani.nume(suma)
+		if mana_pe_bancnota:
+			in_mana = Bani.ID
 	if not obiecte.has(in_mana):
 		in_mana = ""
 
 
 func adauga_obiect(id: String, nume: String) -> bool:
+	# banii se adună mereu într-un singur obiect: bancnota de 5 dolari intră în cash
+	var suma_noua := -1
+	if id == LexyMasa.ID_BANI:
+		suma_noua = Bani.suma() + Bani.BANCNOTA
+		id = Bani.ID
 	if obiecte.size() >= LOCURI_INVENTAR and not obiecte.has(id):
 		_arata_mesaj("Inventory full")
 		return false
-	obiecte[id] = nume
+	if suma_noua >= 0:
+		marcaje[Bani.MARCAJ] = suma_noua
+		obiecte[id] = Bani.nume(suma_noua)
+	else:
+		obiecte[id] = nume
 	_arata_mesaj("Picked up: " + nume)
 	Sunet.reda(SUNET_OBIECT, Sunet.VOLUM_EFECTE, 0.0, &"Interfata")
 	schimbat.emit()
@@ -367,7 +385,11 @@ func _ia_de_pe_raft(index: int) -> void:
 	if index >= raft.size():
 		return
 	var id: String = raft.keys()[index]
-	if obiecte.size() >= LOCURI_INVENTAR:
+	if id == LexyMasa.ID_BANI:
+		# bancnota pusă pe raft într-o salvare veche: intră în cash
+		if adauga_obiect(id, raft[id]):
+			raft.erase(id)
+	elif obiecte.size() >= LOCURI_INVENTAR:
 		_arata_mesaj("Inventory full")
 	else:
 		obiecte[id] = raft[id]

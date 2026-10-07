@@ -90,16 +90,9 @@ func interactioneaza() -> void:
 	_in_curs = false
 
 
-## Câte obiecte ai în inventar după ce plătești `pret` (cash-ul și bancnota pot dispărea, cash-ul poate apărea).
+## Câte obiecte ai în inventar după ce plătești `pret` (cash-ul dispare dacă dai tot).
 func _locuri_dupa_plata(pret: int) -> int:
-	var cash := Bani.suma()
-	var bancnota := Stare.are_obiect(LexyMasa.ID_BANI)
-	var n := Stare.obiecte.size() - (1 if cash > 0 else 0) - (1 if bancnota else 0)
-	var rest := cash - pret
-	if rest < 0 and bancnota:
-		rest += 500
-		bancnota = false
-	return n + (1 if rest > 0 else 0) + (1 if bancnota else 0)
+	return Stare.obiecte.size() - (1 if Bani.suma() <= pret else 0)
 
 
 ## Ai deja arma (în inventar, aruncată pe jos sau pe raftul de acasă).

@@ -120,7 +120,7 @@ func interactioneaza() -> void:
 	var zi_oras := Stare.e_marcat(marcaj_zi_oras)
 	if zi_oras and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut):
 		# bancnota trebuie să încapă în inventar (altfel nici nu începe conversația, ca la Helga)
-		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(ID_BANI):
+		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(Bani.ID):
 			Stare.adauga_obiect(ID_BANI, NUME_BANI)
 			return
 		_in_curs = true

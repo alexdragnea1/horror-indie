@@ -17,7 +17,7 @@ func _ready() -> void:
 func _intrat(corp: Node3D) -> void:
 	if not corp.is_in_group("jucator") or Stare.e_marcat(marcaj_gata) or not Stare.e_marcat(marcaj_casa):
 		return
-	if Stare.e_marcat("a_jefuit_lexy") or Stare.e_marcat("a_imprumutat_de_la_lexy") or Stare.are_obiect(LexyMasa.ID_BANI):
+	if Stare.e_marcat("a_jefuit_lexy") or Stare.e_marcat("a_imprumutat_de_la_lexy") or Bani.suma() > 0:
 		return
 	if Jetoane.suma() > 0 or Stare.e_marcat("lexy_moarta"):
 		return
