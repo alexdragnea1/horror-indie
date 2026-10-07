@@ -27,6 +27,12 @@ static var cu_autobuzul := false
 @export var sarcina_chemat := ""
 ## Sarcina care dispare când chemi autobuzul (dacă e cea curentă).
 @export var sarcina_de_sters := "Check the bus schedule."
+@export_group("Alte titluri")
+## Între `titluri_noi_de_la` (pus) și `titluri_noi_pana_la` (încă nepus), titlul locului `i` e `titluri_noi[i]` (gol =
+## cel obișnuit). Ex.: după mesajul lui Head Witch, „Home” = „Block M7, Entrance B / 7:24 PM”, până înveți scutul.
+@export var titluri_noi_de_la := ""
+@export var titluri_noi_pana_la := ""
+@export var titluri_noi: PackedStringArray = []
 
 var _in_curs := false
 
@@ -63,6 +69,10 @@ func interactioneaza() -> void:
 				await Dialog.terminat
 		else:
 			var titlu := titluri[ales] if ales < titluri.size() else optiuni[ales]
+			if titluri_noi_de_la != "" and Stare.e_marcat(titluri_noi_de_la) \
+					and (titluri_noi_pana_la == "" or not Stare.e_marcat(titluri_noi_pana_la)) \
+					and ales < titluri_noi.size() and titluri_noi[ales] != "":
+				titlu = titluri_noi[ales]
 			sosire.cheama(scena, titlu)
 			if sarcina_chemat != "":
 				Stare.seteaza_sarcina(sarcina_chemat)

@@ -33,6 +33,7 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="31_b3"]
 [ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="32_fr"]
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="33_or"]
+[ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="ms_sefa"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="34_jt"]
 [ext_resource type="Script" path="res://scripts/jucator.gd" id="35_jg"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="36_l1"]
@@ -388,6 +389,10 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Lexy\'s Place")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn")
 titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Lexy\'s place")
+titluri_noi_de_la = "a_primit_mesajul_sefei"
+titluri_noi_pana_la = "a_invatat_scutul"
+titluri_noi = PackedStringArray("Block M7, Entrance B
+7:24 PM", "", "")
 ascunse_dupa = PackedStringArray("", "", "lexy_moarta")
 replici = PackedStringArray()
 
@@ -421,3 +426,15 @@ scartait_podea = ExtResource("50_sp")
 lanterna_pornita = ExtResource("51_lp")
 lanterna_oprita = ExtResource("52_lo")
 suprafata_implicita = "beton"
+
+[node name="MesajSefa" type="Node" parent="."]
+script = ExtResource("ms_sefa")
+marcaj_dupa_care = "a_cumparat_arma"
+obiecte_oricare = PackedStringArray("cutit", "shotgun", "ak47", "bazooka")
+marcaj_gata = "a_primit_mesajul_sefei"
+intarziere = 0.8
+doar_afara = true
+contact = "Coven Retard"
+ora = "7:03"
+mesaje = PackedStringArray("Head Witch: I'm outside your apartment.", "Head Witch: I have info on the warlock, come quickly.", "You: Yeah bitch, hold up.", "You: I'm doing some shopping.")
+sarcina_noua = "Take the bus home."

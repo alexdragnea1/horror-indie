@@ -14,6 +14,8 @@ static var din_casa := false
 @export var marcaj_seara := "a_urcat_spre_casa"
 ## Ziua în care mergi prin oraș (după al doilea somn) e iar zi, chiar dacă seara a trecut.
 @export var marcaj_zi_oras := "ziua_orasului"
+## După mesajul lui Head Witch (de la Gun Store) curtea e la apus: e a lui ApusBloc, aici nu se mai face zi.
+@export var marcaj_apus := "a_primit_mesajul_sefei"
 @export var mediu: WorldEnvironment
 ## `Luna` din scenă: ziua e soarele (aceeași direcție, altă culoare și putere).
 @export var soare: DirectionalLight3D
@@ -45,8 +47,9 @@ static var din_casa := false
 func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
 	var zi := Stare.e_marcat(marcaj_zi_oras) or (Stare.e_marcat(marcaj_dimineata) and not Stare.e_marcat(marcaj_seara))
-	if jucator == null or not zi:
-		din_casa = false
+	if jucator == null or not zi or Stare.e_marcat(marcaj_apus):
+		if jucator == null or not Stare.e_marcat(marcaj_apus):
+			din_casa = false  # la apus îl folosește ApusBloc
 		return
 	_fa_zi()
 	await get_tree().process_frame

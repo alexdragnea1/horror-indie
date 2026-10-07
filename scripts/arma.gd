@@ -17,6 +17,8 @@ const SUNET_SCOASA := preload("res://sunete/arma_scoasa.ogg")
 const SUNET_TUB := preload("res://sunete/tub_cazut.ogg")
 ## Câte găuri de glonț rămân pe pereți (cele mai vechi dispar).
 const MAX_GAURI := 60
+## O scenă din cod o poate ține la vedere cât e Stare.meniu_deschis (ex. arma scoasă în fața lui Head Witch, sefa_apus.gd).
+static var in_scena := false
 static var _gauri: Array[Node3D] = []
 static var _textura_cerc: Texture2D
 
@@ -118,7 +120,7 @@ func _trage() -> void:
 func _process(delta: float) -> void:
 	_timp += delta
 	var are := Stare.in_mana == id
-	var jos := not are or Stare.meniu_deschis or Tranzitie.activa
+	var jos := not are or (Stare.meniu_deschis and not in_scena) or Tranzitie.activa
 	if are and not _avea:
 		Sunet.reda(SUNET_SCOASA, Sunet.VOLUM_EFECTE - 4.0, 0.05)
 	_avea = are

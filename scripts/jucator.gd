@@ -59,6 +59,8 @@ func _ready() -> void:
 	vraja.name = "VrajaFoc"  # helga.gd o caută după nume (lecția)
 	_camera.add_child(vraja)
 	_camera.add_child(ObiectInMana.new())
+	# scutul (Ctrl), după ce te-a învățat Head Witch (sefa_apus.gd): o sferă în jurul tău, nu ceva ținut în mână
+	add_child(ScutJucator.new())
 	# armele de la Gun Store (magazin_arme.tscn), fiecare cu animația ei de tras
 	_camera.add_child(Cutit.new())
 	_camera.add_child(Shotgun.new())

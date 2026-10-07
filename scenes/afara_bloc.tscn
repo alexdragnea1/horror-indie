@@ -1,4 +1,4 @@
-[gd_scene load_steps=87 format=3]
+[gd_scene load_steps=89 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -56,6 +56,8 @@
 [ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="lx1"]
 [ext_resource type="Script" path="res://scripts/seara_bloc.gd" id="sr1"]
 [ext_resource type="Script" path="res://scripts/sefa_seara.gd" id="sr2"]
+[ext_resource type="Script" path="res://scripts/apus_bloc.gd" id="ap1"]
+[ext_resource type="Script" path="res://scripts/sefa_apus.gd" id="ap2"]
 [ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="sr3"]
 [ext_resource type="Script" path="res://scripts/intoarcere_noaptea.gd" id="no1"]
 
@@ -715,3 +717,20 @@ sarcina_noua = ""
 doar_din_orar = true
 loc_jucator = Vector3(6.8, 0.12, 14.7)
 unghi_jucator = 0.5
+
+[node name="ApusBloc" type="Node" parent="." node_paths=PackedStringArray("mediu", "soare", "de_oprit", "doar_noaptea")]
+script = ExtResource("ap1")
+mediu = NodePath("../Mediu")
+soare = NodePath("../Luna")
+de_oprit = [NodePath("../Sperieturi"), NodePath("../Fantoma")]
+doar_noaptea = [NodePath("../Batator")]
+
+[node name="HeadWitchApus" parent="." node_paths=PackedStringArray("brat", "cap") instance=ExtResource("zi2")]
+transform = Transform3D(0.825, 0, 0.565, 0, 1, 0, -0.565, 0, 0.825, 1.2, 0.06, 4.6)
+script = ExtResource("ap2")
+replici_dupa_scut = PackedStringArray("Head Witch: Try to flex every muscle in your body.", "Head Witch: You should be able to use the shield.")
+brat = NodePath("Model/BratDrept")
+cap = NodePath("Model/Cap")
+model_matura = ExtResource("zi5")
+distanta_privire = 9.0
+replici = PackedStringArray("Head Witch: You took a while.", "You: Can you pretty please kill yourself?", "Head Witch: I'm here because I know where the warlock is hiding.", "Head Witch: But first I will need to teach you defensive magic.")

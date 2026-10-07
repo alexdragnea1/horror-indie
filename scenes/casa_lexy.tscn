@@ -50,6 +50,7 @@
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
+[ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="ms_sefa"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -511,6 +512,10 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Gun Store")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/magazin_arme.tscn")
 titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Freedom Gun Store")
+titluri_noi_de_la = "a_primit_mesajul_sefei"
+titluri_noi_pana_la = "a_invatat_scutul"
+titluri_noi = PackedStringArray("Block M7, Entrance B
+7:24 PM", "", "")
 
 [node name="Forma" type="CollisionShape3D" parent="OrarLexy"]
 shape = SubResource("forma_orar")
@@ -525,3 +530,14 @@ marcaj = ""
 sarcina_noua = ""
 doar_din_orar = true
 loc_jucator = Vector3(3.6, 0.16, 17.9)
+
+[node name="MesajSefa" type="Node" parent="."]
+script = ExtResource("ms_sefa")
+marcaj_dupa_care = "a_cumparat_arma"
+obiecte_oricare = PackedStringArray("cutit", "shotgun", "ak47", "bazooka")
+marcaj_gata = "a_primit_mesajul_sefei"
+intarziere = 3.0
+contact = "Coven Retard"
+ora = "7:03"
+mesaje = PackedStringArray("Head Witch: I'm outside your apartment.", "Head Witch: I have info on the warlock, come quickly.", "You: Yeah bitch, hold up.", "You: I'm doing some shopping.")
+sarcina_noua = "Take the bus home."

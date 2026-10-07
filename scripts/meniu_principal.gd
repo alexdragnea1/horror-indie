@@ -303,6 +303,9 @@ func _actualizeaza_controale() -> void:
 		copil.queue_free()
 	var randuri := []
 	for pereche in Setari.ACTIUNI:
+		# scutul îl înveți abia mai târziu (Head Witch, la apus): nu-l spunem de la început
+		if pereche[0] == "scut":
+			continue
 		randuri.append([Setari.nume_tasta(pereche[0]), pereche[1]])
 	randuri.append_array([
 		["Mouse", "Look around"],

@@ -183,6 +183,7 @@ func _vinde(o: Dictionary) -> void:
 	Sunet.reda(SUNET_LUATA, Sunet.VOLUM_EFECTE - 2.0, 0.05)
 	Stare.adauga_obiect(o.id, o.nume)
 	Stare.tine_in_mana(o.id)
+	Stare.marcheaza("a_cumparat_arma")  # după el, la ieșire, mesajul lui Head Witch (MesajSefa)
 	await c.opreste()
 
 

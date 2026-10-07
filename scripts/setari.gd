@@ -17,6 +17,7 @@ const ACTIUNI := [
 	["interact", "Interact"],
 	["lanterna", "Flashlight"],
 	["inventar", "Inventory"],
+	["scut", "Shield"],
 ]
 ## Ce controlează glisorul „Effects”: tot ce nu e muzică.
 const CANALE_EFECTE: Array[StringName] = [&"Efecte", &"Ambianta", &"Interfata"]
