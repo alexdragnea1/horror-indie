@@ -2,13 +2,13 @@ extends Interactabil
 ## Gun Clerk, vânzătorul de la „Freedom” (magazin_arme.tscn): un cowboy modern, în picioare după tejghea (animat de
 ## OmLaMasa: respiră, se uită la tine, mâinile cu IK). E → `replica_intrebare` (a owner-ului) cu butoanele din `OFERTA`
 ## (ordonate după preț, fără ce ai deja) + `optiune_nimic`. Alegi:
-##  - n-ai destui bani (jetoanele de la casino, Jetoane): `replici_fara_bani`;
+##  - n-ai destui bani (cash, Bani, plus bancnota de 5 dolari): `replici_fara_bani`, sau `replici_jetoane` dacă ai
+##    destule jetoane (Jetoane; cash out la bătrâna de la casino);
 ##  - inventarul e plin: `replici_plin`;
-##  - altfel o scenă: pui jetoanele pe tejghea, el le strânge, se întoarce la peretele cu arme, ia arma (cu ambele mâini,
+##  - altfel o scenă: pui banii pe tejghea, el îi strânge, se întoarce la peretele cu arme, ia arma (cu ambele mâini,
 ##    dacă e lungă), se întoarce și ți-o pune pe tejghea, `replici_dupa` (owner: „Excellent choice.”), o iei: intră în
 ##    inventar și o ții deja în mână.
 ## Armele de pe perete sunt nodurile din `raft` (Cutit, Shotgun, AK47, Bazooka); ce ai deja nu mai stă pe perete.
-## Dacă tragi în magazin (grupul "aude_impuscaturi") zice `replici_tras`.
 
 const OFERTA := [
 	{"id": "cutit", "nume": "Knife", "pret": 5, "raft": "Cutit"},
@@ -23,8 +23,11 @@ const CULCAT_DREAPTA := Basis(Vector3(0, 1, 0), Vector3(0, 0, -1), Vector3(-1, 0
 const CULCAT_STANGA := Basis(Vector3(0, -1, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0))
 const PE_TEJGHEA := {"Cutit": [CULCAT_DREAPTA, 0.018], "Shotgun": [CULCAT_DREAPTA, 0.027], "AK47": [CULCAT_DREAPTA, 0.026],
 	"Bazooka": [CULCAT_STANGA, 0.066]}
-const SUNET_JETOANE := preload("res://sunete/jetoane_puse.ogg")
-const SUNET_STRANSE := preload("res://sunete/jetoane_stranse.ogg")
+const SUNET_BANI := preload("res://sunete/bancnota.ogg")
+const MODEL_BANCNOTA := preload("res://models/bancnota.glb")
+const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
+const MATERIAL := preload("res://shaders/material_model.tres")
+const SUNET_BANI_STRANSI := preload("res://sunete/bancnota.ogg")
 const SUNET_PUSA := preload("res://sunete/arma_pe_tejghea.ogg")
 const SUNET_LUATA := preload("res://sunete/arma_scoasa.ogg")
 const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sunete/pas_lemn_2.ogg"), preload("res://sunete/pas_lemn_3.ogg")]
@@ -37,22 +40,19 @@ const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sune
 @export var plata: Marker3D
 ## Cât face un pas înapoi spre perete (metri) când se întoarce după armă.
 @export var pas_spre_raft := 1.22
-## Interiorul magazinului (global): doar împușcăturile de aici îl supără.
-@export var interior := AABB(Vector3(-4.1, -0.5, -7.1), Vector3(8.2, 4.0, 7.0))
 @export var replica_intrebare := "Gun Clerk: What can I do for you today?"
 @export var optiune_nimic := "Nothing"
 @export_multiline var replici_dupa: PackedStringArray = ["Gun Clerk: Excellent choice."]
 @export_multiline var replici_fara_bani: PackedStringArray = ["Gun Clerk: You can't afford that, partner."]
 @export_multiline var replici_plin: PackedStringArray = ["Gun Clerk: Your hands are full, partner."]
-@export_multiline var replici_tras: PackedStringArray = ["Gun Clerk: Whoa! Not inside my store, partner!"]
+## Ai destule jetoane, dar nu și cash (replica lui Claude): jetoanele se schimbă pe bani la bătrâna de la casino.
+@export_multiline var replici_jetoane: PackedStringArray = ["Gun Clerk: We don't take casino chips, partner. Cash only."]
 
 var _in_curs := false
-var _ultima_mustrare := -100.0
 
 
 func _ready() -> void:
 	indiciu = "[E] Talk to the Gun Clerk"
-	add_to_group("aude_impuscaturi")
 	await get_tree().process_frame
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	if jucator and om:
@@ -81,13 +81,25 @@ func interactioneaza() -> void:
 	if i < disponibile.size():
 		var o: Dictionary = disponibile[i]
 		var pret: int = o.pret * 100
-		if Jetoane.suma() < pret:
-			await _spune(replici_fara_bani)
-		elif Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and Jetoane.suma() > pret:
+		if Bani.de_platit() < pret:
+			await _spune(replici_jetoane if Jetoane.suma() >= pret else replici_fara_bani)
+		elif _locuri_dupa_plata(pret) >= Stare.LOCURI_INVENTAR:
 			await _spune(replici_plin)
 		else:
 			await _vinde(o)
 	_in_curs = false
+
+
+## Câte obiecte ai în inventar după ce plătești `pret` (cash-ul și bancnota pot dispărea, cash-ul poate apărea).
+func _locuri_dupa_plata(pret: int) -> int:
+	var cash := Bani.suma()
+	var bancnota := Stare.are_obiect(LexyMasa.ID_BANI)
+	var n := Stare.obiecte.size() - (1 if cash > 0 else 0) - (1 if bancnota else 0)
+	var rest := cash - pret
+	if rest < 0 and bancnota:
+		rest += 500
+		bancnota = false
+	return n + (1 if rest > 0 else 0) + (1 if bancnota else 0)
 
 
 ## Ai deja arma (în inventar, aruncată pe jos sau pe raftul de acasă).
@@ -103,15 +115,6 @@ func _spune(replici: PackedStringArray) -> void:
 		await Dialog.terminat
 
 
-func a_auzit_impuscatura(punct: Vector3, _arma: String) -> void:
-	var acum := Time.get_ticks_msec() / 1000.0
-	if _in_curs or Dialog.activ or acum - _ultima_mustrare < 8.0 or not interior.has_point(punct):
-		return
-	_ultima_mustrare = acum
-	await get_tree().create_timer(0.4).timeout
-	if not Dialog.activ:
-		Dialog.spune(replici_tras)
-
 
 # ---------------------------------------------------------------- vânzarea
 
@@ -121,20 +124,20 @@ func _vinde(o: Dictionary) -> void:
 	var scena := get_tree().current_scene
 	var c := Cutscena.porneste(self)
 	await c.priveste(plata.global_position, 0.5)
-	# 1. pui jetoanele pe tejghea
-	var teanc := _teanc(maxi(2, mini(12, int(o.pret / 25) + 2)))
+	# 1. pui banii pe tejghea
+	var teanc := _teanc(clampi(int(o.pret / 25) + 1, 1, 8))
 	camera.add_child(teanc)
 	teanc.position = Vector3(0.18, -0.42, -0.2)
 	teanc.reparent(scena, true)
 	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(teanc, "global_position", plata.global_position, 0.55)
 	await t.finished
-	Sunet.reda_la(SUNET_JETOANE, plata.global_position, Sunet.VOLUM_EFECTE, 0.05)
-	Jetoane.adauga(-int(o.pret) * 100)
-	# 2. el le strânge cu stânga și le bagă sub tejghea
+	Sunet.reda_la(SUNET_BANI, plata.global_position, Sunet.VOLUM_EFECTE, 0.05)
+	Bani.plateste(int(o.pret) * 100)
+	# 2. el îi strânge cu stânga și îi bagă sub tejghea
 	await om.du_mana("S", plata.global_position + Vector3.UP * 0.05, 0.55)
 	teanc.reparent(om.nod_mana("S"), true)
-	Sunet.reda_la(SUNET_STRANSE, plata.global_position, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+	Sunet.reda_la(SUNET_BANI_STRANSI, plata.global_position, Sunet.VOLUM_EFECTE - 2.0, 0.05)
 	await om.du_mana("S", om.global_position + om.global_basis * Vector3(0.25, 0.85, 0.05), 0.5)
 	teanc.queue_free()
 	om.lasa_mana("S", 0.4)
@@ -208,22 +211,15 @@ func _mergi(unde: Vector3, unghi: float, durata: float) -> void:
 		await t.finished
 
 
-## Un teanc de jetoane (alb-roșii), ca la bătrâna de la casino.
+## Un teanc de bancnote (plata), puțin răsfirate.
 func _teanc(cate: int) -> Node3D:
 	var n := Node3D.new()
-	var m := CylinderMesh.new()
-	m.top_radius = MasaPoker.RAZA_JETON
-	m.bottom_radius = MasaPoker.RAZA_JETON
-	m.height = MasaPoker.GROSIME_JETON
-	m.radial_segments = 10
-	var alb := StandardMaterial3D.new()
-	alb.albedo_color = Color("83b3b0")
-	var rosu := StandardMaterial3D.new()
-	rosu.albedo_color = Color("7b383a")
 	for k in cate:
-		var j := MeshInstance3D.new()
-		j.mesh = m
-		j.material_override = rosu if k % 2 else alb
-		j.position.y = MasaPoker.GROSIME_JETON * (k + 0.5)
-		n.add_child(j)
+		var b := MODEL_BANCNOTA.instantiate() as Node3D
+		b.set_script(SCRIPT_MODEL)
+		b.set("material", MATERIAL)
+		b.set("umbre", false)
+		b.position = Vector3(randf_range(-0.008, 0.008), 0.0015 * k, randf_range(-0.008, 0.008))
+		b.rotation.y = randf_range(-0.25, 0.25)
+		n.add_child(b)
 	return n

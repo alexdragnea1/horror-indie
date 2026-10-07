@@ -498,6 +498,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -17.6)
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 3
 
 [node name="LocuriMasa" type="Node3D" parent="." unique_id=601711390]
 
@@ -536,30 +537,35 @@ transform = Transform3D(-0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, -0.701
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 2
 
 [node name="ScaunPoker2" type="Node3D" parent="." unique_id=1400520944 instance=ExtResource("24_hqlrs")]
 transform = Transform3D(0.7017042, 0, 0.7124684, 0, 1, 0, -0.7124684, 0, 0.7017042, -1.4694774, 0.15, -18.235512)
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 2
 
 [node name="ScaunPoker3" type="Node3D" parent="." unique_id=641083175 instance=ExtResource("24_hqlrs")]
 transform = Transform3D(1, 0, 1.07680896e-16, 0, 1, 0, -1.07680896e-16, 0, 1, -2.9865617e-16, 0.15, -18.75)
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 2
 
 [node name="ScaunPoker4" type="Node3D" parent="." unique_id=87288492 instance=ExtResource("24_hqlrs")]
 transform = Transform3D(0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, 0.7017042, 1.4694774, 0.15, -18.235512)
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 2
 
 [node name="ScaunPoker5" type="Node3D" parent="." unique_id=876886691 instance=ExtResource("24_hqlrs")]
 transform = Transform3D(-0.7017042, 0, -0.7124684, 0, 1, 0, 0.7124684, 0, -0.7017042, 1.4694774, 0.15, -16.964489)
 script = ExtResource("4_baxj7")
 material = ExtResource("5_3uy0y")
 stralucitoare = PackedStringArray()
+coliziune = 2
 
 [node name="Jucatori" type="Node3D" parent="." unique_id=292279925]
 
@@ -639,8 +645,8 @@ jucatori = [NodePath("../Jucatori/BigSal"), NodePath("../Jucatori/SlickTony"), N
 locuri = [NodePath("../LocuriMasa/Loc0"), NodePath("../LocuriMasa/Loc1"), NodePath("../LocuriMasa/Loc2"), NodePath("../LocuriMasa/Loc3"), NodePath("../LocuriMasa/Loc4"), NodePath("../LocuriMasa/Loc5")]
 centru = NodePath("../LocuriMasa/Centru")
 loc_jucator = NodePath("../LocuriMasa/LocJucator")
-nume_jucatori = PackedStringArray("Big Sal", "Slick Tony", "Old Gheorghe", "Sharon", "Florin")
-bani_jucatori = PackedInt32Array(4200, 2600, 1850, 3300, 2900)
+nume_jucatori = PackedStringArray("Big Sal", "Slick Tony", "Old Ass", "Trophy Wife", "Asshole")
+bani_jucatori = PackedInt32Array(34200, 14700, 22200, 18900, 9700)
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="LocLiber" unique_id=691561304]

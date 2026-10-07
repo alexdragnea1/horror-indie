@@ -255,8 +255,8 @@ func _arunca(index: int) -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	if jucator == null:
 		return
-	if not ObiecteLume.are_model(id):
-		_arata_mesaj("Can't drop that.")
+	if not ObiecteLume.se_poate_arunca(id):
+		_arata_mesaj("You can't drop a spell." if id == VrajaFoc.ID else "Can't drop that.")
 		_mesaj.show()
 		return
 	# în fața ta, pe podea (nu în perete: dacă e unul aproape, cade lângă el)
@@ -277,11 +277,30 @@ func _arunca(index: int) -> void:
 	lovit = spatiu.intersect_ray(raza)
 	var punct: Vector3 = lovit.position if lovit else Vector3(tinta.x, jucator.global_position.y, tinta.z)
 	var unghi := jucator.rotation.y + randf_range(-0.6, 0.6)
-	# întâi în `aruncate`, apoi scos din inventar (cine ascultă `schimbat` îl vede deja pe jos, ex. mătura de pe perete)
-	aruncate[id] = {"scena": get_tree().current_scene.scene_file_path, "nume": nume, "poz": [punct.x, punct.y, punct.z],
+	var a := {"id": id, "scena": get_tree().current_scene.scene_file_path, "nume": nume, "poz": [punct.x, punct.y, punct.z],
 		"unghi": unghi}
-	scoate_obiect(id)
-	ObiecteLume.pune_jos(get_tree().current_scene, id, nume, punct, unghi)
+	var impuls := Vector3.ZERO
+	if Cadavre.e_cadavru(id):
+		# îl lași să cadă din brațe în fața ta, culcat de-a curmezișul
+		a.unghi = jucator.rotation.y + PI / 2.0
+		impuls = fata * 25.0 * float(Cadavre.MODELE[id].get("masa", 30.0)) / 30.0  # pisica e de 10 ori mai ușoară
+	# banii își duc suma cu ei; dacă ai mai aruncat bani, cheia e alta (fiecare grămadă e a ei)
+	var cheie := id
+	if id == Jetoane.ID or id == Bani.ID:
+		a.valoare = Jetoane.suma() if id == Jetoane.ID else Bani.suma()
+		var n := 2
+		while aruncate.has(cheie):
+			cheie = "%s_%d" % [id, n]
+			n += 1
+	# întâi în `aruncate`, apoi scos din inventar (cine ascultă `schimbat` îl vede deja pe jos, ex. mătura de pe perete)
+	aruncate[cheie] = a
+	if id == Jetoane.ID:
+		Jetoane.seteaza(0)
+	elif id == Bani.ID:
+		Bani.seteaza(0)
+	else:
+		scoate_obiect(id)
+	ObiecteLume.pune_jos(get_tree().current_scene, cheie, a, impuls)
 	Sunet.reda_la(SUNET_ARUNCAT, punct, Sunet.VOLUM_EFECTE, 0.08)
 	_inventar.actualizeaza(obiecte, sarcina, in_mana)
 
@@ -301,10 +320,10 @@ func pune_aruncate() -> void:
 	var scena := get_tree().current_scene
 	if scena == null:
 		return
-	for id: String in aruncate:
-		var a: Dictionary = aruncate[id]
-		if a.scena == scena.scene_file_path and ObiecteLume.are_model(id):
-			ObiecteLume.pune_jos(scena, id, a.nume, Vector3(a.poz[0], a.poz[1], a.poz[2]), a.unghi)
+	for cheie: String in aruncate:
+		var a: Dictionary = aruncate[cheie]
+		if a.scena == scena.scene_file_path and ObiecteLume.se_poate_arunca(a.get("id", cheie)):
+			ObiecteLume.pune_jos(scena, cheie, a)
 
 
 # ---------------------------------------------------------------- raftul din camera ta
@@ -335,7 +354,7 @@ func _pune_pe_raft(index: int) -> void:
 	var id: String = obiecte.keys()[index]
 	if raft.size() >= LOCURI_RAFT:
 		_arata_mesaj("The shelf is full")
-	elif not ObiecteLume.are_model(id):
+	elif not ObiecteLume.are_model(id) or id == Jetoane.ID or id == Bani.ID:
 		_arata_mesaj("That doesn't go on a shelf.")
 	else:
 		raft[id] = obiecte[id]

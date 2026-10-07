@@ -49,6 +49,10 @@ var _privire_temp := Vector3.INF
 var _cap_rot := Vector2.ZERO
 var _corp_baza := Vector3.ONE
 var _faza := 0.0
+var _corp_rotatie := Vector3.ZERO
+## Tresăritul (1 → 0) și direcția glonțului, în coordonatele lui.
+var _tresarire := 0.0
+var _smucit := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -57,6 +61,7 @@ func _ready() -> void:
 	_cap = _model.find_child("Cap", true, false)
 	_faza = randf() * TAU
 	_corp_baza = _corp.scale
+	_corp_rotatie = _corp.rotation
 	for l in ["D", "S"]:
 		_brat[l] = _model.find_child("Brat" + l, true, false)
 		_antebrat[l] = _model.find_child("Antebrat" + l, true, false)
@@ -106,6 +111,10 @@ func _process(delta: float) -> void:
 	_timp += delta
 	# respirația: pieptul se umflă puțin
 	_corp.scale = _corp_baza * Vector3(1.0 + sin(_timp * 1.7 + _faza) * 0.008, 1.0 + sin(_timp * 1.7 + _faza) * 0.012, 1.0)
+	# tresăritul de la un glonț: trunchiul smucit înapoi și într-o parte, apoi revine
+	_tresarire = move_toward(_tresarire, 0.0, delta * 2.5)
+	var k := ease(_tresarire, 0.4)
+	_corp.rotation = _corp_rotatie + Vector3(_smucit.z * 0.22 * k, 0.0, -_smucit.x * 0.18 * k)
 	_priveste(delta)
 	for l in ["D", "S"]:
 		if _cat[l] > 0.0:
@@ -279,3 +288,11 @@ func bate_masa() -> void:
 		await du_mana(l, repaus + Vector3.UP * 0.07, 0.12)
 		await du_mana(l, repaus + Vector3.UP * 0.005, 0.08)
 	await lasa_mana(l, 0.2)
+
+
+## Un glonț (TintaOm): trunchiul e smucit în direcția lui, apoi revine.
+func tresare(directie: Vector3) -> void:
+	var local := global_basis.inverse() * directie
+	local.y = 0.0
+	_smucit = local.normalized() if local.length() > 0.01 else Vector3.BACK
+	_tresarire = 1.0

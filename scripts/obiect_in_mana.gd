@@ -1,7 +1,8 @@
 class_name ObiectInMana
 extends Node3D
 ## Ce ții în mână la persoana întâi, în afară de pistol (care are scriptul lui, Pistol). Îl pune jucator.gd sub cameră.
-## Arată modelul din `MODELE` pentru `Stare.in_mana`; un obiect care nu e în listă (ex. un cadavru) nu se vede.
+## Arată modelul din `MODELE` pentru `Stare.in_mana` (banii și jetoanele sunt făcute din cod), iar cadavrele (Cadavre)
+## le ții în brațe, culcate de-a curmezișul, jos în fața ta.
 ## La schimbare: cel vechi coboară din cadru, apoi urcă cel nou. Cât e deschis un meniu / o scenă sau e ecranul negru,
 ## îl lași jos, ca pistolul.
 ## Un obiect cu `"mancare": true` (bomboana) se mănâncă la click (acțiunea "trage"): îl desfaci, ambalajul (`Ambalaj`)
@@ -15,6 +16,24 @@ const MODELE := {
 		"scena": preload("res://models/matura.glb"),
 		"pozitie": Vector3(0.44, -0.64, -0.66),
 		"rotatie": Vector3(-0.4, 0.15, 0.3),
+	},
+	# banii: o bancnotă ținută ridicată spre tine (cash-ul = trei bancnote răsfirate), jetoanele = un teanc în palmă
+	"bani_5": {
+		"scena": preload("res://models/bancnota.glb"),
+		"pozitie": Vector3(0.15, -0.16, -0.32),
+		"rotatie": Vector3(1.15, 0.25, -0.15),
+		"stralucire_toate": 0.35,
+	},
+	"cash": {
+		"cod": "cash",
+		"pozitie": Vector3(0.15, -0.16, -0.32),
+		"rotatie": Vector3(1.15, 0.25, -0.15),
+		"stralucire_toate": 0.35,
+	},
+	"jetoane": {
+		"cod": "jetoane",
+		"pozitie": Vector3(0.14, -0.19, -0.33),
+		"rotatie": Vector3(0.45, 0.4, 0.0),
 	},
 	"bomboana": {
 		"scena": preload("res://models/bomboana.glb"),
@@ -49,7 +68,7 @@ func _process(delta: float) -> void:
 	_timp += delta
 	if _mananca:
 		return  # animația de mâncat mișcă singură modelul
-	var vrut := Stare.in_mana if MODELE.has(Stare.in_mana) else ""
+	var vrut := Stare.in_mana if are_model(Stare.in_mana) else ""
 	var jos := vrut != _id or vrut == "" or (Stare.meniu_deschis and not in_scena) or Tranzitie.activa
 	_jos = move_toward(_jos, 1.0 if jos else 0.0, delta * 3.0)
 	if _jos >= 1.0 and vrut != _id:
@@ -57,12 +76,34 @@ func _process(delta: float) -> void:
 	visible = _model != null and _jos < 0.99
 	if _model == null:
 		return
-	var date: Dictionary = MODELE[_id]
+	var date := _date(_id)
 	var k := ease(_jos, 2.0)
 	# se leagănă puțin cât îl ții
 	var respiratie := Vector3(sin(_timp * 1.3) * 0.003, sin(_timp * 2.1) * 0.004, 0.0)
 	_model.position = date.pozitie + JOS * k + respiratie
-	_model.rotation = date.rotatie + Vector3(-0.5 * k, 0.0, 0.0)
+	if date.has("baza"):
+		# cadavrele: culcat = unghiuri drepte (Euler-ul ar fi blocat, gimbal lock), deci direct baza
+		_model.basis = Basis(Vector3.RIGHT, -0.5 * k) * (date.baza as Basis)
+	else:
+		_model.rotation = date.rotatie + Vector3(-0.5 * k, 0.0, 0.0)
+
+
+## Are ce arăta în mână: un obiect din `MODELE` sau un cadavru (Cadavre).
+static func are_model(id: String) -> bool:
+	return MODELE.has(id) or Cadavre.e_cadavru(id)
+
+
+## Datele obiectului: din `MODELE`, iar pentru cadavre poza din brațe: culcat pe spate, de-a curmezișul, capul spre
+## stânga ta (ca la gardul cimitirului), jos în fața ta; pisica mai aproape.
+func _date(id: String) -> Dictionary:
+	if MODELE.has(id):
+		return MODELE[id]
+	var mic: bool = Cadavre.MODELE[id].get("mic", false)
+	var in_brate := Basis(Vector3(0, 0, -1), Vector3(-1, 0, 0), Vector3(0, 1, 0))
+	if Cadavre.MODELE[id].get("cu_fata_in_jos", false):
+		in_brate = Basis(Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(0, -1, 0))
+	return {"cod": "cadavru", "pozitie": Vector3(0.04, -0.26, -0.42) if mic else Vector3(0.05, -0.43, -0.74),
+		"baza": Basis(Vector3.RIGHT, 0.25) * in_brate, "stralucire_toate": 0.12}
 
 
 func _schimba(id: String) -> void:
@@ -72,14 +113,37 @@ func _schimba(id: String) -> void:
 	_id = id
 	if id == "":
 		return
-	_model = (MODELE[id].scena as PackedScene).instantiate()
-	_model.set_script(SCRIPT_MODEL)
-	_model.set("material", MATERIAL)
-	_model.set("umbre", false)
-	if MODELE[id].has("stralucitoare"):
-		_model.set("stralucitoare", PackedStringArray(MODELE[id].stralucitoare))
-		_model.set("stralucire", MODELE[id].stralucire)
+	var date := _date(id)
+	match date.get("cod", ""):
+		"cadavru":
+			_model = Cadavre.suport(id, true)
+		"jetoane":
+			_model = Jetoane.model_teanc(true)
+		"cash":
+			# trei bancnote răsfirate ca un evantai
+			_model = Node3D.new()
+			for k in 3:
+				var b := (preload("res://models/bancnota.glb") as PackedScene).instantiate() as Node3D
+				b.set_script(SCRIPT_MODEL)
+				b.set("material", MATERIAL)
+				b.set("umbre", false)
+				b.rotation.y = (k - 1) * 0.22
+				b.position = Vector3((k - 1) * 0.012, k * 0.0015, 0.0)
+				_model.add_child(b)
+		_:
+			_model = (date.scena as PackedScene).instantiate()
+			_model.set_script(SCRIPT_MODEL)
+			_model.set("material", MATERIAL)
+			_model.set("umbre", false)
+			if date.has("stralucitoare"):
+				_model.set("stralucitoare", PackedStringArray(date.stralucitoare))
+				_model.set("stralucire", date.stralucire)
 	add_child(_model)
+	for m in _model.find_children("*", "GeometryInstance3D", true, false):
+		(m as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# lanterna nu prinde ce e lipit de cameră: un pic de luciu pe tot
+		if date.has("stralucire_toate") and (m as GeometryInstance3D).material_override is ShaderMaterial:
+			(m as GeometryInstance3D).set_instance_shader_parameter("stralucire", date.stralucire_toate)
 
 
 ## Îl scoate din mână pe loc, fără să-l coboare (când îl ia o scenă din cod, ex. mătura pusă jos la antrenament).
@@ -99,7 +163,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _poate_manca() -> bool:
-	return _model != null and MODELE[_id].get("mancare", false) and not _mananca and _jos < 0.05 \
+	return _model != null and _date(_id).get("mancare", false) and not _mananca and _jos < 0.05 \
 		and _id == Stare.in_mana and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
 		and not Dialog.activ and not Stare.meniu_deschis and not Tranzitie.activa
 

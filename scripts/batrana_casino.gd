@@ -4,6 +4,8 @@ extends Interactabil
 ##  - cu bancnota de 5 dolari (`LexyMasa.ID_BANI`, de la jaf sau împrumutată de la Lexy): o scoți și i-o întinzi prin
 ##    ghișeu, ea o ia, o bagă în cutia de bani și îți împinge pe tejghea un teanc de jetoane; le iei („Chips ($5.00)”);
 ##  - fără: `replici_fara_bani` (owner).
+## Cu jetoane în inventar, E = direct butoanele (cu prima replică deasupra): `optiune_schimb` (doar cu bancnota sau cash,
+## schimbă tot), `optiune_cash_out` (toate jetoanele → „Cash ($X)”, Bani; `_cash_out`), `optiune_nimic`.
 ## După prima conversație: `marcaj_vorbit` (de el depinde și gândul „Maybe Lexy could lend me some money..” de la ieșire).
 
 @export var om: OmLaMasa
@@ -19,6 +21,10 @@ extends Interactabil
 	"Old bitch: Do you have any?"]
 @export_multiline var replici_fara_bani: PackedStringArray = ["Old bitch: Come here when you have money poor bitch.",
 	"You: Kill yourself."]
+## Butoanele când ai jetoane (`%s` = cât valorează jetoanele).
+@export var optiune_schimb := "Exchange cash"
+@export var optiune_cash_out := "Cash out (%s)"
+@export var optiune_nimic := "Nothing"
 ## Sarcinile care dispar după schimb (dacă e una din ele cea curentă).
 @export var sarcini_de_sters: PackedStringArray = ["Go to the casino.", "Ask Lexy for money."]
 @export var sunet_bancnota: AudioStream = preload("res://sunete/bancnota.ogg")
@@ -49,12 +55,27 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
-	await _spune(replici_inceput)
-	Stare.marcheaza(marcaj_vorbit)
-	if Stare.are_obiect(LexyMasa.ID_BANI):
-		await _schimba()
+	var ai_cash := Stare.are_obiect(LexyMasa.ID_BANI) or Bani.suma() > 0
+	if Jetoane.suma() <= 0:
+		# fără jetoane, ca la început: replicile owner-ului, apoi schimbul (sau „poor bitch”)
+		await _spune(replici_inceput)
+		Stare.marcheaza(marcaj_vorbit)
+		if ai_cash:
+			await _schimba()
+		else:
+			await _spune(replici_fara_bani)
 	else:
-		await _spune(replici_fara_bani)
+		# cu jetoane: butoanele (schimbul, dacă ai cash; cash out-ul; nimic)
+		var optiuni := PackedStringArray()
+		if ai_cash:
+			optiuni.append(optiune_schimb)
+		optiuni.append(optiune_cash_out % Jetoane.bani(Jetoane.suma()))
+		optiuni.append(optiune_nimic)
+		var i := await Dialog.intreaba(replici_inceput[0], optiuni)
+		if ai_cash and i == 0:
+			await _schimba()
+		elif i == optiuni.size() - 2:
+			await _cash_out()
 	_in_curs = false
 
 
@@ -68,6 +89,9 @@ func _spune(replici: PackedStringArray) -> void:
 
 ## Bancnota pe jetoane: tu o întinzi prin ghișeu, ea o ia și o bagă în cutie, apoi îți împinge jetoanele.
 func _schimba() -> void:
+	# bancnota de 5 dolari de la Lexy, sau (dacă n-o ai) tot cash-ul
+	var cu_bancnota := Stare.are_obiect(LexyMasa.ID_BANI)
+	var valoare := valoare_bancnota if cu_bancnota else Bani.suma()
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	var cap: Node3D = jucator.get_node("Cap")
 	var camera: Camera3D = cap.get_node("Camera3D")
@@ -101,7 +125,10 @@ func _schimba() -> void:
 	# o ia: bancnota trece în mâna ei
 	b.reparent(om.nod_mana("D"), true)
 	Sunet.reda_la(sunet_bancnota, predare, Sunet.VOLUM_EFECTE - 3.0, 0.05)
-	Stare.scoate_obiect(LexyMasa.ID_BANI)
+	if cu_bancnota:
+		Stare.scoate_obiect(LexyMasa.ID_BANI)
+	else:
+		Bani.seteaza(0)
 	await c.priveste(om.global_position + Vector3.UP * 1.3, 0.5)
 	await om.du_mana("D", cutie_bani.global_position + Vector3.UP * 0.12, 0.6)
 	b.queue_free()
@@ -129,12 +156,68 @@ func _schimba() -> void:
 	await t.finished
 	teanc.queue_free()
 	Sunet.reda(sunet_luat, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-	Jetoane.adauga(valoare_bancnota)
+	Jetoane.adauga(valoare)
 	Stare.marcheaza(marcaj_schimb)
 	# sarcinile drumului după bani s-au făcut: dispar, fără mesaj nou
 	if Stare.sarcina in sarcini_de_sters:
 		Stare.sarcina = ""
 		Stare.schimbat.emit()
+	await c.priveste(om.global_position + Vector3.UP * 1.3, 0.4)
+	jucator.seteaza_purtat(false)
+	await c.opreste()
+
+
+## Cash out: împingi jetoanele pe tejghea prin ghișeu, ea le strânge în tavă, scoate banii din cutie și ți-i întinde;
+## îi iei (toate jetoanele devin „Cash ($X)”).
+func _cash_out() -> void:
+	var valoare := Jetoane.suma()
+	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
+	var camera: Camera3D = jucator.get_node("Cap/Camera3D")
+	var scena := get_tree().current_scene
+	var c := Cutscena.porneste(self)
+	jucator.seteaza_purtat(true)
+	await c.priveste(ghiseu.global_position, 0.5)
+	# 1. scoți jetoanele din buzunar și le pui pe tejghea, la ghișeu
+	var teanc := _teanc()
+	camera.add_child(teanc)
+	teanc.position = Vector3(0.18, -0.42, -0.2)
+	teanc.reparent(scena, true)
+	var pe_tejghea := ghiseu.global_position + Vector3.UP * 0.005
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(teanc, "global_position", pe_tejghea, 0.6)
+	await t.finished
+	Sunet.reda_la(sunet_jetoane, pe_tejghea, Sunet.VOLUM_EFECTE, 0.05)
+	Jetoane.seteaza(0)
+	# 2. ea le ia și le pune în tavă
+	await c.priveste(om.global_position + Vector3.UP * 1.3, 0.5)
+	await om.du_mana("D", pe_tejghea + Vector3.UP * 0.04, 0.7)
+	teanc.reparent(om.nod_mana("D"), true)
+	Sunet.reda_la(sunet_luat, pe_tejghea, Sunet.VOLUM_EFECTE - 3.0, 0.05)
+	await om.du_mana("D", tava.global_position + Vector3.UP * 0.05, 0.6)
+	teanc.queue_free()
+	Sunet.reda_la(sunet_jetoane, tava.global_position, Sunet.VOLUM_EFECTE - 4.0, 0.05)
+	await get_tree().create_timer(0.2).timeout
+	# 3. scoate banii din cutie și ți-i întinde prin ghișeu
+	await om.du_mana("D", cutie_bani.global_position + Vector3.UP * 0.12, 0.6)
+	var b := MODEL_BANCNOTA.instantiate() as Node3D
+	b.set_script(SCRIPT_MODEL)
+	b.set("material", MATERIAL)
+	b.set("umbre", false)
+	om.nod_mana("D").add_child(b)
+	b.position = Vector3(0, -0.02, 0)
+	Sunet.reda_la(sunet_bancnota, cutie_bani.global_position, Sunet.VOLUM_EFECTE - 3.0, 0.05)
+	var predare := ghiseu.global_position + Vector3.UP * 0.12
+	await om.du_mana("D", predare, 0.8)
+	await c.priveste(predare, 0.3)
+	# 4. îi iei: vin spre tine și intră în buzunar
+	b.reparent(camera, true)
+	om.lasa_mana("D", 0.8)
+	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	t.tween_property(b, "position", Vector3(0.2, -0.45, -0.2), 0.45)
+	await t.finished
+	b.queue_free()
+	Sunet.reda(sunet_bancnota, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+	Bani.adauga(valoare)
 	await c.priveste(om.global_position + Vector3.UP * 1.3, 0.4)
 	jucator.seteaza_purtat(false)
 	await c.opreste()

@@ -8,7 +8,7 @@ extends Node3D
 ##  - `anim_poz` / `anim_rot`: cât o mișcă animația acum (reculul, pompa, reîncărcarea), peste poza de repaus;
 ##  - ajutoare: `_glont()` (o rază ca glonțul pistolului: `impuscat(directie, punct)`, cadavrele împinse, praf și o gaură
 ##    în perete), `_fulger()` (flacăra de la gura țevii), `_fum_gura()`, `_tub()` (tubul gol care sare), `_recul_cap()`;
-##  - `_anunta()`: cei din grupul "aude_impuscaturi" află că s-a tras (Gun Clerk: „not inside the store”).
+##  - `_anunta()`: cei din grupul "aude_impuscaturi" află că s-a tras (deocamdată nu ascultă nimeni).
 ## Modelul e un .glb din tools/blender/magazin_arme.py (originea în mâner, țeava spre -Z).
 
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")

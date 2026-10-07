@@ -23,9 +23,9 @@ signal _ales(tip: String, suma: int)
 @export var loc_jucator: Marker3D
 ## Înălțimea ochilor cât stai jos.
 @export var ochi_sezut := 1.12
-@export var nume_jucatori: PackedStringArray = ["Big Sal", "Slick Tony", "Old Gheorghe", "Sharon", "Florin"]
+@export var nume_jucatori: PackedStringArray = ["Big Sal", "Slick Tony", "Old Ass", "Trophy Wife", "Asshole"]
 ## Jetoanele adversarilor la început (cenți).
-@export var bani_jucatori: PackedInt32Array = [4200, 2600, 1850, 3300, 2900]
+@export var bani_jucatori: PackedInt32Array = [34200, 14700, 22200, 18900, 9700]
 @export var small_blind := 10
 @export var big_blind := 20
 @export_range(0.0, 1.0) var sansa_castig := 0.75
@@ -41,6 +41,9 @@ signal _ales(tip: String, suma: int)
 @export var sunet_pierdere: AudioStream = preload("res://sunete/poker_pierdere.ogg")
 @export var sunet_scaun: AudioStream = preload("res://sunete/canapea_asezat.ogg")
 
+const SUNET_RIG := preload("res://sunete/vraja_unda.ogg")
+const SUNET_RIG_SCANTEI := preload("res://sunete/scantei_matura.ogg")
+const SUNET_RIG_SCHIMB := preload("res://sunete/vraja_bum.ogg")
 const MARIME_CARTE := Vector2(0.075, 0.107)
 ## Jetoanele: valoarea (cenți) și culoarea, de la cea mai mare.
 const VALORI_JETOANE := [[5000, "262d2f"], [1000, "655269"], [500, "7b383a"], [100, "83b3b0"], [25, "30716f"], [5, "a18463"]]
@@ -96,6 +99,9 @@ var _b_minus: Button
 var _b_raise: Button
 var _b_plus: Button
 var _b_allin: Button
+## „Rig cards”: doar la river, când e rândul tău, o dată pe mână (vezi `_rig`).
+var _b_rig: Button
+var _rig_folosit := false
 var _intre_maini: HBoxContainer
 var _etichete_jucatori: Array[Label] = []
 var _suma_marire := 0
@@ -112,6 +118,9 @@ func _ready() -> void:
 		_cap = _jucator.get_node("Cap")
 		_camera = _cap.get_node("Camera3D")
 	_pregateste_3d()
+	# hitbox-urile adversarilor (te oprești în ei, gloanțele îi nimeresc și tresar)
+	for j in jucatori:
+		TintaOm.adauga(j)
 	# adversarii se uită unii la alții, la masă și la tine
 	for j in jucatori:
 		j.puncte_privire.append(centru.global_position)
@@ -234,6 +243,7 @@ func _o_mana() -> void:
 	_renuntat = [false, false, false, false, false, false]
 	_all_in = [false, false, false, false, false, false]
 	_aratate = 0
+	_rig_folosit = false
 	_faza = PREFLOP
 	_dealer = _urmatorul_cu_bani(_dealer)
 	_muta_butonul()
@@ -444,10 +454,18 @@ func _alege_tu(de_dat: int) -> Array:
 	_b_plus.disabled = not poate_mari
 	_b_allin.disabled = _bani[0] <= 0
 	_actualizeaza_marire()
-	_butoane.show()
-	_mesaj("Your turn." if de_dat <= 0 else "Your turn. %s to call." % Jetoane.bani(mini(de_dat, _bani[0])))
-	var r: Array = await _ales
-	_butoane.hide()
+	var r: Array = []
+	while true:
+		_b_rig.visible = _faza == RIVER and not _rig_folosit
+		_butoane.show()
+		_mesaj("Your turn." if de_dat <= 0 else "Your turn. %s to call." % Jetoane.bani(mini(de_dat, _bani[0])))
+		r = await _ales
+		_butoane.hide()
+		if r[0] != "rig":
+			break
+		# magia, apoi tot rândul tău (cu mâna nouă)
+		await _rig()
+		await _asteapta(0.6)
 	match r[0]:
 		"call":
 			return ["check", 0] if de_dat <= 0 else ["call", de_dat]
@@ -973,6 +991,10 @@ func _fa_hud() -> void:
 	_b_plus = TemaMeniu.buton(_butoane, "+", _schimba_marirea.bind(1))
 	_b_plus.custom_minimum_size.x = 16
 	_b_allin = TemaMeniu.buton(_butoane, "All in", _apasat.bind("allin"))
+	_b_rig = TemaMeniu.buton(_butoane, "Rig cards", _apasat.bind("rig"))
+	_b_rig.add_theme_color_override("font_color", Color(0.78, 0.6, 1.0))
+	_b_rig.add_theme_color_override("font_hover_color", Color(0.9, 0.78, 1.0))
+	_b_rig.hide()
 	_butoane.hide()
 	_intre_maini = HBoxContainer.new()
 	_intre_maini.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -1076,3 +1098,146 @@ func _process(_delta: float) -> void:
 ## Verbul potrivit: „You check.” / „Big Sal checks.”.
 func _verb(i: int, tu: String, el: String) -> String:
 	return tu if i == 0 else el
+
+
+# ---------------------------------------------------------------- Rig cards (magia)
+
+## Cele mai bune două cărți posibile pentru masa de acum, din cărțile care nu sunt pe masă și nici în mâna nimănui
+## (nici ale celor care au renunțat: sunt pe masă, cu fața în jos).
+func _cea_mai_buna_mana() -> Array:
+	var ocupate := {}
+	for c in _comune:
+		ocupate[c] = true
+	for i in range(1, 6):
+		for c in _mana[i]:
+			ocupate[c] = true
+	var libere: Array[int] = []
+	for c in 52:
+		if not ocupate.has(c):
+			libere.append(c)
+	var cea_mai_buna: Array = _mana[0]
+	var maxim := -1
+	for a in libere.size():
+		for b in range(a + 1, libere.size()):
+			var toate: Array = [libere[a], libere[b]]
+			toate.append_array(_comune)
+			var s := ManaPoker.scor(toate)
+			if s > maxim:
+				maxim = s
+				cea_mai_buna = [libere[a], libere[b]]
+	return cea_mai_buna
+
+
+## Magia: cărțile tale se ridică de pe postav, se învârt tot mai repede într-o lumină mov, cu scântei, iar la vârf își
+## schimbă fața (cea mai bună mână posibilă); apoi coboară la loc. Ecranul pâlpâie mov o clipă.
+func _rig() -> void:
+	_rig_folosit = true
+	var noi := _cea_mai_buna_mana()
+	var carti: Array = _carti_3d[0]
+	if carti.size() < 2:
+		return
+	_mesaj("...")
+	var mijloc := ((carti[0] as Node3D).global_position + (carti[1] as Node3D).global_position) / 2.0
+	# lumina mov și scânteile
+	var lumina := OmniLight3D.new()
+	lumina.light_color = Color(0.62, 0.3, 1.0)
+	lumina.light_energy = 0.0
+	lumina.omni_range = 0.9
+	lumina.light_volumetric_fog_energy = 0.0
+	add_child(lumina)
+	lumina.global_position = mijloc + Vector3.UP * 0.12
+	var scantei := _scantei_magie()
+	add_child(scantei)
+	scantei.global_position = mijloc + Vector3.UP * 0.06
+	scantei.emitting = true
+	Sunet.reda(SUNET_RIG_SCANTEI, Sunet.VOLUM_EFECTE - 4.0, 0.05)
+	Sunet.reda(SUNET_RIG, Sunet.VOLUM_EFECTE - 3.0, 0.0, &"Efecte", 1.25)
+	# 1. se ridică și încep să se învârtă
+	var baze: Array[Transform3D] = []
+	for nod: Node3D in carti:
+		baze.append(nod.global_transform)
+	var urca := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	urca.tween_property(lumina, "light_energy", 2.2, 0.5)
+	await _invarte(carti, baze, true, 0.9)
+	# 2. la vârf: fulgerul mov, fețele se schimbă
+	_fulger_mov()
+	Sunet.reda(SUNET_RIG_SCHIMB, Sunet.VOLUM_EFECTE - 6.0, 0.05)
+	for k in 2:
+		var fata := (carti[k] as Node3D).get_child(0) as MeshInstance3D
+		fata.material_override = _material_carte(Carti.textura(noi[k]))
+		(carti[k] as Node3D).set_meta("carte", noi[k])
+	_mana[0] = noi
+	_actualizeaza_hud()
+	# 3. încetinesc și coboară la loc
+	await _invarte(carti, baze, false, 0.9)
+	for k in carti.size():
+		(carti[k] as Node3D).global_transform = baze[k]
+	scantei.emitting = false
+	var stinge := create_tween()
+	stinge.tween_property(lumina, "light_energy", 0.0, 0.6)
+	stinge.tween_callback(lumina.queue_free)
+	get_tree().create_timer(1.5).timeout.connect(scantei.queue_free)
+	_mesaj("Your cards look... different.")
+
+
+## Urcarea (`urca`) sau coborârea cărților, în `durata` secunde: 3 ture fiecare, tot mai repede la urcare și tot mai
+## încet la coborâre, deci se opresc exact cum erau (fără salt).
+func _invarte(carti: Array, baze: Array[Transform3D], urca: bool, durata: float) -> void:
+	var t := create_tween()
+	t.tween_method(_pas_rig.bind(carti, baze, urca), 0.0, 1.0, durata)
+	await t.finished
+
+
+func _pas_rig(p: float, carti: Array, baze: Array[Transform3D], urca: bool) -> void:
+	var inaltime := ease(p, 0.5) if urca else 1.0 - ease(p, 2.0)
+	var unghi := TAU * 3.0 * (p * p if urca else 1.0 - (1.0 - p) * (1.0 - p))
+	for k in carti.size():
+		var nod := carti[k] as Node3D
+		var b: Transform3D = baze[k]
+		# cartea se ridică în picioare (fața spre tine), plutește puțin și se rotește în jurul axei verticale
+		var ridicata := Basis(b.basis.x.normalized(), PI / 2.0 * inaltime) * b.basis
+		var plutire := sin(p * TAU * 2.0 + k * 1.7) * 0.006 * inaltime
+		var lateral := b.basis.x.normalized() * (k - 0.5) * 0.03 * inaltime
+		nod.global_transform = Transform3D(Basis(Vector3.UP, unghi) * ridicata,
+			b.origin + Vector3.UP * (0.1 * inaltime + plutire) + lateral)
+
+
+## Scântei mov care urcă de pe cărți (cercuri moi, aditive).
+func _scantei_magie() -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.emitting = false
+	p.amount = 40
+	p.lifetime = 0.9
+	p.preprocess = 0.0
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 0.07
+	p.direction = Vector3.UP
+	p.spread = 35.0
+	p.initial_velocity_min = 0.08
+	p.initial_velocity_max = 0.25
+	p.gravity = Vector3(0, 0.15, 0)
+	p.scale_amount_min = 0.6
+	p.scale_amount_max = 1.2
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2(0.018, 0.018)
+	mesh.material = Arma.material_particule(true)
+	p.mesh = mesh
+	var g := Gradient.new()
+	g.set_color(0, Color(0.85, 0.6, 1.0, 1.0))
+	g.set_color(1, Color(0.45, 0.15, 0.9, 0.0))
+	p.color_ramp = g
+	return p
+
+
+## Ecranul pâlpâie mov o clipă (peste HUD-ul mesei).
+func _fulger_mov() -> void:
+	if _hud == null:
+		return
+	var r := ColorRect.new()
+	r.color = Color(0.55, 0.25, 0.95, 0.45)
+	r.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.add_child(r)
+	var t := create_tween()
+	t.tween_property(r, "color:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	t.tween_callback(r.queue_free)
