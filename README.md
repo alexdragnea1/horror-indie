@@ -156,6 +156,8 @@ Modelele din `models/*.glb` sunt făcute în Blender **din cod**: `tools/blender
 ```
 Godot reimportă singur modelele când revii în editor.
 
+Motelul (`tools/blender/motel.py`) trece înainte de export prin `desparte_fete`. Unealta caută orice două fețe lipite una de alta, care pâlpâie și „intră una în alta” pe ecran (pete pe asfalt, afișe pe pereți, scânduri bătute una peste alta). Piesa mai mică o mută cu 1–1,5 cm în față. În consola Blender scrie ce a mutat (`DESPARTIT ...`) și ce n-a putut repara (`FETE LIPITE RAMASE ...`).
+
 ## Sunet
 Pachetul tău de sunete stă în `Sound/Soundpack` (Godot și git îl ignoră). Sunetele alese de acolo, curățate și transformate în `.ogg`, sunt în `sunete/`. Le refaci cu:
 ```

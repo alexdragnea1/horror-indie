@@ -20,7 +20,7 @@ import sys
 import bpy
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, trunchi  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, trunchi, desparte_fete  # noqa: E402
 from lexy import perete, prisma  # noqa: E402
 from casino import _text, _text_o_fata, _tor, _cutie_coliziune  # noqa: E402
 from amanet import _obiect  # noqa: E402
@@ -200,7 +200,7 @@ def _masina(tip, culoare, r):
 				platou = tip == "pickup" and x > 0 and y > 0
 				s.append(cilindru("Roata", 0.34, 0.34, 0.24, (x, y, 0.34 if not platou else 0.26), NEGRU, laturi=10,
 					rot=(0, 1.5708, 0), scara=(1, 1, 0.78) if platou else None))
-				s.append(cilindru("Janta", 0.17, 0.17, 0.25, (x, y, 0.34 if not platou else 0.26), CROM, laturi=8, rot=(0, 1.5708, 0)))
+				s.append(cilindru("Janta", 0.17, 0.17, 0.27, (x, y, 0.34 if not platou else 0.26), CROM, laturi=8, rot=(0, 1.5708, 0)))
 	s.append(cub("Numar", (0.5, 0.01, 0.14), (0, L / 2 + 0.125, h0 + 0.2), AUR))
 	col.append((1.95, L + 0.3, 1.5, 0.0, 0.0, 0.75))
 	return s, col
@@ -256,6 +256,20 @@ def _gunoi(piese, x, y, r, n=4, z=0.0):
 				rot=(1.5708, 0, r.uniform(0, 3)), scara=(1, 0.5, 1)))
 		else:
 			piese.append(cub("Hartie", (0.12, 0.09, 0.005), (cx, cy, z + 0.004), r.choice((ALB, CROM, AUR)), rot=(0, 0, r.uniform(0, 3))))
+
+
+def _loc_liber(ocupate, r, x0, x1, y0, y1, raza, evita=None, incercari=60):
+	"""Un loc pe jos (x, y) unde un detaliu de `raza` nu atinge nimic din `ocupate` ([(x, y, raza)]), ca petele, petecele
+	și crăpăturile să nu stea una peste alta: așa stau toate pe același strat (altfel `desparte_fete` le clădește una peste
+	alta). `evita(x, y)` = True dacă locul e interzis. None dacă nu găsește."""
+	for _ in range(incercari):
+		x, y = r.uniform(x0, x1), r.uniform(y0, y1)
+		if evita and evita(x, y):
+			continue
+		if all(math.hypot(x - a, y - b) > raza + rb for a, b, rb in ocupate):
+			ocupate.append((x, y, raza))
+			return x, y
+	return None
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -325,12 +339,16 @@ def motel(cale):
 	piese.append(cub("Trotuar motel", (XB - XV0 + 6.6, YF - YP, FL), ((XV0 - 6.6 + XB) / 2, (YP + YF) / 2, FL / 2), BETON))
 	piese.append(cub("Bordura", (XB - XV0 + 6.64, 0.12, FL + 0.02), ((XV0 - 6.6 + XB) / 2, YP + 0.05, FL / 2), METAL))
 	_cutie_coliziune(col, (XB - XV0 + 6.6, YF - YP, FL), ((XV0 - 6.6 + XB) / 2, (YP + YF) / 2, FL / 2))
+	ocupate = [((XV0 + XA) / 2 - 0.3, YF - 0.9, 0.6)]  # balta de lângă automatul de gheață
 	for k in range(14):
-		x = r.uniform(XV0 - 6, XB)
-		piese.append(cub("Crapatura", (r.uniform(0.4, 1.4), 0.025, 0.004), (x, r.uniform(YP + 0.2, YF - 0.2), FL + 0.002),
-			LEMN_INCHIS, rot=(0, 0, r.uniform(-0.8, 0.8))))
-		piese.append(cub("Pata trotuar", (r.uniform(0.3, 0.9), r.uniform(0.2, 0.6), 0.003), (x + 0.5, r.uniform(YP + 0.3, YF - 0.3), FL + 0.008 + (k % 3) * 0.009),
-			r.choice((METAL_INCHIS, MASLINIU, LEMN))))
+		loc = _loc_liber(ocupate, r, XV0 - 6, XB, YP + 0.3, YF - 0.3, 0.75)
+		if loc:
+			piese.append(cub("Crapatura", (r.uniform(0.4, 1.4), 0.025, 0.004), (loc[0], loc[1], FL + 0.013),
+				LEMN_INCHIS, rot=(0, 0, r.uniform(-0.8, 0.8))))
+		loc = _loc_liber(ocupate, r, XV0 - 6, XB, YP + 0.3, YF - 0.3, 0.5)
+		if loc:
+			piese.append(cub("Pata trotuar", (r.uniform(0.3, 0.9), r.uniform(0.2, 0.6), 0.003), (loc[0], loc[1], FL + 0.013),
+				r.choice((METAL_INCHIS, MASLINIU, LEMN))))
 
 	# --- pasarela de sus: placa, grinda de margine, stâlpii, balustrada (cu o bucată ruptă)
 	XP0 = XV0 - 0.8
@@ -340,7 +358,7 @@ def motel(cale):
 	_cutie_coliziune(col, (XB - XP0, YF - YP, 0.4), ((XP0 + XB) / 2, (YP + YF) / 2, E2 - 0.2))
 	for x in [XP0 + 0.15] + [XA + k * RW for k in range(NR + 1)]:
 		piese.append(cub("Stalp pasarela", (0.18, 0.18, E2 - 0.4), (x, YP + 0.2, (E2 - 0.4) / 2), METAL_INCHIS))
-		piese.append(cub("Rugina stalp", (0.2, 0.2, 0.25), (x, YP + 0.2, 0.125), RUGINA))
+		piese.append(cub("Rugina stalp", (0.21, 0.21, 0.25), (x, YP + 0.2, 0.125), RUGINA))
 		_cutie_coliziune(col, (0.2, 0.2, E2), (x, YP + 0.2, E2 / 2))
 	rupt = (XA + 5.2 * RW - 0.4, XA + 5.2 * RW + 0.9)  # deasupra camerei 122-ish: balustrada ruptă
 	yb = YP + 0.06
@@ -458,6 +476,8 @@ def motel(cale):
 	uneste(lumini, "Lumini")
 	uneste(geamuri, "Geamuri")
 	uneste(col, "Coliziune")
+	# structura nu se mută; petele, plăcuțele, scândurile, literele se desprind de ea
+	desparte_fete(fixe=("Fatada", "Corp motel", "Trotuar motel", "Pasarela", "Acoperis", "Streasina", "Soclu", "Fund gol"))
 	exporta(os.path.join(cale, "motel_cladire.glb"))
 
 
@@ -493,16 +513,22 @@ def receptie(cale):
 	piese.append(cub("Placa receptie", (OX1 - OX0 - 0.04, OY1 - OY0 - 0.04, FL - 0.012), ((OX0 + OX1) / 2, (OY0 + OY1) / 2, (FL - 0.012) / 2), BETON))
 	_cutie_coliziune(col, (OX1 - OX0, OY1 - OY0, FL), ((OX0 + OX1) / 2, (OY0 + OY1) / 2, FL / 2))
 	piese.append(cub("Mocheta", (ix1 - ix0, TY0 - iy0, 0.012), ((ix0 + ix1) / 2, (iy0 + TY0) / 2, FL + 0.006), TEAL))
+	# romburile și petele stau pe un singur strat, 10 mm peste mochetă: unde e o pată (sau preșul), lipsește rombul
+	pe_mocheta = FL + 0.022
+	ocupate = [((OUSA[0] + OUSA[1]) / 2, iy0 + 0.45, 0.7)]
+	for k in range(9):
+		raza = r.uniform(0.12, 0.4)
+		loc = _loc_liber(ocupate, r, ix0 + 0.4, ix1 - 0.4, iy0 + 0.4, TY0 - 0.3, raza)
+		if loc:
+			piese.append(cilindru("Pata mocheta", raza, raza, 0.004, (loc[0], loc[1], pe_mocheta - 0.002),
+				r.choice((LEMN_INCHIS, LEMN, MASLINIU)), laturi=8, scara=(1, r.uniform(0.5, 1.0), 1)))
 	for i in range(int((ix1 - ix0) / 0.7)):
 		for j in range(int((TY0 - iy0) / 0.7)):
-			piese.append(cub("Romb mocheta", (0.16, 0.16, 0.004), (ix0 + 0.35 + i * 0.7, iy0 + 0.35 + j * 0.7, FL + 0.014),
-				MOV, rot=(0, 0, 0.785)))
-	for k in range(9):
-		piese.append(cilindru("Pata mocheta", r.uniform(0.12, 0.4), r.uniform(0.12, 0.4), 0.004,
-			(r.uniform(ix0 + 0.4, ix1 - 0.4), r.uniform(iy0 + 0.4, TY0 - 0.3), FL + 0.017), r.choice((LEMN_INCHIS, LEMN, MASLINIU)),
-			laturi=8, scara=(1, r.uniform(0.5, 1.0), 1)))
-	piese.append(cub("Pres", (1.2, 0.7, 0.015), ((OUSA[0] + OUSA[1]) / 2, iy0 + 0.45, FL + 0.016), LEMN_INCHIS))
-	piese.append(_text_o_fata("Welcome", "WELCOME", ((OUSA[0] + OUSA[1]) / 2, iy0 + 0.45, FL + 0.025), 0.12, BRONZ, rot=(0, 0, 0)))
+			x, y = ix0 + 0.35 + i * 0.7, iy0 + 0.35 + j * 0.7
+			if all(math.hypot(x - a, y - b) > 0.12 + rb for a, b, rb in ocupate):
+				piese.append(cub("Romb mocheta", (0.16, 0.16, 0.004), (x, y, pe_mocheta - 0.002), MOV, rot=(0, 0, 0.785)))
+	piese.append(cub("Pres", (1.2, 0.7, 0.015), ((OUSA[0] + OUSA[1]) / 2, iy0 + 0.45, FL + 0.0195), LEMN_INCHIS))
+	piese.append(_text_o_fata("Welcome", "WELCOME", ((OUSA[0] + OUSA[1]) / 2, iy0 + 0.45, FL + 0.037), 0.12, BRONZ, rot=(0, 0, 0)))
 	piese.append(cub("Linoleum", (ix1 - ix0, PERETE_SPATE - TY1, 0.01), ((ix0 + ix1) / 2, (TY1 + PERETE_SPATE) / 2, FL + 0.005), BETON))
 
 	# --- pereții, cu ușa, vitrina și câte o fereastră pe laterale
@@ -535,10 +561,10 @@ def receptie(cale):
 	strange()
 
 	# --- tavanul casetat: plăci pătate, una căzută (gaura neagră), una lăsată, neoanele
-	piese.append(cub("Tavan", (ix1 - ix0, OY1 - OY0, 0.02), ((ix0 + ix1) / 2, (OY0 + OY1) / 2, OH + 0.01), CROM))
+	piese.append(cub("Tavan", (ix1 - ix0, OY1 - OG - iy0, 0.02), ((ix0 + ix1) / 2, (iy0 + OY1 - OG) / 2, OH + 0.01), CROM))
 	x = ix0
 	while x < ix1 + 0.01:
-		piese.append(cub("Profil tavan", (0.025, OY1 - OY0, 0.02), (x, (OY0 + OY1) / 2, OH - 0.005), METAL))
+		piese.append(cub("Profil tavan", (0.025, OY1 - OG - iy0, 0.02), (x, (iy0 + OY1 - OG) / 2, OH - 0.005), METAL))
 		x += 0.6
 	y = iy0
 	while y < OY1:
@@ -729,6 +755,9 @@ def receptie(cale):
 	uneste(lumini, "Lumini")
 	uneste(geamuri, "Geamuri")
 	uneste(col, "Coliziune")
+	# înăuntru te uiți de aproape: ajung 10 mm (altfel romburile și petele de pe mochetă ar sta prea sus)
+	desparte_fete(distanta=0.01, fixe=("Placa receptie", "Perete receptie", "Mocheta", "Linoleum", "Tavan", "Lambriu", "Acoperis receptie",
+		"Tejghea", "Perete spate", "Blat"))
 	exporta(os.path.join(cale, "motel_receptie.glb"))
 
 
@@ -782,42 +811,64 @@ def parcare(cale):
 	for (a, b, c, d) in ((ax0, GX0, ay0, ay1), (GX1, ax1, ay0, ay1), (GX0, GX1, ay0, GY0), (GX0, GX1, GY1, ay1)):
 		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
 	_cutie_coliziune(col, (ax1 - ax0, ay1 - ay0, 0.2), ((ax0 + ax1) / 2, (ay0 + ay1) / 2, -0.1))
-	# petice de asfalt mai nou, gropile (unele cu apă), petele de ulei, crăpăturile cu buruieni
-	for k in range(10):
-		piese.append(cub("Petic asfalt", (r.uniform(1, 3), r.uniform(0.8, 2.5), 0.004), (r.uniform(-26, 20), r.uniform(-16, 6), 0.002),
-			r.choice((METAL_INCHIS, NEGRU, METAL)), rot=(0, 0, r.uniform(-0.3, 0.3))))
-	for k in range(11):
-		x, y = r.uniform(-28, 21), r.uniform(-16, 6)
-		if GX0 - 1 < x < GX1 + 1 and GY0 - 1 < y < GY1 + 1:
-			continue
-		raza = r.uniform(0.3, 0.8)
-		piese.append(cilindru("Groapa", raza, raza, 0.012, (x, y, 0.0), NEGRU, laturi=9, scara=(1, r.uniform(0.5, 1.0), 1)))
-		if r.random() < 0.5:
-			geamuri.append(cilindru("Balta groapa", raza * 0.7, raza * 0.7, 0.004, (x, y, 0.008), GEAM, laturi=9))
-	for k in range(14):
-		piese.append(cilindru("Pata ulei", r.uniform(0.3, 0.7), r.uniform(0.3, 0.7), 0.004, (r.uniform(-17, 9.5), r.uniform(3.2, 7.0), 0.003),
-			r.choice((NEGRU, LEMN_INCHIS)), laturi=8, scara=(1, r.uniform(0.4, 0.9), 1)))
-	for k in range(24):
-		x, y = r.uniform(-30, 22), r.uniform(-17, 7)
-		if GX0 - 0.5 < x < GX1 + 0.5 and GY0 - 0.5 < y < GY1 + 0.5:
-			continue
-		u = r.uniform(0, 3.14)
-		for j in range(3):
-			lung = r.uniform(0.6, 1.8)
-			piese.append(cub("Crapatura", (lung, 0.03, 0.004), (x, y, 0.004), LEMN_INCHIS, rot=(0, 0, u)))
-			if r.random() < 0.4:
-				piese.append(cilindru("Buruiana", 0.06, 0.0, r.uniform(0.1, 0.25), (x, y, 0.06), r.choice((VERDE, MASLINIU)), laturi=4))
-			x += math.cos(u) * lung * 0.5
-			y += math.sin(u) * lung * 0.5
-			u += r.uniform(-0.9, 0.9)
+	# Tot ce e desenat pe asfalt (liniile, peticele, gropile, petele de ulei, crăpăturile) stă pe UN strat, cu fața de sus
+	# la `PE_ASFALT`, și nimic nu se suprapune (`_loc_liber`): așa nu se bat pe ecran nici de sus, de pe mătură.
+	PE_ASFALT = 0.015
+	curte = lambda m: lambda x, y: GX0 - m < x < GX1 + m and GY0 - m < y < GY1 + m
+	ocupate = []
 	# liniile locurilor de parcare (șterse pe alocuri) și opritoarele de beton din fața camerelor
 	for k in range(NR + 1):
 		x = XA + k * RW
 		y = 2.8
 		while y < 7.6:
 			if r.random() < 0.8:
-				piese.append(cub("Linie parcare", (0.1, 0.5, 0.004), (x, y + 0.25, 0.012), CROM))
+				piese.append(cub("Linie parcare", (0.1, 0.5, 0.004), (x, y + 0.25, PE_ASFALT - 0.002), CROM))
+				ocupate.append((x, y + 0.25, 0.3))
 			y += 0.55
+	# petice de asfalt mai nou, gropile (unele pline cu apă), petele de ulei, crăpăturile cu buruieni
+	for k in range(10):
+		loc = _loc_liber(ocupate, r, -26, 20, -16, 6, 1.95, curte(2.0))
+		if loc:
+			piese.append(cub("Petic asfalt", (r.uniform(1, 3), r.uniform(0.8, 2.5), 0.004), (loc[0], loc[1], PE_ASFALT - 0.002),
+				r.choice((METAL_INCHIS, NEGRU, METAL)), rot=(0, 0, r.uniform(-0.3, 0.3))))
+	for k in range(11):
+		raza = r.uniform(0.3, 0.8)
+		loc = _loc_liber(ocupate, r, -28, 21, -16, 6, raza, curte(1.0))
+		if not loc:
+			continue
+		if r.random() < 0.5:
+			geamuri.append(cilindru("Balta groapa", raza, raza, 0.004, (loc[0], loc[1], PE_ASFALT - 0.002), GEAM, laturi=9))
+		else:
+			piese.append(cilindru("Groapa", raza, raza, 0.012, (loc[0], loc[1], PE_ASFALT - 0.006), NEGRU, laturi=9,
+				scara=(1, r.uniform(0.5, 1.0), 1)))
+	for k in range(14):
+		loc = _loc_liber(ocupate, r, -17, 9.5, 3.2, 7.0, 0.7)
+		if loc:
+			piese.append(cilindru("Pata ulei", r.uniform(0.3, 0.7), r.uniform(0.3, 0.7), 0.004, (loc[0], loc[1], PE_ASFALT - 0.002),
+				r.choice((NEGRU, LEMN_INCHIS)), laturi=8, scara=(1, r.uniform(0.4, 0.9), 1)))
+	for k in range(24):
+		# o crăpătură = 3 bucăți frânte; se pune doar dacă tot lanțul încape într-un loc liber
+		for _ in range(40):
+			x, y, u = r.uniform(-30, 22), r.uniform(-17, 7), r.uniform(0, 3.14)
+			lant = []
+			for j in range(3):
+				lung = r.uniform(0.6, 1.8)
+				lant.append((x, y, lung, u))
+				x += math.cos(u) * lung * 0.5
+				y += math.sin(u) * lung * 0.5
+				u += r.uniform(-0.9, 0.9)
+			cx = sum(b[0] for b in lant) / 3
+			cy = sum(b[1] for b in lant) / 3
+			raza = max(math.hypot(b[0] - cx, b[1] - cy) + b[2] / 2 for b in lant)
+			if not curte(0.5)(cx, cy) and all(math.hypot(cx - a, cy - b) > raza + rb for a, b, rb in ocupate):
+				ocupate.append((cx, cy, raza))
+				break
+		else:
+			continue
+		for (x, y, lung, u) in lant:
+			piese.append(cub("Crapatura", (lung, 0.03, 0.004), (x, y, PE_ASFALT - 0.002), LEMN_INCHIS, rot=(0, 0, u)))
+			if r.random() < 0.4:
+				piese.append(cilindru("Buruiana", 0.06, 0.0, r.uniform(0.1, 0.25), (x, y, 0.06), r.choice((VERDE, MASLINIU)), laturi=4))
 	for k in range(NR):
 		if k == 4:
 			continue  # opritorul lipsă
@@ -1047,6 +1098,8 @@ def parcare(cale):
 	uneste(lumini, "Lumini")
 	uneste(geamuri, "Geamuri")
 	uneste(col, "Coliziune")
+	desparte_fete(fixe=("Asfalt", "Strada", "Dale", "Perete piscina", "Fund piscina", "Camp", "Stalp firma", "Stalp parcare",
+		"Stalp curent", "Bordura strada", "Bordura piscina"))
 	exporta(os.path.join(cale, "motel_parcare.glb"))
 
 

@@ -129,6 +129,8 @@ def text(nume, continut, loc, marime, culoare, rot=(1.5708, 0, 0)):
 def uneste(piese, nume, origine=(0, 0, 0)):
 	"""Lipește piesele într-un singur obiect. Originea = punctul în jurul căruia se rotește în joc."""
 	verifica_fete(piese, nume)
+	for ob in piese:
+		_eticheteaza(ob)
 	bpy.ops.object.select_all(action='DESELECT')
 	for p in piese:
 		p.select_set(True)
@@ -145,6 +147,9 @@ def uneste(piese, nume, origine=(0, 0, 0)):
 
 
 def exporta(cale):
+	for me in bpy.data.meshes:
+		if ATRIBUT_PIESA in me.attributes:
+			me.attributes.remove(me.attributes[ATRIBUT_PIESA])
 	bpy.ops.object.select_all(action='SELECT')
 	bpy.ops.export_scene.gltf(filepath=cale, export_format='GLB', use_selection=True,
 		export_apply=True, export_yup=True)
@@ -246,3 +251,202 @@ def verifica_fete(piese, nume):
 	for pr in probleme:
 		print("FETE SUPRAPUSE", pr)
 	return probleme
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Fețe lipite pe orice formă (nu doar cutii drepte): `desparte_fete`
+# ---------------------------------------------------------------------------------------------------------------
+
+# Fiecare piesă își ține numărul (și numele în PIESE) în fețele ei, ca să se poată recunoaște și după `uneste`.
+# `exporta` îl scoate înainte să scrie .glb-ul.
+ATRIBUT_PIESA = "piesa"
+PIESE = []
+# culoarea fiecărei piese: două bucăți din aceeași piesă, de aceeași culoare (bucățile unei crăpături, care se
+# încalecă la încheieturi), nu se văd bătându-se pe ecran
+CULORI_PIESE = []
+# Cât de departe ajung să fie, după `desparte_fete`, două fețe care se acopereau. Mai mult decât DISTANTA_MINIMA_FETE:
+# de sus, de pe mătură, sau de pe partea cealaltă a parcării, la 4–8 mm tot pâlpâie.
+DISTANTA_DESPARTIRE = 0.015
+
+
+def _eticheteaza(ob):
+	if ob.type != 'MESH' or ATRIBUT_PIESA in ob.data.attributes:
+		return
+	PIESE.append(ob.name.split(".")[0])
+	cul = ob.data.color_attributes.get("Col")
+	CULORI_PIESE.append(tuple(round(c, 3) for c in cul.data[0].color) if cul and len(cul.data) else None)
+	at = ob.data.attributes.new(ATRIBUT_PIESA, 'INT', 'FACE')
+	at.data.foreach_set("value", [len(PIESE) - 1] * len(ob.data.polygons))
+
+
+def _arie_2d(poli):
+	return sum(poli[i - 1][0] * poli[i][1] - poli[i][0] * poli[i - 1][1] for i in range(len(poli))) / 2
+
+
+def _taie(poli, a, b):
+	"""Partea poligonului `poli` din stânga muchiei a→b (2D)."""
+	ramas = []
+	st = lambda q: (b[0] - a[0]) * (q[1] - a[1]) - (b[1] - a[1]) * (q[0] - a[0])
+	for i in range(len(poli)):
+		q, r = poli[i], poli[(i + 1) % len(poli)]
+		sq, sr = st(q), st(r)
+		if sq >= 0:
+			ramas.append(q)
+		if (sq >= 0) != (sr >= 0):
+			t = sq / (sq - sr)
+			ramas.append((q[0] + (r[0] - q[0]) * t, q[1] + (r[1] - q[1]) * t))
+	return ramas
+
+
+def _triunghiuri(obiecte):
+	"""[(vârfuri în lume, normală, (obiect, piesă), arie)] pentru toate fețele obiectelor."""
+	import bmesh
+	tri = []
+	for ob in obiecte:
+		bm = bmesh.new()
+		bm.from_mesh(ob.data)
+		bm.transform(ob.matrix_world)
+		strat = bm.faces.layers.int.get(ATRIBUT_PIESA)
+		bmesh.ops.triangulate(bm, faces=bm.faces)
+		for f in bm.faces:
+			a = f.calc_area()
+			if a > 1e-6:
+				tri.append(([v.co.copy() for v in f.verts], f.normal.copy(), (ob.name, f[strat] if strat else -1), a))
+		bm.free()
+	return tri
+
+
+def _fete_lipite(tri, prag, sub_ochi):
+	"""Perechile de triunghiuri din piese diferite, aproape paralele, cu aceeași orientare, la mai puțin de `prag`
+	și care se acoperă: [(i, j, abaterea medie a lui j față de planul lui i, pe normala lui i; aria comună)].
+	Le lasă pe cele care nu se văd: fețele de dedesubt mai jos de `sub_ochi` și cele lipite de o față întoarsă invers
+	(fundul unei pete pe podea, spatele unei plăci pe perete)."""
+	import math
+	from collections import defaultdict
+	paralel = math.cos(math.radians(5))
+	grila = defaultdict(list)
+	for i, (v, n, piesa, a) in enumerate(tri):
+		mn = [min(q[k] for q in v) for k in range(3)]
+		mx = [max(q[k] for q in v) for k in range(3)]
+		for x in range(math.floor(mn[0]), math.floor(mx[0]) + 1):
+			for y in range(math.floor(mn[1]), math.floor(mx[1]) + 1):
+				for z in range(math.floor(mn[2]), math.floor(mx[2]) + 1):
+					grila[(x, y, z)].append(i)
+
+	def acoperit(i):
+		v, n, piesa, a = tri[i]
+		c = sum(v, Vector()) / 3
+		if n.z < -0.7 and c.z < sub_ochi:
+			return True
+		for j in grila[tuple(math.floor(k) for k in c)]:
+			w, m, pj, _ = tri[j]
+			if pj == piesa or n.dot(m) > -paralel or abs(m.dot(c - w[0])) > 0.002:
+				continue
+			# c în triunghiul j (coordonate baricentrice)
+			e0, e1, e2 = w[1] - w[0], w[2] - w[0], c - w[0]
+			d00, d01, d11, d20, d21 = e0.dot(e0), e0.dot(e1), e1.dot(e1), e2.dot(e0), e2.dot(e1)
+			num = d00 * d11 - d01 * d01
+			if num <= 0:
+				continue
+			b1 = (d11 * d20 - d01 * d21) / num
+			b2 = (d00 * d21 - d01 * d20) / num
+			if b1 >= -1e-4 and b2 >= -1e-4 and b1 + b2 <= 1 + 1e-4:
+				return True
+		return False
+
+	ascuns = {}
+	vazut = set()
+	perechi = []
+	for lista in grila.values():
+		for k, i in enumerate(lista):
+			vi, ni, pi, _ = tri[i]
+			for j in lista[k + 1:]:
+				vj, nj, pj, _ = tri[j]
+				if pi == pj or ni.dot(nj) < paralel or (i, j) in vazut or _aceeasi_piesa(pi, pj):
+					continue
+				abateri = [ni.dot(q - vi[0]) for q in vj]
+				if max(abs(d) for d in abateri) >= prag:
+					continue
+				vazut.add((i, j))
+				u = (vi[1] - vi[0]).normalized()
+				w = ni.cross(u)
+				A = [((q - vi[0]).dot(u), (q - vi[0]).dot(w)) for q in vi]
+				B = [((q - vi[0]).dot(u), (q - vi[0]).dot(w)) for q in vj]
+				if _arie_2d(A) < 0:
+					A.reverse()
+				if _arie_2d(B) < 0:
+					B.reverse()
+				for m in range(3):
+					B = _taie(B, A[m], A[(m + 1) % 3])
+					if len(B) < 3:
+						break
+				if len(B) < 3 or abs(_arie_2d(B)) < 1e-4:
+					continue
+				for t in (i, j):
+					if t not in ascuns:
+						ascuns[t] = acoperit(t)
+				if ascuns[i] or ascuns[j]:
+					continue
+				perechi.append((i, j, sum(abateri) / 3, abs(_arie_2d(B))))
+	return perechi
+
+
+def desparte_fete(obiecte=None, distanta=DISTANTA_DESPARTIRE, fixe=(), sub_ochi=1.0, pasi=12):
+	"""Caută fețele care se bat pe ecran (z-fighting) între piesele lipite cu `uneste`, pe orice formă (plăci rotite,
+	cilindri, text, prisme), și le desparte: piesa mai mică (pata, petecul, litera, scândura bătută peste alta) se
+	mută pe normala feței până ajunge la `distanta` de cealaltă, în partea în care era deja (la egalitate: în față).
+	Piesele cu numele în `fixe` (pereți, podele, asfaltul) nu se mută niciodată: se mută cealaltă. Fețele de dedesubt
+	mai jos de `sub_ochi` nu contează (nu le vezi niciodată). Se repetă până nu mai rămâne nimic (o mutare poate lipi
+	piesa de alta). De chemat înainte de `exporta`. Întoarce perechile pe care nu le-a putut despărți."""
+	from collections import defaultdict
+	if obiecte is None:
+		obiecte = [ob for ob in bpy.data.objects if ob.type == 'MESH' and not ob.name.startswith("Coliziune")]
+	obiect = {ob.name: ob for ob in obiecte}
+	mutate = defaultdict(Vector)
+	motiv = {}
+	tri, perechi, ramase = [], [], []
+	for pas in range(pasi):
+		tri = _triunghiuri(obiecte)
+		perechi = _fete_lipite(tri, distanta - 0.0005, sub_ochi)
+		arii = defaultdict(float)
+		for v, n, piesa, a in tri:
+			arii[piesa] += a
+		mobila = lambda piesa: piesa[1] >= 0 and PIESE[piesa[1]] not in fixe
+		ramase = [t for t in perechi if not mobila(tri[t[0]][2]) and not mobila(tri[t[1]][2])]
+		# o singură mutare pe piesă la fiecare pas (cea cu suprafața comună cea mai mare); restul, la pasul următor
+		alese = {}
+		for i, j, abatere, arie in sorted(perechi, key=lambda t: -t[3]):
+			pi, pj = tri[i][2], tri[j][2]
+			if not mobila(pi) and not mobila(pj):
+				continue
+			if not mobila(pj) or (mobila(pi) and arii[pi] < arii[pj]):
+				piesa, alta, abatere = pi, pj, -abatere
+			else:
+				piesa, alta = pj, pi
+			if piesa in alese:
+				continue
+			alese[piesa] = tri[i][1] * ((distanta if abatere >= 0 else -distanta) - abatere)
+			motiv.setdefault(piesa, PIESE[alta[1]] if alta[1] >= 0 else alta[0])
+		if not alese:
+			break
+		for (nume_ob, id_piesa), delta in alese.items():
+			ob = obiect[nume_ob]
+			local = ob.matrix_world.inverted().to_3x3() @ delta
+			at = ob.data.attributes[ATRIBUT_PIESA].data
+			for k in {k for f in ob.data.polygons if at[f.index].value == id_piesa for k in f.vertices}:
+				ob.data.vertices[k].co += local
+			mutate[(nume_ob, id_piesa)] += delta
+	for piesa, d in sorted(mutate.items(), key=lambda t: -t[1].length):
+		c = sum((v[0][0] for v in tri if v[2] == piesa), Vector()) / max(1, sum(1 for v in tri if v[2] == piesa))
+		print("DESPARTIT %s (lângă %s, la %.1f %.1f %.1f) cu (%.0f, %.0f, %.0f) mm" % (PIESE[piesa[1]], motiv.get(piesa, "?"),
+			c.x, c.y, c.z, d.x * 1000, d.y * 1000, d.z * 1000))
+	for i, j, abatere, arie in ramase:
+		c = tri[i][0][0]
+		print("FETE LIPITE RAMASE %s / %s la (%.2f, %.2f, %.2f): %.1f mm, %.4f m²" % (PIESE[tri[i][2][1]], PIESE[tri[j][2][1]],
+			c.x, c.y, c.z, abatere * 1000, arie))
+	return ramase
+
+
+def _aceeasi_piesa(a, b):
+	"""Două bucăți cu același nume și aceeași culoare (ex. bucățile frânte ale unei crăpături)."""
+	return a[1] >= 0 and b[1] >= 0 and PIESE[a[1]] == PIESE[b[1]] and CULORI_PIESE[a[1]] == CULORI_PIESE[b[1]]
