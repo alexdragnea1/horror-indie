@@ -1,0 +1,39 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/om_padure.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/om_padure.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/caca.glb" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/om_icnit_1.ogg" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/om_icnit_2.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/om_part_1.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/om_part_2.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/om_plop.ogg" id="10"]
+[ext_resource type="AudioStream" path="res://sunete/om_tipat.ogg" id="11"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="12"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="13"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="14"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="15"]
+[ext_resource type="AudioStream" path="res://sunete/fas_fosnet_1.ogg" id="16"]
+[ext_resource type="AudioStream" path="res://sunete/fas_fosnet_2.ogg" id="17"]
+[ext_resource type="AudioStream" path="res://sunete/crengi.ogg" id="18"]
+
+[node name="OmPadure" type="Node3D"]
+script = ExtResource("1")
+icnit = Array[AudioStream]([ExtResource("6"), ExtResource("7")])
+part = Array[AudioStream]([ExtResource("8"), ExtResource("9")])
+plop = ExtResource("10")
+tipat = ExtResource("11")
+pasi = Array[AudioStream]([ExtResource("12"), ExtResource("13"), ExtResource("14"), ExtResource("15")])
+fosnet = Array[AudioStream]([ExtResource("16"), ExtResource("17")])
+crengi = ExtResource("18")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Caca" parent="." instance=ExtResource("5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.25)
+script = ExtResource("3")
+material = ExtResource("4")

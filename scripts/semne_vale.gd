@@ -111,6 +111,11 @@ func _atarna(punct: Vector3) -> void:
 	_papusi.append(n)
 
 
+## Păpușa a `index`-a (în ordinea din SEMNE; ultima e cea din cerc), ca s-o poată rupe sperietura_papusa.gd.
+func papusa_atarnata(index: int) -> Node3D:
+	return _papusi[index] if index < _papusi.size() else null
+
+
 func _process(delta: float) -> void:
 	_timp += delta
 	# păpușile se răsucesc încet pe sfoară și se leagănă puțin, fiecare în ritmul ei

@@ -1,4 +1,4 @@
-[gd_scene load_steps=84 format=3]
+[gd_scene load_steps=93 format=3]
 
 [ext_resource type="Script" path="res://scripts/teren_padure.gd" id="1"]
 [ext_resource type="Shader" path="res://shaders/cer_noapte.gdshader" id="2"]
@@ -51,6 +51,15 @@
 [ext_resource type="PackedScene" path="res://scenes/coven.tscn" id="50"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_padure.ogg" id="muzica_loc_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
+[ext_resource type="PackedScene" path="res://scenes/om_padure.tscn" id="om_padure"]
+[ext_resource type="Script" path="res://scripts/sperietura_papusa.gd" id="sperietura_gd"]
+[ext_resource type="PackedScene" path="res://scenes/creatura.tscn" id="creatura_tscn"]
+[ext_resource type="AudioStream" path="res://sunete/papusa_sfoara.ogg" id="s_sfoara"]
+[ext_resource type="AudioStream" path="res://sunete/papusa_cade.ogg" id="s_cade"]
+[ext_resource type="AudioStream" path="res://sunete/sperietura_papusa.ogg" id="s_sting"]
+[ext_resource type="AudioStream" path="res://sunete/creatura_goana.ogg" id="s_goana"]
+[ext_resource type="AudioStream" path="res://sunete/creatura_tipat.ogg" id="s_tipat"]
+[ext_resource type="AudioStream" path="res://sunete/inima_rapida.ogg" id="s_inima"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("2")
@@ -288,6 +297,11 @@ script = ExtResource("12")
 material = ExtResource("13")
 coliziune = 1
 
+[node name="OmPadure" parent="PePamant" node_paths=PackedStringArray("teren") instance=ExtResource("om_padure")]
+position = Vector3(18.7, 0, -58.5)
+rotation = Vector3(0, -2.31, 0)
+teren = NodePath("../../Teren")
+
 [node name="Autobuz" parent="." instance=ExtResource("15")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -4, 0.04, -1.75)
 
@@ -376,3 +390,16 @@ stream = ExtResource("muzica_loc_ogg")
 bus = &"Muzica"
 script = ExtResource("muzica_loc_gd")
 cedeaza = NodePath("../PePamant/Betiv/Boombox")
+
+[node name="SperieturaPapusa" type="Node3D" parent="." node_paths=PackedStringArray("semne", "teren")]
+script = ExtResource("sperietura_gd")
+semne = NodePath("../SemneVale")
+teren = NodePath("../Teren")
+creatura = ExtResource("creatura_tscn")
+sunet_sfoara = ExtResource("s_sfoara")
+sunet_cade = ExtResource("s_cade")
+sunet_sting = ExtResource("s_sting")
+sunet_goana = ExtResource("s_goana")
+sunet_tipat = ExtResource("s_tipat")
+sunet_crengi = ExtResource("41")
+sunet_inima = ExtResource("s_inima")

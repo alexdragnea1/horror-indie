@@ -778,3 +778,77 @@ unic bazooka_explozie "$OUT/_bazooka_bum.wav" stereo
 TINTA_LUFS=-20
 rm -f "$OUT"/_carne.wav "$OUT"/_shotgun.wav "$OUT"/_pompa.wav "$OUT"/_ak.wav "$OUT"/_lansare.wav "$OUT"/_incarcare.wav \
 	"$OUT"/_racheta.wav "$OUT"/_bazooka_bum.wav
+
+# --- pădurea, poteca spre vale: păpușa care cade și creatura care trece prin spatele tău (sperietura_papusa.gd)
+# sfoara: scârțâie o clipă sub greutate, apoi se rupe (pocnetul la 0,25 s, coarda care zvâcnește)
+ffmpeg -v error -y -i "$PACHET/Footsteps/foley_creak_1.wav" -i "$PACHET/Other/elastic_twang.wav" -i "$PACHET/Other/snap.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,atrim=end=0.35,asetrate=44100*1.3,aresample=44100,highpass=f=400,afade=t=out:st=0.18:d=0.08,volume=4[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=260,volume=0.9[b];[2]aformat=channel_layouts=mono,adelay=250[c];[a][b][c]amix=inputs=3:normalize=0:duration=longest,atrim=end=0.8,afade=t=out:st=0.6:d=0.2" \
+	-ac 1 "$OUT/_sfoara.wav"
+unic papusa_sfoara "$OUT/_sfoara.wav"
+# păpușa cade în frunze: bufnitura moale a cârpei, paiele care foșnesc, bețigașul brațelor care pocnește
+ffmpeg -v error -y -i "$PACHET/Materials/clothing_thud.wav" -i "$PACHET/Materials/paper_scrunch.wav" -i "$PACHET/Materials/wood_small_drop.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*0.85,aresample=44100,lowpass=f=2500[a];[1]aformat=channel_layouts=mono,atrim=end=0.45,highpass=f=1500,lowpass=f=6000,afade=t=out:st=0.25:d=0.2,volume=0.35[b];[2]aformat=channel_layouts=mono,asetrate=44100*1.2,aresample=44100,adelay=30,volume=0.4[c];[a][b][c]amix=inputs=3:normalize=0:duration=longest,atrim=end=0.9,afade=t=out:st=0.7:d=0.2" \
+	-ac 1 "$OUT/_papusa_cade.wav"
+unic papusa_cade "$OUT/_papusa_cade.wav"
+# goana creaturii prin tufișuri (~2,6 s, pe creatură, deci trece prin spatele tău dintr-o parte în alta): frunzele care
+# vâjâie în rafale, crengi rupte, vâjâitul trupului
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.9:d=2.6:r=44100:s=61" -i "$PACHET/Combat and Gore/crunch.wav" \
+	-i "$PACHET/Combat and Gore/crunch_quick.wav" -i "$PACHET/Combat and Gore/crunch.wav" -i "$PACHET/Other/whoosh_2.wav" -filter_complex \
+	"[0]bandpass=f=2500:t=h:w=3500,tremolo=f=9:d=0.8,volume='min(t/0.15\,1)*max(0\,1-(t-2.0)/0.6)*0.8':eval=frame[f];[1]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,adelay=300,volume=0.8[c1];[2]aformat=channel_layouts=mono,asetrate=44100*0.9,aresample=44100,adelay=1150,volume=0.7[c2];[3]aformat=channel_layouts=mono,asetrate=44100*0.65,aresample=44100,adelay=1850,volume=0.6[c3];[4]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=700,volume=0.7[w];[f][c1][c2][c3][w]amix=inputs=5:normalize=0:duration=longest,lowpass=f=5000,atrim=end=2.6,afade=t=out:st=2.2:d=0.4" \
+	-ac 1 "$OUT/_goana.wav"
+unic creatura_goana "$OUT/_goana.wav"
+# țipătul ei când trece: o voce urcată mult (scheunat), dedesubt aceeași voce coborâtă (mârâit) și un hârâit în gât
+ffmpeg -v error -y -i "$PACHET/Human/man_6.wav" -i "$PACHET/Human/man_4.wav" -f lavfi -i "anoisesrc=c=pink:a=0.8:d=1.1:r=44100:s=62" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*1.6,aresample=44100,highpass=f=600,volume=0.8[h];[1]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=1500,volume=0.9[l];[2]bandpass=f=1800:t=h:w=1600,tremolo=f=45:d=0.9,volume='if(lt(t\,0.05)\,t/0.05\,exp(-(t-0.05)*3))*0.5':eval=frame[g];[h][l][g]amix=inputs=3:normalize=0:duration=longest,acrusher=bits=10:mix=0.3,aecho=0.6:0.4:60:0.25,atrim=end=1.1,afade=t=out:st=0.8:d=0.3" \
+	-ac 1 "$OUT/_tipat.wav"
+unic creatura_tipat "$OUT/_tipat.wav"
+# inima ta după sperietură (~7 s): bate repede, apoi se liniștește, cu respirația scurtă, înfundată
+INIMA_RAPIDA="0"
+t=0.0
+for pas in 0.4 0.4 0.4 0.42 0.42 0.44 0.46 0.48 0.5 0.53 0.56 0.6 0.64 0.68; do
+	INIMA_RAPIDA="$INIMA_RAPIDA$(inima "$t" 0.9)"
+	t=$(awk -v t="$t" -v p="$pas" 'BEGIN { printf "%.2f", t + p }')
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$INIMA_RAPIDA':s=44100:d=7" -f lavfi -i "anoisesrc=c=pink:a=0.7:d=7:r=44100:s=63" -filter_complex \
+	"[0]lowpass=f=220[i];[1]bandpass=f=900:t=h:w=1200,volume='0.35*pow(abs(sin(PI*t/(0.8+t*0.08)))\,3)*max(0\,1-t/7)':eval=frame[r];[i][r]amix=inputs=2:normalize=0,afade=t=out:st=5.8:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_inima_rapida.wav"
+unic inima_rapida "$OUT/_inima_rapida.wav" stereo
+# lovitura (~4 s), mai tare decât efectele obișnuite, ca la celelalte momente mari: bubuitura, „sting”-ul de groază încetinit,
+# basul care cade 70 -> 28 Hz, un cluster de coarde ascuțite care tremură și fantoma întoarsă care se stinge
+TINTA_NORMALA_PADURE=$TINTA_LUFS
+TINTA_LUFS=-13
+ffmpeg -v error -y -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Musical Effects/horror_sting.wav" \
+	-f lavfi -i "aevalsrc='1.2*sin(2*PI*(70*t-7*t*t))*min(t/0.005\,1)*exp(-t*1.4)':s=44100:d=4" \
+	-f lavfi -i "aevalsrc='0.22*(sin(2*PI*1480*t)+sin(2*PI*1568*t)+0.8*sin(2*PI*1661*t)+0.6*sin(2*PI*740*t))*min(t/0.03\,1)*exp(-t*1.1)':s=44100:d=4" \
+	-i "$PACHET/Other/ghost_long.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=1800,volume=1.2[t];[1]aformat=channel_layouts=mono,asetrate=44100*0.85,aresample=44100[s];[2]lowpass=f=200[b];[3]tremolo=f=11:d=0.5,highpass=f=500[z];[4]aformat=channel_layouts=mono,areverse,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,adelay=400,volume=0.5[g];[t][s][b][z][g]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.7:0.6:180|420:0.3|0.18,atrim=end=4,afade=t=out:st=2.8:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_sperietura.wav"
+unic sperietura_papusa "$OUT/_sperietura.wav" stereo
+TINTA_LUFS=$TINTA_NORMALA_PADURE
+
+# --- omul din pădure, pe urcușul spre platou (om_padure.gd)
+# se screme: un mormăit întins de ~2,5 ori și tremurat (două variante)
+ffmpeg -v error -y -i "$PACHET/Human/man_2.wav" -af "aformat=channel_layouts=mono,atempo=0.5,atempo=0.8,asetrate=44100*0.92,aresample=44100,tremolo=f=6:d=0.35,lowpass=f=1800,afade=t=out:st=0.75:d=0.2" -ac 1 "$OUT/_icnit1.wav"
+unic om_icnit_1 "$OUT/_icnit1.wav"
+ffmpeg -v error -y -i "$PACHET/Human/man_8.wav" -af "aformat=channel_layouts=mono,atempo=0.5,atempo=0.75,tremolo=f=8:d=0.45,lowpass=f=1600,afade=t=out:st=0.8:d=0.2" -ac 1 "$OUT/_icnit2.wav"
+unic om_icnit_2 "$OUT/_icnit2.wav"
+# pârțurile: o undă pătrată joasă care tremură repede (hârâitul), cu ton care se clatină; scurt și lung (care se sufocă la capăt)
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.7*(0.5*sgn(sin(2*PI*(62*t+0.9*sin(2*PI*3*t))))+sin(2*PI*62*t))*(0.55+0.45*sin(2*PI*31*t))*min(t/0.02\,1)*exp(-t*2.5)':s=44100:d=0.7" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.5:d=0.7:r=44100:s=64" -filter_complex "[1]lowpass=f=300,volume='exp(-t*4)':eval=frame[n];[0][n]amix=inputs=2:normalize=0,lowpass=f=700,highpass=f=40,afade=t=out:st=0.5:d=0.2" \
+	-ac 1 "$OUT/_part1.wav"
+unic om_part_1 "$OUT/_part1.wav"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.7*(0.5*sgn(sin(2*PI*((88*t-12*t*t)+1.5*sin(2*PI*2*t))))+sin(2*PI*(88*t-12*t*t)))*(0.55+0.45*sin(2*PI*(24*t-3*t*t)))*min(t/0.03\,1)*(1-0.85*gt(t\,0.9)*lt(sin(2*PI*9*t)\,0))*max(0\,1-t/1.5)':s=44100:d=1.5" \
+	-f lavfi -i "anoisesrc=c=brown:a=0.5:d=1.5:r=44100:s=65" -filter_complex "[1]lowpass=f=300,volume='0.6*max(0\,1-t/1.5)':eval=frame[n];[0][n]amix=inputs=2:normalize=0,lowpass=f=750,highpass=f=40,afade=t=out:st=1.3:d=0.2" \
+	-ac 1 "$OUT/_part2.wav"
+unic om_part_2 "$OUT/_part2.wav"
+# pleoscăitul de dedesubt
+ffmpeg -v error -y -i "$PACHET/Environment/water_drop_medium.wav" -i "$PACHET/Combat and Gore/splat_quick.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=1500[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,lowpass=f=1200,adelay=20,volume=0.5[b];[a][b]amix=inputs=2:normalize=0:duration=longest,afade=t=out:st=0.4:d=0.2" \
+	-ac 1 "$OUT/_plop.wav"
+unic om_plop "$OUT/_plop.wav"
+# l-ai prins: strigătul speriat (o voce urcată puțin) și fâșul care foșnește la fiecare pas cât fuge
+unic om_tipat "Human/man_6.wav" mono "aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,highpass=f=200,aecho=0.6:0.4:70:0.2"
+unic fas_fosnet_1 "Materials/clothing_1.wav" mono "aformat=channel_layouts=mono,highpass=f=800,asetpts=PTS-STARTPTS,atrim=end=0.3,afade=t=out:st=0.2:d=0.1"
+unic fas_fosnet_2 "Materials/clothing_2.wav" mono "aformat=channel_layouts=mono,highpass=f=800,asetpts=PTS-STARTPTS,atrim=end=0.3,afade=t=out:st=0.2:d=0.1"
+rm -f "$OUT"/_sfoara.wav "$OUT"/_papusa_cade.wav "$OUT"/_goana.wav "$OUT"/_tipat.wav "$OUT"/_inima_rapida.wav "$OUT"/_sperietura.wav \
+	"$OUT"/_icnit1.wav "$OUT"/_icnit2.wav "$OUT"/_part1.wav "$OUT"/_part2.wav "$OUT"/_plop.wav

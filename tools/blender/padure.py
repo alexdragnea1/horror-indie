@@ -1,5 +1,5 @@
 # Pădurea Trivale: stația de la marginea pădurii, bariera forestieră, indicatorul de la bifurcație
-# și ce e prin pădure (copaci morți, bușteni, pietre) și pe poteca din stânga (cruci, păpuși de paie, vatra).
+# și ce e prin pădure (copaci morți, bușteni, pietre) și pe poteca din stânga (cruci, păpuși de paie, vatra), plus omul care se ușurează pe urcuș și ce lasă în urmă.
 # Le apelează modele.py, dar merg și singure (mai repede, doar astea):
 #   blender --background --factory-startup --python tools/blender/padure.py
 # Axe Blender: Z în sus, fața modelului spre -Y (în Godot devine +Z). Originea = la sol.
@@ -269,10 +269,13 @@ def cruce(cale):
 
 def papusa(cale):
 	"""Păpușă de paie atârnată de o sfoară (momâie): originea e sus, la nodul sforii, ca să se legene.
-	Cap de paie legat, ochi din nasturi, rochiță de cârpă, brațe dintr-un bețigaș, fir roșu la gât."""
+	Cap de paie legat, ochi din nasturi, rochiță de cârpă, brațe dintr-un bețigaș, fir roșu la gât.
+	Două bucăți, ca sfoara să se poată rupe (sperietura din vale): `Sfoara` (cât rămâne în cracă) și `Papusa`
+	(păpușa, cu capătul rupt al sforii), amândouă cu originea la nod."""
 	curata()
+	sfoara = cub("Sfoara", (0.012, 0.012, 0.85), (0, 0, -0.425), PAIE_INCHIS)
 	piese = [
-		cub("Sfoara", (0.012, 0.012, 1.2), (0, 0, -0.6), PAIE_INCHIS),
+		cub("Sfoara rupta", (0.012, 0.012, 0.35), (0, 0, -1.025), PAIE_INCHIS),
 		trunchi("Cap", [((0, 0, -1.2), 0.0, 0.0), ((0, 0, -1.23), 0.07, 0.07), ((0, 0, -1.3), 0.09, 0.08),
 			((0, 0, -1.37), 0.06, 0.055)], PAIE, laturi=7),
 		trunchi("Rochie", [((0, 0, -1.37), 0.04, 0.04), ((0, 0, -1.45), 0.09, 0.07), ((0, 0, -1.65), 0.16, 0.12),
@@ -290,6 +293,7 @@ def papusa(cale):
 		u = k * math.tau / 6
 		piese.append(os_intre("Pai", (math.cos(u) * 0.1, math.sin(u) * 0.08, -1.7), (math.cos(u) * 0.13, math.sin(u) * 0.1, -1.82),
 			0.008, PAIE, laturi=3))
+	uneste([sfoara], "Sfoara")
 	uneste(piese, "Papusa")
 	exporta(os.path.join(cale, "papusa.glb"))
 
@@ -333,6 +337,118 @@ def copac_craca(cale):
 	exporta(os.path.join(cale, "copac_craca.glb"))
 
 
+def om_padure(cale):
+	"""Omul care se ușurează în pădure, pe urcușul spre platou: la vreo 50 de ani, burtă, chelie cu păr pe
+	laturi, mustață, fâș mov, fundul gol, chiloții la genunchi și pantalonii de trening adunați la glezne, o rolă
+	de hârtie igienică în dreapta. Modelat în picioare (fața spre -Y, originea la sol); ghemuitul și fuga le face
+	`om_padure.gd` din piese: `Corp` (originea în bazin), cu `Cap` (în gât) și `BratS`/`BratD` (în umeri) copii ai
+	lui, apoi `CoapsaS`/`CoapsaD` (în șolduri), fiecare cu `GambaS`/`GambaD` (în genunchi)."""
+	curata()
+	piele, piele_umbra = p("a56850"), p("904a40")
+	fas, fas_umbra, fas_panou = p("655269"), p("553e4d"), p("30716f")
+	trening, par = p("2a3c3d"), p("5e5356")
+	bazin = (0, 0, 0.92)
+
+	corp = [
+		# fundul gol (se vede din spate, sub fâș), cu bazinul
+		sfera("Bazin", 0.15, (0, 0.02, 0.9), piele, scara=(1.15, 0.85, 0.6), segmente=10, inele=6),
+		sfera("Fund", 0.11, (-0.068, 0.07, 0.855), piele, scara=(1.0, 0.85, 1.05), segmente=8, inele=6),
+		sfera("Fund", 0.11, (0.068, 0.07, 0.855), piele, scara=(1.0, 0.85, 1.05), segmente=8, inele=6),
+		cub("Dunga fund", (0.01, 0.03, 0.13), (0, 0.15, 0.85), piele_umbra),
+		# fâșul: lung în față (acoperă ce trebuie), cu burtă
+		trunchi("Fas", [((0, 0.0, 0.89), 0.18, 0.14), ((0, -0.025, 1.0), 0.2, 0.17), ((0, -0.015, 1.13), 0.2, 0.16),
+			((0, 0.01, 1.28), 0.2, 0.13), ((0, 0.02, 1.4), 0.17, 0.11), ((0, 0.02, 1.46), 0.07, 0.06)], fas, laturi=10),
+		cub("Poala fas", (0.3, 0.05, 0.15), (0, -0.115, 0.83), fas_umbra, rot=(-0.12, 0, 0)),
+		cub("Panou fas", (0.36, 0.08, 0.07), (0, -0.115, 1.25), fas_panou),
+		trunchi("Guler", [((0, 0.02, 1.42), 0.1, 0.08), ((0, 0.02, 1.5), 0.09, 0.075)], fas_umbra, laturi=8),
+	]
+	trup = uneste(corp, "Corp", bazin)
+
+	gat = (0, 0.02, 1.47)
+	cap = [
+		trunchi("Gat", [((0, 0.02, 1.44), 0.055, 0.055), ((0, 0.01, 1.54), 0.05, 0.05)], piele, laturi=7),
+		trunchi("Fata", [((0, -0.02, 1.51), 0.0, 0.0), ((0, -0.025, 1.53), 0.07, 0.065), ((0, -0.01, 1.59), 0.095, 0.1),
+			((0, 0.0, 1.67), 0.1, 0.11), ((0, 0.01, 1.73), 0.085, 0.09), ((0, 0.015, 1.77), 0.0, 0.0)], piele, laturi=10),
+		trunchi("Nas", [((0, -0.1, 1.66), 0.022, 0.018), ((0, -0.132, 1.635), 0.032, 0.024), ((0, -0.128, 1.618), 0.0, 0.0)],
+			piele_umbra, laturi=6),
+		cub("Mustata", (0.12, 0.03, 0.03), (0, -0.112, 1.605), NEGRU),
+		# gura căscată: l-ai prins
+		cub("Gura", (0.045, 0.01, 0.04), (0, -0.112, 1.57), NEGRU),
+		cub("Barba nerasa", (0.14, 0.05, 0.05), (0, -0.07, 1.55), piele_umbra),
+		# chelie: păr doar pe laturi și la ceafă
+		sfera("Par", 0.06, (-0.092, 0.03, 1.665), par, scara=(0.5, 1.2, 0.8), segmente=6, inele=4),
+		sfera("Par", 0.06, (0.092, 0.03, 1.665), par, scara=(0.5, 1.2, 0.8), segmente=6, inele=4),
+		sfera("Par", 0.08, (0, 0.085, 1.655), par, scara=(1.15, 0.5, 0.8), segmente=8, inele=4),
+	]
+	for s in (-1, 1):
+		cap += [
+			cub("Ochi", (0.032, 0.012, 0.024), (0.04 * s, -0.112, 1.68), ALB),
+			cub("Pupila", (0.012, 0.012, 0.008), (0.04 * s, -0.122, 1.68), NEGRU),
+			cub("Spranceana", (0.045, 0.012, 0.012), (0.042 * s, -0.105, 1.712), par, rot=(0, -0.2 * s, 0)),
+			sfera("Ureche", 0.025, (0.1 * s, 0.01, 1.65), piele, scara=(0.4, 1, 1.3), segmente=6, inele=4),
+		]
+	ob_cap = uneste(cap, "Cap", gat)
+	ob_cap.parent = trup
+	ob_cap.matrix_parent_inverse = trup.matrix_world.inverted()
+
+	for nume, s in (("BratS", -1), ("BratD", 1)):
+		umar, cot, inch = (0.21 * s, 0.02, 1.4), (0.245 * s, 0.03, 1.12), (0.255 * s, 0.0, 0.86)
+		brat = [
+			sfera("Umar", 0.07, umar, fas, segmente=8, inele=5),
+			trunchi("Maneca", [(umar, 0.065, 0.065), (cot, 0.06, 0.058), (inch, 0.048, 0.046)], fas, laturi=8),
+			trunchi("Manseta", [((0.255 * s, 0.0, 0.88), 0.05, 0.05), ((0.256 * s, 0.0, 0.85), 0.05, 0.05)], fas_umbra, laturi=8),
+			sfera("Mana", 0.045, (0.256 * s, -0.01, 0.8), piele, scara=(0.9, 1.1, 1.1), segmente=6, inele=4),
+		]
+		if s == 1:
+			# rola de hârtie, ținută în față, și o fâșie care flutură
+			brat += [
+				cilindru("Hartie", 0.055, 0.055, 0.11, (0.256, -0.08, 0.79), ALB, laturi=8, rot=(1.5708, 0, 0)),
+				cilindru("Gaura hartie", 0.02, 0.02, 0.13, (0.256, -0.08, 0.79), NEGRU, laturi=6, rot=(1.5708, 0, 0)),
+				cub("Fasie hartie", (0.07, 0.006, 0.3), (0.256, -0.13, 0.64), ALB),
+			]
+		ob = uneste(brat, nume, umar)
+		ob.parent = trup
+		ob.matrix_parent_inverse = trup.matrix_world.inverted()
+
+	for s, latura in ((-1, "S"), (1, "D")):
+		sold, genunchi, glezna = (0.1 * s, 0.0, 0.9), (0.11 * s, -0.01, 0.49), (0.11 * s, 0.01, 0.1)
+		coapsa = [trunchi("Coapsa", [(sold, 0.085, 0.085), (genunchi, 0.06, 0.06)], piele, laturi=8)]
+		gamba = [
+			sfera("Genunchi", 0.062, genunchi, piele, segmente=8, inele=5),
+			trunchi("Gamba", [(genunchi, 0.058, 0.058), ((0.11 * s, -0.005, 0.32), 0.055, 0.055), (glezna, 0.04, 0.04)],
+				piele, laturi=8),
+			# chiloții, coborâți sub genunchi
+			trunchi("Chiloti", [((0.11 * s, -0.008, 0.36), 0.075, 0.072), ((0.11 * s, -0.006, 0.43), 0.078, 0.075)], ALB, laturi=8),
+			# trening-ul adunat la glezne, șifonat
+			trunchi("Pantaloni", [((0.11 * s, 0.01, 0.07), 0.08, 0.08), ((0.11 * s, 0.01, 0.13), 0.1, 0.095),
+				((0.11 * s, 0.005, 0.2), 0.085, 0.085), ((0.11 * s, 0.0, 0.27), 0.095, 0.09), ((0.11 * s, -0.003, 0.32), 0.07, 0.068)],
+				trening, laturi=8),
+			cub("Dunga trening", (0.012, 0.03, 0.2), (0.11 * s + 0.1 * s, 0.01, 0.19), ALB),
+			cub("Pantof", (0.1, 0.25, 0.08), (0.11 * s, -0.06, 0.04), NEGRU),
+		]
+		ob_coapsa = uneste(coapsa, "Coapsa" + latura, sold)
+		ob_gamba = uneste(gamba, "Gamba" + latura, genunchi)
+		ob_gamba.parent = ob_coapsa
+		ob_gamba.matrix_parent_inverse = ob_coapsa.matrix_world.inverted()
+	exporta(os.path.join(cale, "om_padure.glb"))
+
+
+def caca(cale):
+	"""Ce lasă omul din pădure în urmă: o grămăjoară încolăcită și câteva ghemotoace de hârtie. Originea la sol."""
+	curata()
+	maro, maro_inchis = p("5e363e"), p("48313b")
+	piese = [
+		sfera("Caca", 0.09, (0, 0, 0.04), maro, scara=(1.0, 1.0, 0.5), segmente=8, inele=5),
+		sfera("Caca", 0.065, (0.012, 0.004, 0.085), maro_inchis, scara=(1.0, 1.0, 0.65), segmente=8, inele=5),
+		sfera("Caca", 0.042, (-0.004, 0.006, 0.122), maro, scara=(1.0, 1.0, 0.8), segmente=7, inele=4),
+		trunchi("Varf", [((0.0, 0.005, 0.14), 0.02, 0.02), ((0.012, 0.0, 0.17), 0.0, 0.0)], maro_inchis, laturi=5),
+	]
+	for k, (x, y) in enumerate(((0.28, 0.1), (-0.22, 0.2), (0.12, 0.32))):
+		piese.append(sfera("Hartie", 0.035 + k * 0.006, (x, y, 0.025), ALB, scara=(1.2, 1.0, 0.7), segmente=6, inele=4))
+	uneste(piese, "Caca")
+	exporta(os.path.join(cale, "caca.glb"))
+
+
 def toate(cale):
 	statie_rurala(cale)
 	bariera(cale)
@@ -347,6 +463,8 @@ def toate(cale):
 	papusa(cale)
 	vatra(cale)
 	copac_craca(cale)
+	om_padure(cale)
+	caca(cale)
 
 
 if __name__ == "__main__":
