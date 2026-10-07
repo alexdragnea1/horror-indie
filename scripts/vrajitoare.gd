@@ -37,6 +37,7 @@ var _tween: Tween
 
 
 func _ready() -> void:
+	CapTinta.adauga(self, _cap)
 	_timp = faza
 	var nume := String(name).to_lower()
 	id_cadavru = "cadavru_" + nume

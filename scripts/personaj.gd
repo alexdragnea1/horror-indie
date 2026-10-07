@@ -55,6 +55,7 @@ var _cadavru: Ragdoll
 
 func _ready() -> void:
 	_model = get_node_or_null("Model")
+	CapTinta.adauga(self, cap)
 	if id_cadavru != "":
 		add_to_group("cadavre")  # cazanul îl caută aici (cazan.gd)
 	if marcaj_luat != "" and Stare.e_marcat(marcaj_luat):

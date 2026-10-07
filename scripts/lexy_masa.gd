@@ -66,12 +66,15 @@ var _cadavru: Ragdoll
 var _jucator: CharacterBody3D
 var _cap: Node3D
 var _camera: Camera3D
+## Sfera de pe capul ei (CapTinta): capsula de pe scaun nu-l prinde când se apleacă peste masă.
+var _forma_cap: CapTinta
 
 @onready var _forma: CollisionShape3D = $Forma
 
 
 func _ready() -> void:
 	indiciu = "[E] Talk to Lexy"
+	_forma_cap = CapTinta.adauga(self, lexy.find_child("Cap", true, false))
 	_seteaza_forma()
 	Stare.schimbat.connect(_seteaza_forma)
 	await get_tree().process_frame
@@ -98,6 +101,8 @@ func _ready() -> void:
 func _seteaza_forma() -> void:
 	var la_masa := Stare.e_marcat(marcaj_canapea) and not Stare.e_marcat(marcaj_moarta)
 	_forma.set_deferred("disabled", not la_masa)
+	if _forma_cap:
+		_forma_cap.set_deferred("disabled", not la_masa)
 
 
 func poate_fi_folosit() -> bool:
