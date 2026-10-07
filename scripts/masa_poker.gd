@@ -23,6 +23,8 @@ signal _ales(tip: String, suma: int)
 @export var loc_jucator: Marker3D
 ## Înălțimea ochilor cât stai jos.
 @export var ochi_sezut := 1.12
+## Cât de departe de loc (dinspre masă) te ridici: dincolo de cutia scaunului gol (LocLiber, 0,56 m) plus capsula ta (0,3 m).
+@export var departare_ridicat := 0.75
 @export var nume_jucatori: PackedStringArray = ["Big Sal", "Slick Tony", "Old Ass", "Trophy Wife", "Asshole"]
 ## Jetoanele adversarilor la început (cenți).
 @export var bani_jucatori: PackedInt32Array = [34200, 14700, 22200, 18900, 9700]
@@ -179,7 +181,11 @@ func _ridica_te() -> void:
 	_bani[0] = 0
 	_actualizeaza_teancuri()
 	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	var inapoi := loc_jucator.global_position + loc_jucator.global_basis.z * 0.6
+	# te ridici înapoi, dinspre masă, până în spatele scaunului (cutia lui de coliziune + capsula ta), ca să nu rămâi
+	# prins în scaun sau în masă când coliziunea ta revine
+	var dinspre_masa := loc_jucator.global_position - centru.global_position
+	dinspre_masa.y = 0.0
+	var inapoi := loc_jucator.global_position + dinspre_masa.normalized() * departare_ridicat
 	t.tween_property(_jucator, "global_position", inapoi, 0.7)
 	t.tween_property(_cap, "position:y", _inaltime_ochi, 0.7)
 	t.tween_property(_cap, "rotation:x", 0.0, 0.7)
