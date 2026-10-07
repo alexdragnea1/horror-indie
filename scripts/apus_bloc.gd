@@ -18,6 +18,8 @@ const CER := preload("res://shaders/cer_apus.gdshader")
 @export var soare: DirectionalLight3D
 ## Ce tace la apus (sperieturile, fantoma).
 @export var de_oprit: Array[Node] = []
+## Cine nu e în curte la apus (baba de pe bancă): Head Witch te așteaptă singură.
+@export var scoase: Array[Node] = []
 ## Ce se poate examina doar la miezul nopții (covorul de pe bătător).
 @export var doar_noaptea: Array[Interactabil] = []
 ## Unde apari când ieși din bloc (ZiBloc.din_casa) și încotro te uiți (PI = spre stradă).
@@ -97,5 +99,8 @@ func _fa_apus() -> void:
 		soare.light_volumetric_fog_energy = 1.2
 	for nod in de_oprit:
 		nod.process_mode = Node.PROCESS_MODE_DISABLED
+	for nod in scoase:
+		if is_instance_valid(nod):
+			nod.queue_free()
 	for obiect in doar_noaptea:
 		obiect.activ = false
