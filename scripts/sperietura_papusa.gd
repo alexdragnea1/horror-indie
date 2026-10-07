@@ -1,6 +1,7 @@
 extends Node3D
-## Sperietura de pe poteca spre vale (spre vrăjitoare): când treci pe sub una din păpușile de paie din partea de jos,
-## pădurea tace o clipă, sfoara scârțâie și se rupe, păpușa îți cade lângă picioare (bubuitura + „sting”-ul, camera
+## Sperietura de pe poteca spre vale (spre vrăjitoare): când te apropii de una din păpușile de paie din partea de jos
+## (de la `raza_vedere` m, dacă o ai în fața ochilor, ca s-o vezi cum cade și când alergi; altfel la `raza`),
+## pădurea tace o clipă, sfoara scârțâie și se rupe, păpușa cade pe potecă (bubuitura + „sting”-ul, camera
 ## tresare), iar prin fața ta creatura trece în goană prin pădure, dintr-o parte în alta, cu un țipăt. După ea îți
 ## bate inima. O singură dată (`marcaj`); la Continue păpușa e deja pe jos.
 ## Sunetele sunt făcute în tools/sunete.sh (secțiunea „pădurea, poteca spre vale”).
@@ -10,7 +11,12 @@ extends Node3D
 @export var creatura: PackedScene
 ## Care păpușă se rupe (`SemneVale.papusa_atarnata(index)`, în ordinea din SEMNE): 2 = cea de la 0,71 din poteca spre vale.
 @export var papusa := 2
-## Cât de aproape de păpușă (pe orizontală) trebuie să treci.
+## De la ce distanță (pe orizontală) se rupe, dacă păpușa e în fața ta: din timp, ca s-o vezi cum cade
+## și dacă alergi (cu 4,5 m/s, până bufnește pe jos mai ai ~5 m până la ea).
+@export var raza_vedere := 9.0
+## Cât de departe de mijlocul privirii poate fi păpușa (grade, pe orizontală) ca să zică „e în fața ta”.
+@export var unghi_vedere := 30.0
+## Dacă ajungi atât de aproape fără s-o fi privit (ai venit cu spatele), se rupe oricum.
 @export var raza := 2.6
 @export var marcaj := "papusa_a_cazut"
 ## Pe unde trece creatura: la câți metri în fața ta, cât de lung e drumul ei și cât de repede aleargă.
@@ -60,9 +66,20 @@ func _process(_delta: float) -> void:
 	if jucator == null or Stare.meniu_deschis:
 		return
 	var d := Vector2(jucator.global_position.x - _papusa.global_position.x, jucator.global_position.z - _papusa.global_position.z)
-	if d.length() < raza:
+	if d.length() < raza or (d.length() < raza_vedere and _in_fata(d)):
 		_activa = true
 		_sperie(jucator)
+
+
+## d = de la păpușă la jucător (pe orizontală). Adevărat dacă privirea (camera) e îndreptată spre păpușă.
+func _in_fata(d: Vector2) -> bool:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return false
+	var privire := Vector2(-camera.global_basis.z.x, -camera.global_basis.z.z)
+	if privire.length() < 0.01:
+		return false
+	return absf(rad_to_deg(privire.angle_to(-d))) < unghi_vedere
 
 
 func _sperie(jucator: Node3D) -> void:
