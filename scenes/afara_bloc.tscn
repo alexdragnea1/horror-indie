@@ -684,6 +684,14 @@ script = ExtResource("or2")
 replici = PackedStringArray("You: I should check the bus schedule to go into town.")
 sarcina_noua = "Check the bus schedule."
 
+[node name="NoapteDupaMotel" type="Node" parent="."]
+script = ExtResource("or2")
+marcaj_necesar = "warlock_absorbit"
+marcaj_gata = "a_ajuns_acasa_dupa_motel"
+marcaj_oprire = "ziua_primariei"
+replici = PackedStringArray("You: I need some fucking sleep.")
+sarcina_noua = "Go home and rest."
+
 [node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
 script = ExtResource("32")
 autobuz = NodePath("../Autobuz")
@@ -698,10 +706,13 @@ sunet_frana = ExtResource("33")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 1.6, 13.8)
 script = ExtResource("or1")
 sosire = NodePath("../SosireOras")
-optiuni = PackedStringArray("Sketchy Laundromat", "Lexy's Place", "Gun Store")
-scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn")
-titluri = PackedStringArray("Sketchy Laundromat", "Lexy's place", "Freedom Gun Store")
-ascunse_dupa = PackedStringArray("", "lexy_moarta", "")
+optiuni = PackedStringArray("Sketchy Laundromat", "Lexy's Place", "Gun Store", "Town Hall")
+scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn", "res://scenes/primarie.tscn")
+titluri = PackedStringArray("Sketchy Laundromat", "Lexy's place", "Freedom Gun Store", "Town Hall")
+ascunse_dupa = PackedStringArray("", "lexy_moarta", "", "")
+vizibile_dupa = PackedStringArray("", "", "", "a_citit_stirile")
+blocat_de_la = "warlock_absorbit"
+blocat_pana_la = "ziua_primariei"
 
 [node name="Forma" type="CollisionShape3D" parent="OrarBloc"]
 shape = SubResource("forma_orar")

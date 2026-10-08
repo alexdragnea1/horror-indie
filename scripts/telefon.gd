@@ -35,6 +35,11 @@ const SUNET_PRIMIT := preload("res://sunete/telefon_primit.ogg")
 var contact := ""
 var mesaje: PackedStringArray = []
 var ora := "1:02"
+## Modul știri (`Telefon.stiri`): titlul articolului de pe site (gol = aplicația de mesaje).
+var titlu_articol := ""
+## Ce scrie în bara browserului și în capul paginii.
+var site := "localnews24.com"
+var nume_site := "LOCAL NEWS 24"
 
 var _umbra: ColorRect
 var _corp: Panel
@@ -58,6 +63,21 @@ static func conversatie(nod: Node, cu_cine: String, ce: PackedStringArray, cat_e
 	t.ora = cat_e_ora
 	nod.get_tree().current_scene.add_child(t)
 	await t._ruleaza()
+	t.queue_free()
+
+
+## O notificare de știri: telefonul vibrează, pe ecranul blocat apare notificarea (`sursa` sus, `notificare` dedesubt),
+## o apeși (E / click) și se deschide site-ul cu articolul (`titlu`, sub el doar mâzgăleli în loc de text), îl citești
+## și închizi telefonul (E / click). Se termină după ce telefonul a coborât.
+##   await Telefon.stiri(self, "NEWS", "WITCH WANTS TO DESTROY TOWN", "Witch becomes powerful...", "10:32")
+static func stiri(nod: Node, sursa: String, notificare: String, titlu: String, cat_e_ora := "10:32") -> void:
+	var t := Telefon.new()
+	t.contact = sursa
+	t.mesaje = [notificare]
+	t.titlu_articol = titlu
+	t.ora = cat_e_ora
+	nod.get_tree().current_scene.add_child(t)
+	await t._ruleaza_stiri()
 	t.queue_free()
 
 
@@ -130,7 +150,8 @@ func _construieste() -> void:
 	_panou(_corp, Vector2(LATIME * 0.5 + 20, 5), Vector2(5, 5), _cutie(Color("2a3c3d"), 3))
 
 	_ecran = _panou(_corp, Vector2(6, 14), Vector2(LATIME - 12, INALTIME - 26), _cutie(C_FUNDAL, 10))
-	_ecran.clip_contents = true
+	# (clip_children, nu clip_contents: telefonul e puțin rotit în mână, iar clip_contents nu taie ce e rotit)
+	_ecran.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	var w := _ecran.size.x
 	var h := _ecran.size.y
 
@@ -238,6 +259,9 @@ func _construieste() -> void:
 	sageata.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sageata.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_trimite.add_child(sageata)
+
+	if titlu_articol != "":
+		_construieste_site()
 
 	# --- bara de sus (peste ambele ecrane): ora, semnalul, bateria
 	var ora_mica := _text(ora, 7, C_TEXT)
@@ -452,3 +476,237 @@ func _ruleaza() -> void:
 func _scrie_tu_si_bula(continut: String) -> Control:
 	await _scrie_tu(continut)
 	return _lista.get_child(_lista.get_child_count() - 1) as Control
+
+
+# ---------------------------------------------------------------- știrile (Telefon.stiri)
+
+const C_SITE := Color("83b3b0")
+const C_SITE_TEXT := Color("262d2f")
+const C_SITE_SLAB := Color("5e5356")
+const C_SITE_ROSU := Color("7b383a")
+
+var _pagina: Control
+var _continut: Control
+var _indiciu: Label
+
+
+## Pagina site-ului: bara browserului, capul paginii, „BREAKING”, titlul, poza, apoi rânduri de mâzgăleli.
+func _construieste_site() -> void:
+	var w := _ecran.size.x
+	var h := _ecran.size.y
+	_pagina = Control.new()
+	_pagina.size = _ecran.size
+	_pagina.position = Vector2(w, 0)
+	_pagina.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ecran.add_child(_pagina)
+	_panou(_pagina, Vector2.ZERO, _ecran.size, _cutie(C_SITE, 0))
+	# pagina (sub bara browserului) se derulează: `_continut` urcă; ce iese pe sus îl acoperă bara browserului (două
+	# decupări una în alta nu merg în Godot, iar ecranul telefonului taie deja tot ce iese din el)
+	var zona := Control.new()
+	zona.position = Vector2(0, 26)
+	zona.size = Vector2(w, h - 26)
+	zona.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pagina.add_child(zona)
+	_continut = Control.new()
+	_continut.size = Vector2(w, 420)
+	_continut.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	zona.add_child(_continut)
+	# capul paginii
+	var cap := _panou(_continut, Vector2(0, 0), Vector2(w, 22), _cutie(C_SITE_ROSU, 0))
+	var nume := _text(nume_site, 11, C_SITE)
+	nume.size = cap.size
+	nume.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	nume.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cap.add_child(nume)
+	for i in 4:  # meniul site-ului: niște butoane fără nume
+		_panou(_continut, Vector2(6 + i * 33, 25), Vector2(28, 3), _cutie(C_SITE_SLAB, 1))
+	var eticheta := _panou(_continut, Vector2(6, 32), Vector2(50, 12), _cutie(C_SITE_ROSU, 2))
+	var breaking := _text("BREAKING", 8, C_SITE)
+	breaking.size = eticheta.size
+	breaking.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	breaking.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	eticheta.add_child(breaking)
+	# titlul articolului
+	var titlu := _text(titlu_articol, 11, C_SITE_TEXT)
+	titlu.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	titlu.position = Vector2(6, 45)
+	titlu.custom_minimum_size.x = w - 12
+	titlu.size = Vector2(w - 12, 10)
+	_continut.add_child(titlu)
+	var font := titlu.get_theme_font("font")
+	var inaltime_titlu := font.get_multiline_string_size(titlu_articol, HORIZONTAL_ALIGNMENT_LEFT, w - 12, 11).y
+	var y := 45.0 + inaltime_titlu + 4.0
+	var data := _text("Updated " + ora + " AM", 6, C_SITE_SLAB)
+	data.position = Vector2(6, y)
+	_continut.add_child(data)
+	y += 12.0
+	# poza: cer roșu peste orașul mic, o vrăjitoare pe mătură în fața lunii
+	var poza := _panou(_continut, Vector2(6, y), Vector2(w - 12, 62), _cutie(Color("5e363e"), 0))
+	poza.clip_contents = true
+	_panou(poza, Vector2(0, 0), Vector2(w - 12, 22), _cutie(Color("48313b"), 0))
+	_panou(poza, Vector2(0, 34), Vector2(w - 12, 28), _cutie(Color("904a40"), 0))
+	var r := RandomNumberGenerator.new()
+	r.seed = 1312
+	var x := 0.0
+	while x < w - 12:  # casele și blocurile
+		var lat := r.randf_range(8, 16)
+		var inalt := r.randf_range(8, 22)
+		_panou(poza, Vector2(x, 62 - inalt), Vector2(lat - 1, inalt), _cutie(C_CORP, 0))
+		x += lat
+	_panou(poza, Vector2(56, 4), Vector2(22, 22), _cutie(Color("a18463"), 11))  # luna
+	var vrajitoare := Polygon2D.new()
+	vrajitoare.color = C_CORP
+	vrajitoare.position = Vector2(68, 15)
+	# mătura (coada spre stânga, nuiele în dreapta), trupul aplecat în față, pălăria ascuțită
+	vrajitoare.polygon = PackedVector2Array([Vector2(-20, 7), Vector2(8, 5), Vector2(15, 2), Vector2(16, 8),
+		Vector2(8, 7), Vector2(-20, 9)])
+	poza.add_child(vrajitoare)
+	var trup := Polygon2D.new()
+	trup.color = C_CORP
+	trup.position = Vector2(68, 15)
+	trup.polygon = PackedVector2Array([Vector2(-6, 7), Vector2(2, 6), Vector2(0, -2), Vector2(-3, -5), Vector2(-1, -7),
+		Vector2(-2, -15), Vector2(-6, -8), Vector2(-9, -7), Vector2(-6, -5), Vector2(-8, 1)])
+	poza.add_child(trup)
+	y += 68.0
+	# textul articolului: doar mâzgăleli (rânduri ondulate, pe paragrafe)
+	for paragraf in 5:
+		var randuri := r.randi_range(3, 5)
+		for k in randuri:
+			var capat := w - 6.0 if k < randuri - 1 else r.randf_range(w * 0.35, w - 20.0)
+			_mazgala(Vector2(6, y + 3), capat, r)
+			y += 8.0
+		y += 6.0
+	_continut.size.y = y + 10.0
+	# bara browserului (peste pagină): adresa site-ului; deasupra ei fundalul barei de sus (ora, bateria)
+	_panou(_pagina, Vector2(0, 0), Vector2(w, 10), _cutie(C_FUNDAL, 0))
+	var bara := _panou(_pagina, Vector2(0, 10), Vector2(w, 16), _cutie(Color("70706e"), 0))
+	var adresa := _panou(bara, Vector2(5, 2), Vector2(w - 10, 12), _cutie(C_SITE, 6))
+	var text_adresa := _text(site, 7, C_SITE_SLAB)
+	text_adresa.size = adresa.size
+	text_adresa.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text_adresa.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	adresa.add_child(text_adresa)
+
+
+## Un rând de „text” mâzgălit, de la `start` până la x = `capat`: valuri mici ca un scris de mână ilizibil, cu pauze ca
+## între cuvinte.
+func _mazgala(start: Vector2, capat: float, r: RandomNumberGenerator) -> void:
+	var linie := _linie_mazgala()
+	var faza := r.randf() * TAU
+	var x := start.x
+	while x < capat:
+		var y := start.y + sin(x * 1.3 + faza) * 1.6 + r.randf_range(-0.6, 0.6)
+		if r.randf() < 0.08:
+			y -= 2.5
+		linie.add_point(Vector2(x, y))
+		x += r.randf_range(1.0, 2.0)
+		if r.randf() < 0.07 and x < capat - 8.0:
+			_continut.add_child(linie)
+			linie = _linie_mazgala()
+			x += 4.0
+	_continut.add_child(linie)
+
+
+func _linie_mazgala() -> Line2D:
+	var linie := Line2D.new()
+	linie.width = 1.0
+	linie.default_color = C_SITE_SLAB
+	linie.antialiased = false
+	return linie
+
+
+## Indiciul de sub telefon („[E] Open”); gol = îl ascunde.
+func _arata_indiciu(text: String) -> void:
+	if _indiciu == null:
+		_indiciu = _text("", 9, C_TEXT)
+		_indiciu.add_theme_color_override("font_shadow_color", Color("262d2fe6"))
+		_indiciu.add_theme_constant_override("shadow_offset_x", 1)
+		_indiciu.add_theme_constant_override("shadow_offset_y", 1)
+		# în dreapta telefonului, la mijloc
+		_indiciu.position = Vector2(LOC_SUS.x + LATIME + 10, LOC_SUS.y + INALTIME * 0.5 - 5)
+		_indiciu.size = Vector2(90, 10)
+		add_child(_indiciu)
+	_indiciu.text = text
+
+
+var _astept := false
+var _apasat := false
+
+
+## Așteaptă E sau click (o apăsare nouă, de după ce apare indiciul). Apăsarea e consumată: nu ajunge la jucător.
+func _asteapta_apasare() -> void:
+	_apasat = false
+	_astept = true
+	while not _apasat:
+		await get_tree().process_frame
+	_astept = false
+
+
+func _input(event: InputEvent) -> void:
+	if not _astept:
+		return
+	if event.is_action_pressed("interact") or event.is_action_pressed("trage") \
+			or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		_apasat = true
+		get_viewport().set_input_as_handled()
+
+
+func _ruleaza_stiri() -> void:
+	Stare.meniu_deschis = true
+	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
+	var cap := jucator.get_node("Cap") as Node3D if jucator else null
+	var privire_inainte := cap.rotation.x if cap else 0.0
+	# 1. vibrează în buzunar
+	Sunet.reda(SUNET_VIBRATIE, Sunet.VOLUM_EFECTE)
+	await _asteapta(1.4)
+	# 2. îl scoți
+	Sunet.reda(SUNET_BUZUNAR, Sunet.VOLUM_EFECTE - 3.0, 0.05)
+	_corp.rotation = 0.25
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.tween_property(self, "_sus", 1.0, 0.65)
+	t.tween_property(_corp, "rotation", -0.035, 0.65)
+	t.tween_property(_umbra, "color:a", 0.45, 0.65)
+	if cap:
+		t.tween_property(cap, "rotation:x", -0.3, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await t.finished
+	# 3. notificarea coboară pe ecranul blocat; o apeși tu
+	await _asteapta(0.35)
+	Sunet.reda(SUNET_NOTIFICARE, Sunet.VOLUM_EFECTE - 2.0)
+	_notificare.position.y -= 14
+	t = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	t.tween_property(_notificare, "position:y", _notificare.position.y + 14, 0.3)
+	t.tween_property(_notificare, "modulate:a", 1.0, 0.2)
+	await _asteapta(0.6)
+	_arata_indiciu("[E] Open")
+	await _asteapta_apasare()
+	_arata_indiciu("")
+	Sunet.reda(SUNET_TASTA, Sunet.VOLUM_EFECTE - 4.0)
+	t = create_tween()
+	t.tween_property(_notificare, "scale", Vector2(0.94, 0.94), 0.08)
+	t.tween_property(_notificare, "scale", Vector2.ONE, 0.1)
+	await t.finished
+	# 4. se deschide site-ul (vine din dreapta), apoi pagina se derulează încet în jos
+	t = create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.tween_property(_pagina, "position:x", 0.0, 0.35)
+	t.tween_property(_blocat, "position:x", -_ecran.size.x * 0.3, 0.35)
+	await t.finished
+	_blocat.hide()
+	await _asteapta(2.2)
+	var jos := minf(0.0, (_ecran.size.y - 26.0) - _continut.size.y)
+	var derulare := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	derulare.tween_property(_continut, "position:y", jos * 0.6, 3.5)
+	await _asteapta(1.0)
+	_arata_indiciu("[E] Close")
+	await _asteapta_apasare()
+	_arata_indiciu("")
+	derulare.kill()
+	# 5. îl bagi la loc în buzunar
+	Sunet.reda(SUNET_BUZUNAR, Sunet.VOLUM_EFECTE - 3.0, 0.05, &"Efecte", 1.1)
+	t = create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	t.tween_property(self, "_sus", 0.0, 0.5)
+	t.tween_property(_corp, "rotation", 0.2, 0.5)
+	t.tween_property(_umbra, "color:a", 0.0, 0.5)
+	if cap:
+		t.tween_property(cap, "rotation:x", privire_inainte, 0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await t.finished
+	Stare.meniu_deschis = false

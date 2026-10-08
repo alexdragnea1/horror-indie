@@ -6,6 +6,8 @@ extends Node
 
 @export var marcaj_necesar := "ziua_orasului"
 @export var marcaj_gata := "vrea_in_oras"
+## După marcajul ăsta nu mai are sens (gol = nicio limită), ex. replica de noapte nu se spune a doua zi.
+@export var marcaj_oprire := ""
 @export var pauza_inainte := 3.5
 @export_multiline var replici: PackedStringArray = []
 ## Gol = niciuna.
@@ -16,6 +18,8 @@ func _ready() -> void:
 	if get_parent().get_node_or_null("Jucator") == null:
 		return
 	if not Stare.e_marcat(marcaj_necesar) or Stare.e_marcat(marcaj_gata):
+		return
+	if marcaj_oprire != "" and Stare.e_marcat(marcaj_oprire):
 		return
 	await get_tree().process_frame
 	while Tranzitie.activa:

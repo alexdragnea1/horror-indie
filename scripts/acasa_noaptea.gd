@@ -39,17 +39,37 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 @export_multiline var titlu_afara_zi_oras_dupa := "Block M7, Entrance B"
 @export var marcaj_oras := "vrea_in_oras"
 
+@export_group("A treia noapte și ziua primăriei")
+## După Warlock (`marcaj_noapte_3`; te-ai întors cu autobuzul de la motel, 11:20 PM): intri pe ușă (`marcaj_venit_3`,
+## aceeași `sarcina_noua`), ușa nu te lasă afară până dormi; dimineața (`marcaj_zi_3`) ieși oricând.
+@export var marcaj_noapte_3 := "warlock_absorbit"
+@export var marcaj_venit_3 := "a_venit_acasa_dupa_motel"
+@export var marcaj_zi_3 := "ziua_primariei"
+@export_multiline var titlu_afara_zi_3 := "Block M7, Entrance B\n10:48 AM"
+## După prima ieșire din casă în ziua aia nu mai scrie ora.
+@export var marcaj_iesit_zi_3 := "a_iesit_ziua_primariei"
+
 
 func _ready() -> void:
 	if not Stare.e_marcat(marcaj_trezit):
 		return
 	if is_instance_valid(mama):
 		mama.queue_free()
+	var noaptea_3 := Stare.e_marcat(marcaj_noapte_3) and not Stare.e_marcat(marcaj_zi_3)
 	var noaptea_2 := Stare.e_marcat(marcaj_noapte_2) and not Stare.e_marcat(marcaj_zi_oras)
 	if usa_intrare:
 		usa_intrare.marcaj_necesar = marcaj_iesire
 		usa_intrare.replici_fara_marcaj = replici_usa
-		if Stare.e_marcat(marcaj_zi_oras):
+		if noaptea_3:
+			usa_intrare.marcaj_necesar = marcaj_zi_3
+		elif Stare.e_marcat(marcaj_zi_3):
+			usa_intrare.marcaj_necesar = ""
+			if Stare.e_marcat(marcaj_iesit_zi_3):
+				usa_intrare.titlu_locatie = titlu_afara_zi_oras_dupa
+			else:
+				usa_intrare.titlu_locatie = titlu_afara_zi_3
+				usa_intrare.deschisa.connect(func() -> void: Stare.marcheaza(marcaj_iesit_zi_3))
+		elif Stare.e_marcat(marcaj_zi_oras):
 			usa_intrare.marcaj_necesar = ""
 			usa_intrare.titlu_locatie = titlu_afara_zi_oras_dupa if Stare.e_marcat(marcaj_oras) else titlu_afara_zi_oras
 		elif noaptea_2:
@@ -64,7 +84,7 @@ func _ready() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var pe_usa: bool = USA_BLOC.intrat_pe_usa
 	USA_BLOC.intrat_pe_usa = false
-	var venit := marcaj_venit_2 if noaptea_2 else marcaj_venit
+	var venit := marcaj_venit_3 if noaptea_3 else (marcaj_venit_2 if noaptea_2 else marcaj_venit)
 	if jucator == null or (Stare.e_marcat(venit) and not pe_usa):
 		return
 	jucator.global_position = loc_intrare

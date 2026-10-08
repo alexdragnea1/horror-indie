@@ -468,7 +468,7 @@ sosire = NodePath("../SosireOras")
 optiuni = PackedStringArray("Home")
 scene = PackedStringArray("res://scenes/afara_bloc.tscn")
 titluri = PackedStringArray("Block M7, Entrance B
-9:14 PM")
+11:20 PM")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarOldTown"]

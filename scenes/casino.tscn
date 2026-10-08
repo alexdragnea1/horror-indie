@@ -792,15 +792,15 @@ sunet_frana = ExtResource("50_b6ngs")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.42, 1.65, 2.85)
 script = ExtResource("51_je2ju")
 sosire = NodePath("../SosireOras")
-optiuni = PackedStringArray("Home", "Lexy\'s Place", "Gun Store")
-scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn")
-titluri = PackedStringArray("Block M7, Entrance B", "Lexy's place", "Freedom Gun Store")
+optiuni = PackedStringArray("Home", "Lexy\'s Place", "Gun Store", "Town Hall")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn", "res://scenes/primarie.tscn")
+titluri = PackedStringArray("Block M7, Entrance B", "Lexy's place", "Freedom Gun Store", "Town Hall")
 titluri_noi_de_la = "a_primit_mesajul_sefei"
 titluri_noi_pana_la = "a_invatat_scutul"
 titluri_noi = PackedStringArray("Block M7, Entrance B
 7:24 PM", "", "")
-ascunse_dupa = PackedStringArray("", "lexy_moarta", "")
-vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "")
+ascunse_dupa = PackedStringArray("", "lexy_moarta", "", "")
+vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "", "a_citit_stirile")
 replici = PackedStringArray()
 
 [node name="Forma" type="CollisionShape3D" parent="OrarCasino" unique_id=1163489932]

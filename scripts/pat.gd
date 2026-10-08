@@ -34,24 +34,46 @@ extends Interactabil
 ## Replica de pe marginea patului (scrisă de Claude, owner-ul o poate schimba).
 @export_multiline var replici_somn_2: PackedStringArray = ["You: What a fucking day..."]
 
+@export_group("A treia noapte")
+## După Warlock (te-ai întors de la motel la 11:20 PM): același somn. Când te ridici din pat dimineața vine pe telefon
+## știrea cu vrăjitoarea (`StiriDimineata`, stiri_telefon.gd, după `marcaj_trezit_3`).
+@export var marcaj_necesar_3 := "a_venit_acasa_dupa_motel"
+@export var marcaj_dormit_3 := "a_dormit_dupa_motel"
+@export var marcaj_trezit_3 := "s_a_trezit_ziua_primariei"
+@export var marcaj_dimineata_3 := "ziua_primariei"
+@export_multiline var titlu_dupa_3 := "Home\nNext day, 10:31 AM"
+## Replica de pe marginea patului (scrisă de Claude, owner-ul o poate schimba).
+@export_multiline var replici_somn_3: PackedStringArray = ["You: I killed a warlock today and nobody even said thank you..."]
+
 var _in_curs := false
 
 
-## Al doilea somn: după primul, patul folosește marcajele din grupul „A doua noapte”.
-func _a_doua() -> bool:
-	return Stare.e_marcat(marcaj_dormit)
+## Al câtelea somn urmează (1, 2 sau 3): după fiecare somn, patul trece la marcajele grupului următor.
+func _noaptea() -> int:
+	if Stare.e_marcat(marcaj_dormit_2):
+		return 3
+	if Stare.e_marcat(marcaj_dormit):
+		return 2
+	return 1
+
+
+## Ultimul somn făcut (0 = niciunul).
+func _ultimul_somn() -> int:
+	if Stare.e_marcat(marcaj_dormit_3):
+		return 3
+	return _noaptea() - 1
 
 
 func _necesar() -> String:
-	return marcaj_necesar_2 if _a_doua() else marcaj_necesar
+	return [marcaj_necesar, marcaj_necesar_2, marcaj_necesar_3][_noaptea() - 1]
 
 
 func _dormit() -> String:
-	return marcaj_dormit_2 if _a_doua() else marcaj_dormit
+	return [marcaj_dormit, marcaj_dormit_2, marcaj_dormit_3][_noaptea() - 1]
 
 
 func _trezit() -> String:
-	return marcaj_trezit_2 if Stare.e_marcat(marcaj_dormit_2) else marcaj_trezit
+	return [marcaj_trezit, marcaj_trezit_2, marcaj_trezit_3][maxi(_ultimul_somn(), 1) - 1]
 var _pleoape: Array[ColorRect] = []
 var _strat: CanvasLayer
 var _cap: Node3D
@@ -67,7 +89,7 @@ var _cap_poza := Vector2.ZERO:
 func _ready() -> void:
 	indiciu = "[E] Sleep"
 	await get_tree().process_frame
-	if Stare.e_marcat(marcaj_dormit_2 if Stare.e_marcat(marcaj_dormit_2) else marcaj_dormit) and not Stare.e_marcat(_trezit()):
+	if _ultimul_somn() > 0 and not Stare.e_marcat(_trezit()):
 		var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 		if jucator:
 			_trezeste(jucator)
@@ -81,7 +103,7 @@ func interactioneaza() -> void:
 	if not poate_fi_folosit():
 		return
 	_in_curs = true
-	var a_doua := _a_doua()
+	var n := _noaptea()
 	folosit.emit()
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var cap: Node3D = jucator.get_node("Cap")
@@ -105,7 +127,7 @@ func interactioneaza() -> void:
 	Sunet.reda_la(sunet_scartait, to_global(loc_sezut), Sunet.VOLUM_EFECTE, 0.05, 1.25)
 	await tween.finished
 	await get_tree().create_timer(0.5).timeout
-	var replici := replici_somn_2 if a_doua else replici_somn
+	var replici: PackedStringArray = [replici_somn, replici_somn_2, replici_somn_3][n - 1]
 	if not replici.is_empty():
 		Dialog.spune(replici)
 		if Dialog.activ:
@@ -151,10 +173,10 @@ func interactioneaza() -> void:
 	cap.rotation = Vector3.ZERO
 	jucator.seteaza_purtat(false)
 	Stare.seteaza_sarcina("")
-	Stare.marcheaza(marcaj_dimineata_2 if a_doua else marcaj_dimineata)
-	Stare.marcheaza(marcaj_dormit_2 if a_doua else marcaj_dormit)
+	Stare.marcheaza([marcaj_dimineata, marcaj_dimineata_2, marcaj_dimineata_3][n - 1])
+	Stare.marcheaza([marcaj_dormit, marcaj_dormit_2, marcaj_dormit_3][n - 1])
 	if scena_dupa != "":
-		Tranzitie.mergi_la(scena_dupa, titlu_dupa_2 if a_doua else titlu_dupa)
+		Tranzitie.mergi_la(scena_dupa, [titlu_dupa, titlu_dupa_2, titlu_dupa_3][n - 1])
 	else:
 		await _de_continuat()
 

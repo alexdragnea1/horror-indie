@@ -31,6 +31,7 @@
 [ext_resource type="Script" path="res://scripts/declansator.gd" id="an2"]
 [ext_resource type="PackedScene" path="res://scenes/head_witch.tscn" id="hw1"]
 [ext_resource type="Script" path="res://scripts/sefa_acasa.gd" id="hw2"]
+[ext_resource type="Script" path="res://scripts/stiri_telefon.gd" id="st1"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -296,6 +297,9 @@ material = SubResource("mat_pamant")
 
 [node name="UsaIntrare" parent="." instance=ExtResource("15")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.02, -14.1)
+
+[node name="StiriDimineata" type="Node" parent="."]
+script = ExtResource("st1")
 
 [node name="AcasaNoaptea" type="Node" parent="." node_paths=PackedStringArray("mama", "usa_intrare")]
 script = ExtResource("an1")

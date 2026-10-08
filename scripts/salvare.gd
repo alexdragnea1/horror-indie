@@ -22,6 +22,7 @@ const NUME_LOCURI := {
 	"res://scenes/casino.tscn": "Sketchy Laundromat",
 	"res://scenes/magazin_arme.tscn": "Freedom Gun Store",
 	"res://scenes/motel.tscn": "Paradise Motel",
+	"res://scenes/primarie.tscn": "Town Hall",
 }
 ## La câte secunde se salvează singur, fără mesaj.
 const PAUZA_SALVARE := 60.0

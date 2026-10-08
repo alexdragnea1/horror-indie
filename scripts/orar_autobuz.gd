@@ -30,6 +30,12 @@ static var cu_autobuzul := false
 @export var sarcina_chemat := ""
 ## Sarcina care dispare când chemi autobuzul (dacă e cea curentă).
 @export var sarcina_de_sters := "Check the bus schedule."
+## Între `blocat_de_la` (pus) și `blocat_pana_la` (încă nepus) nu mai vine niciun autobuz: spui doar `replici_blocat`.
+## Ex. la bloc, noaptea după Warlock (`warlock_absorbit`), până dormi (`ziua_primariei`).
+@export var blocat_de_la := ""
+@export var blocat_pana_la := ""
+## Scrisă de Claude; owner-ul o poate schimba.
+@export_multiline var replici_blocat: PackedStringArray = ["You: No more buses tonight. I need some sleep."]
 @export_group("Alte titluri")
 ## Între `titluri_noi_de_la` (pus) și `titluri_noi_pana_la` (încă nepus), titlul locului `i` e `titluri_noi[i]` (gol =
 ## cel obișnuit). Ex.: după mesajul lui Head Witch, „Home” = „Block M7, Entrance B / 7:24 PM”, până înveți scutul.
@@ -53,6 +59,12 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
+	if blocat_de_la != "" and Stare.e_marcat(blocat_de_la) and (blocat_pana_la == "" or not Stare.e_marcat(blocat_pana_la)):
+		Dialog.spune(replici_blocat)
+		if Dialog.activ:
+			await Dialog.terminat
+		_in_curs = false
+		return
 	# doar locurile care se mai văd: `locuri[k]` = indexul din `optiuni` al butonului k
 	var locuri: Array[int] = []
 	var butoane := PackedStringArray()

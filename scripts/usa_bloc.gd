@@ -23,6 +23,11 @@ static var intrat_pe_usa := false
 @export_multiline var replici_noapte: PackedStringArray = ["You: I need a minute before I go up there..."]
 ## Ziua în care mergi prin oraș (după al doilea somn): urci acasă oricând.
 @export var marcaj_zi_oras := "ziua_orasului"
+## După Warlock (te-ai întors de la motel la 11:20 PM, `marcaj_motel`) și până dormi (`marcaj_zi_primarie`):
+## urci acasă noaptea, cu altă oră.
+@export var marcaj_motel := "warlock_absorbit"
+@export var marcaj_zi_primarie := "ziua_primariei"
+@export_multiline var titlu_acasa_motel := "Home\n11:23 PM"
 ## Ce se aude pe negru: ușa blocului, scările, ușa apartamentului.
 @export var sunete_tranzitie: Array[AudioStream] = []
 @export var sunet_usa: AudioStream
@@ -33,7 +38,9 @@ func interactioneaza() -> void:
 		super.interactioneaza()
 		return
 	var titlu := titlu_acasa_dimineata if Stare.e_marcat(marcaj_dimineata) else titlu_acasa
-	if Stare.e_marcat(marcaj_zi_oras):
+	if Stare.e_marcat(marcaj_motel) and not Stare.e_marcat(marcaj_zi_primarie):
+		titlu = titlu_acasa_motel
+	elif Stare.e_marcat(marcaj_zi_oras):
 		titlu = titlu_acasa_dimineata
 	elif Stare.e_marcat(marcaj_noapte):
 		if not Stare.e_marcat(marcaj_acasa_noapte):
