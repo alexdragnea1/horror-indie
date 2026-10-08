@@ -800,7 +800,8 @@ def parcare(cale):
 		_ramas(piese, "Parcare")
 
 	# --- câmpul (pământ și iarbă uscată) până departe, sub tot
-	piese.append(cub("Camp", (220.0, 160.0, 0.06), (0.0, -20.0, -0.08), LEMN_INCHIS))
+	# (900 m: marginea lui se pierde în ceață, altfel se vedea tăiată pe cer și motelul părea că plutește în gol)
+	piese.append(cub("Camp", (900.0, 900.0, 0.06), (0.0, 0.0, -0.08), LEMN_INCHIS))
 	# petice de iarbă uscată, câte unul pe un careu de 10 m (nu se suprapun, deci nu pâlpâie)
 	for cx in range(-90, 90, 10):
 		for cy in range(-90, -30, 10):
@@ -819,6 +820,11 @@ def parcare(cale):
 			(OX1, ax1, YP, ay_spate)):
 		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
 	_cutie_coliziune(col, (ax1 - ax0, ay_spate - YP, 0.2), ((ax0 + ax1) / 2, (YP + ay_spate) / 2, -0.1))
+	# asfaltul continuă și dincolo de zidurile invizibile (în stânga, în dreapta și în spate, 200 m), ca la stradă:
+	# cât vezi, e loc gol de asfalt, nu marginea parcării
+	DEPARTE = 200.0
+	for (a, b, c, d) in ((-DEPARTE, ax0, SY1, DEPARTE), (ax1, DEPARTE, SY1, DEPARTE), (ax0, ax1, ay_spate, DEPARTE)):
+		piese.append(cub("Asfalt departe", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
 	# Tot ce e desenat pe asfalt (liniile, peticele, gropile, petele de ulei, crăpăturile) stă pe UN strat, cu fața de sus
 	# la `PE_ASFALT`, și nimic nu se suprapune (`_loc_liber`): așa nu se bat pe ecran nici de sus, de pe mătură.
 	PE_ASFALT = 0.015
@@ -1045,14 +1051,14 @@ def parcare(cale):
 	strange()
 
 	# --- strada (asfalt închis, linia galbenă întreruptă), acostamentul, bordura cu intrarea în parcare
-	piese.append(cub("Strada", (240.0, SY1 - SY0, 0.06), (0.0, (SY0 + SY1) / 2, -0.035), GEAM))
+	piese.append(cub("Strada", (2 * DEPARTE + 200, SY1 - SY0, 0.06), (0.0, (SY0 + SY1) / 2, -0.035), GEAM))
 	_cutie_coliziune(col, (240.0, SY1 - SY0 + 30, 0.2), (0.0, (SY0 + SY1) / 2 - 15, -0.1))
-	x = -118.0
-	while x < 118.0:
+	x = -DEPARTE - 98.0
+	while x < DEPARTE + 98.0:
 		piese.append(cub("Linie galbena", (3.0, 0.14, 0.004), (x, (SY0 + SY1) / 2, 0.006), AUR))
 		x += 7.0
 	for y in (SY0 + 0.3, SY1 - 0.3):
-		piese.append(cub("Linie margine", (240.0, 0.12, 0.004), (0.0, y, 0.006), CROM))
+		piese.append(cub("Linie margine", (2 * DEPARTE + 200, 0.12, 0.004), (0.0, y, 0.006), CROM))
 	for (a, b) in ((-60.0, 3.0), (13.0, 60.0)):
 		piese.append(cub("Bordura strada", (b - a, 0.25, 0.15), ((a + b) / 2, SY1 + 0.12, 0.05), BETON))
 		piese.append(cub("Iarba bordura", (b - a, 0.8, 0.02), ((a + b) / 2, SY1 + 0.7, 0.005), MASLINIU))
