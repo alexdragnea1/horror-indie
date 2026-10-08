@@ -711,6 +711,7 @@ scene = PackedStringArray("res://scenes/casino.tscn", "res://scenes/casa_lexy.ts
 titluri = PackedStringArray("Sketchy Laundromat", "Lexy's place", "Freedom Gun Store", "Town Hall")
 ascunse_dupa = PackedStringArray("", "lexy_moarta", "", "")
 vizibile_dupa = PackedStringArray("", "", "", "a_citit_stirile")
+singur_pana_la = PackedStringArray("", "", "", "a_luat_banii_de_la_primar")
 blocat_de_la = "warlock_absorbit"
 blocat_pana_la = "ziua_primariei"
 

@@ -23,6 +23,10 @@ static var cu_autobuzul := false
 ## Marcajul fără de care locul nu apare încă în orar, în aceeași ordine (gol = apare de la început; ex. Home abia
 ## după mesajul lui Head Witch, `a_primit_mesajul_sefei`).
 @export var vizibile_dupa: PackedStringArray = []
+## Marcajul până la care locul, cât timp se vede în orar, e singurul (în afară de `optiune_anulare`), în aceeași
+## ordine (gol = nu). Ex. Town Hall: de când citești știrile (`a_citit_stirile`) până iei banii de la primar
+## (`a_luat_banii_de_la_primar`).
+@export var singur_pana_la: PackedStringArray = []
 @export var optiune_anulare := "Not now"
 ## Locurile fără scenă (scrise de Claude, owner-ul le poate schimba).
 @export_multiline var replici_indisponibil: PackedStringArray = ["You: Nah, not today."]
@@ -73,6 +77,11 @@ func interactioneaza() -> void:
 			continue
 		if i < vizibile_dupa.size() and vizibile_dupa[i] != "" and not Stare.e_marcat(vizibile_dupa[i]):
 			continue
+		if i < singur_pana_la.size() and singur_pana_la[i] != "" and not Stare.e_marcat(singur_pana_la[i]):
+			# doar el (ex. Town Hall în ziua primăriei)
+			locuri = [i]
+			butoane = PackedStringArray([optiuni[i]])
+			break
 		locuri.append(i)
 		butoane.append(optiuni[i])
 	butoane.append(optiune_anulare)

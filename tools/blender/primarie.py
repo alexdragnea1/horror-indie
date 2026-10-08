@@ -397,7 +397,12 @@ def cladire(cale):
 		z = FL + (i + 1) * TR
 		piese.append(cub("Treapta scara", (TL, SY1 - SY0, z - FL), (x0 + TL / 2, (SY0 + SY1) / 2, (FL + z) / 2), BETON))
 		piese.append(cub("Muchie scara", (0.03, SY1 - SY0, 0.02), (x0 - 0.005, (SY0 + SY1) / 2, z + 0.004), METAL_INCHIS))
-		_cutie_coliziune(col, (TL, SY1 - SY0, z - FL), (x0 + TL / 2, (SY0 + SY1) / 2, (FL + z) / 2))
+	# coliziunea scării: o rampă (nu 20 de trepte, pe care corpul sărea treaptă cu treaptă), prin mijlocul fiecărei
+	# trepte (la jumătatea ei e fix la înălțimea treptei); sus se termină pe palier
+	col.append(prisma("Coliziune", [(SX0 - TL / 2, FL), (SX1 - TL / 2, FL2), (SX1, FL2), (SX1, FL)], "xz", SY0, SY1, NEGRU))
+	# și un perete nevăzut sub balustradă, de jos până peste palier: nu cazi de pe scară în hol și nu te mai agăți cu
+	# capul de marginea plăcii de sus când urci lipit de balustradă
+	_cutie_coliziune(col, (SX1 - SX0, 0.1, FL2 + 1.0 - FL), ((SX0 + SX1) / 2, SY0 + 0.05, (FL + FL2 + 1.0) / 2))
 	# balustrada de pe marginea scării (spre hol) și de sus, de pe marginea golului
 	for i in range(0, NT, 2):
 		x = SX0 + i * TL + TL / 2
@@ -607,14 +612,19 @@ def interior(cale):
 
 	# =========================== PARTERUL
 	# --- ghișeul: tejgheaua de lemn, geamul cu ghișeul mic jos, plăcuța „INFORMATION”, peretele de lemn și sticlă din stânga
-	piese.append(cub("Tejghea", (XI - GX0, 0.12, TZ - FL), ((GX0 + XI) / 2, GY0 + 0.06, (FL + TZ) / 2), LEMN))
+	# tejgheaua începe la XT (fața din stânga a peretelui ghișeului, ca să fie una cu el); corpul se oprește sub blat (fețele
+	# de sus nu mai stau una peste alta) și capătul din stânga e închis (nu se mai vede gol pe sub blat)
+	XT = GX0 - 0.03
+	ZB = TZ - 0.05
+	piese.append(cub("Tejghea", (XI - XT, 0.12, ZB - FL), ((XT + XI) / 2, GY0 + 0.06, (FL + ZB) / 2), LEMN))
+	piese.append(cub("Capat tejghea", (0.06, GY1 + 0.02 - GY0 - 0.12, ZB - FL), (GX0, (GY0 + 0.14 + GY1) / 2, (FL + ZB) / 2), LEMN))
 	for k in range(4):
 		x = GX0 + 0.45 + k * (XI - GX0 - 0.9) / 3
 		piese.append(cub("Panou tejghea", (0.7, 0.02, 0.6), (x, GY0 - 0.01, FL + 0.5), LEMN_INCHIS))
-	piese.append(cub("Blat tejghea", (XI - GX0 + 0.04, GY1 - GY0 + 0.04, 0.05), ((GX0 + XI) / 2, (GY0 + GY1) / 2, TZ - 0.025),
+	piese.append(cub("Blat tejghea", (XI - XT + 0.04, GY1 - GY0 + 0.04, 0.05), ((XT + XI) / 2, (GY0 + GY1) / 2, TZ - 0.025),
 		LEMN_DESCHIS))
-	piese.append(cub("Plinta tejghea", (XI - GX0, 0.03, 0.1), ((GX0 + XI) / 2, GY0 - 0.015, FL + 0.05), NEGRU))
-	_cutie_coliziune(col, (XI - GX0, GY1 - GY0, TZ - FL), ((GX0 + XI) / 2, (GY0 + GY1) / 2, (FL + TZ) / 2))
+	piese.append(cub("Plinta tejghea", (XI - XT, 0.03, 0.1), ((XT + XI) / 2, GY0 - 0.015, FL + 0.05), NEGRU))
+	_cutie_coliziune(col, (XI - XT, GY1 - GY0, TZ - FL), ((XT + XI) / 2, (GY0 + GY1) / 2, (FL + TZ) / 2))
 	# geamul: rama de aluminiu, sticla în bucăți, golul ghișeului jos
 	ZG1 = TZ + 0.95
 	for x in (GX0 + 0.02, GHISEU[0], GHISEU[1], XI - 0.02):
@@ -632,7 +642,7 @@ def interior(cale):
 	piese.append(cub("Hartie lipita", (0.21, 0.01, 0.15), (4.3, GG - 0.015, TZ + 0.75), AUR))
 	piese.append(cub("Taviță ghiseu", (0.5, 0.25, 0.03), (3.0, GG - 0.05, TZ + 0.015), METAL))
 	# peretele de lemn și sticlă din stânga (închide spatele ghișeului până la scară)
-	piese.append(cub("Perete ghiseu", (0.06, SY0 - GY1, TZ - FL), (GX0, (GY1 + SY0) / 2, (FL + TZ) / 2), LEMN))
+	piese.append(cub("Perete ghiseu", (0.06, SY0 - GY1 - 0.02, TZ - FL), (GX0, (GY1 + 0.02 + SY0) / 2, (FL + TZ) / 2), LEMN))
 	piese.append(cub("Rama geam ghiseu", (0.05, SY0 - GY0, 0.04), (GX0, (GY0 + SY0) / 2, ZG1), CROM))
 	geamuri.append(cub("Geam ghiseu", (0.012, SY0 - GY1 - 0.04, ZG1 - TZ - 0.02), (GX0, (GY1 + SY0) / 2, (TZ + ZG1) / 2), GEAM))
 	_cutie_coliziune(col, (0.08, SY0 - GY0, ZG1 - FL), (GX0, (GY0 + SY0) / 2, (FL + ZG1) / 2))
@@ -683,18 +693,18 @@ def interior(cale):
 	piese.append(_text_o_fata("Scris afis", "VOTE\nSMEGMA", (ax + 0.025, ay, az - 0.36), 0.075, AUR,
 		rot=(math.pi / 2, 0, math.pi / 2)))
 	piese.append(cub("Mustata desenata", (0.012, 0.12, 0.03), (ax + 0.026, ay + 0.02, az + 0.07), NEGRU, rot=(0.3, 0, 0)))
-	# „NO SMOKING” (cu scrumul de sub el) și ceasul de perete
-	piese.append(cub("Semn fumat", (0.3, 0.012, 0.2), (-1.3, YI1 - 0.025, FL + 1.85), ALB))
-	piese.append(_text_o_fata("Scris fumat", "NO\nSMOKING", (-1.3, YI1 - 0.033, FL + 1.85), 0.05, ROSU))
+	# ceasul de perete
 	piese.append(cilindru("Ceas perete", 0.17, 0.17, 0.04, (0.0, G + 0.03, FL + 2.85), ALB, laturi=14, rot=(math.pi / 2, 0, 0)))
 	piese.append(cub("Limba ceas", (0.015, 0.01, 0.12), (0.03, G + 0.055, FL + 2.88), NEGRU, rot=(0, 0.5, 0)))
-	# ficusul din colț, caloriferele de sub ferestre, cuierul, coșul de gunoi, preșul de la intrare
-	piese.append(cilindru("Ghiveci", 0.22, 0.17, 0.4, (0.75, 5.6, FL + 0.2), ROSU, laturi=10))
-	piese.append(cilindru("Tulpina ficus", 0.03, 0.02, 1.1, (0.75, 5.6, FL + 0.9), LEMN, laturi=5))
+	# ficusul din colțul din dreapta, lângă tejghea (nu mai e înghesuit în capătul ei din stânga, unde frunzele intrau în
+	# tejghea și te agățai între ghiveci și colțul ei), caloriferele de sub ferestre, cuierul, coșul de gunoi, preșul
+	fx, fy = XI - 0.45, 5.45
+	piese.append(cilindru("Ghiveci", 0.22, 0.17, 0.4, (fx, fy, FL + 0.2), ROSU, laturi=10))
+	piese.append(cilindru("Tulpina ficus", 0.03, 0.02, 1.1, (fx, fy, FL + 0.9), LEMN, laturi=5))
 	for k in range(8):
-		piese.append(sfera("Frunze ficus", r.uniform(0.16, 0.24), (0.75 + r.uniform(-0.25, 0.25), 5.6 + r.uniform(-0.25, 0.25),
+		piese.append(sfera("Frunze ficus", r.uniform(0.16, 0.24), (fx + r.uniform(-0.2, 0.2), fy + r.uniform(-0.2, 0.2),
 			FL + 1.1 + r.uniform(0, 0.6)), r.choice((VERDE, VERDE_INCHIS, MASLINIU)), segmente=6, inele=4))
-	_cutie_coliziune(col, (0.45, 0.45, 1.6), (0.75, 5.6, FL + 0.8))
+	_cutie_coliziune(col, (0.45, 0.45, 1.6), (fx, fy, FL + 0.8))
 	for a, b in FER_JOS:
 		piese.append(cub("Calorifer", (b - a - 0.1, 0.1, 0.55), ((a + b) / 2, G + 0.09, FL + 0.45), ALB))
 		for k in range(int((b - a) / 0.07)):
