@@ -203,9 +203,15 @@ func _incinge(c: Cutscena, gura: Vector3) -> void:
 	aburi.initial_velocity_min = 0.4
 	aburi.initial_velocity_max = 0.9
 	aburi.gravity = Vector3(0, 0.6, 0)
+	# pornește plin (particulele care n-au pornit încă fac un pătrat negru în mijlocul poțiunii), dar nevăzut:
+	# aburul apare treptat
+	aburi.preprocess = aburi.lifetime
+	var mat_aburi := (aburi.mesh as QuadMesh).material as StandardMaterial3D
+	mat_aburi.albedo_color.a = 0.0
 	add_child(aburi)
 	aburi.position = Vector3.UP * (GURA + 0.05)
 	aburi.emitting = true
+	create_tween().tween_property(mat_aburi, "albedo_color:a", 1.0, durata_incingere * 0.4)
 	var potiune := Color(culoare_potiune.r / CULOARE_MODEL_LICHID.r, culoare_potiune.g / CULOARE_MODEL_LICHID.g,
 		culoare_potiune.b / CULOARE_MODEL_LICHID.b)
 	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)

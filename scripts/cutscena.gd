@@ -61,7 +61,11 @@ func priveste(punct: Vector3, durata: float) -> void:
 ## Ca `priveste`, dar cu unghiurile date direct (radiani): `unghi` pe orizontală, `sus` = cât ridici capul.
 func roteste(unghi: float, sus: float, durata: float) -> void:
 	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(_jucator, "rotation:y", _jucator.rotation.y + angle_difference(_jucator.rotation.y, unghi), durata)
+	# pornește de la unghiul de acum, fixat: dacă trece de ±180°, Godot îl poate citi după un cadru cu ±360°, iar un
+	# tween_property ar porni de acolo și camera ar face o tură întreagă (se vedea la ceaunul de acasă)
+	var start := _jucator.rotation.y
+	tween.tween_method(func(v: float) -> void: _jucator.rotation.y = v, start, start + angle_difference(start, unghi),
+		durata)
 	tween.tween_property(_cap, "rotation:x", clampf(sus, deg_to_rad(-85), deg_to_rad(85)), durata)
 	await tween.finished
 
