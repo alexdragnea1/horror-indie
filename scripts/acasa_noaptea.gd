@@ -10,7 +10,7 @@ extends Node
 
 @export var marcaj_trezit := "s_a_trezit_la_bloc"
 @export var marcaj_venit := "a_venit_acasa"
-@export var sarcina_noua := "Go to sleep."
+@export var sarcina_noua := "Go home and rest."
 @export var mama: Node3D
 @export var usa_intrare: Usa
 ## Marcajul care va deschide iar ușa de la intrare (încă nu-l pune nimic).
@@ -96,5 +96,6 @@ func _ready() -> void:
 	while Tranzitie.activa:
 		await get_tree().process_frame
 	await get_tree().create_timer(0.8).timeout
-	if sarcina_noua != "":
+	# de obicei o ai deja de afară („Go home and rest.”): atunci nu o mai anunță o dată
+	if sarcina_noua != "" and Stare.sarcina != sarcina_noua:
 		Stare.seteaza_sarcina(sarcina_noua)

@@ -487,7 +487,7 @@ shape = SubResource("forma_banca")
 [node name="Baba" parent="." instance=ExtResource("29")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.75, 0, 7.15)
 marcaj_dupa = "a_vorbit_cu_baba"
-sarcina_noua = "Catch the night bus."
+sarcina_noua = ""
 
 [node name="Tomberon" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6, 0.06, 2.4)
@@ -678,6 +678,7 @@ replici = PackedStringArray("You: What the fuck are you doing here bitch?", "Hea
 [node name="IntoarcereNoaptea" type="Node" parent="."]
 script = ExtResource("no1")
 replici = PackedStringArray("You: Tomorrow I will go to the gun store.", "You: Maybe I can find something to defeat the warlock..")
+sarcina_noua = "Go home and rest."
 
 [node name="ZiOras" type="Node" parent="."]
 script = ExtResource("or2")

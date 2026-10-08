@@ -13,7 +13,7 @@ extends Node
 ## Cât stă pe ecran numele locului (cu ora) înainte să înceapă replicile (secunde).
 @export var pauza_inainte := 4.0
 @export_multiline var replici: PackedStringArray = []
-## Sarcina de după replici (gol = niciuna).
+## Sarcina de la sosire (gol = niciuna; owner: „Go home and rest.” până te culci).
 @export var sarcina_noua := ""
 
 
@@ -25,12 +25,15 @@ func _ready() -> void:
 	jucator.global_position = loc
 	jucator.rotation.y = unghi
 	jucator.get_node("Cap").rotation.x = 0.0
+	# sarcina se schimbă din clipa în care ai ajuns, iar sus apare cum se termină tranziția (owner, 08.10)
+	if sarcina_noua != "":
+		Stare.seteaza_sarcina(sarcina_noua, false)
 	while Tranzitie.activa:
 		await get_tree().process_frame
+	if sarcina_noua != "":
+		Stare.seteaza_sarcina(sarcina_noua)
 	await get_tree().create_timer(pauza_inainte).timeout
 	Dialog.spune(replici)
 	if Dialog.activ:
 		await Dialog.terminat
 	Stare.marcheaza(marcaj_gata)
-	if sarcina_noua != "":
-		Stare.seteaza_sarcina(sarcina_noua)

@@ -85,7 +85,8 @@ func interactioneaza() -> void:
 	hide()
 	_dezactiveaza_coliziunea()
 	Stare.marcheaza(marcaj_intrat)
-	Stare.seteaza_sarcina(sarcina_intra)
+	if Stare.sarcina != sarcina_intra:  # de la aterizare e deja „Go inside the manor.”
+		Stare.seteaza_sarcina(sarcina_intra)
 	await get_tree().create_timer(0.5).timeout
 	await c.opreste()
 	queue_free()
@@ -170,6 +171,9 @@ func _aterizare() -> void:
 	tween.tween_property(_matura, "global_position:y", final.origin.y + 0.06, 0.35)
 	tween.tween_property(_matura, "global_position:y", final.origin.y, 0.4)
 	await tween.finished
+	# ai ajuns: sarcina vine pe loc, la atingerea pământului (owner, 08.10: „Go inside the manor.”)
+	if sarcina_noua != "":
+		Stare.seteaza_sarcina(sarcina_noua)
 	await get_tree().create_timer(0.3).timeout
 
 	# ea sare jos și face un pas în față
@@ -218,8 +222,6 @@ func _aterizare() -> void:
 	await intoarce_spre(jucator).finished
 	await _c.priveste(cap.global_position, 0.5)
 	Stare.marcheaza(marcaj_sosire)
-	if sarcina_noua != "":
-		Stare.seteaza_sarcina(sarcina_noua)
 	_vorbeste = false
 	await _c.opreste()
 

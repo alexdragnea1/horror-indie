@@ -185,10 +185,11 @@ func e_marcat(marcaj: String) -> bool:
 	return marcaje.has(marcaj)
 
 
-func seteaza_sarcina(text: String) -> void:
+## `anunta` = false: sarcina se schimbă pe loc (inventar, salvare), fără „Task: ...” sus și fără sunet.
+func seteaza_sarcina(text: String, anunta := true) -> void:
 	sarcina = text
 	schimbat.emit()
-	if text.is_empty():
+	if text.is_empty() or not anunta:
 		return
 	_sarcina_sus.text = "Task: " + text
 	if _tween_sarcina:

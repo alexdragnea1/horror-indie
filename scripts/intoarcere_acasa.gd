@@ -25,6 +25,9 @@ func _ready() -> void:
 		baba.queue_free()
 	if Stare.e_marcat(marcaj_trezit):
 		return
+	# sarcina e „Go home and rest.” din clipa în care ai ajuns (owner, 08.10); sus apare când deschizi ochii
+	if sarcina_noua != "":
+		Stare.seteaza_sarcina(sarcina_noua, false)
 	await _trezeste(jucator)
 
 
