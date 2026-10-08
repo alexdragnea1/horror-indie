@@ -9,6 +9,8 @@ extends Interactabil
 ##    dacă e lungă), se întoarce și ți-o pune pe tejghea, `replici_dupa` (owner: „Excellent choice.”), o iei: intră în
 ##    inventar și o ții deja în mână.
 ## Armele de pe perete sunt nodurile din `raft` (Cutit, Shotgun, AK47, Bazooka); ce ai deja nu mai stă pe perete.
+## Fără bani și fără nimic de vândut la Johnny: „Rob him” (vezi grupul Jaful) și îți dă mereu bazooka, cu aceeași scenă.
+## La perete merge până în dreptul armei (`_loc_la_raft`), ca s-o prindă cu mâinile pe ea.
 
 const OFERTA := [
 	{"id": "cutit", "nume": "Knife", "pret": 5, "raft": "Cutit"},
@@ -18,6 +20,8 @@ const OFERTA := [
 ]
 ## Unde prinde fiecare armă cu mâna stângă (în coordonatele armei; dreapta e mânerul, originea); null = o mână.
 const PRINZA_S := {"Cutit": null, "Shotgun": Vector3(0, -0.01, -0.33), "AK47": Vector3(0, 0, -0.3), "Bazooka": Vector3(0, -0.09, -0.3)}
+## Cât de departe de mâner (spre țeavă) îi vine mijlocul corpului când o ia de pe perete.
+const CENTRU := {"Cutit": 0.22, "Shotgun": 0.17, "AK47": 0.15, "Bazooka": 0.15}
 ## Cum stă arma culcată pe tejghea (îndreptată spre +X) și cât o ridici ca să nu intre în sticlă.
 const CULCAT_DREAPTA := Basis(Vector3(0, 1, 0), Vector3(0, 0, -1), Vector3(-1, 0, 0))
 const CULCAT_STANGA := Basis(Vector3(0, -1, 0), Vector3(0, 0, 1), Vector3(-1, 0, 0))
@@ -31,6 +35,8 @@ const SUNET_BANI_STRANSI := preload("res://sunete/bancnota.ogg")
 const SUNET_PUSA := preload("res://sunete/arma_pe_tejghea.ogg")
 const SUNET_LUATA := preload("res://sunete/arma_scoasa.ogg")
 const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sunete/pas_lemn_2.ogg"), preload("res://sunete/pas_lemn_3.ogg")]
+## Ce cumpără Johnny de la amanet (pentru jaf: „nu mai ai ce vinde”).
+const JOHNNY := preload("res://scripts/johnny_amanet.gd")
 
 @export var om: OmLaMasa
 ## Peretele cu armele de vânzare (copiii: Cutit, Shotgun, AK47, Bazooka).
@@ -47,6 +53,16 @@ const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sune
 @export_multiline var replici_plin: PackedStringArray = ["Gun Clerk: Your hands are full, partner."]
 ## Ai destule jetoane, dar nu și cash (replica lui Claude): jetoanele se schimbă pe bani la bătrâna de la casino.
 @export_multiline var replici_jetoane: PackedStringArray = ["Gun Clerk: We don't take casino chips, partner. Cash only."]
+
+@export_group("Jaful")
+## Când n-ai niciun ban (cash, bancnota de 5, jetoane) și nimic de vândut la Johnny (johnny_amanet.gd), iar bazooka nu e
+## a ta: apare `optiune_jaf`, `replici_jaf` și el ți-o aduce ca la cumpărare, doar că fără bani; apoi
+## `replici_dupa_jaf` (replicile owner-ului, 08.10). Marcaj `marcaj_jaf`.
+@export var optiune_jaf := "Rob him"
+@export var id_jaf := "bazooka"
+@export var marcaj_jaf := "a_jefuit_gun_store"
+@export_multiline var replici_jaf: PackedStringArray = ["You: Give me the bazooka bitch!"]
+@export_multiline var replici_dupa_jaf: PackedStringArray = ["You: Thanks bitch."]
 
 var _in_curs := false
 
@@ -76,9 +92,20 @@ func interactioneaza() -> void:
 	var butoane := PackedStringArray()
 	for o in disponibile:
 		butoane.append("%s - $%d" % [o.nume, o.pret])
+	var poate_jefui := _poate_jefui()
+	if poate_jefui:
+		butoane.append(optiune_jaf)
 	butoane.append(optiune_nimic)
 	var i := await Dialog.intreaba(replica_intrebare, butoane)
-	if i < disponibile.size():
+	if poate_jefui and i == disponibile.size():
+		await _spune(replici_jaf)
+		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR:
+			await _spune(replici_plin)
+		else:
+			for o: Dictionary in OFERTA:
+				if o.id == id_jaf:
+					await _vinde(o, true)
+	elif i < disponibile.size():
 		var o: Dictionary = disponibile[i]
 		var pret: int = o.pret * 100
 		if Bani.de_platit() < pret:
@@ -88,6 +115,16 @@ func interactioneaza() -> void:
 		else:
 			await _vinde(o)
 	_in_curs = false
+
+
+## Jaful: niciun ban (cash, bancnota de 5, jetoane), nimic ce cumpără Johnny în inventar, iar bazooka n-o ai deja.
+func _poate_jefui() -> bool:
+	if _o_are(id_jaf) or Bani.de_platit() > 0 or Jetoane.suma() > 0:
+		return false
+	for id: String in Stare.obiecte.keys():
+		if JOHNNY.OFERTA.has(id):
+			return false
+	return true
 
 
 ## Câte obiecte ai în inventar după ce plătești `pret` (cash-ul dispare dacă dai tot).
@@ -111,34 +148,25 @@ func _spune(replici: PackedStringArray) -> void:
 
 # ---------------------------------------------------------------- vânzarea
 
-func _vinde(o: Dictionary) -> void:
+## `jaf` = îți dă arma fără bani (Rob him): fără pașii 1–2, iar la final `replici_dupa_jaf` și `marcaj_jaf`.
+func _vinde(o: Dictionary, jaf := false) -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	var camera: Camera3D = jucator.get_node("Cap/Camera3D")
 	var scena := get_tree().current_scene
 	var c := Cutscena.porneste(self)
-	await c.priveste(plata.global_position, 0.5)
-	# 1. pui banii pe tejghea
-	var teanc := _teanc(clampi(int(o.pret / 25) + 1, 1, 8))
-	camera.add_child(teanc)
-	teanc.position = Vector3(0.18, -0.42, -0.2)
-	teanc.reparent(scena, true)
-	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_property(teanc, "global_position", plata.global_position, 0.55)
-	await t.finished
-	Sunet.reda_la(SUNET_BANI, plata.global_position, Sunet.VOLUM_EFECTE, 0.05)
-	Bani.plateste(int(o.pret) * 100)
-	# 2. el îi strânge cu stânga și îi bagă sub tejghea
-	await om.du_mana("S", plata.global_position + Vector3.UP * 0.05, 0.55)
-	teanc.reparent(om.nod_mana("S"), true)
-	Sunet.reda_la(SUNET_BANI_STRANSI, plata.global_position, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-	await om.du_mana("S", om.global_position + om.global_basis * Vector3(0.25, 0.85, 0.05), 0.5)
-	teanc.queue_free()
-	om.lasa_mana("S", 0.4)
+	if jaf:
+		await c.priveste(om.global_position + Vector3.UP * 1.55, 0.5)
+	else:
+		await c.priveste(plata.global_position, 0.5)
+		await _plateste(o, camera, scena)
+	var t: Tween
 	# 3. se întoarce la peretele cu arme și face pașii până la el
 	var arma_raft := raft.get_node(String(o.raft)) as Node3D
 	c.priveste(arma_raft.global_position + Vector3.DOWN * 0.3, 0.9)
 	var repaus_om := om.transform
-	await _mergi(om.transform.origin + Vector3(0, 0, -pas_spre_raft), PI, 1.1)
+	var loc_raft := _loc_la_raft(arma_raft, o.raft)
+	var durata_drum := 0.7 + om.position.distance_to(loc_raft) * 0.35
+	await _mergi(loc_raft, PI, durata_drum)
 	# 4. ia arma de pe perete (o copie; cea de pe perete dispare)
 	var arma := arma_raft.duplicate() as Node3D
 	scena.add_child(arma)
@@ -157,10 +185,15 @@ func _vinde(o: Dictionary) -> void:
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(arma, "global_position", arma.global_position + Vector3(0, 0.06, 0.18), 0.35)
 	await t.finished
+	# o coboară în fața pieptului (mânerul în dreapta lui, țeava spre stânga): așa o duce, nu sus la nivelul raftului,
+	# unde la întoarcere îi încrucișa brațele (owner, 08.10)
+	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(arma, "global_position", om.to_global(Vector3(-float(CENTRU[o.raft]), 1.12, 0.38)), 0.45)
+	await t.finished
 	# 5. se întoarce cu ea (arma merge cu el) și o pune culcată pe tejghea
 	arma.reparent(om, true)
 	c.priveste(pe_tejghea.global_position, 1.0)
-	await _mergi(repaus_om.origin, 0.0, 1.1)
+	await _mergi(repaus_om.origin, 0.0, durata_drum)
 	arma.reparent(scena, true)
 	var culcat: Array = PE_TEJGHEA[o.raft]
 	var tinta := Transform3D(culcat[0], pe_tejghea.global_position + Vector3.UP * float(culcat[1]))
@@ -172,7 +205,7 @@ func _vinde(o: Dictionary) -> void:
 	if prinza_s:
 		om.lasa_mana("S", 0.5)
 	await get_tree().create_timer(0.3).timeout
-	await _spune(replici_dupa)
+	await _spune(replici_dupa_jaf if jaf else replici_dupa)
 	# 6. o iei: vine spre tine și intră în inventar, deja în mână
 	await c.priveste(arma.global_position, 0.3)
 	arma.reparent(camera, true)
@@ -184,7 +217,38 @@ func _vinde(o: Dictionary) -> void:
 	Stare.adauga_obiect(o.id, o.nume)
 	Stare.tine_in_mana(o.id)
 	Stare.marcheaza("a_cumparat_arma")  # după el, la ieșire, mesajul lui Head Witch (MesajSefa)
+	if jaf:
+		Stare.marcheaza(marcaj_jaf)
 	await c.opreste()
+
+
+## Pașii 1–2 ai cumpărării: pui banii pe tejghea, el îi strânge cu stânga și îi bagă sub tejghea.
+func _plateste(o: Dictionary, camera: Camera3D, scena: Node) -> void:
+	var teanc := _teanc(clampi(int(o.pret / 25) + 1, 1, 8))
+	camera.add_child(teanc)
+	teanc.position = Vector3(0.18, -0.42, -0.2)
+	teanc.reparent(scena, true)
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(teanc, "global_position", plata.global_position, 0.55)
+	await t.finished
+	Sunet.reda_la(SUNET_BANI, plata.global_position, Sunet.VOLUM_EFECTE, 0.05)
+	Bani.plateste(int(o.pret) * 100)
+	await om.du_mana("S", plata.global_position + Vector3.UP * 0.05, 0.55)
+	teanc.reparent(om.nod_mana("S"), true)
+	Sunet.reda_la(SUNET_BANI_STRANSI, plata.global_position, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+	await om.du_mana("S", om.global_position + om.global_basis * Vector3(0.25, 0.85, 0.05), 0.5)
+	teanc.queue_free()
+	om.lasa_mana("S", 0.4)
+
+
+## Unde stă în fața peretelui (în coordonatele părintelui lui `om`): cu arma în fața lui, mânerul spre dreapta lui și
+## restul armei în stânga, ca să n-ajungă cu brațele încrucișate sau să nu ajungă deloc la ea (owner, 08.10: cuțitul,
+## care e mai încolo pe perete, îi rămânea în aer).
+func _loc_la_raft(arma_raft: Node3D, nume: String) -> Vector3:
+	var teava := -arma_raft.global_basis.z.normalized()
+	var mijloc := arma_raft.global_position + teava * float(CENTRU[nume])
+	var loc: Vector3 = (om.get_parent() as Node3D).to_local(Vector3(mijloc.x, om.global_position.y, mijloc.z))
+	return Vector3(loc.x, om.position.y, om.position.z - pas_spre_raft)
 
 
 ## Merge (alunecă, cu un mic legănat la fiecare pas și sunetul pașilor) până la `unde` (în coordonatele părintelui lui

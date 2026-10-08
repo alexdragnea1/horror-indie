@@ -25,6 +25,10 @@ Setari="*res://scripts/setari.gd"
 Salvare="*res://scripts/salvare.gd"
 Pauza="*res://scripts/pauza.gd"
 
+[debug]
+
+file_logging/max_log_files=30
+
 [display]
 
 window/size/viewport_width=480

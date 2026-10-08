@@ -474,12 +474,14 @@ def decor(cale):
 	_cutie_coliziune(col, (W - TX1, 0.1, 1.0), ((TX1 + W) / 2, uy, FL + 0.5))
 	piese.append(cub("Paravan", (W - TX1, 0.1, 0.93), ((TX1 + W) / 2, uy, FL + 0.465), LEMN))
 	piese.append(cub("Paravan blat", (W - TX1, 0.16, 0.04), ((TX1 + W) / 2, uy, FL + 0.95), LEMN_INCHIS))
-	# scaunul înalt al vânzătorului și coșul de gunoi, în spatele tejghelei
-	piese.append(cilindru("Scaun inalt", 0.18, 0.18, 0.06, (0.6, 6.2, FL + 0.75), ROSU, laturi=10))
+	# scaunul înalt al vânzătorului și coșul de gunoi, în spatele tejghelei (scaunul în stânga, să nu fie în drumul lui spre
+	# cuțitul de pe perete: owner, 08.10)
+	sx = -2.0
+	piese.append(cilindru("Scaun inalt", 0.18, 0.18, 0.06, (sx, 6.2, FL + 0.75), ROSU, laturi=10))
 	for k in range(4):
 		u = k * math.pi / 2 + 0.4
-		piese.append(os_intre("Picior scaun", (0.6 + math.cos(u) * 0.06, 6.2 + math.sin(u) * 0.06, FL + 0.72),
-			(0.6 + math.cos(u) * 0.2, 6.2 + math.sin(u) * 0.2, FL), 0.015, METAL, laturi=4))
+		piese.append(os_intre("Picior scaun", (sx + math.cos(u) * 0.06, 6.2 + math.sin(u) * 0.06, FL + 0.72),
+			(sx + math.cos(u) * 0.2, 6.2 + math.sin(u) * 0.2, FL), 0.015, METAL, laturi=4))
 	piese.append(cilindru("Cos gunoi", 0.15, 0.13, 0.4, (-2.6, 5.6, FL + 0.2), METAL_INCHIS, laturi=8))
 	strange()
 
