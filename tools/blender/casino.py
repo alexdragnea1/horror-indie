@@ -346,7 +346,7 @@ def cladire(cale):
 
 def strada(cale):
 	"""Strada din fața spălătoriei: trotuarul (la nivelul podelei), bordura, asfaltul cu marcaje, trotuarul de vizavi,
-	un hidrant, un parcometru, capace de canal; clădirile vecine (amanetul din stânga, magazinul închis din dreapta,
+	un hidrant, capace de canal; clădirile vecine (amanetul din stânga, magazinul închis din dreapta,
 	blocurile de vizavi, în ceață). Piese: `Strada`, `Lumini` (geamurile aprinse, firma amanetului), `Coliziune`."""
 	curata()
 	r = random.Random(9)
@@ -368,14 +368,11 @@ def strada(cale):
 	_cutie_coliziune(col, (L, 3.2, FL), (0, -12.6, FL / 2))
 	for x in (-9.0, 12.0):
 		piese.append(cilindru("Canal", 0.35, 0.35, 0.012, (x, -6.0, 0.006), METAL_INCHIS, laturi=12))
-	# hidrantul și parcometrul
+	# hidrantul (parcometrul de lângă stație l-am scos: stătea în fața stației Prundu și treceai prin el)
 	piese += [
 		cilindru("Hidrant", 0.11, 0.11, 0.55, (-7.9, -2.9, FL + 0.275), ROSU, laturi=8),
 		sfera("Hidrant cap", 0.11, (-7.9, -2.9, FL + 0.55), ROSU, scara=(1, 1, 0.7), segmente=8, inele=4),
 		cilindru("Hidrant gura", 0.05, 0.05, 0.3, (-7.9, -2.9, FL + 0.38), ROSU, laturi=6, rot=(0, 1.5708, 0)),
-		cilindru("Parcometru", 0.03, 0.03, 1.1, (8.2, -3.1, FL + 0.55), METAL, laturi=6),
-		cub("Parcometru cap", (0.18, 0.12, 0.3), (8.2, -3.1, FL + 1.2), METAL_INCHIS),
-		cub("Parcometru geam", (0.12, 0.012, 0.08), (8.2, -3.165, FL + 1.25), FAIANTA),
 	]
 	# vecinul din stânga: clădirea de cărămidă cu două etaje; parterul din dreapta (x de la -15 la -7,4, până la 3,6 m)
 	# e amanetul lui Johnny, cu fațada și interiorul lui (amanet.py), deci aici e doar restul clădirii

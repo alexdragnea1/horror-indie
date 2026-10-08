@@ -116,7 +116,8 @@ def cladire(cale):
 			strange()
 	strange()
 	for s in (-1, 1):
-		piese.append(cub("Perete lateral", (g2, D + G, TOP), (s * (W + G - g2 / 2), (D + G) / 2, TOP / 2), TENCUIALA))
+		# (începe în spatele fațadei: fețele din față nu se mai bat una cu alta la colțuri)
+		piese.append(cub("Perete lateral", (g2, D + G - g2, TOP), (s * (W + G - g2 / 2), (D + G + g2) / 2, TOP / 2), TENCUIALA))
 		piese.append(cub("Lambriu", (g2, D - G, HC - FL), (s * (W + g2 / 2), (G + D) / 2, (FL + HC) / 2), LEMN))
 		_cutie_coliziune(col, (G, D + G, TOP), (s * (W + G / 2), (D + G) / 2, TOP / 2))
 	piese.append(cub("Spate", (2 * W + 2 * G, g2, TOP), (0, D + G - g2 / 2, TOP / 2), TENCUIALA))
@@ -196,7 +197,8 @@ def cladire(cale):
 		piese.append(_text_o_fata("Autocolant", continut, (xx, g2 - 0.009, zz), marime, cul))
 		piese.append(_text_o_fata("Autocolant", continut, (xx, g2 + 0.009, zz), marime, cul, rot=(1.5708, 0, 3.14159)))
 	# soclul de beton de sub vitrină și un aplic de lumină deasupra ușii
-	piese.append(cub("Soclu", (2 * W + 2 * G, 0.03, 0.45), (0, -0.015, 0.225), BETON))
+	for sa, sb in ((-W - G, USA[0]), (USA[1], W + G)):  # (nu și prin dreptul ușii)
+		piese.append(cub("Soclu", (sb - sa, 0.03, 0.45), ((sa + sb) / 2, -0.015, 0.225), BETON))
 	piese.append(cub("Aplica usa", (0.3, 0.16, 0.08), ((a + b) / 2, -0.08, zb + 0.25), NEGRU))
 	lumini.append(cub("Bec usa", (0.2, 0.1, 0.03), ((a + b) / 2, -0.08, zb + 0.2), AUR))
 	# camera de supraveghere în colțul din dreapta-sus al fațadei
@@ -327,7 +329,7 @@ def strada(cale):
 	lumini.append(_text("Litere liquor", "LIQUOR", (-11.5, -0.15, 3.7), 0.55, ROSU))
 	lumini.append(_text("Scris liquor", "COLD BEER", (-7.4, -0.03, 3.0), 0.16, AUR))
 	# --- dreapta: maidanul cu gard de plasă, tomberonul, mașina arsă; apoi diner-ul închis
-	mx0, mx1 = W + G + 0.01, 13.0
+	mx0, mx1 = W + G + 0.01, 13.5  # până în diner (altfel rămânea o gaură între gard și diner)
 	piese.append(cub("Pietris", (mx1 - mx0, 12.0, 0.04), ((mx0 + mx1) / 2, 6.0, FL - 0.02), p("70706e")))
 	_cutie_coliziune(col, (mx1 - mx0, 12.0, 0.2), ((mx0 + mx1) / 2, 6.0, FL - 0.1))
 	gy = 0.6  # gardul, puțin în spatele trotuarului
@@ -355,6 +357,7 @@ def strada(cale):
 		piese.append(cilindru("Janta", 0.3, 0.3, 0.2, (7.4 + dx, dy, FL + 0.3), METAL_INCHIS, laturi=8, rot=(0, 1.5708, 0)))
 	_cutie_coliziune(col, (1.8, 1.1, 1.2), (10.5, 3.5, FL + 0.6))
 	piese.append(cub("Diner", (12.0, 12.0, 4.0), (19.5, 6.0, 2.0), p("6f6d7f")))
+	_cutie_coliziune(col, (12.0, 12.0, 4.0), (19.5, 6.0, 2.0))  # (fără ea treceai prin diner și ajungeai în maidan)
 	piese.append(cub("Oblon diner", (6.0, 0.04, 2.4), (18.0, -0.02, 1.3), METAL))
 	piese.append(cub("Firma diner", (3.6, 0.12, 0.7), (18.0, -0.06, 3.3), ALB))
 	piese.append(_text("Scris diner", "DINER", (18.0, -0.13, 3.3), 0.42, ROSU))

@@ -67,7 +67,7 @@ static func conversatie(nod: Node, cu_cine: String, ce: PackedStringArray, cat_e
 
 
 ## O notificare de știri: telefonul vibrează, pe ecranul blocat apare notificarea (`sursa` sus, `notificare` dedesubt),
-## o apeși (E / click) și se deschide site-ul cu articolul (`titlu`, sub el doar mâzgăleli în loc de text), îl citești
+## se apasă singură și se deschide site-ul cu articolul (`titlu`, sub el doar mâzgăleli în loc de text), îl citești
 ## și închizi telefonul (E / click). Se termină după ce telefonul a coborât.
 ##   await Telefon.stiri(self, "NEWS", "WITCH WANTS TO DESTROY TOWN", "Witch becomes powerful...", "10:32")
 static func stiri(nod: Node, sursa: String, notificare: String, titlu: String, cat_e_ora := "10:32") -> void:
@@ -520,12 +520,11 @@ func _construieste_site() -> void:
 	cap.add_child(nume)
 	for i in 4:  # meniul site-ului: niște butoane fără nume
 		_panou(_continut, Vector2(6 + i * 33, 25), Vector2(28, 3), _cutie(C_SITE_SLAB, 1))
-	var eticheta := _panou(_continut, Vector2(6, 32), Vector2(50, 12), _cutie(C_SITE_ROSU, 2))
-	var breaking := _text("BREAKING", 8, C_SITE)
-	breaking.size = eticheta.size
-	breaking.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	breaking.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	eticheta.add_child(breaking)
+	# eticheta „BREAKING”: cutia roșie se face după mărimea textului (un text mai mare decât cutia ieșea din ea)
+	var breaking := _text("BREAKING", 7, C_SITE)
+	var marime_breaking := _marime_scris(breaking)
+	var eticheta := _panou(_continut, Vector2(6, 31), Vector2(marime_breaking.x + 8, marime_breaking.y + 2), _cutie(C_SITE_ROSU, 2))
+	_centreaza(eticheta, breaking, Vector2.ZERO, eticheta.size)
 	# titlul articolului
 	var titlu := _text(titlu_articol, 11, C_SITE_TEXT)
 	titlu.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -581,11 +580,20 @@ func _construieste_site() -> void:
 	_panou(_pagina, Vector2(0, 0), Vector2(w, 10), _cutie(C_FUNDAL, 0))
 	var bara := _panou(_pagina, Vector2(0, 10), Vector2(w, 16), _cutie(Color("70706e"), 0))
 	var adresa := _panou(bara, Vector2(5, 2), Vector2(w - 10, 12), _cutie(C_SITE, 6))
-	var text_adresa := _text(site, 7, C_SITE_SLAB)
-	text_adresa.size = adresa.size
-	text_adresa.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text_adresa.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	adresa.add_child(text_adresa)
+	# textul adresei e copilul barei (nu al căsuței albe, care îl ascundea pe jumătate), centrat pe căsuță
+	_centreaza(bara, _text(site, 6, C_SITE_SLAB), adresa.position, adresa.size)
+
+
+## Mărimea literelor din eticheta `l` (fără spațiul gol pe care Label-ul îl lasă sub ele la fonturi mici).
+func _marime_scris(l: Label) -> Vector2:
+	return l.get_theme_font("font").get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1,
+		l.get_theme_font_size("font_size"))
+
+
+## Pune eticheta `l` în `parinte`, cu literele centrate pe dreptunghiul (`loc`, `cutie`).
+func _centreaza(parinte: Control, l: Label, loc: Vector2, cutie: Vector2) -> void:
+	parinte.add_child(l)
+	l.position = (loc + (cutie - _marime_scris(l)) * 0.5).round()
 
 
 ## Un rând de „text” mâzgălit, de la `start` până la x = `capat`: valuri mici ca un scris de mână ilizibil, cu pauze ca
@@ -615,7 +623,17 @@ func _linie_mazgala() -> Line2D:
 	return linie
 
 
-## Indiciul de sub telefon („[E] Open”); gol = îl ascunde.
+## Degetul care apasă pe ecran: un cerc deschis la culoare care se lărgește și se stinge, pe mijlocul lui `c`.
+func _atinge(c: Control) -> void:
+	var cerc := _panou(c.get_parent(), c.position + c.size * 0.5 - Vector2(6, 6), Vector2(12, 12), _cutie(Color(C_TEXT, 0.6), 6))
+	cerc.pivot_offset = Vector2(6, 6)
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	t.tween_property(cerc, "scale", Vector2(2.6, 2.6), 0.4)
+	t.tween_property(cerc, "modulate:a", 0.0, 0.4)
+	t.chain().tween_callback(cerc.queue_free)
+
+
+## Indiciul din dreapta telefonului („[E] Close”); gol = îl ascunde.
 func _arata_indiciu(text: String) -> void:
 	if _indiciu == null:
 		_indiciu = _text("", 9, C_TEXT)
@@ -669,17 +687,15 @@ func _ruleaza_stiri() -> void:
 	if cap:
 		t.tween_property(cap, "rotation:x", -0.3, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await t.finished
-	# 3. notificarea coboară pe ecranul blocat; o apeși tu
+	# 3. notificarea coboară pe ecranul blocat și se apasă singură
 	await _asteapta(0.35)
 	Sunet.reda(SUNET_NOTIFICARE, Sunet.VOLUM_EFECTE - 2.0)
 	_notificare.position.y -= 14
 	t = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	t.tween_property(_notificare, "position:y", _notificare.position.y + 14, 0.3)
 	t.tween_property(_notificare, "modulate:a", 1.0, 0.2)
-	await _asteapta(0.6)
-	_arata_indiciu("[E] Open")
-	await _asteapta_apasare()
-	_arata_indiciu("")
+	await _asteapta(1.6)
+	_atinge(_notificare)
 	Sunet.reda(SUNET_TASTA, Sunet.VOLUM_EFECTE - 4.0)
 	t = create_tween()
 	t.tween_property(_notificare, "scale", Vector2(0.94, 0.94), 0.08)
