@@ -123,8 +123,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _poate_arunca() -> bool:
 	return Stare.in_mana == ID and visible and _jos < 0.05 and _gata <= 0.0 and _aprins > 0.9 \
-		and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not Dialog.activ and not Stare.meniu_deschis \
-		and not Tranzitie.activa and not get_tree().paused
+		and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not Dialog.armele_oprite()
 
 
 ## Lecția: focul din palmă dispare (mâna e goală).

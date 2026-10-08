@@ -81,6 +81,9 @@ var _ultima_privire := Vector2.ZERO
 var _pas := 0.0
 var _lumina: OmniLight3D
 var _flacara: Node3D
+var _stingere: Tween
+var _nr_fulger := 0
+var _lasa_click := false
 
 
 func _ready() -> void:
@@ -127,6 +130,11 @@ func _process(delta: float) -> void:
 	_jos = move_toward(_jos, 1.0 if jos else 0.0, delta * 3.2)
 	visible = are and _jos < 0.99
 	gata = maxf(gata - delta, 0.0)
+	# după o conversație / un meniu, click-ul ținut apăsat (cel care a închis replica) nu trage: întâi îl lași
+	if Dialog.armele_oprite():
+		_lasa_click = true
+	elif _lasa_click and not Input.is_action_pressed("trage"):
+		_lasa_click = false
 	_actualizeaza(delta)
 	# balansul: rămâne în urma privirii (cât te-ai întors în cadrul ăsta) și se leagănă la mers
 	var privire := Vector2(_jucator.rotation.y, _cap.rotation.x)
@@ -150,7 +158,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func poate_trage() -> bool:
 	return visible and _jos < 0.05 and gata <= 0.0 and not ocupata and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
-		and not Dialog.activ and not Stare.meniu_deschis and not Tranzitie.activa and not get_tree().paused
+		and not _lasa_click and not Dialog.armele_oprite()
 
 
 ## O piesă a modelului (Pompa, Incarcator, Manivela, Racheta).
@@ -236,12 +244,20 @@ func _fulger(gura: Vector3, marime := 1.0, durata := 0.05) -> void:
 	_flacara.rotation.z = randf() * TAU
 	_flacara.scale = Vector3.ONE * marime * randf_range(0.8, 1.25)
 	_flacara.show()
+	# la foc automat (AK-47) stingerea de la glonțul de dinainte ar stinge lumina asta: o oprim, iar flacăra
+	# o ascunde doar ultimul glonț tras
+	if _stingere != null:
+		_stingere.kill()
+	_nr_fulger += 1
+	var al_meu := _nr_fulger
 	_lumina.position = gura
 	_lumina.light_energy = 3.0 * marime
 	await get_tree().create_timer(durata).timeout
+	if al_meu != _nr_fulger or not is_instance_valid(_lumina):
+		return
 	_flacara.hide()
-	var t := create_tween()
-	t.tween_property(_lumina, "light_energy", 0.0, 0.09)
+	_stingere = create_tween()
+	_stingere.tween_property(_lumina, "light_energy", 0.0, 0.09)
 
 
 ## Un nor mic de fum din gura țevii (rămâne în lume, nu merge cu tine).

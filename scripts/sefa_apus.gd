@@ -45,10 +45,27 @@ func _ready() -> void:
 		queue_free()
 		return
 	indiciu = "[E] Talk to the Head Witch"
+	# salvare făcută după lecție, dar înainte să fi apăsat Ctrl: sarcina vine abia după scut
+	if Stare.e_marcat(ScutJucator.MARCAJ) and not Stare.e_marcat(ScutJucator.MARCAJ_FOLOSIT):
+		Stare.seteaza_sarcina("")
+		_sarcina_dupa_scut()
 
 
+## După lecție nu vorbește cu tine până nu ridici o dată scutul (Ctrl) (owner).
 func poate_fi_folosit() -> bool:
+	if Stare.e_marcat(ScutJucator.MARCAJ) and not Stare.e_marcat(ScutJucator.MARCAJ_FOLOSIT):
+		return false
 	return not _vorbeste and not mort and not Stare.e_marcat(marcaj_plecare)
+
+
+## Așteaptă prima folosire a scutului, apoi pune sarcina „Talk to the Head Witch.”.
+func _sarcina_dupa_scut() -> void:
+	while not Stare.e_marcat(ScutJucator.MARCAJ_FOLOSIT):
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+	if sarcina_dupa_lectie != "":
+		Stare.seteaza_sarcina(sarcina_dupa_lectie)
 
 
 func interactioneaza() -> void:
@@ -85,8 +102,7 @@ func interactioneaza() -> void:
 	await _c.opreste()
 	_vorbeste = false
 	Stare.marcheaza(ScutJucator.MARCAJ)
-	if sarcina_dupa_lectie != "":
-		Stare.seteaza_sarcina(sarcina_dupa_lectie)
+	_sarcina_dupa_scut()
 
 
 func _spune(linii: PackedStringArray) -> void:

@@ -24,7 +24,17 @@ const LITERE_INTRE_BIPURI := 4
 ## La fel de tare ca toate efectele (Sunet.VOLUM_EFECTE).
 const VOLUM_VOCE_DB := 0.0
 
-var activ := false
+## Cât de mult după o conversație nu se trage încă (click-ul care închide ultima replică, pauzele dintre replicile
+## unei scene din cod).
+const PAUZA_ARME_MS := 500
+
+var activ := false:
+	set(v):
+		if activ and not v:
+			_inchis_la = Time.get_ticks_msec()
+		activ = v
+
+var _inchis_la := -100000
 
 var _replici: PackedStringArray = []
 var _index := 0
@@ -103,6 +113,17 @@ func _ready() -> void:
 	add_child(_optiuni_sus)
 	_optiuni_sus.hide()
 	_flag_text = _text.size_flags_vertical
+
+
+## Adevărat cât nu ai voie să tragi (pistol, armele de la Gun Store, Fireball): o conversație acum sau de curând, un
+## meniu, ecranul negru, pauza, sau o scenă din cod care te mută ea (`seteaza_purtat`).
+func armele_oprite() -> bool:
+	if activ or Time.get_ticks_msec() - _inchis_la < PAUZA_ARME_MS:
+		return true
+	if Stare.meniu_deschis or Tranzitie.activa or get_tree().paused:
+		return true
+	var jucator := get_tree().get_first_node_in_group("jucator")
+	return jucator != null and not jucator.is_physics_processing()
 
 
 func spune(replici: PackedStringArray) -> void:

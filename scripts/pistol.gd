@@ -131,7 +131,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _poate_trage() -> bool:
 	return visible and _jos < 0.05 and _gata <= 0.0 and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
-		and not Dialog.activ and not Stare.meniu_deschis and not Tranzitie.activa and not get_tree().paused
+		and not Dialog.armele_oprite()
 
 
 ## O scenă din cod trage singură (ceaun_acasa.gd, în demon): cu pistolul ridicat (`in_scena`), spre mijlocul ecranului.
