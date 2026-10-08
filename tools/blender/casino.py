@@ -422,11 +422,19 @@ def strada(cale):
 		piese.append(cub("Usa bloc", (1.4, 0.02, 1.8), (bx, -14.97, 0.9), METAL_INCHIS))
 	# terenul de sub tot (iarbă), ca nimic să nu stea în aer: vizavi, între blocuri, în spatele vecinilor
 	piese.append(cub("Teren", (L, 110.0, 0.1), (0, -15.0, -0.11), p("5b6d4e")))
-	# între blocuri: aleile de asfalt spre parcările din spate, cu dungi
+	# lângă blocuri și între ele: iarbă (owner, 08.10: nu asfalt), cu pete mai închise / mai uscate (fiecare la altă
+	# înălțime, să nu se calce între ele) și smocuri
+	for k in range(26):
+		px = -50 + r.uniform(0, 100)
+		py = r.uniform(-14.6, -26.0)
+		piese.append(cub("Pata iarba", (r.uniform(1.0, 3.0), r.uniform(0.8, 2.2), 0.02), (px, py, -0.045 + (k % 5) * 0.006),
+			r.choice((p("445d46"), p("7a7b59"))), rot=(0, 0, r.uniform(0, 3.14))))
 	for k in range(4):
-		px = -30 + k * 20
-		piese.append(cub("Parcare", (3.6, 10.8, 0.04), (px, -20.0, -0.04), NEGRU))
-		piese.append(cub("Dunga parcare", (0.1, 10.8, 0.01), (px, -20.0, -0.015), p("a18463")))
+		gx = -30 + k * 20
+		for j in range(14):
+			sx, sy, h = gx + r.uniform(-1.8, 1.8), r.uniform(-15.2, -25.0), r.uniform(0.15, 0.3)
+			piese.append(cilindru("Smoc iarba", 0.09, 0.0, h, (sx, sy, h / 2 - 0.05), r.choice((p("445d46"), p("5b6d4e"),
+				p("7a7b59"))), laturi=4))
 	# copacii de toamnă din trotuarul de vizavi (groapa cu pământ, trunchiul, ramuri, coroana rară)
 	for k in range(9):
 		tx = -44 + k * 11 + r.uniform(-1.5, 1.5)
