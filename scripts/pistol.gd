@@ -154,7 +154,9 @@ func _trage() -> void:
 	if lovit.is_empty():
 		return
 	var tinta: Object = lovit.collider
-	if tinta.has_method("impuscat"):
+	if tinta.has_method("lovit_de"):
+		tinta.lovit_de(id, directie, lovit.position)  # Warlock-ul de la motel: damage după armă
+	elif tinta.has_method("impuscat"):
 		tinta.impuscat(directie, lovit.position)
 	elif tinta is RigidBody3D:
 		(tinta as RigidBody3D).apply_impulse(directie * 30.0, lovit.position - (tinta as RigidBody3D).global_position)

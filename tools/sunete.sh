@@ -852,3 +852,83 @@ unic fas_fosnet_1 "Materials/clothing_1.wav" mono "aformat=channel_layouts=mono,
 unic fas_fosnet_2 "Materials/clothing_2.wav" mono "aformat=channel_layouts=mono,highpass=f=800,asetpts=PTS-STARTPTS,atrim=end=0.3,afade=t=out:st=0.2:d=0.1"
 rm -f "$OUT"/_sfoara.wav "$OUT"/_papusa_cade.wav "$OUT"/_goana.wav "$OUT"/_tipat.wav "$OUT"/_inima_rapida.wav "$OUT"/_sperietura.wav \
 	"$OUT"/_icnit1.wav "$OUT"/_icnit2.wav "$OUT"/_part1.wav "$OUT"/_part2.wav "$OUT"/_plop.wav
+
+# --- lupta cu Warlock-ul de la motel (lupta_warlock.gd): bătaia în ușa camerei 122, muzica de boss, „YOU DIED”,
+# „GREAT ENEMY FELLED” și Head Witch care îi absoarbe puterile. Rulează doar secțiunea asta cu funcțiile de sus
+# (castig, castig_final, unic) și cu DENS / STEREO de la sacrificiu.
+TINTA_NORMALA_WARLOCK=$TINTA_LUFS
+# o singură bătaie în ușă (din cele trei ale lui door_knock), mai grea: metalul ușii și o bufnitură joasă dedesubt;
+# în joc se aude de două ori („knock knock”), 3D, din ușă
+TINTA_LUFS=-16
+ffmpeg -v error -y -i "$PACHET/Environment/door_knock.wav" -i "$PACHET/Weapons/harsh_thud.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,atrim=start=0.1:end=0.38,asetpts=PTS-STARTPTS,asetrate=44100*0.9,aresample=44100,volume=1.2[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=500,atrim=end=0.3,afade=t=out:st=0.12:d=0.18,volume=0.5[b];[a][b]amix=inputs=2:normalize=0:duration=longest,aecho=0.6:0.4:40:0.2,afade=t=out:st=0.25:d=0.08" \
+	-ac 1 "$OUT/_ciocan.wav"
+unic usa_ciocanit "$OUT/_ciocan.wav"
+# muzica de boss (buclă de 16 s, 120 bpm, re minor: Dm - Bb - Gm - A, câte două măsuri): ostinato de coarde grave în
+# optimi (accent pe pătrimi), basul care pulsează, alama la începutul fiecărui acord, corul „aah” care respiră între acorduri
+# și taiko-urile. Ca la tobe: se face de trei ori și se păstrează bucata din mijloc, deci ecoul se leagă singur.
+R="if(lt(mod(t\,16)\,4)\,73.42\,if(lt(mod(t\,16)\,8)\,58.27\,if(lt(mod(t\,16)\,12)\,49\,55)))"
+ferastrau() {
+	local f="$1" n="$2" s="" k
+	for k in $(seq 1 "$n"); do s="$s+sin(2*PI*$k*($f)*t)/$k"; done
+	echo "(0$s)"
+}
+OST="0.3*$(ferastrau "$R" 5)*exp(-mod(t\,0.25)*9)*min(mod(t\,0.25)/0.004\,1)*min((0.25-mod(t\,0.25))/0.012\,1)*(1+0.5*lt(mod(t\,0.5)\,0.25))"
+BAS="0.45*sin(2*PI*($R)*0.5*t)*exp(-mod(t\,1)*2.2)*min(mod(t\,1)/0.01\,1)*min((1-mod(t\,1))/0.03\,1)"
+ALAMA="0.16*($(ferastrau "($R)*2" 6)+0.8*$(ferastrau "($R)*3" 6))*exp(-mod(t\,4)*1.1)*min(mod(t\,4)/0.03\,1)"
+C1="if(lt(mod(t\,16)\,4)\,146.83\,if(lt(mod(t\,16)\,8)\,116.54\,if(lt(mod(t\,16)\,12)\,98\,110)))"
+C2="if(lt(mod(t\,16)\,4)\,174.61\,if(lt(mod(t\,16)\,8)\,146.83\,if(lt(mod(t\,16)\,12)\,116.54\,138.59)))"
+C3="if(lt(mod(t\,16)\,4)\,220\,if(lt(mod(t\,16)\,8)\,174.61\,if(lt(mod(t\,16)\,12)\,146.83\,164.81)))"
+vocea() {
+	local f="$1" ph="$2" s="" k
+	for k in 1 2 3 4 5; do s="$s+sin(2*PI*$k*(($f)*t+($f)*0.003*sin(2*PI*5.1*t+$ph)))/$k"; done
+	echo "(0$s)"
+}
+COR="0.1*($(vocea "$C1" 0)+$(vocea "$C2" 1.3)+$(vocea "$C3" 2.1)+0.7*$(vocea "($C1)*2" 0.7))*min(mod(t\,4)/0.35\,1)*min((4-mod(t\,4))/0.35\,1)"
+# o măsură de taiko (2 s), luată din mijlocul a trei, ca să se lege
+TOBA="0"
+for m in 0 1 2; do
+	for x in "0:1" "0.75:0.55" "1.0:0.9" "1.5:0.5" "1.75:0.65"; do
+		TOBA="$TOBA$(taiko $(awk -v a="${x%%:*}" -v m=$m 'BEGIN { printf "%.2f", a + m * 2 }') ${x##*:})"
+	done
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.5*($TOBA)':s=44100:d=6" -af "lowpass=f=1800,equalizer=f=70:t=q:w=1:g=4,atrim=start=2:end=4,asetpts=PTS-STARTPTS" \
+	-ac 1 "$OUT/_toba.wav"
+ffmpeg -v error -y -f lavfi -i "aevalsrc='$OST+$BAS+$ALAMA':s=44100:d=48" -f lavfi -i "aevalsrc='$COR':s=44100:d=48" \
+	-stream_loop 23 -i "$OUT/_toba.wav" -filter_complex \
+	"[0]lowpass=f=3200,highpass=f=35[o];[1]equalizer=f=700:t=q:w=1.2:g=6,equalizer=f=1150:t=q:w=1.5:g=3,lowpass=f=2600,chorus=0.6:0.9:35|50:0.4|0.35:0.3|0.45:1.6|2.2[c];[2]volume=0.9[b];[o][c][b]amix=inputs=3:normalize=0:duration=first,$DENS,aecho=0.8:0.6:180|430:0.3|0.18,atrim=start=16:end=32,asetpts=PTS-STARTPTS,$STEREO,atrim=end=16" \
+	-ac 2 "$OUT/_boss.wav"
+TINTA_LUFS=-18
+g=$(castig_final "$OUT/_boss.wav" "anull")
+ffmpeg -v error -y -i "$OUT/_boss.wav" -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/muzica_warlock.ogg"
+echo "muzica_warlock.ogg  (buclă, 16 s)"
+# „YOU DIED” (~5 s): un gong grav (parțiale neîmpărțite, care bat între ele), bubuitura joasă și un cor care cade
+TINTA_LUFS=-13
+GONG="0"
+for x in "65:1:0.6" "96.5:0.7:0.8" "140:0.5:1.1" "188:0.35:1.5" "241:0.25:1.9" "66.3:0.5:0.7"; do
+	IFS=: read -r f a d <<< "$x"
+	GONG="$GONG+$a*sin(2*PI*$f*t)*exp(-t*$d)"
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.35*($GONG)*min(t/0.004\,1)':s=44100:d=5.5" \
+	-f lavfi -i "aevalsrc='1.1*sin(2*PI*(52*t-3*t*t))*min(t/0.005\,1)*exp(-t*1.6)':s=44100:d=5.5" \
+	-f lavfi -i "aevalsrc='0.12*($(voce 73.42 0)+$(voce 87.31 1)+$(voce 110 2))*min(t/0.15\,1)*exp(-t*0.8)':s=44100:d=5.5" \
+	-filter_complex "[2]asetrate=44100*0.94,aresample=44100,equalizer=f=650:t=q:w=1.2:g=5,lowpass=f=2200[c];[0][1][c]amix=inputs=3:normalize=0,$DENS,aecho=0.8:0.7:300|700|1200:0.35|0.25|0.15,atrim=end=5.5,afade=t=out:st=4.2:d=1.3,$STEREO" \
+	-ac 2 "$OUT/_murit.wav"
+unic ai_murit "$OUT/_murit.wav" stereo
+# „GREAT ENEMY FELLED” (~4 s): un acord luminos (re major) care sclipește și urcă, cu o bufnitură blândă dedesubt
+ffmpeg -v error -y -f lavfi -i "aevalsrc='0.16*(sin(2*PI*587.3*t)+sin(2*PI*740*t)+sin(2*PI*880*t)+0.7*sin(2*PI*1174.7*t)+0.5*sin(2*PI*293.7*t))*(0.7+0.3*sin(2*PI*13*t))*min(t/0.6\,1)*exp(-t*0.7)':s=44100:d=4.5" \
+	-f lavfi -i "aevalsrc='0.9*sin(2*PI*(60*t-5*t*t))*min(t/0.005\,1)*exp(-t*2)':s=44100:d=4.5" -i "$PACHET/Other/whoosh_1.wav" \
+	-filter_complex "[2]aformat=channel_layouts=mono,areverse,asetrate=44100*0.9,aresample=44100,volume=0.5[w];[0][1][w]amix=inputs=3:normalize=0:duration=first,chorus=0.6:0.9:20|35:0.4|0.3:0.4|0.5:2|3,aecho=0.8:0.6:250|600:0.3|0.2,afade=t=out:st=3.4:d=1.1,$STEREO" \
+	-ac 2 "$OUT/_doborat.wav"
+unic inamic_doborat "$OUT/_doborat.wav" stereo
+# Head Witch îi absoarbe puterile (~6 s): energia trasă (zgomot care urcă și se strânge, tot mai repede), un cor grav care
+# crește, pârâit de scântei, apoi implozia (aerul tras înapoi, bubuitura joasă)
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.8:d=6:r=44100:s=71" \
+	-f lavfi -i "aevalsrc='0.1*($(voce 55 0)+$(voce 82.41 1)+$(voce 110 2)+$(voce 116.54 0.5))*min(t/4.5\,1)*if(lt(t\,4.8)\,1\,exp(-(t-4.8)*4))':s=44100:d=6" \
+	-f lavfi -i "aevalsrc='lt(random(3)\,0.01+0.03*t/6)*(random(4)*2-1)*0.8':s=44100:d=6" \
+	-f lavfi -i "aevalsrc='1.2*gte(t\,4.8)*sin(2*PI*(70*(t-4.8)-12*(t-4.8)*(t-4.8)))*exp(-(t-4.8)*2.5)':s=44100:d=6" \
+	-filter_complex "[0]bandpass=f=700:t=h:w=900,vibrato=f=7:d=0.4,volume='if(lt(t\,4.8)\,pow(t/4.8\,2)*1.6\,exp(-(t-4.8)*12)*1.6)':eval=frame[w];[1]equalizer=f=600:t=q:w=1.2:g=5,lowpass=f=2400,chorus=0.6:0.9:35|50:0.4|0.35:0.3|0.45:1.6|2.2[c];[2]highpass=f=2500[p];[w][c][p][3]amix=inputs=4:normalize=0,$DENS,aecho=0.8:0.6:200|480:0.3|0.18,atrim=end=6,afade=t=out:st=5.2:d=0.8,$STEREO" \
+	-ac 2 "$OUT/_absorbtie.wav"
+unic absorbtie "$OUT/_absorbtie.wav" stereo
+TINTA_LUFS=$TINTA_NORMALA_WARLOCK
+rm -f "$OUT"/_ciocan.wav "$OUT"/_toba.wav "$OUT"/_boss.wav "$OUT"/_murit.wav "$OUT"/_doborat.wav "$OUT"/_absorbtie.wav

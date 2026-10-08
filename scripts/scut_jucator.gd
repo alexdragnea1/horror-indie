@@ -164,6 +164,31 @@ func _fasait() -> void:
 	_ocupat = false
 
 
+## Ridicat dintr-o scenă (lupta_warlock.gd: în cutscene tasta e blocată de Stare.meniu_deschis, deci scena ascultă ea
+## tasta și cheamă asta). Iese mereu curat, chiar dacă nu l-ai folosit niciodată. Întoarce false dacă e deja ridicat.
+func ridica_din_scena() -> bool:
+	if _ocupat:
+		return activ
+	if not Stare.e_marcat(MARCAJ_FOLOSIT):
+		Stare.marcheaza(MARCAJ_FOLOSIT)
+		_ascunde_indiciul()
+	_ocupat = true
+	_ridica_stapanit_si_pauza()
+	return true
+
+
+func _ridica_stapanit_si_pauza() -> void:
+	await _ridica_stapanit()
+	activ = false
+	_pauza_ramasa = pauza
+	_ocupat = false
+
+
+## Gata de ridicat acum (nu e ridicat și nu e pe cooldown).
+func poate_ridica() -> bool:
+	return not _ocupat and _pauza_ramasa <= 0.0 and Stare.e_marcat(MARCAJ)
+
+
 func _ridica() -> void:
 	_ocupat = true
 	if Stare.e_marcat(MARCAJ_FOLOSIT):

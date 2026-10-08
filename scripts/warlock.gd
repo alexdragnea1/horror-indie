@@ -70,10 +70,15 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_timp += delta
-	_model.position.y = plutire + sin(_timp * 1.3) * 0.07
+	_model.position.y = plutire + sin(_timp * 1.3) * 0.07 * clampf(plutire * 2.0, 0.0, 1.0)
 	_model.rotation.z = sin(_timp * 0.7) * 0.02
+	if _aplecare != 0.0 or _tremura:
+		_model.rotation.x = _aplecare
+	if _tremura:
+		var j := Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * 0.025
+		_model.position = Vector3(j.x, _model.position.y + j.y, j.z)
 	var puls := 0.5 + 0.5 * sin(_timp * (3.0 + furie * 9.0))
-	var arde := 1.0 + furie * 2.5 + puls * (0.4 + furie)
+	var arde := 1.0 + furie * 2.5 + puls * (0.4 + furie) + _sclipire * 4.0
 	for nume in ["Lumini", "Cap/Ochi"]:
 		var m := _model.get_node_or_null(nume) as GeometryInstance3D
 		if m:
@@ -130,4 +135,61 @@ func dispari(durata: float) -> Tween:
 	t.tween_method(func(v: float) -> void: ModelPS2.disparitie(_model, v), 0.0, 1.0, durata)
 	t.parallel().tween_property(_lumina, "light_energy", 0.0, durata)
 	t.tween_callback(queue_free)
+	return t
+
+
+# ---------------------------------------------------------------- lupta de la motel (lupta_warlock.gd)
+
+var _sclipire := 0.0
+var _aplecare := 0.0
+var _tremura := false
+
+
+## Se topește pe pixeli fără să plece din scenă (teleportul: apoi `aparitie` în alt loc).
+func ascunde(durata: float) -> Tween:
+	var t := create_tween()
+	t.tween_method(func(v: float) -> void: ModelPS2.disparitie(_model, v), 0.0, 1.0, durata)
+	return t
+
+
+## L-a lovit ceva: tresare (se dă puțin înapoi), runele și ochii sclipesc o clipă.
+func tresare(dinspre: Vector3, putere := 1.0) -> void:
+	var d := global_basis.inverse() * Vector3(dinspre.x, 0.0, dinspre.z).normalized()
+	_model.rotation.x = _aplecare + clampf(d.z, -1.0, 1.0) * 0.12 * putere
+	_model.rotation.y = clampf(-d.x, -1.0, 1.0) * 0.1 * putere
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
+	t.tween_property(_model, "rotation:x", _aplecare, 0.25)
+	t.tween_property(_model, "rotation:y", 0.0, 0.25)
+	_sclipire = 1.0
+	t.tween_property(self, "_sclipire", 0.0, 0.2)
+
+
+## Învins: cade pe pământ (nu mai plutește), se apleacă în față, toiagul și brațul îi atârnă, focul din el se stinge.
+func prabusire(durata: float) -> Tween:
+	_privire = Vector3.ZERO
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	t.tween_property(self, "plutire", -0.3, durata)
+	t.tween_property(self, "_aplecare", 0.45, durata)
+	t.tween_property(self, "furie", 0.0, durata)
+	t.tween_property(_brat_d, "rotation:x", 0.35, durata)
+	t.tween_property(_brat_d, "rotation:z", 0.15, durata)
+	t.tween_property(_brat_s, "rotation:x", 0.1, durata)
+	t.tween_property(_brat_s, "rotation:z", 0.0, durata)
+	t.tween_property(_cap, "rotation:x", 0.5, durata)
+	t.tween_property(_cap, "rotation:y", 0.0, durata)
+	return t
+
+
+## Head Witch îi trage puterile: se ridică în aer, cu brațele desfăcute și capul pe spate, și tremură.
+func smuls(durata: float) -> Tween:
+	_tremura = true
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(self, "plutire", 0.7, durata)
+	t.tween_property(self, "_aplecare", -0.25, durata)
+	t.tween_property(_brat_d, "rotation:z", 1.1, durata)
+	t.tween_property(_brat_d, "rotation:x", -0.4, durata)
+	t.tween_property(_brat_s, "rotation:z", -1.1, durata)
+	t.tween_property(_brat_s, "rotation:x", -0.4, durata)
+	t.tween_property(_cap, "rotation:x", -0.55, durata)
+	t.tween_property(self, "furie", 1.0, durata * 0.6)
 	return t

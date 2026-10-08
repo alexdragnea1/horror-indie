@@ -60,7 +60,10 @@ func _loveste() -> void:
 	if lovit.is_empty():
 		return
 	var tinta: Object = lovit.collider
-	if tinta.has_method("impuscat"):
+	if tinta.has_method("lovit_de"):
+		tinta.lovit_de(id, directie, lovit.position)
+		Sunet.reda_la(SUNET_CARNE, lovit.position, Sunet.VOLUM_EFECTE, 0.1)
+	elif tinta.has_method("impuscat"):
 		tinta.impuscat(directie, lovit.position)
 		Sunet.reda_la(SUNET_CARNE, lovit.position, Sunet.VOLUM_EFECTE, 0.1)
 	elif tinta is RigidBody3D:

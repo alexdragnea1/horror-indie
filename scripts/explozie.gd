@@ -358,7 +358,10 @@ func _suflu() -> void:
 		var k := clampf(1.0 - d / raza, 0.0, 1.0)
 		if tinta is CharacterBody3D and (tinta as Node).is_in_group("jucator"):
 			continue
-		if tinta.has_method("lovit_de_foc"):
+		if tinta.has_method("lovit_de"):
+			deja.append(tinta)
+			tinta.lovit_de("bazooka", dir, unde)  # doar racheta face Explozie
+		elif tinta.has_method("lovit_de_foc"):
 			deja.append(tinta)
 			tinta.lovit_de_foc(dir, unde)
 		elif tinta.has_method("impuscat"):

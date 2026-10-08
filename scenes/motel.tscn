@@ -44,6 +44,8 @@
 [ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="46_sp"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="47_lp"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="48_lo"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="49_in"]
+[ext_resource type="Script" path="res://scripts/lupta_warlock.gd" id="50_lw"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("24_ca")
@@ -93,6 +95,9 @@ size = Vector3(0.5, 12, 60)
 
 [sub_resource type="BoxShape3D" id="forma_lung"]
 size = Vector3(70, 12, 0.5)
+
+[sub_resource type="BoxShape3D" id="forma_usa_122"]
+size = Vector3(1.0, 2.1, 0.12)
 
 [node name="Motel" type="Node3D"]
 
@@ -405,6 +410,21 @@ shape = SubResource("forma_lung")
 [node name="Spate" type="CollisionShape3D" parent="Limite"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 6, -18.5)
 shape = SubResource("forma_lung")
+
+[node name="Usa122" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.725, 1.2, -9.88)
+script = ExtResource("49_in")
+indiciu = "[E] Knock"
+activ = false
+
+[node name="Forma" type="CollisionShape3D" parent="Usa122"]
+shape = SubResource("forma_usa_122")
+
+[node name="LuptaWarlock" type="Node3D" parent="." node_paths=PackedStringArray("usa", "sefa", "mediu")]
+script = ExtResource("50_lw")
+usa = NodePath("../Usa122")
+sefa = NodePath("../HeadWitchMotel")
+mediu = NodePath("../Mediu")
 
 [node name="Jucator" type="CharacterBody3D" parent="." groups=["jucator"] instance=ExtResource("1_jt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.05, 2.5)

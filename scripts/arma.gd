@@ -170,7 +170,12 @@ func _glont(directie: Vector3, bataie: float, impuls: float, deja: Array = []) -
 	if lovit.is_empty():
 		return lovit
 	var tinta: Object = lovit.collider
-	if tinta.has_method("impuscat"):
+	if tinta.has_method("lovit_de"):
+		# Warlock-ul de la motel (lupta_warlock.gd): damage după armă, o dată pe foc
+		if not tinta in deja:
+			deja.append(tinta)
+			tinta.lovit_de(id, directie, lovit.position)
+	elif tinta.has_method("impuscat"):
 		if not tinta in deja:
 			deja.append(tinta)
 			tinta.impuscat(directie, lovit.position)

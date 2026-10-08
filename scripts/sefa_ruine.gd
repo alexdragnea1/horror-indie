@@ -20,17 +20,10 @@ extends "res://scripts/sefa_vrajitoare.gd"
 @export var durata_drum := 19.5
 ## Încotro te uiți cât ocoliți ruina (mijlocul ei).
 @export var priveste_ruina := Vector3(0, 6, -13)
-## Cât stă culcată mai sus de pământ (spatele robei), ca să nu intre în pietriș.
-@export var inaltime_culcata := 0.24
 ## În zbor: cât te muți într-o parte (minus = în stânga ei, spre ruina pe care o ocoliți) și cât mai sus pe mătură (metri),
 ## ca să vezi pe lângă ea (din dreapta ei, ea stătea între tine și conac).
 @export var lateral_zbor := -0.8
 @export var ridicare_zbor := 0.3
-
-const SUNET_SCUT := preload("res://sunete/scut.ogg")
-
-var _culcata := false
-var _privire_normala := 0.0
 
 
 func _ready() -> void:
@@ -93,73 +86,6 @@ func apari_langa(poz: Vector3, spre: Vector3) -> void:
 	var t := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	t.tween_property(_model, "scale", Vector3.ONE, 0.35)
 	await t.finished
-
-
-## Întinde brațul (scutul) sau îl lasă jos.
-func brat_scut(sus: bool, durata := 0.5) -> Tween:
-	var t := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	t.tween_property(brat, "rotation", Vector3(-1.55, 0.0, 0.25) if sus else Vector3.ZERO, durata)
-	return t
-
-
-## Suflul o aruncă pe spate, `departe` metri pe direcția `spre` (orizontal): zboară puțin și cade culcată.
-func cade(spre: Vector3, departe := 2.2) -> void:
-	distanta_privire = 0.0
-	var d := Vector3(spre.x, 0.0, spre.z).normalized()
-	# cade pe spate = cu fața în sus, cu capul pe direcția în care a fost aruncată
-	rotation.y = atan2(-d.x, -d.z)
-	var start := global_position
-	var t := create_tween().set_parallel()
-	t.tween_method(func(k: float) -> void:
-		global_position = start + d * departe * k + Vector3.UP * 0.9 * 4.0 * k * (1.0 - k), 0.0, 1.0, 0.7)
-	t.tween_property(_model, "rotation:x", -PI / 2.0, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	t.tween_property(_model, "position:y", inaltime_culcata, 0.6)
-	t.tween_property(brat, "rotation", Vector3(0.25, 0.0, 0.55), 0.5)
-	await t.finished
-	Sunet.reda_la(SUNET_ATERIZARE, global_position, Sunet.VOLUM_EFECTE, 0.05)
-	_culcata = true
-
-
-## Culcată pe spate, pe loc (după atac, cât ești leșinat; la Continue).
-func culca_te() -> void:
-	show()
-	distanta_privire = 0.0
-	_model.rotation.x = -PI / 2.0
-	_model.position.y = inaltime_culcata
-	brat.rotation = Vector3(0.25, 0.0, 0.55)
-	_culcata = true
-
-
-## Se ridică: plutește în sus, se îndreaptă (cu scântei mov), coboară în picioare, se clatină puțin și se întoarce spre tine.
-func ridica_te() -> void:
-	if not _culcata:
-		return
-	var inainte := global_transform.basis.z * -1.0  # culcată, capul e spre -Z-ul nodului
-	inainte.y = 0.0
-	inainte = inainte.normalized()
-	var start := global_position
-	var unde := start + inainte * 0.9  # se ridică cam din dreptul șoldurilor
-	Sunet.reda_la(SUNET_SCUT, start + Vector3.UP * 0.5, Sunet.VOLUM_EFECTE - 6.0, 0.05, 0.7)
-	for k in 3:
-		_fum(start + inainte * (0.4 + k * 0.5) + Vector3.UP * 0.3)
-	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_method(func(k: float) -> void:
-		global_position = start.lerp(unde, k) + Vector3.UP * 0.35 * sin(k * PI), 0.0, 1.0, 2.2)
-	t.tween_property(_model, "rotation:x", 0.0, 2.2)
-	t.tween_property(_model, "position:y", 0.0, 2.2)
-	t.tween_property(brat, "rotation", Vector3.ZERO, 1.6)
-	await t.finished
-	_culcata = false
-	# se clatină puțin, încă amețită
-	var clatina := create_tween().set_trans(Tween.TRANS_SINE)
-	clatina.tween_property(_model, "rotation:z", 0.08, 0.35)
-	clatina.tween_property(_model, "rotation:z", -0.05, 0.4)
-	clatina.tween_property(_model, "rotation:z", 0.0, 0.4)
-	await clatina.finished
-	distanta_privire = _privire_normala
-	var jucator := _jucator()
-	if jucator:
-		await intoarce_spre(jucator).finished
 
 
 # ---------------------------------------------------------------------------------------------------------------

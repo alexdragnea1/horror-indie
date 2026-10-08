@@ -183,7 +183,9 @@ func _physics_process(delta: float) -> void:
 func _explodeaza(punct: Vector3, normala: Vector3, tinta: Object) -> void:
 	_gata = true
 	global_position = punct + normala * 0.05
-	if tinta and tinta.has_method("lovit_de_foc"):
+	if tinta and tinta.has_method("lovit_de"):
+		tinta.lovit_de("vraja_foc", directie, punct)
+	elif tinta and tinta.has_method("lovit_de_foc"):
 		tinta.lovit_de_foc(directie, punct)
 	elif tinta and tinta.has_method("impuscat"):
 		tinta.impuscat(directie, punct)
