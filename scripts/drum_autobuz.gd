@@ -74,6 +74,8 @@ var _timp := 0.0
 var _privit := 0.0
 var _a_aparut := false
 var _momeala_data := false
+## Cât durează, cu click-uri normale, replicile de la început (de aici se numără `momeala` și `fortat`).
+const TIMP_CITIT := 6.0
 var _banda: Array[Dictionary] = []  # {nod, pas (m), x_min, x_max}
 var _rng := RandomNumberGenerator.new()
 var _pana_la_zornait := 3.0
@@ -292,17 +294,23 @@ func _aprinde(aprins: bool) -> void:
 
 func _scenariu() -> void:
 	await _asteapta(4.5)
+	var inceput_replici := _timp
 	await _spune(replici_inainte)
-	# până apare creatura: momeala, apoi privirea forțată
-	var start := _timp
+	# până apare creatura: momeala, apoi privirea forțată. Se numără de la `TIMP_CITIT` după ce încep replicile, nu de
+	# la închiderea lor: cine citește încet nu mai așteaptă în plus (owner, 08.10: „vine prea greu când nu apeși repede
+	# click pe dialog”). După dialog și după momeală tot trece puțin timp, ca să nu vină una peste alta.
+	var start := minf(_timp, inceput_replici + TIMP_CITIT)
+	var final_dialog := _timp
+	var momeala_la := -1.0
 	while not _a_aparut:
 		await get_tree().process_frame
 		var trecut := _timp - start
-		if trecut > momeala and not _momeala_data:
+		if trecut > momeala and not _momeala_data and _timp > final_dialog + 1.0:
 			_momeala_data = true
+			momeala_la = _timp
 			Sunet.reda_la(sunet_crengi, autobuz.global_position + Vector3(9.0, 1.0, 14.0), Sunet.VOLUM_EFECTE, 0.05)
 			_clipeste_lumina()
-		if trecut > fortat and not Dialog.activ:
+		if trecut > fortat and _momeala_data and _timp > momeala_la + 3.0 and not Dialog.activ:
 			await calator.priveste_spre(95.0, -4.0, 1.3)
 			_porneste_creatura()
 	# replicile pornesc la `intarziere_replici` după ce creatura intră în cadru

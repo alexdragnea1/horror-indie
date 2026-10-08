@@ -72,7 +72,6 @@ func _loveste() -> void:
 	else:
 		Sunet.reda_la(SUNET_PERETE, lovit.position, Sunet.VOLUM_EFECTE - 3.0, 0.1)
 		_scantei(lovit.position, lovit.normal)
-		_gaura(lovit.position, lovit.normal)
 	# un mic tremur în mână la impact
 	var t := create_tween()
 	t.tween_property(self, "anim_poz", anim_poz + Vector3(0.0, 0.0, 0.03), 0.04)

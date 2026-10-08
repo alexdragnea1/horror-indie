@@ -743,6 +743,9 @@ def interior(cale):
 	piese.append(cilindru("Covor margine", 3.45, 3.45, 0.008, (0, OCY + 0.25, z + 0.004), AUR, laturi=40, scara=(1, 0.77, 1)))
 	piese.append(cilindru("Covor", 3.25, 3.25, 0.008, (0, OCY + 0.25, z + 0.014), PETROL, laturi=40, scara=(1, 0.77, 1)))
 	piese.append(cilindru("Pecete", 1.0, 1.0, 0.008, (0, OCY + 0.25, z + 0.024), AUR, laturi=28))
+	# coliziunea covorului (cât e de gros cu pecetea): ce arunci pe el stă deasupra, nu dedesubt (owner, 08.10: banii
+	# aruncați în birou nu se vedeau)
+	col.append(cilindru("Coliziune", 3.45, 3.45, 0.04, (0, OCY + 0.25, z + 0.02), NEGRU, laturi=40, scara=(1, 0.77, 1)))
 	piese.append(cilindru("Pecete mijloc", 0.82, 0.82, 0.008, (0, OCY + 0.25, z + 0.034), PETROL_DESCHIS, laturi=28))
 	piese.append(cilindru("Stea mijloc", 0.21, 0.21, 0.008, (0, OCY + 0.25, z + 0.042), AUR, laturi=5))
 	for k in range(0, 10, 2):
@@ -945,6 +948,102 @@ def _casa_sat(piese, col, x, y, lat, adanc, cul_zid, cul_acoperis, r, spre=1):
 	_cutie_coliziune(col, (lat, adanc + 2.6, h), (x, y + spre * 1.3, h / 2))
 
 
+def _bicicleta(piese, col, cx, cy, rot):
+	"""O bicicletă veche de oraș (ca o Pegas): cadru romb turcoaz, roți cu spițe, aripi cromate, portbagaj, ghidon
+	întors, șa de piele, pedalier cu foaie, pe cric (înclinată puțin spre el). În coordonatele ei: lungimea pe X (fața
+	spre +X), lățimea pe Y, roțile la z = 0,34; o rotesc cu `rot` și o mut în (cx, cy)."""
+	from mathutils import Matrix, Vector
+	R = 0.34
+	spate, fata = Vector((-0.52, 0, R)), Vector((0.52, 0, R))
+	pedalier = Vector((-0.08, 0, 0.29))
+	sa = Vector((-0.24, 0, 0.82))          # capătul de sus al tubului de șa
+	cap_sus, cap_jos = Vector((0.33, 0, 0.8)), Vector((0.37, 0, 0.66))
+	s = []
+	for (c, nume) in ((spate, "spate"), (fata, "fata")):
+		s.append(_tor("Cauciuc bicicleta", R - 0.02, 0.022, tuple(c), NEGRU, rot=(math.pi / 2, 0, 0), segmente=20))
+		s.append(_tor("Janta bicicleta", R - 0.05, 0.012, tuple(c), CROM, rot=(math.pi / 2, 0, 0), segmente=20))
+		s.append(cilindru("Butuc bicicleta", 0.025, 0.025, 0.1, tuple(c), CROM, laturi=8, rot=(math.pi / 2, 0, 0)))
+		for k in range(12):
+			a = k * math.pi / 6 + (0.13 if nume == "fata" else 0.0)
+			s.append(os_intre("Spita", tuple(c), (c.x + (R - 0.06) * math.cos(a), 0, c.z + (R - 0.06) * math.sin(a)), 0.003,
+				CROM, laturi=3))
+		# aripa (apărătoarea): un sfert de cerc de bucăți scurte deasupra roții
+		for k in range(7):
+			a0, a1 = math.radians(20 + k * 20), math.radians(40 + k * 20)
+			if nume == "fata":
+				a0, a1 = math.radians(160 - k * 20), math.radians(140 - k * 20)
+			s.append(os_intre("Aripa bicicleta", (c.x + (R + 0.04) * math.cos(a0), 0, c.z + (R + 0.04) * math.sin(a0)),
+				(c.x + (R + 0.04) * math.cos(a1), 0, c.z + (R + 0.04) * math.sin(a1)), 0.022, CROM, laturi=4))
+	# cadrul (romb): tubul de sus, tubul diagonal, tubul de șa, furcile din spate (jos și sus, pe ambele părți), furca față
+	tub = lambda a, b, g=0.019: s.append(os_intre("Cadru bicicleta", tuple(a), tuple(b), g, TEAL, laturi=6))
+	tub(sa, cap_sus)
+	tub(pedalier, cap_jos, 0.022)
+	tub(pedalier, sa)
+	tub(cap_jos, cap_sus, 0.024)
+	for dy in (-0.05, 0.05):
+		tub(spate + Vector((0, dy, 0)), pedalier, 0.012)
+		tub(spate + Vector((0, dy, 0)), sa - Vector((0, 0, 0.03)), 0.012)
+		tub(fata + Vector((0, dy, 0)), cap_jos + Vector((0, dy * 0.6, 0)), 0.013)
+	# șaua: tija cromată și șaua de piele cu arcurile dedesubt
+	tija = sa + Vector((-0.03, 0, 0.12))
+	s.append(os_intre("Tija sa", tuple(sa), tuple(tija), 0.012, CROM, laturi=6))
+	s.append(cub("Sa bicicleta", (0.26, 0.15, 0.05), tuple(tija + Vector((0.0, 0, 0.03))), NEGRU))
+	s.append(cub("Varf sa", (0.1, 0.07, 0.04), tuple(tija + Vector((0.16, 0, 0.035))), NEGRU))
+	for dy in (-0.05, 0.05):
+		s.append(cilindru("Arc sa", 0.018, 0.018, 0.04, tuple(tija + Vector((-0.08, dy, 0))), CROM, laturi=6))
+	# ghidonul: pipa, ghidonul întors spre șa, mânerele negre, clopoțelul
+	pipa = cap_sus + Vector((-0.02, 0, 0.12))
+	s.append(os_intre("Pipa ghidon", tuple(cap_sus), tuple(pipa), 0.014, CROM, laturi=6))
+	for semn in (-1, 1):
+		capat = pipa + Vector((-0.12, semn * 0.26, 0.02))
+		s.append(os_intre("Ghidon", tuple(pipa), tuple(pipa + Vector((-0.02, semn * 0.14, 0))), 0.011, CROM, laturi=6))
+		s.append(os_intre("Ghidon", tuple(pipa + Vector((-0.02, semn * 0.14, 0))), tuple(capat), 0.011, CROM, laturi=6))
+		s.append(os_intre("Maner ghidon", tuple(capat), tuple(capat + Vector((-0.1, semn * 0.02, 0))), 0.017, NEGRU, laturi=6))
+	s.append(cilindru("Clopotel", 0.03, 0.025, 0.02, tuple(pipa + Vector((-0.03, 0.1, 0.03))), CROM, laturi=8))
+	s.append(cub("Far bicicleta", (0.05, 0.07, 0.07), tuple(cap_jos + Vector((0.06, 0, 0.05))), CROM))
+	# pedalierul: foaia, angrenajul, pedalele (o pedală sus în față, cealaltă jos în spate), lanțul
+	s.append(_tor("Foaie", 0.09, 0.008, tuple(pedalier + Vector((0, 0.06, 0))), CROM, rot=(math.pi / 2, 0, 0), segmente=14))
+	s.append(cilindru("Ax pedalier", 0.03, 0.03, 0.14, tuple(pedalier), CROM, laturi=8, rot=(math.pi / 2, 0, 0)))
+	for (semn, ung) in ((1, 0.6), (-1, 0.6 + math.pi)):
+		capat = pedalier + Vector((0.17 * math.cos(ung), semn * 0.08, 0.17 * math.sin(ung)))
+		s.append(os_intre("Pedala brat", tuple(pedalier + Vector((0, semn * 0.08, 0))), tuple(capat), 0.012, CROM, laturi=4))
+		s.append(cub("Pedala", (0.09, 0.1, 0.025), tuple(capat + Vector((0, semn * 0.05, 0))), NEGRU))
+	for dz in (-0.09, 0.09):
+		s.append(os_intre("Lant", tuple(pedalier + Vector((0, 0.06, dz))), tuple(spate + Vector((0, 0.06, dz * 0.45))), 0.006,
+			METAL_INCHIS, laturi=3))
+	# portbagajul de deasupra roții din spate
+	for dy in (-0.07, 0.07):
+		s.append(os_intre("Portbagaj", tuple(spate + Vector((0, dy, 0))), tuple(spate + Vector((0.02, dy, 0.42))), 0.008,
+			CROM, laturi=4))
+		s.append(os_intre("Portbagaj", (spate.x - 0.12, dy, R + 0.42), (sa.x - 0.04, dy, R + 0.42), 0.008, CROM, laturi=4))
+	s.append(os_intre("Portbagaj", (sa.x - 0.04, -0.07, R + 0.42), (sa.x - 0.02, 0, sa.z - 0.02), 0.008, CROM, laturi=4))
+	s.append(cub("Catadioptru", (0.02, 0.06, 0.04), (spate.x - 0.12, 0, R + 0.38), ROSU))
+	# cricul, din pedalier în jos și puțin spre stânga
+	s.append(os_intre("Cric", tuple(pedalier + Vector((-0.04, -0.05, 0))), (pedalier.x - 0.1, -0.2, 0.01), 0.01, CROM, laturi=4))
+	inclinare = Matrix.Rotation(math.radians(6), 4, 'X')     # pe cric se lasă puțin spre stânga (-Y)
+	for ob in s:
+		ob.data.transform(inclinare)
+	_roteste_muta(s, rot, (cx, cy))
+	piese += s
+	_cutie_coliziune(col, (1.75, 0.6, 1.0), (cx, cy, 0.5))
+
+
+def _scaun_plastic(piese, col, cx, cy, rot):
+	"""Scaunul alb de plastic, ca la terasă: șezut, picioare răsfirate, spătar cu fante, brațe. Fața spre -Y."""
+	s = [cub("Sezut plastic", (0.44, 0.42, 0.04), (0, 0, 0.43), ALB)]
+	for (dx, dy) in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+		s.append(os_intre("Picior plastic", (dx * 0.19, dy * 0.18, 0.42), (dx * 0.24, dy * 0.23, 0.0), 0.022, ALB, laturi=5))
+	s.append(cub("Spatar plastic", (0.44, 0.04, 0.42), (0, 0.24, 0.66), ALB, rot=(-0.18, 0, 0)))
+	for dx in (-0.12, 0.0, 0.12):
+		s.append(cub("Fanta spatar", (0.05, 0.05, 0.22), (dx, 0.245, 0.68), METAL_INCHIS, rot=(-0.18, 0, 0)))
+	for semn in (-1, 1):
+		s.append(cub("Brat plastic", (0.05, 0.38, 0.03), (semn * 0.22, 0.02, 0.62), ALB))
+		s.append(cub("Suport brat", (0.04, 0.04, 0.18), (semn * 0.22, -0.15, 0.53), ALB))
+	_roteste_muta(s, rot, (cx, cy))
+	piese += s
+	_cutie_coliziune(col, (0.5, 0.5, 0.9), (cx, cy, 0.45))
+
+
 def _gard_lemn(piese, x0, x1, y, r, cul=LEMN):
 	"""Gard de scânduri (uluci) cu două rigle, pe X."""
 	piese.append(cub("Rigla gard", (x1 - x0, 0.04, 0.08), ((x0 + x1) / 2, y, 0.45), LEMN_INCHIS))
@@ -1092,13 +1191,8 @@ def curte(cale):
 	for dx in (-0.6, 0.6):
 		piese.append(cub("Picior avizier", (0.08, 0.08, 1.3), (2.6 + dx, YG + 0.35, 0.65), LEMN_INCHIS))
 	_cutie_coliziune(col, (1.4, 0.2, 1.7), (2.6, YG + 0.35, 0.85))
-	# o bicicletă veche rezemată de gard, pe dinafară
-	for dx in (-0.5, 0.5):
-		piese.append(_tor("Roata bicicleta", 0.33, 0.02, (-5.5 + dx, YG - 0.25, 0.35), NEGRU, rot=(math.pi / 2, 0, 0), segmente=14))
-	piese.append(os_intre("Cadru bicicleta", (-6.0, YG - 0.25, 0.35), (-5.3, YG - 0.25, 0.75), 0.02, ROSU, laturi=4))
-	piese.append(os_intre("Cadru bicicleta", (-5.0, YG - 0.25, 0.35), (-5.3, YG - 0.25, 0.75), 0.02, ROSU, laturi=4))
-	piese.append(os_intre("Cadru bicicleta", (-5.3, YG - 0.25, 0.75), (-5.75, YG - 0.25, 0.8), 0.02, ROSU, laturi=4))
-	piese.append(cub("Sa bicicleta", (0.2, 0.08, 0.04), (-5.75, YG - 0.25, 0.82), NEGRU))
+	# o bicicletă veche pe cric, lângă gard, pe dinafară (owner, 08.10: cea veche era „făcută prost”)
+	_bicicleta(piese, col, -5.5, YG - 0.55, 0.0)
 	strange()
 
 	# --- vecinii: în stânga „GENERAL STORE” (magazinul mixt al satului), în dreapta o casă
@@ -1113,13 +1207,23 @@ def curte(cale):
 	piese.append(cub("Usa magazin", (1.0, 0.04, 2.1), (-17.2, -5.02, 1.05), PETROL_DESCHIS))
 	for k in range(3):
 		piese.append(cub("Afis vitrina", (0.4, 0.01, 0.5), (-21.6 + k * 0.7, -5.05, 1.5), r.choice((ROSU, AUR, ALB))))
-	# lăzile de bere și scaunele de plastic din fața magazinului
-	for k in range(4):
-		piese.append(cub("Lada bere", (0.4, 0.3, 0.3), (-15.4 + (k % 2) * 0.45, -5.9 - (k // 2) * 0.35, 0.15 + 0.3 * (k == 3)),
-			r.choice((ROSU, AUR))))
+	# lăzile de bere (trei pe jos, una pusă peste prima, cu sticlele în ele) și scaunele de plastic din fața magazinului;
+	# owner, 08.10: scaunele „pluteau” (n-aveau picioare), a patra ladă stătea în aer și lăzile n-aveau coliziune
+	for (lx, ly, lz, rl) in ((-15.4, -5.9, 0.0, 0.0), (-14.95, -5.9, 0.0, 0.05), (-15.4, -6.27, 0.0, -0.04),
+			(-15.4, -5.9, 0.3, 0.12)):
+		cul = r.choice((ROSU, AUR))
+		s = [cub("Lada bere", (0.4, 0.3, 0.26), (0, 0, lz + 0.13), cul),
+			cub("Buza lada", (0.42, 0.32, 0.04), (0, 0, lz + 0.28), cul)]
+		for i in range(4):
+			for j in range(3):
+				s.append(cilindru("Sticla lada", 0.025, 0.025, 0.06, (-0.15 + i * 0.1, -0.09 + j * 0.09, lz + 0.31), BRONZ,
+					laturi=6))
+		_roteste_muta(s, rl, (lx, ly))
+		piese += s
+	_cutie_coliziune(col, (0.85, 0.7, 0.3), (-15.18, -6.08, 0.15))
+	_cutie_coliziune(col, (0.45, 0.35, 0.65), (-15.4, -5.9, 0.33))
 	for k in range(2):
-		piese.append(cub("Scaun plastic", (0.45, 0.45, 0.05), (-18.6 + k * 0.9, -6.0, 0.45), ALB))
-		piese.append(cub("Spatar plastic", (0.45, 0.05, 0.4), (-18.6 + k * 0.9, -5.78, 0.7), ALB))
+		_scaun_plastic(piese, col, -18.6 + k * 0.9, -6.1, (k - 0.5) * 0.3)
 	_cutie_coliziune(col, (sx1 - sx0, 8.0, 3.2), ((sx0 + sx1) / 2, -1.0, 1.6))
 	_casa_sat(piese, col, 19.0, 2.0, 7.0, 6.0, TEAL_DESCHIS, METAL, r, spre=-1)
 	_gard_lemn(piese, 13.5, 26.0, YG, r)

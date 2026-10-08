@@ -6,8 +6,8 @@ extends Node3D
 ##  - ridicat / lăsat jos (cât e deschis un meniu, o scenă din cod sau ecranul negru), sunetul de scos arma;
 ##  - balansul: rămâne puțin în urma privirii când întorci capul și se leagănă când mergi;
 ##  - `anim_poz` / `anim_rot`: cât o mișcă animația acum (reculul, pompa, reîncărcarea), peste poza de repaus;
-##  - ajutoare: `_glont()` (o rază ca glonțul pistolului: `impuscat(directie, punct)`, cadavrele împinse, praf și o gaură
-##    în perete), `_fulger()` (flacăra de la gura țevii), `_fum_gura()`, `_tub()` (tubul gol care sare), `_recul_cap()`;
+##  - ajutoare: `_glont()` (o rază ca glonțul pistolului: `impuscat(directie, punct)`, cadavrele împinse, praf
+##    pe perete), `_fulger()` (flacăra de la gura țevii), `_fum_gura()`, `_tub()` (tubul gol care sare), `_recul_cap()`;
 ##  - `_anunta()`: cei din grupul "aude_impuscaturi" află că s-a tras (deocamdată nu ascultă nimeni).
 ## Modelul e un .glb din tools/blender/magazin_arme.py (originea în mâner, țeava spre -Z).
 
@@ -15,11 +15,8 @@ const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
 const SUNET_SCOASA := preload("res://sunete/arma_scoasa.ogg")
 const SUNET_TUB := preload("res://sunete/tub_cazut.ogg")
-## Câte găuri de glonț rămân pe pereți (cele mai vechi dispar).
-const MAX_GAURI := 60
 ## O scenă din cod o poate ține la vedere cât e Stare.meniu_deschis (ex. arma scoasă în fața lui Head Witch, sefa_apus.gd).
 static var in_scena := false
-static var _gauri: Array[Node3D] = []
 static var _textura_cerc: Texture2D
 
 
@@ -169,7 +166,7 @@ func _piesa(nume: String) -> Node3D:
 # ---------------------------------------------------------------- ajutoare pentru tras
 
 ## Un glonț pe `directie` (din ochi): cine are `impuscat` îl primește (o singură dată pe foc: `deja`), un cadavru e
-## împins, iar în rest rămâne praf și o gaură. Întoarce ce a lovit (gol = nimic).
+## împins, iar în rest rămâne praf (fără găuri: owner, 08.10). Întoarce ce a lovit (gol = nimic).
 func _glont(directie: Vector3, bataie: float, impuls: float, deja: Array = []) -> Dictionary:
 	var de_la := _camera.global_position
 	var cerere := PhysicsRayQueryParameters3D.create(de_la, de_la + directie * bataie, 1 | Ragdoll.STRAT)
@@ -191,7 +188,6 @@ func _glont(directie: Vector3, bataie: float, impuls: float, deja: Array = []) -
 		(tinta as RigidBody3D).apply_impulse(directie * impuls, lovit.position - (tinta as RigidBody3D).global_position)
 	else:
 		_praf(lovit.position, lovit.normal)
-		_gaura(lovit.position, lovit.normal)
 	return lovit
 
 
@@ -334,28 +330,6 @@ func _praf(punct: Vector3, normala: Vector3) -> void:
 	p.global_position = punct + normala * 0.03
 	p.emitting = true
 	get_tree().create_timer(1.2).timeout.connect(p.queue_free)
-
-
-## O gaură de glonț pe perete (pătrățel închis, lipit pe suprafață).
-func _gaura(punct: Vector3, normala: Vector3) -> void:
-	var g := MeshInstance3D.new()
-	var q := QuadMesh.new()
-	q.size = Vector2(0.035, 0.035)
-	g.mesh = q
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color("262d2f")
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	g.material_override = mat
-	g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	get_tree().current_scene.add_child(g)
-	var sus := Vector3.UP if absf(normala.y) < 0.9 else Vector3.FORWARD
-	g.look_at_from_position(punct + normala * 0.006, punct - normala, sus)
-	g.rotation.z = randf() * TAU
-	_gauri.append(g)
-	while _gauri.size() > MAX_GAURI:
-		var veche: Node3D = _gauri.pop_front()
-		if is_instance_valid(veche):
-			veche.queue_free()
 
 
 ## Particule-pătrățele întoarse spre cameră (fum, praf, scântei), oprite: le pornește cine le folosește.

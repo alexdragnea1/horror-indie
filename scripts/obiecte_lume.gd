@@ -93,6 +93,9 @@ const MODELE := {
 	},
 }
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
+## De la ce sumă (cenți) cash-ul aruncat e un teanc legat (teanc_bani.tscn, ca la primar), nu o bancnotă.
+const TEANC_DE_LA := 10000
+const SCENA_TEANC := "res://scenes/teanc_bani.tscn"
 const MATERIAL := preload("res://shaders/material_model.tres")
 
 
@@ -144,6 +147,13 @@ static func pune_jos(parinte: Node, cheie: String, a: Dictionary, impuls := Vect
 	var marime: float = MODELE[id].get("marime", 1.0)
 	m.scale = Vector3.ONE * marime
 	m.position.y = MODELE[id].ridicare * marime
+	# multe parale (ex. banii de la primar) = un teanc legat, cu atât mai gros cu cât e suma mai mare (owner, 08.10: o
+	# singură bancnotă pe jos nu se vedea)
+	if id == Bani.ID and obiect.valoare >= TEANC_DE_LA:
+		m.free()
+		m = (load(SCENA_TEANC) as PackedScene).instantiate() as Node3D
+		var grosime := clampf(0.3 + obiect.valoare / 100.0 / 1500.0, 0.3, 3.5)
+		m.scale = Vector3(marime, marime * grosime, marime)
 	obiect.add_child(m)
 	# o cutie de prins cu privirea, puțin mai mare decât obiectul (nu te împiedici de ea: e pe alt strat)
 	var cutie := ColiziuneModel.cutie_nod(obiect)
