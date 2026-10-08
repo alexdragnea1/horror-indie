@@ -124,6 +124,9 @@ size = Vector3(0.5, 8, 22)
 [sub_resource type="BoxShape3D" id="BoxShape3D_ybnhu"]
 size = Vector3(48, 8, 0.5)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_spate"]
+size = Vector3(4, 8, 0.5)
+
 [node name="Casino" type="Node3D" unique_id=523571760]
 
 [node name="Mediu" type="WorldEnvironment" parent="." unique_id=1853368085]
@@ -822,6 +825,14 @@ shape = SubResource("BoxShape3D_ufvoe")
 [node name="Fata" type="CollisionShape3D" parent="Limite" unique_id=1668467886]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 12.6)
 shape = SubResource("BoxShape3D_ybnhu")
+
+[node name="SpateStanga" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 4, -0.4)
+shape = SubResource("BoxShape3D_spate")
+
+[node name="SpateDreapta" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.6, 4, -0.4)
+shape = SubResource("BoxShape3D_spate")
 
 [node name="Jucator" type="CharacterBody3D" parent="." unique_id=1246672742 groups=["jucator"] instance=ExtResource("52_7rfn0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.17, 2.9)

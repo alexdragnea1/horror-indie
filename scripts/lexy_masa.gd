@@ -8,7 +8,7 @@ extends Interactabil
 ##     hanoracului o bancnotă de 5 dolari și ți-o întinde; o iei („$5” în inventar), ea lasă mâinile jos, pune felia
 ##     în cutie și nu mai mănâncă, doar se uită la tine (`marcaj_jaf`);
 ##   - `optiune_plecare` („Leave Lexy's House”): `replici_plecare`, sau `replici_plecare_dupa_jaf` după jaf.
-## După jaf o poți împușca: cade de pe scaun ca un ragdoll (`marcaj_moarta`), iar apoi o iei în inventar cu E
+## După jaf (sau după împrumut, în ziua în oraș) o poți împușca: cade de pe scaun ca un ragdoll (`marcaj_moarta`), iar apoi o iei în inventar cu E
 ## („Lexy”, `ID_CADAVRU`, `marcaj_luata`). O poți arunca peste gardul cimitirului (gard_cimitir.gd).
 ## Replicile sunt ale owner-ului: nu le corecta.
 
@@ -273,9 +273,10 @@ func _tween() -> Tween:
 
 # ---------------------------------------------------------------- moartea
 
-## O lovește un glonț (pistol.gd). Moare doar după ce ai jefuit-o.
+## O lovește un glonț (orice armă). Moare doar după ce ai jefuit-o sau după ce ți-a împrumutat banii (owner, 08.10).
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
-	if not lexy.mort and Stare.e_marcat(marcaj_jaf) and _sta_pe_scaun():
+	var poate := Stare.e_marcat(marcaj_jaf) or Stare.e_marcat(marcaj_imprumut)
+	if not lexy.mort and poate and _sta_pe_scaun():
 		_moare(directie, forta_glont)
 		pleaca(marcaj_plecare, sarcina_plecare)
 
