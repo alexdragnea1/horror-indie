@@ -12,7 +12,7 @@ extends Node3D
 ##     globul mare care te urmărește și te dărâmă, iar dacă stai lângă el, unda de șoc (te aruncă), apoi se teleportează.
 ##     Sub jumătate de viață (`faza a doua`) se înfurie: cerul se înroșește, atacă mai des și mai mult.
 ##     Viața ta: `viata_jucator` (doar în lupta asta). La 0: „YOU DIED”, apoi lupta o ia de la capăt de la ușă.
-##  3. Finalul (când „îl omori”, `marcaj_invins`): cade în genunchi, „GREAT ENEMY FELLED”, Head Witch se ridică, vine la
+##  3. Finalul (când „îl omori”, `marcaj_invins`): cade în genunchi, „WARLOCK DEFEATED”, Head Witch se ridică, vine la
 ##     el și îi absoarbe puterile (raza roșie, el se ridică în aer și se face cenușă), vine la tine, `replici_final`
 ##     (owner), apoi dispare (sefa_motel.gd, `marcaj_plecata`). → `sarcina_dupa`.
 ## La Continue: în lupta începută o iei de la ușă; după `marcaj_invins`, finalul de la ridicarea ei.
@@ -1020,7 +1020,7 @@ func _finalul(din_lupta: bool) -> void:
 		Zguduire.porneste(_camera_jucator, 0.02, 0.3)
 		Sunet.reda(SUNET_DOBORAT, Sunet.VOLUM_EFECTE)
 		_bara.ascunde(0.6)
-		await _bara.mesaj("GREAT ENEMY FELLED", BaraBoss.AURIU, 2.4)
+		await _bara.mesaj("WARLOCK DEFEATED", BaraBoss.AURIU, 2.4)
 		_muzica.stop()
 	else:
 		await c.priveste(_piept_warlock(), 0.01)

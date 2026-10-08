@@ -5,7 +5,7 @@ extends CanvasLayer
 ##    scurge după o clipă; în dreapta, deasupra barei, damage-ul adunat din loviturile de acum (dispare dacă nu mai dai);
 ##  - sus în stânga: viața ta (roșie, la fel cu urma aurie), doar cât ține lupta;
 ##  - pe tot ecranul, o clipă roșu când te lovește ceva (`ranit`);
-##  - mesajele mari pe o bandă neagră: „YOU DIED” (roșu), „GREAT ENEMY FELLED” (auriu);
+##  - mesajele mari pe o bandă neagră: „YOU DIED” (roșu), „WARLOCK DEFEATED” (auriu);
 ##  - indicația cu tasta scutului și cât timp mai ai (`indicatie_scut`).
 ## Culorile sunt din paleta jocului.
 
@@ -242,7 +242,7 @@ func ranit(putere := 1.0) -> void:
 	create_tween().tween_property(_rosu, "color:a", 0.0, 0.5).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 
 
-## Un mesaj mare pe o bandă neagră („YOU DIED”, „GREAT ENEMY FELLED”): apare încet, crește puțin, stă `durata` s și
+## Un mesaj mare pe o bandă neagră („YOU DIED”, „WARLOCK DEFEATED”): apare încet, crește puțin, stă `durata` s și
 ## se stinge. Se poate aștepta (await).
 func mesaj(text: String, culoare: Color, durata: float) -> void:
 	_mesaj.text = text

@@ -46,6 +46,14 @@
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="48_lo"]
 [ext_resource type="Script" path="res://scripts/interactabil.gd" id="49_in"]
 [ext_resource type="Script" path="res://scripts/lupta_warlock.gd" id="50_lw"]
+[ext_resource type="PackedScene" path="res://scenes/statie_old_town.tscn" id="51_so"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="52_ab"]
+[ext_resource type="Script" path="res://scripts/autobuz.gd" id="53_ag"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="54_ud"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="55_ui"]
+[ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="56_sa"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="57_fr"]
+[ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="58_or"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("24_ca")
@@ -98,6 +106,9 @@ size = Vector3(70, 12, 0.5)
 
 [sub_resource type="BoxShape3D" id="forma_usa_122"]
 size = Vector3(1.0, 2.1, 0.12)
+
+[sub_resource type="BoxShape3D" id="forma_orar"]
+size = Vector3(0.1, 0.45, 0.6)
 
 [node name="Motel" type="Node3D"]
 
@@ -338,6 +349,7 @@ script = ExtResource("14_us")
 replici_fara_marcaj = PackedStringArray()
 sunet_deschidere = ExtResource("16_cu")
 sunet_inchidere = ExtResource("17_ui")
+unghi_deschidere = 88.0
 indiciu = "[E] Open"
 replici = PackedStringArray()
 
@@ -425,6 +437,42 @@ script = ExtResource("50_lw")
 usa = NodePath("../Usa122")
 sefa = NodePath("../HeadWitchMotel")
 mediu = NodePath("../Mediu")
+sarcina_dupa = "Check the bus schedule."
+
+[node name="Statie" type="StaticBody3D" parent="." instance=ExtResource("51_so")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 16.3)
+
+[node name="Autobuz" type="AnimatableBody3D" parent="." instance=ExtResource("52_ab")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 200, 0, 19.85)
+sync_to_physics = false
+script = ExtResource("53_ag")
+sunet_usi_deschise = ExtResource("54_ud")
+sunet_usi_inchise = ExtResource("55_ui")
+
+[node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("56_sa")
+autobuz = NodePath("../Autobuz")
+marcaj = ""
+marcaj_oprire = ""
+intarziere = 4.0
+loc_oprire = Vector3(-4, 0, 19.85)
+marcaj_urcare = ""
+sunete_urcare = Array[AudioStream]([ExtResource("30_b1"), ExtResource("32_b3"), ExtResource("30_b1"), ExtResource("55_ui"), ExtResource("57_fr")])
+sunet_frana = ExtResource("57_fr")
+
+[node name="OrarOldTown" type="StaticBody3D" parent="." node_paths=PackedStringArray("sosire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.58, 1.5, 16.75)
+script = ExtResource("58_or")
+marcaj_necesar = "warlock_absorbit"
+sosire = NodePath("../SosireOras")
+optiuni = PackedStringArray("Home")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn")
+titluri = PackedStringArray("Block M7, Entrance B
+9:14 PM")
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="OrarOldTown"]
+shape = SubResource("forma_orar")
 
 [node name="Jucator" type="CharacterBody3D" parent="." groups=["jucator"] instance=ExtResource("1_jt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.05, 2.5)

@@ -359,7 +359,7 @@ def statie(cale, nume, fisier):
 	bancă de lemn, afiș cu reclamă, orarul, tomberonaș și stâlpul cu plăcuța liniei 13.
 	Lată pe X (3 m), deschisă spre -Y (spre stradă). Geamurile sunt separate (Geam*), cum sunt la autobuz.
 	`nume` = ce scrie pe frontonul din față, numele stației (NORD la bloc, PRUNDU la laundromat, FREEDOM la
-	Gun Store, BASCOV la Lexy), exportată în `fisier` (statie_nord.glb etc.)."""
+	Gun Store, BASCOV la Lexy, OLD TOWN la motel), exportată în `fisier` (statie_nord.glb etc.)."""
 	curata()
 	r = random.Random(7)
 	piese = []
@@ -630,6 +630,7 @@ def toate(cale):
 	statie(cale, "PRUNDU", "statie_prundu.glb")
 	statie(cale, "FREEDOM", "statie_freedom.glb")
 	statie(cale, "BASCOV", "statie_bascov.glb")
+	statie(cale, "OLD TOWN", "statie_old_town.glb")
 	sofer(cale)
 	creatura(cale)
 	brad(cale, "brad_1", 4, 9.0, 6)

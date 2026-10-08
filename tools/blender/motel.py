@@ -553,7 +553,9 @@ def receptie(cale):
 	_cutie_coliziune(col, (OG, OY1 - OY0, OT), (OX1 - OG / 2, (OY0 + OY1) / 2, OT / 2))
 	_cutie_coliziune(col, (OX1 - OX0, OG, OT), ((OX0 + OX1) / 2, OY1 - OG / 2, OT / 2))
 	# lambriul de jos și pata de apă care curge din tavan pe perete
-	piese.append(cub("Lambriu", (ix1 - ix0, 0.02, 0.9), ((ix0 + ix1) / 2, iy0 + 0.01, FL + 0.45), LEMN))
+	# (pe peretele din față doar de o parte și de alta a ușii: dintr-o bucată trecea prin golul ușii)
+	for (a, b) in ((ix0, OUSA[0] - 0.02), (OUSA[1] + 0.02, ix1)):
+		piese.append(cub("Lambriu", (b - a, 0.02, 0.9), ((a + b) / 2, iy0 + 0.01, FL + 0.45), LEMN))
 	piese.append(cub("Lambriu", (0.02, TY0 - iy0 - 0.04, 0.9), (ix0 + 0.01, (iy0 + TY0) / 2 + 0.02, FL + 0.45), LEMN))
 	piese.append(cub("Lambriu", (0.02, TY0 - iy0 - 0.04, 0.9), (ix1 - 0.01, (iy0 + TY0) / 2 + 0.02, FL + 0.45), LEMN))
 	piese.append(cub("Pata apa perete", (0.02, 1.1, 1.4), (ix1 - 0.012, 9.4, OH - 0.7), TENCUIALA_PATA))
@@ -807,10 +809,16 @@ def parcare(cale):
 				piese.append(cub("Iarba uscata", (w, h, 0.02), (cx + 5 + r.uniform(-(10 - w) / 2, (10 - w) / 2),
 					cy + 5 + r.uniform(-(10 - h) / 2, (10 - h) / 2), -0.045), r.choice((MASLINIU, VERDE, BRONZ, LEMN))))
 	# --- asfaltul parcării, în jurul curții piscinei
-	ax0, ax1, ay0, ay1 = -32.0, 24.0, SY1, YP
+	# (până sub zidurile invizibile din motel.tscn, x = -33 și 25, z = -18,5: altfel rămâneau fâșii fără podea prin care cădeai)
+	ax0, ax1, ay0, ay1, ay_spate = -34.0, 26.0, SY1, YP, 19.5
 	for (a, b, c, d) in ((ax0, GX0, ay0, ay1), (GX1, ax1, ay0, ay1), (GX0, GX1, ay0, GY0), (GX0, GX1, GY1, ay1)):
 		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
 	_cutie_coliziune(col, (ax1 - ax0, ay1 - ay0, 0.2), ((ax0 + ax1) / 2, (ay0 + ay1) / 2, -0.1))
+	# asfaltul din spatele clădirilor: lângă scară, în spatele aripii, în spatele recepției (la tomberon) și în dreapta ei
+	for (a, b, c, d) in ((ax0, XV0 - 6.6, YP, YF), (ax0, XV0, YF, ay_spate), (XV0, XB, YS, ay_spate), (XB, OX1, OY1, ay_spate),
+			(OX1, ax1, YP, ay_spate)):
+		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
+	_cutie_coliziune(col, (ax1 - ax0, ay_spate - YP, 0.2), ((ax0 + ax1) / 2, (YP + ay_spate) / 2, -0.1))
 	# Tot ce e desenat pe asfalt (liniile, peticele, gropile, petele de ulei, crăpăturile) stă pe UN strat, cu fața de sus
 	# la `PE_ASFALT`, și nimic nu se suprapune (`_loc_liber`): așa nu se bat pe ecran nici de sus, de pe mătură.
 	PE_ASFALT = 0.015

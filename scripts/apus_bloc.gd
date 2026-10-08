@@ -10,6 +10,8 @@ extends Node
 const CER := preload("res://shaders/cer_apus.gdshader")
 
 @export var marcaj_apus := "a_primit_mesajul_sefei"
+## După lupta cu Warlock-ul (te întorci cu autobuzul de la motel, la 9:14 PM) e iar noapte: curtea rămâne ca în scenă.
+@export var marcaj_noapte := "warlock_absorbit"
 ## Prima sosire: după titlu primești `sarcina_sosire` (o dată, `marcaj_sosit`), dacă n-ai învățat încă scutul.
 @export var marcaj_sosit := "a_ajuns_la_bloc_la_apus"
 @export var sarcina_sosire := "Talk to the Head Witch."
@@ -49,14 +51,17 @@ func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
 	if jucator == null or not Stare.e_marcat(marcaj_apus):
 		return
-	_fa_apus()
+	var noapte := Stare.e_marcat(marcaj_noapte)
+	if not noapte:
+		_fa_apus()
 	await get_tree().process_frame
+	# (și noaptea: ZiBloc nu mai pune jucătorul la scară de când a fost apusul)
 	if ZiBloc.din_casa:
 		ZiBloc.din_casa = false
 		jucator.global_position = loc_iesire
 		jucator.rotation.y = unghi_iesire
 		jucator.get_node("Cap").rotation.x = 0.0
-	if not Stare.e_marcat(marcaj_sosit):
+	if not noapte and not Stare.e_marcat(marcaj_sosit):
 		Stare.marcheaza(marcaj_sosit)
 		while Tranzitie.activa:
 			await get_tree().process_frame
