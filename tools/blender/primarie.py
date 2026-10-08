@@ -21,7 +21,7 @@ import bpy
 import bmesh
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, _coloreaza  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, _coloreaza, desparte_fete  # noqa: E402
 from lexy import perete, prisma  # noqa: E402
 from casino import _text, _text_o_fata, _tor, _cutie_coliziune  # noqa: E402
 from coven import _parinte  # noqa: E402
@@ -521,6 +521,10 @@ def cladire(cale):
 	uneste(geamuri, "Geamuri")
 	uneste(lumini, "Lumini")
 	uneste(col, "Coliziune")
+	# tocurile ferestrelor, ramele, plintele, brâiele lipite de ziduri: se văd și de pe stradă, deci distanța implicită
+	desparte_fete(fixe=("Zid", "Vopsea ulei", "Lambriu hol", "Perete hol", "Perete oval", "Aripa", "Placa parter",
+		"Placa etaj", "Tavan etaj", "Linoleum", "Parchet", "Mocheta hol", "Treapta", "Treapta scara", "Tabla", "Fronton",
+		"Fronton aripa", "Soclu"))
 	exporta(os.path.join(cale, "primarie_cladire.glb"))
 
 
@@ -548,11 +552,11 @@ def _canapea(piese, col, cx, cy, rot, lung=2.0, cul=ALB, dungi=GRI_ALBASTRU, z0=
 	s.append(cub("Baza canapea", (lung, 0.85, 0.24), (0, 0, z0 + 0.22), cul))
 	for k in range(3):
 		s.append(cub("Perna canapea", (lung / 3 - 0.03, 0.62, 0.14), (-lung / 3 + k * lung / 3, -0.08, z0 + 0.41), cul))
-	s.append(cub("Spatar canapea", (lung, 0.22, 0.5), (0, 0.32, z0 + 0.6), cul))
+	s.append(cub("Spatar canapea", (lung, 0.21, 0.5), (0, 0.31, z0 + 0.6), cul))
 	for semn in (-1, 1):
-		s.append(cub("Brat canapea", (0.2, 0.85, 0.36), (semn * (lung / 2 + 0.06), 0, z0 + 0.42), cul))
+		s.append(cub("Brat canapea", (0.2, 0.87, 0.36), (semn * (lung / 2 + 0.06), 0, z0 + 0.42), cul))
 	for k in range(6):
-		s.append(cub("Dunga canapea", (0.04, 0.012, 0.42), (-lung / 2 + 0.2 + k * (lung - 0.4) / 5, 0.208, z0 + 0.62), dungi))
+		s.append(cub("Dunga canapea", (0.04, 0.012, 0.42), (-lung / 2 + 0.2 + k * (lung - 0.4) / 5, 0.195, z0 + 0.62), dungi))
 	for (dx, dy) in ((-lung / 2, -0.35), (lung / 2, -0.35), (-lung / 2, 0.35), (lung / 2, 0.35)):
 		s.append(cub("Picior canapea", (0.06, 0.06, 0.1), (dx, dy, z0 + 0.05), LEMN_INCHIS))
 	_roteste_muta(s, rot, (cx, cy))
@@ -572,9 +576,10 @@ def _fotoliu(piese, col, cx, cy, rot, cul=AUR, z0=FL2):
 	s = [
 		cub("Baza fotoliu", (0.8, 0.8, 0.26), (0, 0, z0 + 0.23), cul),
 		cub("Perna fotoliu", (0.56, 0.6, 0.12), (0, -0.06, z0 + 0.42), cul),
-		cub("Spatar fotoliu", (0.8, 0.2, 0.62), (0, 0.3, z0 + 0.62), cul),
-		cub("Brat fotoliu", (0.14, 0.8, 0.32), (-0.33, 0, z0 + 0.48), cul),
-		cub("Brat fotoliu", (0.14, 0.8, 0.32), (0.33, 0, z0 + 0.48), cul),
+		# spătarul între brațe și brațele cu 1 cm peste bază, ca fețele să nu stea în același plan (pâlpâiau)
+		cub("Spatar fotoliu", (0.78, 0.2, 0.62), (0, 0.29, z0 + 0.62), cul),
+		cub("Brat fotoliu", (0.16, 0.82, 0.32), (-0.33, 0, z0 + 0.48), cul),
+		cub("Brat fotoliu", (0.16, 0.82, 0.32), (0.33, 0, z0 + 0.48), cul),
 	]
 	for (dx, dy) in ((-0.34, -0.34), (0.34, -0.34), (-0.34, 0.34), (0.34, 0.34)):
 		s.append(cub("Picior fotoliu", (0.06, 0.06, 0.1), (dx, dy, z0 + 0.05), LEMN_INCHIS))
@@ -625,11 +630,12 @@ def interior(cale):
 		LEMN_DESCHIS))
 	piese.append(cub("Plinta tejghea", (XI - XT, 0.03, 0.1), ((XT + XI) / 2, GY0 - 0.015, FL + 0.05), NEGRU))
 	_cutie_coliziune(col, (XI - XT, GY1 - GY0, TZ - FL), ((XT + XI) / 2, (GY0 + GY1) / 2, (FL + TZ) / 2))
-	# geamul: rama de aluminiu, sticla în bucăți, golul ghișeului jos
+	# geamul: rama de aluminiu, sticla în bucăți, golul ghișeului jos; stâlpii sunt mai subțiri decât barele (3 vs 5 cm),
+	# ca fețele lor să nu stea în același plan acolo unde se întâlnesc (pâlpâiau)
 	ZG1 = TZ + 0.95
 	for x in (GX0 + 0.02, GHISEU[0], GHISEU[1], XI - 0.02):
-		piese.append(cub("Rama geam ghiseu", (0.04, 0.05, ZG1 - TZ), (x, GG, (TZ + ZG1) / 2), CROM))
-	piese.append(cub("Rama geam ghiseu", (XI - GX0, 0.05, 0.04), ((GX0 + XI) / 2, GG, ZG1), CROM))
+		piese.append(cub("Rama geam ghiseu", (0.04, 0.03, ZG1 - TZ), (x, GG, (TZ + ZG1) / 2), CROM))
+	piese.append(cub("Rama geam ghiseu", (XI - GX0 + 0.02, 0.05, 0.04), ((GX0 + XI) / 2, GG, ZG1), CROM))
 	piese.append(cub("Rama geam ghiseu", (GHISEU[1] - GHISEU[0], 0.05, 0.04), ((GHISEU[0] + GHISEU[1]) / 2, GG, TZ + 0.3), CROM))
 	for (a, b, z0) in ((GX0 + 0.04, GHISEU[0] - 0.02, TZ), (GHISEU[1] + 0.02, XI - 0.04, TZ), (GHISEU[0] + 0.02,
 			GHISEU[1] - 0.02, TZ + 0.32)):
@@ -643,7 +649,7 @@ def interior(cale):
 	piese.append(cub("Taviță ghiseu", (0.5, 0.25, 0.03), (3.0, GG - 0.05, TZ + 0.015), METAL))
 	# peretele de lemn și sticlă din stânga (închide spatele ghișeului până la scară)
 	piese.append(cub("Perete ghiseu", (0.06, SY0 - GY1 - 0.02, TZ - FL), (GX0, (GY1 + 0.02 + SY0) / 2, (FL + TZ) / 2), LEMN))
-	piese.append(cub("Rama geam ghiseu", (0.05, SY0 - GY0, 0.04), (GX0, (GY0 + SY0) / 2, ZG1), CROM))
+	piese.append(cub("Rama geam ghiseu", (0.04, SY0 - GY0, 0.03), (GX0, (GY0 + SY0) / 2, ZG1 - 0.003), CROM))
 	geamuri.append(cub("Geam ghiseu", (0.012, SY0 - GY1 - 0.04, ZG1 - TZ - 0.02), (GX0, (GY1 + SY0) / 2, (TZ + ZG1) / 2), GEAM))
 	_cutie_coliziune(col, (0.08, SY0 - GY0, ZG1 - FL), (GX0, (GY0 + SY0) / 2, (FL + ZG1) / 2))
 	# în spatele ghișeului: scaunul înalt al funcționarei, biroul cu monitorul vechi, dulapul cu dosare, ceainicul
@@ -797,7 +803,7 @@ def interior(cale):
 			segmente=6, inele=4))
 	piese.append(cub("Revista", (0.22, 0.3, 0.012), (0.08, OCY + 0.9, z + 0.466), ROSU, rot=(0, 0, 0.3)))
 	_cutie_coliziune(col, (0.6, 1.1, 0.46), (0, OCY + 0.6, z + 0.23))
-	for (sx, sy) in ((-1.55, OCY - 0.65), (-1.55, OCY + 1.85), (1.55, OCY - 0.65), (1.55, OCY + 1.85)):
+	for (sx, sy) in ((-1.55, OCY - 0.77), (-1.55, OCY + 1.97), (1.55, OCY - 0.77), (1.55, OCY + 1.97)):
 		piese.append(cub("Masuta lampa", (0.45, 0.45, 0.6), (sx, sy, z + 0.3), LEMN))
 		piese.append(cilindru("Picior veioza", 0.06, 0.05, 0.35, (sx, sy, z + 0.78), AUR, laturi=8))
 		piese.append(cilindru("Abajur veioza", 0.17, 0.12, 0.22, (sx, sy, z + 1.06), ALB, laturi=10))
@@ -897,6 +903,9 @@ def interior(cale):
 	uneste(geamuri, "Geamuri")
 	uneste(lumini, "Lumini")
 	uneste(col, "Coliziune")
+	# înăuntru te uiți de aproape: ajung 10 mm (ca la recepția motelului)
+	desparte_fete(distanta=0.01, fixe=("Tejghea", "Blat tejghea", "Perete ghiseu", "Covor margine", "Covor",
+		"Baza canapea", "Spatar canapea", "Baza fotoliu", "Semineu", "Corp birou", "Piele blat", "Avizier", "Pluta avizier"))
 	exporta(os.path.join(cale, "primarie_interior.glb"))
 
 
