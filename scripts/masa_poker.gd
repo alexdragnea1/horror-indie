@@ -94,6 +94,15 @@ var _eticheta_bani: Label
 var _eticheta_mana: Label
 var _carti_hud: Array[TextureRect] = []
 var _comune_hud: Array[TextureRect] = []
+## Tot ce apare când e rândul tău: `_rand_marire` (Min / 1/2 Pot / Pot + slider-ul sumei) deasupra lui `_butoane`.
+var _panou_tu: VBoxContainer
+var _rand_marire: HBoxContainer
+var _b_rapide: Array[Button] = []
+## Slider-ul sumei: 0..PASI_GLISOR, pătratic (stânga = sume mici, precise; spre dreapta urcă repede până la all in).
+var _glisor_marire: HSlider
+const PASI_GLISOR := 200.0
+## Cât timp codul mută slider-ul (după +/- sau Min/Pot), `_glisor_mutat` nu rescrie suma.
+var _glisor_din_cod := false
 var _butoane: HBoxContainer
 var _b_fold: Button
 var _b_call: Button
@@ -459,14 +468,16 @@ func _alege_tu(de_dat: int) -> Array:
 	_b_minus.disabled = not poate_mari
 	_b_plus.disabled = not poate_mari
 	_b_allin.disabled = _bani[0] <= 0
+	# slider-ul are rost doar dacă ai între ce alege (altfel minimul e chiar all in)
+	_rand_marire.visible = poate_mari and maxim > minim
 	_actualizeaza_marire()
 	var r: Array = []
 	while true:
 		_b_rig.visible = _faza == RIVER and not _rig_folosit
-		_butoane.show()
+		_panou_tu.show()
 		_mesaj("Your turn." if de_dat <= 0 else "Your turn. %s to call." % Jetoane.bani(mini(de_dat, _bani[0])))
 		r = await _ales
-		_butoane.hide()
+		_panou_tu.hide()
 		if r[0] != "rig":
 			break
 		# magia, apoi tot rândul tău (cu mâna nouă)
@@ -488,16 +499,52 @@ func _apasat(tip: String) -> void:
 	_ales.emit(tip, _suma_marire)
 
 
-func _schimba_marirea(semn: int) -> void:
+## Cât poți mări cel puțin / cel mult acum (sumele sunt „până la”, ca pe butonul Raise).
+func _limite_marire() -> Vector2i:
 	var maxim := _pariu[0] + _bani[0]
-	var minim := mini(_pariu_curent + maxi(_ultima_marire, big_blind), maxim)
+	return Vector2i(mini(_pariu_curent + maxi(_ultima_marire, big_blind), maxim), maxim)
+
+
+func _schimba_marirea(semn: int) -> void:
+	var l := _limite_marire()
 	var pas := big_blind if _suma_marire < big_blind * 10 else big_blind * 5
-	_suma_marire = clampi(_suma_marire + semn * pas, minim, maxim)
+	_suma_marire = clampi(_suma_marire + semn * pas, l.x, l.y)
 	_actualizeaza_marire()
 
 
-func _actualizeaza_marire() -> void:
-	_b_raise.text = "Raise to %s" % Jetoane.bani(_suma_marire)
+## Min / 1/2 Pot / Pot: mărirea de mărimea pot-ului după ce plătești (regula obișnuită: call + pot).
+func _marire_rapida(parte: float) -> void:
+	var l := _limite_marire()
+	if parte <= 0.0:
+		_suma_marire = l.x
+	else:
+		var de_dat := _pariu_curent - _pariu[0]
+		var suma := _pariu_curent + _rotunjeste(int((_pot_total() + de_dat) * parte))
+		_suma_marire = clampi(suma, l.x, l.y)
+	_actualizeaza_marire()
+
+
+## Slider-ul: pătratic între minim și all in, rotunjit la big blind (capătul din dreapta = exact tot ce ai).
+func _glisor_mutat(valoare: float) -> void:
+	if _glisor_din_cod:
+		return
+	var l := _limite_marire()
+	var t := valoare / PASI_GLISOR
+	if t >= 1.0:
+		_suma_marire = l.y
+	else:
+		var suma := l.x + int((l.y - l.x) * t * t)
+		_suma_marire = clampi(int(round(float(suma) / big_blind)) * big_blind, l.x, l.y)
+	_actualizeaza_marire(false)
+
+
+func _actualizeaza_marire(muta_glisorul := true) -> void:
+	var l := _limite_marire()
+	_b_raise.text = ("All in %s" if _suma_marire >= l.y else "Raise to %s") % Jetoane.bani(_suma_marire)
+	if muta_glisorul and _glisor_marire and l.y > l.x:
+		_glisor_din_cod = true
+		_glisor_marire.value = sqrt(clampf(float(_suma_marire - l.x) / (l.y - l.x), 0.0, 1.0)) * PASI_GLISOR
+		_glisor_din_cod = false
 
 
 ## Sfârșitul mâinii: arătatul cărților (dacă au rămas mai mulți) și împărțirea pot-urilor.
@@ -979,21 +1026,43 @@ func _fa_hud() -> void:
 		rand_carti.add_child(r)
 		_carti_hud.append(r)
 	_eticheta_bani = _eticheta(jos, "", 10, Color("83b3b0"))
-	# jos în dreapta: butoanele
+	# jos în dreapta: butoanele (sus rândul cu slider-ul sumei, jos acțiunile)
+	_panou_tu = VBoxContainer.new()
+	_panou_tu.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_panou_tu.offset_right = -6
+	_panou_tu.offset_bottom = -6
+	_panou_tu.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_panou_tu.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_panou_tu.alignment = BoxContainer.ALIGNMENT_END
+	_panou_tu.add_theme_constant_override("separation", 3)
+	radacina.add_child(_panou_tu)
+	_rand_marire = HBoxContainer.new()
+	_rand_marire.alignment = BoxContainer.ALIGNMENT_END
+	_rand_marire.add_theme_constant_override("separation", 3)
+	_panou_tu.add_child(_rand_marire)
+	for p: Array in [["Min", 0.0], ["1/2 Pot", 0.5], ["Pot", 1.0]]:
+		var b := TemaMeniu.buton(_rand_marire, p[0], _marire_rapida.bind(p[1]))
+		b.custom_minimum_size.x = 46 if p[0] == "1/2 Pot" else 38
+		b.add_theme_font_size_override("font_size", 9)
+		_b_rapide.append(b)
+	_glisor_marire = HSlider.new()
+	_glisor_marire.min_value = 0.0
+	_glisor_marire.max_value = PASI_GLISOR
+	_glisor_marire.step = 1.0
+	_glisor_marire.custom_minimum_size = Vector2(150, 12)
+	_glisor_marire.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_glisor_marire.value_changed.connect(_glisor_mutat)
+	_rand_marire.add_child(_glisor_marire)
 	_butoane = HBoxContainer.new()
-	_butoane.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_butoane.offset_right = -6
-	_butoane.offset_bottom = -6
-	_butoane.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_butoane.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_butoane.alignment = BoxContainer.ALIGNMENT_END
 	_butoane.add_theme_constant_override("separation", 3)
-	radacina.add_child(_butoane)
+	_panou_tu.add_child(_butoane)
 	_b_fold = TemaMeniu.buton(_butoane, "Fold", _apasat.bind("fold"))
 	_b_call = TemaMeniu.buton(_butoane, "Check", _apasat.bind("call"))
 	_b_minus = TemaMeniu.buton(_butoane, "-", _schimba_marirea.bind(-1))
 	_b_minus.custom_minimum_size.x = 16
 	_b_raise = TemaMeniu.buton(_butoane, "Raise", _apasat.bind("raise"))
-	_b_raise.custom_minimum_size.x = 84
+	_b_raise.custom_minimum_size.x = 96
 	_b_plus = TemaMeniu.buton(_butoane, "+", _schimba_marirea.bind(1))
 	_b_plus.custom_minimum_size.x = 16
 	_b_allin = TemaMeniu.buton(_butoane, "All in", _apasat.bind("allin"))
@@ -1001,7 +1070,7 @@ func _fa_hud() -> void:
 	_b_rig.add_theme_color_override("font_color", Color(0.78, 0.6, 1.0))
 	_b_rig.add_theme_color_override("font_hover_color", Color(0.9, 0.78, 1.0))
 	_b_rig.hide()
-	_butoane.hide()
+	_panou_tu.hide()
 	_intre_maini = HBoxContainer.new()
 	_intre_maini.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	_intre_maini.offset_right = -6

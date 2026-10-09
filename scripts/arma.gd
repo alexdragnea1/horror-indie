@@ -39,7 +39,9 @@ static func cerc_moale() -> Texture2D:
 
 
 ## Materialul particulelor: cercul moale, culoarea din particulă, întors spre cameră; `aditiv` = foc (strălucește).
-static func material_particule(aditiv: bool) -> StandardMaterial3D:
+## `stinge_aproape` (metri, 0 = nu): se fac transparente când ajung lângă cameră, ca norii unei explozii din fața ta
+## să nu acopere ecranul cu pătrate pixelate uriașe.
+static func material_particule(aditiv: bool, stinge_aproape := 0.0) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
@@ -50,6 +52,10 @@ static func material_particule(aditiv: bool) -> StandardMaterial3D:
 	if aditiv:
 		mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 		mat.disable_fog = true
+	if stinge_aproape > 0.0:
+		mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_ALPHA
+		mat.distance_fade_min_distance = 0.25
+		mat.distance_fade_max_distance = stinge_aproape
 	return mat
 
 ## Ce id are în inventar și ce model.

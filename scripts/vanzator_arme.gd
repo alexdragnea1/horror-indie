@@ -65,6 +65,9 @@ const JOHNNY := preload("res://scripts/johnny_amanet.gd")
 @export_multiline var replici_dupa_jaf: PackedStringArray = ["You: Thanks bitch."]
 
 var _in_curs := false
+## La jaf: vraja ridicată (de coborât la final) și unde stătea mâna înainte.
+var _vraja_jaf: VrajaFoc
+var _pozitie_vraja := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -98,6 +101,7 @@ func interactioneaza() -> void:
 	butoane.append(optiune_nimic)
 	var i := await Dialog.intreaba(replica_intrebare, butoane)
 	if poate_jefui and i == disponibile.size():
+		_ridica_fireball()
 		await _spune(replici_jaf)
 		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR:
 			await _spune(replici_plin)
@@ -105,6 +109,7 @@ func interactioneaza() -> void:
 			for o: Dictionary in OFERTA:
 				if o.id == id_jaf:
 					await _vinde(o, true)
+		_coboara_fireball()
 	elif i < disponibile.size():
 		var o: Dictionary = disponibile[i]
 		var pret: int = o.pret * 100
@@ -125,6 +130,34 @@ func _poate_jefui() -> bool:
 		if JOHNNY.OFERTA.has(id):
 			return false
 	return true
+
+
+## Jaful îl faci cu Fireball-ul în mână (owner, 09.10): focul se aprinde în palmă (scântei, apoi flacăra) și stă sus
+## toată scena (`demonstratie`, ca la lecția cu Helga: și în dialog, și cu benzile negre), chiar dacă vraja nu e în
+## inventar: dacă e, o ții în mână până iei bazooka; dacă nu, mâinile rămân goale și focul coboară când îți întinde
+## arma (acolo se oprește `demonstratie`). Cât e jaful, mâna stă mai sus și mai spre mijloc (`POZITIE_JAF`), întinsă
+## spre el, deasupra casetei de dialog (jos în dreapta o acoperea caseta).
+const POZITIE_JAF := Vector3(0.13, -0.07, -0.42)
+func _ridica_fireball() -> void:
+	var jucator := get_tree().get_first_node_in_group("jucator")
+	var vraja := jucator.get_node_or_null("Cap/Camera3D/VrajaFoc") as VrajaFoc if jucator else null
+	if vraja == null:
+		return
+	Stare.tine_in_mana(VrajaFoc.ID if Stare.are_obiect(VrajaFoc.ID) else "")
+	VrajaFoc.demonstratie = true
+	_vraja_jaf = vraja
+	_pozitie_vraja = vraja.pozitie
+	create_tween().set_trans(Tween.TRANS_SINE).tween_property(vraja, "pozitie", POZITIE_JAF, 0.6)
+	vraja.stinge()
+	vraja.aprinde(1.2)
+
+
+## Sfârșitul jafului: mâna revine unde era, iar fără vraja în inventar focul coboară.
+func _coboara_fireball() -> void:
+	VrajaFoc.demonstratie = false
+	if is_instance_valid(_vraja_jaf):
+		create_tween().set_trans(Tween.TRANS_SINE).tween_property(_vraja_jaf, "pozitie", _pozitie_vraja, 0.5)
+		_vraja_jaf = null
 
 
 ## Câte obiecte ai în inventar după ce plătești `pret` (cash-ul dispare dacă dai tot).
@@ -206,7 +239,8 @@ func _vinde(o: Dictionary, jaf := false) -> void:
 		om.lasa_mana("S", 0.5)
 	await get_tree().create_timer(0.3).timeout
 	await _spune(replici_dupa_jaf if jaf else replici_dupa)
-	# 6. o iei: vine spre tine și intră în inventar, deja în mână
+	# 6. o iei: vine spre tine și intră în inventar, deja în mână (la jaf, Fireball-ul de până acum o lasă locul)
+	_coboara_fireball()
 	await c.priveste(arma.global_position, 0.3)
 	arma.reparent(camera, true)
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)

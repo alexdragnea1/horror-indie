@@ -228,6 +228,151 @@ func _hud(vizibil: bool) -> void:
 		hud.visible = vizibil
 
 
+## Zborul lui Head Witch spre Warlock (finalul), owner 09.10: „trece prin mașină”. Pe jos, drumul ocolește ce e înalt
+## (stâlpii pasarelei: `_drum_sefa`), iar peste ce e jos (mașinile) trece pe deasupra (`_profil_peste`).
+const PASI_PROFIL := 48
+
+
+func _excluse_zbor() -> Array:
+	return _corpuri(_sefa_ref) + _corpuri(_warlock) + [_jucator().get_rid()]
+
+
+## Punctul de la `k` (0..1) din lungimea drumului (linie frântă).
+func _pe_drum(drum: PackedVector3Array, k: float) -> Vector3:
+	var total := 0.0
+	for i in drum.size() - 1:
+		total += drum[i].distance_to(drum[i + 1])
+	var rest := clampf(k, 0.0, 1.0) * total
+	for i in drum.size() - 1:
+		var l := drum[i].distance_to(drum[i + 1])
+		if rest <= l or i == drum.size() - 2:
+			return drum[i].lerp(drum[i + 1], clampf(rest / maxf(l, 0.001), 0.0, 1.0))
+		rest -= l
+	return drum[drum.size() - 1]
+
+
+## Bucata `a` → `b` e blocată de ceva prin care nu poate trece pe deasupra: stâlpi, pereți? Raze orizontale la 1,9 și
+## 2,5 m (peste mașini, sub pasarelă), din 15 în 15 cm pe toată lățimea ei (±0,45 m; cu raze rare, stâlpul de 20 cm
+## al pasarelei trecea printre ele).
+func _blocat_sus(a: Vector3, b: Vector3, excluse: Array) -> bool:
+	var spatiu := get_world_3d().direct_space_state
+	var lat := ((b - a) * Vector3(1, 0, 1)).normalized().cross(Vector3.UP)
+	for h: float in [1.9, 2.5]:
+		for k in range(-3, 4):
+			var d := lat * (k * 0.15)
+			var c := PhysicsRayQueryParameters3D.create(a + d + Vector3.UP * h, b + d + Vector3.UP * h, 1)
+			c.exclude = excluse
+			c.hit_back_faces = true
+			if not spatiu.intersect_ray(c).is_empty():
+				return true
+	return false
+
+
+## Drumul ei: drept, sau (dacă e un stâlp în cale) printr-un punct de ocolire la 0,8–2,5 m de ea, cel mai scurt care
+## lasă ambele bucăți libere.
+func _drum_sefa(de_la: Vector3, la: Vector3) -> PackedVector3Array:
+	var excluse := _excluse_zbor()
+	if not _blocat_sus(de_la, la, excluse):
+		return PackedVector3Array([de_la, la])
+	var spre := ((la - de_la) * Vector3(1, 0, 1)).normalized()
+	var cel_mai_bun := PackedVector3Array([de_la, la])
+	var lungime := INF
+	for d: float in [0.8, 1.3, 1.8, 2.5]:
+		for grade: float in [20.0, -20.0, 40.0, -40.0, 60.0, -60.0, 85.0, -85.0]:
+			var p := de_la + spre.rotated(Vector3.UP, deg_to_rad(grade)) * d
+			p.y = de_la.y
+			var l := de_la.distance_to(p) + p.distance_to(la)
+			if l < lungime and not _blocat_sus(de_la, p, excluse) and not _blocat_sus(p, la, excluse):
+				lungime = l
+				cel_mai_bun = PackedVector3Array([de_la, p, la])
+	return cel_mai_bun
+
+
+## Cât e de înaltă Head Witch cu pălărie cu tot (pentru tavanul de deasupra ei: pasarela, streașina).
+const INALTIME_SEFA := 1.95
+
+
+## Pe `drum`, în PASI_PROFIL puncte (pe mijloc și la ±0,4 m în lateral, cât e ea de lată): cât de sus trebuie să-i fie
+## tălpile ca să treacă pe deasupra a ce e acolo (mașini, bănci, borduri înalte), cu 0,3 m loc liber; 0 = drum liber.
+## Întoarce [peste, tavan]: `tavan` = cât poate urca acolo fără să dea cu pălăria de ce e deasupra (99 = cer liber).
+func _profil_peste(drum: PackedVector3Array) -> Array:
+	var profil := PackedFloat32Array()
+	profil.resize(PASI_PROFIL + 1)
+	var tavan := PackedFloat32Array()
+	tavan.resize(PASI_PROFIL + 1)
+	var spatiu := get_world_3d().direct_space_state
+	var excluse := _excluse_zbor()
+	for i in PASI_PROFIL + 1:
+		var k := float(i) / PASI_PROFIL
+		var p := _pe_drum(drum, k)
+		var inainte := _pe_drum(drum, minf(k + 0.02, 1.0)) - _pe_drum(drum, maxf(k - 0.02, 0.0))
+		var lat := (inainte * Vector3(1, 0, 1)).normalized().cross(Vector3.UP) * 0.4
+		var cel_mai_sus := 0.0
+		for d: Vector3 in [Vector3.ZERO, lat, -lat]:
+			# de la 2,6 m în jos: sub streașina aleii (de deasupra ar fi „văzut” acoperișul ca obstacol)
+			var c := PhysicsRayQueryParameters3D.create(p + d + Vector3.UP * 2.6, p + d + Vector3.DOWN * 0.3, 1)
+			c.exclude = excluse
+			var r := spatiu.intersect_ray(c)
+			if not r.is_empty():
+				cel_mai_sus = maxf(cel_mai_sus, (r.position as Vector3).y - p.y)
+		profil[i] = cel_mai_sus + 0.3 if cel_mai_sus > 0.2 else 0.0
+		var sus := PhysicsRayQueryParameters3D.create(p + Vector3.UP * 0.3, p + Vector3.UP * 8.0, 1)
+		sus.exclude = excluse
+		var r_sus := spatiu.intersect_ray(sus)
+		tavan[i] = 99.0 if r_sus.is_empty() else maxf((r_sus.position as Vector3).y - p.y - INALTIME_SEFA - 0.1, 0.0)
+	return [profil, tavan]
+
+
+## Înălțimea zborului în punctul `k` (0..1) pe un drum de `lungime` metri: „cortul” peste fiecare obstacol din profil
+## (urcă lin pe RAMPA_ZBOR metri înainte, e exact la înălțime deasupra lui, coboară lin după), deci nu taie colțurile;
+## dar niciodată peste tavanul de acolo (sub pasarelă rămâne jos și urcă abia după ce iese de sub ea).
+const RAMPA_ZBOR := 1.2
+func _sus_pe_profil(profil: Array, k: float, lungime: float) -> float:
+	var peste: PackedFloat32Array = profil[0]
+	var tavan: PackedFloat32Array = profil[1]
+	var lat := RAMPA_ZBOR / maxf(lungime, 0.1)
+	var sus := 0.0
+	for i in peste.size():
+		if peste[i] <= 0.0:
+			continue
+		var cat := 1.0 - absf(k - float(i) / PASI_PROFIL) / lat
+		if cat > 0.0:
+			sus = maxf(sus, peste[i] * ease(minf(cat * 1.6, 1.0), -1.8))
+	var j := clampi(roundi(k * PASI_PROFIL), 0, PASI_PROFIL)
+	return minf(sus, tavan[j])
+
+
+## Lângă Warlock, la 2,4 m: întâi din direcția din care vine ea, apoi tot mai într-o parte, până nu mai e nimic acolo
+## (o cutie cât ea; altfel ateriza în mașina lângă care căzuse el).
+func _loc_liber_langa_warlock(dinspre: Vector3) -> Vector3:
+	var w := _warlock.global_position
+	var forma := BoxShape3D.new()
+	forma.size = Vector3(0.7, 1.5, 0.7)
+	var cerere := PhysicsShapeQueryParameters3D.new()
+	cerere.shape = forma
+	cerere.collision_mask = 1
+	cerere.exclude = _corpuri(_sefa_ref) + _corpuri(_warlock) + [_jucator().get_rid()]
+	for grade: float in [0.0, 35.0, -35.0, 70.0, -70.0, 110.0, -110.0, 150.0, -150.0, 180.0]:
+		var loc := w - dinspre.rotated(Vector3.UP, deg_to_rad(grade)) * 2.4
+		loc.y = w.y
+		cerere.transform = Transform3D(Basis.IDENTITY, loc + Vector3.UP * 0.95)
+		if get_world_3d().direct_space_state.intersect_shape(cerere, 1).is_empty():
+			return loc
+	var loc := w - dinspre * 2.4
+	loc.y = w.y
+	return loc
+
+
+## RID-urile tuturor corpurilor (coliziunilor) din `nod`, cu el cu tot.
+func _corpuri(nod: Node) -> Array[RID]:
+	var r: Array[RID] = []
+	if nod is CollisionObject3D:
+		r.append((nod as CollisionObject3D).get_rid())
+	for c in nod.find_children("*", "CollisionObject3D", true, false):
+		r.append((c as CollisionObject3D).get_rid())
+	return r
+
+
 func _loc_sefa_cazuta() -> Vector3:
 	var loc: Vector3 = _sefa_ref.loc_la_usa
 	return loc + cadere_sefa.normalized() * departe_sefa
@@ -1036,18 +1181,27 @@ func _finalul(din_lupta: bool) -> void:
 	var start: Vector3 = _sefa_ref.global_position
 	var spre := _warlock.global_position - start
 	spre.y = 0.0
-	var dir := spre.normalized()
-	var oprire := _warlock.global_position - dir * 2.4
-	oprire.y = _warlock.global_position.y
+	var oprire := _loc_liber_langa_warlock(spre.normalized())
+	var dir := ((_warlock.global_position - oprire) * Vector3(1, 0, 1)).normalized()
 	_sefa_ref.rotation.y = atan2(dir.x, dir.z)
 	var lateral := dir.cross(Vector3.UP)
-	var durata := clampf(start.distance_to(oprire) / 4.0, 1.5, 4.0)
+	# pe lângă stâlpul pasarelei și peste mașini (owner, 09.10: trecea prin mașina neagră din fața lui 122)
+	var drum := _drum_sefa(start, oprire)
+	var profil := _profil_peste(drum)
+	var peste := 0.0
+	for h: float in profil[0]:
+		peste = maxf(peste, h)
+	var lungime := 0.0
+	for i in drum.size() - 1:
+		lungime += drum[i].distance_to(drum[i + 1])
+	var durata := clampf(lungime / 4.0, 1.5, 4.0) + (0.7 if peste > 0.0 else 0.0)
 	var mijloc := (start + oprire) * 0.5
-	_film(mijloc + lateral * 7.0 + Vector3.UP * 1.6, mijloc + Vector3.UP * 1.2, 55.0, mijloc + lateral * 6.0 + dir * 1.5 + Vector3.UP * 1.8,
-		durata, _sefa_ref, 1.3)
+	_film(mijloc + lateral * 7.0 + Vector3.UP * (1.6 + peste * 0.6), mijloc + Vector3.UP * (1.2 + peste * 0.5), 55.0,
+		mijloc + lateral * 6.0 + dir * 1.5 + Vector3.UP * (1.8 + peste * 0.6), durata, _sefa_ref, 1.3)
 	var zbor := create_tween()
 	zbor.tween_method(func(k: float) -> void:
-		_sefa_ref.global_position = start.lerp(oprire, k) + Vector3.UP * 0.25 * sin(k * PI), 0.0, 1.0, durata) \
+		var sus := maxf(0.25 * sin(k * PI), _sus_pe_profil(profil, k, lungime))
+		_sefa_ref.global_position = _pe_drum(drum, k) + Vector3.UP * sus, 0.0, 1.0, durata) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await zbor.finished
 

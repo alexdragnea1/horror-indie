@@ -475,9 +475,12 @@ def cladire(cale):
 				continue
 			piese.append(cub("Perete oval", (lung, T, zb - za), (mx + nx * T / 2, my + ny * T / 2, (za + zb) / 2), ALB,
 				rot=(0, 0, ang)))
-			if zb - za > 0.5:
-				col.append(cub("Coliziune", (lung, T, zb - za), (mx + nx * T / 2, my + ny * T / 2, (za + zb) / 2), NEGRU,
-					rot=(0, 0, ang)))
+		# coliziunea: perete întreg (podea → tavan), cu gol doar la ușă; la ferestre e plin, altfel pe sub geam
+		# (parapetul de 0,5 m) treceai în golul dintre peretele oval și fațadă (owner, 09.10)
+		col_z = [(FL2, HC2)] if not goluri or goluri[0][0] > FL2 + 0.2 else [(FL2 + 2.3, HC2)]
+		for (za, zb) in col_z:
+			col.append(cub("Coliziune", (lung, T, zb - za), (mx + nx * T / 2, my + ny * T / 2, (za + zb) / 2), NEGRU,
+				rot=(0, 0, ang)))
 		# plinta, brâul de la 0,9 m și cornișa de sus (fără golul ușii; brâul și plinta fără ferestre)
 		if not goluri or goluri[0][0] > FL2 + 0.2:
 			piese.append(cub("Plinta oval", (lung, 0.03, 0.16), (mx - nx * 0.015, my - ny * 0.015, FL2 + 0.08), LEMN_INCHIS,
@@ -674,7 +677,7 @@ def interior(cale):
 
 	# --- holul: scaunele legate, avizierul, afișele, planta, caloriferele, cuierul, coșul de gunoi, ceasul de perete
 	for k in range(4):
-		_scaun_simplu(piese, -XI + 0.32, 3.55 + k * 0.5, -math.pi / 2, cul=r.choice((LEMN_DESCHIS, LEMN_DESCHIS, BRONZ)))
+		_scaun_simplu(piese, -XI + 0.32, 3.55 + k * 0.5, math.pi / 2, cul=r.choice((LEMN_DESCHIS, LEMN_DESCHIS, BRONZ)))
 	piese.append(cub("Bara scaune", (0.04, 1.9, 0.04), (-XI + 0.32, 4.3, FL + 0.4), METAL_INCHIS))
 	_cutie_coliziune(col, (0.5, 2.0, 0.9), (-XI + 0.32, 4.3, FL + 0.45))
 	# avizierul de pe peretele din stânga (lângă scară)
@@ -1044,8 +1047,10 @@ def _scaun_plastic(piese, col, cx, cy, rot):
 	_cutie_coliziune(col, (0.5, 0.5, 0.9), (cx, cy, 0.45))
 
 
-def _gard_lemn(piese, x0, x1, y, r, cul=LEMN):
-	"""Gard de scânduri (uluci) cu două rigle, pe X."""
+def _gard_lemn(piese, x0, x1, y, r, cul=LEMN, col=None):
+	"""Gard de scânduri (uluci) cu două rigle, pe X. Cu `col`, primește și coliziune (un perete de 1,5 m)."""
+	if col is not None:
+		_cutie_coliziune(col, (x1 - x0, 0.2, 1.5), ((x0 + x1) / 2, y - 0.02, 0.75))
 	piese.append(cub("Rigla gard", (x1 - x0, 0.04, 0.08), ((x0 + x1) / 2, y, 0.45), LEMN_INCHIS))
 	piese.append(cub("Rigla gard", (x1 - x0, 0.04, 0.08), ((x0 + x1) / 2, y, 1.15), LEMN_INCHIS))
 	x = x0 + 0.06
@@ -1226,7 +1231,7 @@ def curte(cale):
 		_scaun_plastic(piese, col, -18.6 + k * 0.9, -6.1, (k - 0.5) * 0.3)
 	_cutie_coliziune(col, (sx1 - sx0, 8.0, 3.2), ((sx0 + sx1) / 2, -1.0, 1.6))
 	_casa_sat(piese, col, 19.0, 2.0, 7.0, 6.0, TEAL_DESCHIS, METAL, r, spre=-1)
-	_gard_lemn(piese, 13.5, 26.0, YG, r)
+	_gard_lemn(piese, 13.5, 26.0, YG, r, col=col)
 	strange()
 
 	# --- peste drum: case de țară cu gard de uluci, fântâna cu cumpănă, nuci, stâlpii de beton cu fire

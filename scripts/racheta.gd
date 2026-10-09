@@ -74,7 +74,7 @@ func _ready() -> void:
 	_dara.emitting = false
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.22, 0.22)
-	quad.material = Arma.material_particule(false)
+	quad.material = Arma.material_particule(false, 1.2)  # la plecare dâra e lângă ochi
 	_dara.mesh = quad
 	_dara.amount = 90
 	_dara.lifetime = 2.2

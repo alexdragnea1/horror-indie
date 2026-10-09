@@ -88,19 +88,22 @@ func _fulger() -> void:
 
 
 func _minge_de_foc() -> void:
-	# miezul: o bilă alb-galbenă care se umflă într-o clipă și se stinge (lumina „orbitoare” din primul cadru)
+	# miezul: o strălucire alb-galbenă care se umflă într-o clipă și se stinge (lumina „orbitoare” din primul cadru).
+	# Un cerc moale întors spre cameră, nu o sferă: sfera plină de 10 laturi ieșea ca un disc alb cu colțuri (09.10)
 	var mi := MeshInstance3D.new()
-	var sf := SphereMesh.new()
-	sf.radius = 1.0
-	sf.height = 2.0
-	sf.radial_segments = 10
-	sf.rings = 6
-	mi.mesh = sf
+	var q := QuadMesh.new()
+	q.size = Vector2(2.6, 2.6)
+	mi.mesh = q
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_color = Color(MIEZ, 0.95)
+	mat.albedo_texture = _stralucire()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.billboard_keep_scale = true
+	mat.proximity_fade_enabled = true  # unde taie peretele lovit se stinge lin (fără muchie dreaptă)
+	mat.proximity_fade_distance = 1.2
 	mat.disable_fog = true
 	mi.material_override = mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -132,6 +135,11 @@ func _minge_de_foc() -> void:
 	_porneste(p)
 	# o coajă de aer fierbinte (o sferă aproape transparentă) care fuge în afară: suflul se vede și pe un zid
 	var coaja := MeshInstance3D.new()
+	var sf := SphereMesh.new()
+	sf.radius = 1.0
+	sf.height = 2.0
+	sf.radial_segments = 28  # ajunge până la ~12 m: cu puține laturi i se vedeau colțurile pe margine
+	sf.rings = 14
 	coaja.mesh = sf
 	var mc := StandardMaterial3D.new()
 	mc.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -281,7 +289,8 @@ func _fum() -> void:
 	g.offsets = PackedFloat32Array([0.0, 0.15, 1.0])
 	g.colors = PackedColorArray([Color(0.35, 0.28, 0.25, 0.0), Color(FUM, 0.75), Color(0.35, 0.34, 0.35, 0.0)])
 	p.color_ramp = g
-	p.explosiveness = 0.75
+	p.explosiveness = 1.0  # one_shot sub 1,0 = pătrate negre la sursă (particulele nepornite); eșalonarea vine din viață
+	p.lifetime_randomness = 0.35
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	p.emission_sphere_radius = 1.4 * putere
 	p.direction = Vector3.UP
@@ -300,6 +309,7 @@ func _fum() -> void:
 	foc.color_ramp = gf
 	foc.one_shot = false
 	foc.explosiveness = 0.0
+	foc.preprocess = foc.lifetime  # continuu: fără preprocess, particulele nepornite fac un pătrat negru pe jos
 	foc.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	foc.emission_sphere_radius = 0.9 * putere
 	foc.direction = Vector3.UP
@@ -314,20 +324,19 @@ func _fum() -> void:
 		foc.emitting = false
 
 
-## Urma arsă de pe suprafața lovită: un disc negru, aproape lipit, care se stinge încet.
+## Urma arsă de pe suprafața lovită: o pată neagră, aproape lipită, mai deasă la mijloc și ștearsă spre margine (un
+## disc plin de 14 laturi ieșea ca un cerc negru tăiat cu foarfeca), care se stinge încet.
 func _urma() -> void:
 	var mi := MeshInstance3D.new()
-	var c := CylinderMesh.new()
-	c.top_radius = 1.8 * putere
-	c.bottom_radius = 1.8 * putere
-	c.height = 0.01
-	c.radial_segments = 14
-	c.rings = 1
+	var c := PlaneMesh.new()
+	c.size = Vector2.ONE * 4.2 * putere
 	mi.mesh = c
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.08, 0.07, 0.07, 0.8)
+	mat.albedo_color = Color(0.08, 0.07, 0.07, 0.85)
+	mat.albedo_texture = _stralucire()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mi.material_override = mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	get_tree().current_scene.add_child(mi)
@@ -392,12 +401,32 @@ func _pe_jucator(jucator: Node3D, distanta: float) -> void:
 
 # ---------------------------------------------------------------- ajutoare
 
+static var _textura_stralucire: GradientTexture2D
+
+
+## Strălucirea miezului: un cerc mare (64 px, filtrat) care se stinge lin spre margine, fără muchie.
+static func _stralucire() -> Texture2D:
+	if _textura_stralucire == null:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 0.25, 0.6, 1.0])
+		g.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.85), Color(1, 1, 1, 0.3), Color(1, 1, 1, 0)])
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 64
+		t.height = 64
+		_textura_stralucire = t
+	return _textura_stralucire
+
+
 func _particule(cate: int, viata: float, marime: float, aditiv: bool) -> CPUParticles3D:
 	var p := CPUParticles3D.new()
 	p.emitting = false
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE * marime
-	quad.material = Arma.material_particule(aditiv)
+	quad.material = Arma.material_particule(aditiv, 2.2)  # lângă cameră se sting (explozie în fața ta)
 	p.mesh = quad
 	p.amount = cate
 	p.lifetime = viata
