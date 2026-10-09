@@ -207,6 +207,17 @@ def _cap(piese, gat, s, r):
 		piese.append(sfera("Sapca", 0.1, P(0, 0.01, 0.245), cul, scara=(1.0, 1.15, 0.45), segmente=10, inele=6))
 		piese.append(cub("Cozoroc", (0.15, 0.07, 0.012), P(0, -0.1, 0.235), cul, rot=(0.18, 0, 0)))
 		piese.append(cub("Nasture sapca", (0.016, 0.016, 0.01), P(0, -0.02, 0.29), s.get("culoare_palarie_umbra", cul)))
+	elif palarie == "baseball":  # șapcă de camionagiu: calota rotundă, panoul din față cu sigla, cozorocul curbat
+		cul, umbra_p = s["culoare_palarie"], s.get("culoare_palarie_umbra", s["culoare_palarie"])
+		piese.append(trunchi("Calota", [(P(0, 0.008, 0.2), 0.092, 0.104), (P(0, 0.008, 0.25), 0.09, 0.102), (P(0, 0.01, 0.29), 0.072, 0.084),
+			(P(0, 0.012, 0.31), 0.04, 0.05), (P(0, 0.014, 0.316), 0.0, 0.0)], cul, laturi=12))
+		piese.append(cub("Panou sapca", (0.11, 0.012, 0.07), P(0, -0.092, 0.248), s.get("panou_sapca", ALB), rot=(-0.22, 0, 0)))
+		if s.get("sigla_sapca"):
+			piese.append(cub("Sigla sapca", (0.05, 0.008, 0.03), P(0, -0.1, 0.25), s["sigla_sapca"], rot=(-0.22, 0, 0)))
+		for k in (-1, 0, 1):  # cozorocul în trei bucăți, puțin curbat
+			piese.append(cub("Cozoroc", (0.06, 0.09, 0.01), P(0.055 * k, -0.135 + 0.006 * abs(k), 0.205 - 0.008 * abs(k)), umbra_p,
+				rot=(0.12, 0, -0.18 * k)))
+		piese.append(cilindru("Nasture sapca", 0.012, 0.012, 0.01, P(0, 0.014, 0.318), umbra_p, laturi=6))
 	# ochelarii
 	och = s.get("ochelari")
 	if och == "soare":
@@ -322,13 +333,17 @@ def _brat(piese_brat, piese_antebrat, umar, cot, incheietura, s, latura):
 	if scurta:
 		piese_brat.append(trunchi("Maneca scurta", [(umar, 0.078 * gros, 0.078 * gros), (_lerp(umar, cot, 0.55), 0.074 * gros, 0.07 * gros)],
 			maneca, laturi=8, ref=(0, 0, 1)))
-		for t, cul in ((0.2, s["flori"][0]), (0.4, s["flori"][1])):
+		for t, cul in (((0.2, s["flori"][0]), (0.4, s["flori"][1])) if s.get("flori") else ()):
 			piese_brat.append(sfera("Floare", 0.018, _add(_lerp(umar, cot, t), (0, -0.07 * gros, 0)), cul, scara=(1, 0.4, 1), segmente=6, inele=3))
 	goale = s.get("brate_goale") or scurta
 	piese_antebrat.append(sfera("Cot", 0.056 * gros, cot, maneca if not goale else s["piele"], segmente=8, inele=5))
 	capat = _lerp(cot, incheietura, 0.92)
 	piese_antebrat.append(trunchi("Antebrat", [(cot, 0.054 * gros, 0.052 * gros), (_lerp(cot, incheietura, 0.5), 0.05 * gros, 0.046 * gros),
 		(capat, 0.046 * gros, 0.042 * gros)], maneca if not goale else s["piele"], laturi=8, ref=(0, 0, 1)))
+	if goale and s.get("tatuaj"):  # tatuaje pe antebraț: câteva pete închise, pe partea de sus
+		for t, dz in ((0.3, 0.0), (0.5, 0.01), (0.68, -0.005)):
+			piese_antebrat.append(sfera("Tatuaj", 0.024, _add(_lerp(cot, incheietura, t), (0, 0, 0.042 * gros + dz)), s["tatuaj"],
+				scara=(1.3, 1.0, 0.35), segmente=6, inele=3))
 	if not goale:
 		if s.get("manseta"):
 			piese_antebrat.append(os_intre("Manseta", _lerp(cot, incheietura, 0.9), _lerp(cot, incheietura, 1.0), 0.04, s["manseta"], laturi=8))
@@ -418,6 +433,11 @@ def _tors(piese, z0, s, picioare=None):
 				piese.append(cub("Snur bolo", (0.005, 0.006, 0.17), (0.012 * k, fata(0.4, 0.016), z0 + 0.4 * h), NEGRU))
 			piese.append(sfera("Bolo", 0.024, (0, fata(0.49, 0.02), z0 + 0.49 * h), s["bolo"], scara=(1, 0.4, 1.2), segmente=8, inele=5))
 			piese.append(sfera("Rama bolo", 0.028, (0, fata(0.49, 0.014), z0 + 0.49 * h), AUR, scara=(1, 0.3, 1.2), segmente=8, inele=5))
+	elif stil == "tricou":  # tricou simplu cu guler rotund (barmanul)
+		piese.append(trunchi("Guler tricou", [((0, 0.018, z0 + 0.535 * h), 0.085, 0.07), ((0, 0.018, z0 + 0.555 * h), 0.08, 0.066)], umbra,
+			laturi=10, capete=False))
+		if s.get("scris_tricou"):
+			piese.append(cub("Sigla tricou", (0.12, 0.012, 0.07), (0, fata(0.42), z0 + 0.42 * h), s["scris_tricou"]))
 	elif stil == "hawaiana":  # cămașă hawaiiană descheiată la gât (Johnny): pielea în V, nasturii, florile imprimate
 		for z, w in ((0.53, 0.1), (0.48, 0.08), (0.43, 0.055), (0.39, 0.03)):
 			piese.append(cub("Decolteu", (w, 0.012, 0.055), (0, fata(z), z0 + z * h), s["piele"]))
@@ -443,6 +463,11 @@ def _tors(piese, z0, s, picioare=None):
 			yf = y - ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2)) - 0.004
 			cul = s["flori"][k % len(s["flori"])] if k % 3 else s.get("frunze", umbra)
 			piese.append(sfera("Floare", rr.uniform(0.016, 0.026), (x, yf, z0 + z * h), cul, scara=(1.0, 0.35, 1.0), segmente=6, inele=3))
+	if s.get("sort"):  # șorțul de barman: de la brâu până sub genunchi, cu șnurul și buzunarul
+		piese.append(cub("Sort", (0.34, 0.012, 0.62), (0, 0.03 - 0.14 - 0.02 - 0.04 * burta, z0 - 0.2), s["sort"]))
+		piese.append(cub("Buzunar sort", (0.2, 0.01, 0.12), (0, 0.03 - 0.14 - 0.032 - 0.04 * burta, z0 - 0.08), umbra))
+		piese.append(trunchi("Snur sort", [((0, 0.03, z0 + 0.03 * h), 0.18 + 0.03 * burta, 0.142 + 0.04 * burta),
+			((0, 0.03, z0 + 0.045 * h), 0.18 + 0.03 * burta, 0.142 + 0.04 * burta)], s["sort"], laturi=12, capete=False))
 	if s.get("curea"):  # cureaua lată cu catarama mare, de rodeo
 		piese.append(trunchi("Curea", [((0, 0.03, z0 + 0.0 * h), 0.178, 0.138), ((0, 0.03, z0 + 0.045 * h), 0.18, 0.14)], s["curea"],
 			laturi=12, capete=False))

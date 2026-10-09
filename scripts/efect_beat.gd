@@ -3,7 +3,8 @@ extends CanvasLayer
 ## „Ești beat” câteva secunde: ecranul se unduiește și vezi dublu (shaders/beat.gdshader), camera se înclină
 ## și se leagănă, câmpul vizual respiră, iar privirea fuge singură puțin în lateral. Te poți mișca normal.
 ##   EfectBeat.porneste(jucator, 5.0)
-## Se șterge singur la final și pune camera la loc.
+## Se șterge singur la final și pune camera la loc. Pornit iar cât ține (încă un pahar la bar), nu se dublează: același
+## efect se prelungește (două unul peste altul vedeau de patru ori și mutau câmpul vizual).
 
 ## Cât de repede se instalează și cât durează revenirea (secunde, incluse în durată).
 const INTRARE := 0.8
@@ -19,6 +20,10 @@ var _timp := 0.0
 
 
 static func porneste(jucator: Node3D, durata: float) -> EfectBeat:
+	for c in jucator.get_tree().root.get_children():
+		if c is EfectBeat and not c.is_queued_for_deletion():
+			(c as EfectBeat)._ruleaza(durata)
+			return c
 	var efect := EfectBeat.new()
 	efect._jucator = jucator
 	jucator.get_tree().root.add_child(efect)
@@ -41,12 +46,20 @@ func _ready() -> void:
 	_jucator.tree_exiting.connect(queue_free)
 
 
+var _tween: Tween
+
+
 func _ruleaza(durata: float) -> void:
+	if _tween and _tween.is_valid():
+		_tween.kill()
 	var tween := create_tween()
+	_tween = tween
 	tween.tween_property(self, "putere", 1.0, INTRARE).set_trans(Tween.TRANS_SINE)
 	tween.tween_interval(maxf(durata - INTRARE - IESIRE, 0.0))
 	tween.tween_property(self, "putere", 0.0, IESIRE).set_trans(Tween.TRANS_SINE)
 	await tween.finished
+	if tween != _tween:
+		return  # l-a prelungit altă băutură
 	_pune_camera_la_loc()
 	queue_free()
 

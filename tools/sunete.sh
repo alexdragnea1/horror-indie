@@ -932,3 +932,20 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.8:d=6:r=44100:s=71" \
 unic absorbtie "$OUT/_absorbtie.wav" stereo
 TINTA_LUFS=$TINTA_NORMALA_WARLOCK
 rm -f "$OUT"/_ciocan.wav "$OUT"/_toba.wav "$OUT"/_boss.wav "$OUT"/_murit.wav "$OUT"/_doborat.wav "$OUT"/_absorbtie.wav
+
+# --- barul „URBAN” (09.10): capacul de bere, turnatul, săgețile de darts, bilele, tacul, mantinela, buzunarul
+unic capac_bere "Other/snap.wav" mono "highpass=f=900,asetrate=44100*1.25,aresample=44100,atrim=end=0.25,afade=t=out:st=0.12:d=0.13"
+unic turnat_bautura "Environment/gurgling.wav" mono "lowpass=f=3500,asetrate=44100*1.15,aresample=44100,atrim=end=1.4,afade=t=in:d=0.08,afade=t=out:st=1.0:d=0.4"
+unic darts_aruncat "Other/whoosh_2.wav" mono "asetrate=44100*1.7,aresample=44100,highpass=f=500,atrim=end=0.3,afade=t=out:st=0.15:d=0.15"
+unic darts_infipt "Materials/cork_stabbed.wav" mono "atrim=end=0.35,afade=t=out:st=0.2:d=0.15"
+# ciocnirea a două bile: un „clac” sec (parțiale înalte care se sting în ~40 ms) peste un clic de zgomot
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(0.5*sin(2*PI*2350*t)+0.35*sin(2*PI*3720*t)+0.2*sin(2*PI*5180*t))*exp(-t*95)+0.25*(random(0)*2-1)*exp(-t*600)':s=44100:d=0.15" \
+	-af "highpass=f=700,afade=t=out:st=0.08:d=0.07" -ac 1 "$OUT/_bile.wav"
+unic biliard_bile "$OUT/_bile.wav"
+# tacul în albă: „toc” mai jos și mai scurt, cu o bufnitură dedesubt
+ffmpeg -v error -y -f lavfi -i "aevalsrc='(0.45*sin(2*PI*1420*t)+0.3*sin(2*PI*2610*t))*exp(-t*70)+0.5*sin(2*PI*190*t)*exp(-t*45)+0.2*(random(0)*2-1)*exp(-t*500)':s=44100:d=0.18" \
+	-af "afade=t=out:st=0.1:d=0.08" -ac 1 "$OUT/_tac.wav"
+unic biliard_tac "$OUT/_tac.wav"
+unic biliard_manta "Other/subtle_knock.wav" mono "lowpass=f=900,lowpass=f=900,atrim=end=0.2,afade=t=out:st=0.1:d=0.1"
+unic biliard_buzunar "Materials/wood_small_drop.wav" mono "lowpass=f=2200,atrim=end=0.45,afade=t=out:st=0.3:d=0.15"
+rm -f "$OUT/_bile.wav" "$OUT/_tac.wav"

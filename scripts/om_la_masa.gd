@@ -53,6 +53,8 @@ var _corp_rotatie := Vector3.ZERO
 ## Tresăritul (1 → 0) și direcția glonțului, în coordonatele lui.
 var _tresarire := 0.0
 var _smucit := Vector3.ZERO
+## Cât e aplecat în față trunchiul (radiani; biliardul).
+var aplecare := 0.0
 
 
 func _ready() -> void:
@@ -114,7 +116,7 @@ func _process(delta: float) -> void:
 	# tresăritul de la un glonț: trunchiul smucit înapoi și într-o parte, apoi revine
 	_tresarire = move_toward(_tresarire, 0.0, delta * 2.5)
 	var k := ease(_tresarire, 0.4)
-	_corp.rotation = _corp_rotatie + Vector3(_smucit.z * 0.22 * k, 0.0, -_smucit.x * 0.18 * k)
+	_corp.rotation = _corp_rotatie + Vector3(aplecare + _smucit.z * 0.22 * k, 0.0, -_smucit.x * 0.18 * k)
 	_priveste(delta)
 	for l in ["D", "S"]:
 		if _cat[l] > 0.0:

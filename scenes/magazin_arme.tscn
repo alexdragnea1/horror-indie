@@ -386,18 +386,19 @@ sunet_frana = ExtResource("32_fr")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.92, 1.65, 2.85)
 script = ExtResource("33_or")
 sosire = NodePath("../SosireOras")
-optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Lexy\'s Place", "Town Hall")
-scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/primarie.tscn")
-titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Lexy\'s place", "Town Hall")
+optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Lexy\'s Place", "Town Hall", "Bar", "City Center")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/primarie.tscn", "res://scenes/bar.tscn", "")
+titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Lexy\'s place", "Town Hall", "Urban Bar", "City Center")
 titluri_noi_de_la = "a_primit_mesajul_sefei"
 titluri_noi_pana_la = "a_invatat_scutul"
 titluri_noi = PackedStringArray("Block M7, Entrance B
 7:24 PM", "", "")
-ascunse_dupa = PackedStringArray("", "", "lexy_moarta", "")
-vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "", "a_citit_stirile")
-singur_pana_la = PackedStringArray("", "", "", "a_luat_banii_de_la_primar")
+ascunse_dupa = PackedStringArray("", "", "lexy_moarta", "", "", "")
+vizibile_dupa = PackedStringArray("a_primit_mesajul_sefei", "", "", "a_citit_stirile", "a_luat_banii_de_la_primar", "a_luat_banii_de_la_primar")
+singur_pana_la = PackedStringArray("", "", "", "a_luat_banii_de_la_primar", "", "")
 replici = PackedStringArray()
 
+replici_indisponibil = PackedStringArray("You: Not today. I'm not ready for that bitch yet.")
 [node name="Forma" type="CollisionShape3D" parent="OrarArme"]
 shape = SubResource("BoxShape3D_orar")
 
