@@ -13,6 +13,10 @@ extends Node3D
 
 const MARCAJ := "a_invatat_scutul"
 const MARCAJ_FOLOSIT := "a_folosit_scutul"
+## Pus de Tom Berone, boschetarul din fața magazinului de băuturi (boschetar.gd), când îi dai bani: pauza scade la
+## PAUZA_IMBUNATATITA (owner 11.10: „îți face o vrajă să ai shield-ul la o secundă”).
+const MARCAJ_IMBUNATATIT := "scutul_imbunatatit_de_tom"
+const PAUZA_IMBUNATATITA := 1.0
 const SHADER := preload("res://shaders/scut.gdshader")
 const SUNET_SCUT := preload("res://sunete/scut.ogg")
 const SUNET_SPART := preload("res://sunete/scut_spart.ogg")
@@ -180,8 +184,13 @@ func ridica_din_scena() -> bool:
 func _ridica_stapanit_si_pauza() -> void:
 	await _ridica_stapanit()
 	activ = false
-	_pauza_ramasa = pauza
+	_pauza_ramasa = pauza_acum()
 	_ocupat = false
+
+
+## Cooldown-ul de acum: `pauza`, sau PAUZA_IMBUNATATITA după vraja lui Tom Berone.
+func pauza_acum() -> float:
+	return minf(pauza, PAUZA_IMBUNATATITA) if Stare.e_marcat(MARCAJ_IMBUNATATIT) else pauza
 
 
 ## Gata de ridicat acum (nu e ridicat și nu e pe cooldown).
@@ -198,7 +207,7 @@ func _ridica() -> void:
 		_ascunde_indiciul()
 		await _ridica_prima_data()
 	activ = false
-	_pauza_ramasa = pauza
+	_pauza_ramasa = pauza_acum()
 	_ocupat = false
 
 

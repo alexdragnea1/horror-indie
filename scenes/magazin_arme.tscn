@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://models/magazin_arme_strada.glb" id="3_st"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="4_mp"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="5_mt"]
+[ext_resource type="PackedScene" path="res://models/boschetar.glb" id="tb_m"]
+[ext_resource type="Script" path="res://scripts/boschetar.gd" id="tb_s"]
 [ext_resource type="PackedScene" path="res://models/magazin_arme_cladire.glb" id="6_cl"]
 [ext_resource type="PackedScene" path="res://models/decor_magazin_arme.glb" id="7_dc"]
 [ext_resource type="Script" path="res://scripts/usa.gd" id="8_us"]
@@ -92,6 +94,9 @@ size = Vector3(0.5, 8, 22)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fata"]
 size = Vector3(40, 8, 0.5)
+
+[sub_resource type="BoxShape3D" id="forma_boschetar"]
+size = Vector3(1, 1, 1.05)
 
 [node name="MagazinArme" type="Node3D"]
 
@@ -404,6 +409,24 @@ replici = PackedStringArray()
 replici_indisponibil = PackedStringArray("You: Not today. I'm not ready for that bitch yet.")
 [node name="Forma" type="CollisionShape3D" parent="OrarArme"]
 shape = SubResource("BoxShape3D_orar")
+
+[node name="Boschetar" type="StaticBody3D" parent="." node_paths=PackedStringArray("brat", "palma", "cap")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.75, 0.15, 0.22)
+script = ExtResource("tb_s")
+brat = NodePath("Model/BratDrept")
+palma = NodePath("Model/BratDrept/Palma")
+cap = NodePath("Model/Cap")
+distanta_privire = 6.0
+unghi_maxim_cap = 60.0
+se_intoarce = false
+
+[node name="Model" parent="Boschetar" instance=ExtResource("tb_m")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Forma" type="CollisionShape3D" parent="Boschetar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.32)
+shape = SubResource("forma_boschetar")
 
 [node name="Limite" type="StaticBody3D" parent="."]
 

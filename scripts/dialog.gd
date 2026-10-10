@@ -206,7 +206,8 @@ func _input(event: InputEvent) -> void:
 ## Spune `replica`, apoi arată butoanele `optiuni` și așteaptă să alegi unul (mouse, săgeți + Enter sau E
 ## pe butonul selectat). Cât alegi, jucătorul stă pe loc și mouse-ul se vede.
 ## Cu `replica` goală apar doar butoanele, fără casetă (ex. ce-i spui lui Lexy la masă).
-func intreaba(replica: String, optiuni: PackedStringArray) -> int:
+## `dezactivate` = indicii butoanelor care se văd, dar sunt gri și nu se pot apăsa (ex. „Give him money” fără bani).
+func intreaba(replica: String, optiuni: PackedStringArray, dezactivate: Array = []) -> int:
 	# butoanele stau pe rândul de jos al casetei: caseta e mai înaltă și replica stă sus, deasupra lor (centrată pe
 	# verticală intra sub butoane: Big Mike / Fast Eddie, owner 10.10); sus, marginea e mai mare, ca eticheta cu numele
 	# (lipită de muchia de sus, 26 px înaltă) să nu acopere primul rând
@@ -233,6 +234,7 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	for i in optiuni.size():
 		var buton := TemaMeniu.buton(_optiuni, optiuni[i], func() -> void: _ales.emit(i))
 		buton.add_theme_font_size_override("font_size", 11)
+		buton.disabled = i in dezactivate
 	# prea multe butoane pentru un rând (ex. Johnny de la amanet, cu inventarul plin): prima jumătate urcă pe un rând
 	# deasupra, iar caseta crește încă un rând
 	var rand := _optiuni.get_combined_minimum_size()
@@ -252,7 +254,11 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	_optiuni.show()
 	Stare.meniu_deschis = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	((_optiuni_sus if doua_randuri else _optiuni).get_child(0) as Button).grab_focus.call_deferred()
+	# focusul pe primul buton care se poate apăsa
+	for b in (_optiuni_sus.get_children() if doua_randuri else []) + _optiuni.get_children():
+		if not (b as Button).disabled:
+			(b as Button).grab_focus.call_deferred()
+			break
 	var ales: int = await _ales
 	_optiuni.hide()
 	_optiuni_sus.hide()

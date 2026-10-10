@@ -239,3 +239,6 @@ demon.demon(MODELE)
 
 import warlock  # noqa: E402
 warlock.toate(MODELE)
+
+import boschetar  # noqa: E402
+boschetar.toate(MODELE)
