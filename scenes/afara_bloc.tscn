@@ -1,4 +1,4 @@
-[gd_scene load_steps=89 format=3]
+[gd_scene load_steps=91 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -63,6 +63,8 @@
 
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
 [ext_resource type="Script" path="res://scripts/replica_la_sosire.gd" id="or2"]
+[ext_resource type="PackedScene" path="res://models/garaje.glb" id="pr1"]
+[ext_resource type="PackedScene" path="res://scenes/pereche.tscn" id="pr2"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -153,7 +155,7 @@ size = Vector3(4.8, 1, 1.6)
 size = Vector3(120, 1, 10)
 
 [sub_resource type="BoxShape3D" id="forma_perete_lung"]
-size = Vector3(1, 8, 40)
+size = Vector3(1, 8, 52)
 
 [sub_resource type="BoxShape3D" id="forma_perete_lat"]
 size = Vector3(30, 8, 1)
@@ -549,11 +551,11 @@ shape = SubResource("forma_strada")
 [node name="Limite" type="StaticBody3D" parent="."]
 
 [node name="Stanga" type="CollisionShape3D" parent="Limite"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 4, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 4, 1)
 shape = SubResource("forma_perete_lung")
 
 [node name="Dreapta" type="CollisionShape3D" parent="Limite"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 1)
 shape = SubResource("forma_perete_lung")
 
 [node name="Fata" type="CollisionShape3D" parent="Limite"]
@@ -561,8 +563,30 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 24.5)
 shape = SubResource("forma_perete_lat")
 
 [node name="Spate" type="CollisionShape3D" parent="Limite"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -11)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -24)
 shape = SubResource("forma_perete_lat")
+
+[node name="Garaje" parent="." instance=ExtResource("pr1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -17.5)
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Bec")
+stralucire = 1.4
+coliziune = 3
+
+[node name="BecGaraj" type="OmniLight3D" parent="Garaje"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.95, 0.35)
+light_color = Color(1, 0.75, 0.45, 1)
+light_energy = 1.2
+light_volumetric_fog_energy = 2.0
+shadow_enabled = true
+omni_range = 7.0
+script = ExtResource("23")
+energie_normala = 1.2
+sansa_stingere = 0.04
+
+[node name="Pereche" parent="." instance=ExtResource("pr2")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.5, 0, -16.55)
 
 [node name="Jucator" parent="." instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0.1, 10.5)

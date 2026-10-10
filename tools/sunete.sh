@@ -1269,3 +1269,12 @@ TINTA_LUFS=-18
 unic muzica_lupta_warlock "Sound/Music/Warlock Battle.mp3" stereo "atrim=end=140.0,afade=t=out:st=139.97:d=0.03"
 unic muzica_lupta_head_witch "Sound/Music/Head Witch Battle.ogg" stereo "atrim=end=99.48,afade=t=out:st=99.45:d=0.03"
 TINTA_LUFS=-20
+
+# --- perechea din spatele blocului (afara_bloc.tscn, pereche.gd): gâfâitul în buclă (încet, 3D), ușa de tablă a
+# garajului lovită în ritm (bufnitură surdă, tabla vibrează), „gasp”-ul când îi prinzi, fermoarul tras din fugă.
+# Din `Sound/Soundpack 2` (Horror SFX Free, licență neverificată) și pachetul de bază.
+bucla pereche_gafait "Sound/Soundpack 2/Character/Breathing_fast.wav" 0.4 mono "aformat=channel_layouts=mono,highpass=f=150,lowpass=f=5000"
+unic garaj_bufnit "Materials/metal_blunt_tap.wav" mono "aformat=channel_layouts=mono,asetrate=44100*0.55,aresample=44100,lowpass=f=900,equalizer=f=120:t=q:w=1:g=6,aecho=0.7:0.5:28:0.35,afade=t=out:st=0.25:d=0.35"
+unic pereche_gasp "Sound/Soundpack 2/Character/Gasp.wav" mono "aformat=channel_layouts=mono"
+unic pereche_gasp_2 "Sound/Soundpack 2/Character/Gasp_3.wav" mono "aformat=channel_layouts=mono,asetrate=48000*1.12,aresample=48000"
+unic fermoar "Sound/Soundpack 2/Character/Zipper up.wav" mono "aformat=channel_layouts=mono"

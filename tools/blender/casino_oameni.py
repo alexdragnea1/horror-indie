@@ -490,8 +490,9 @@ def _tors(piese, z0, s, picioare=None):
 	if s.get("in_picioare"):
 		# în picioare: picioarele drepte (blugi), cizme de cowboy cu tocul înalt și vârful ascuțit. Merg în `picioare`
 		# (alt obiect, fără respirație: altfel tălpile s-ar mișca prin podea)
-		pp = picioare if picioare is not None else piese
 		for k in (-1, 1):
+			# `picioare` poate fi și un dict {-1: [...], 1: [...]}: câte un obiect pe picior (perechea din spatele blocului fuge)
+			pp = picioare[k] if isinstance(picioare, dict) else (picioare if picioare is not None else piese)
 			sold, genunchi, glezna = (0.1 * k, 0.03, z0 + 0.04 * h), (0.105 * k, 0.0, 0.5), (0.11 * k, 0.02, 0.1)
 			pp.append(trunchi("Coapsa", [(sold, 0.09, 0.088), (genunchi, 0.066, 0.066)], pant, laturi=8, ref=(1, 0, 0)))
 			pp.append(sfera("Genunchi", 0.067, genunchi, pant, segmente=8, inele=5))
@@ -530,10 +531,15 @@ def om(cale, nume, s, saminta):
 	r = random.Random(saminta)
 	z0 = s.get("sezut", 0.48)
 	masa = s.get("masa", 0.77)
-	corp, picioare = [], []
+	corp = []
+	picioare = {-1: [], 1: []} if s.get("picioare_separate") else []
 	_tors(corp, z0, s, picioare)
 	ob_corp = uneste(corp, "Corp", (0, 0.03, z0 + 0.06))
-	if picioare:
+	if isinstance(picioare, dict):
+		# `PiciorD` / `PiciorS`, cu originea în șold (se balansează la fugă)
+		for k, l in ((-1, "D"), (1, "S")):
+			uneste(picioare[k], "Picior" + l, (0.1 * k, 0.03, z0 + 0.04 * 1.18))
+	elif picioare:
 		uneste(picioare, "Picioare")
 
 	# capul (originea în gât)

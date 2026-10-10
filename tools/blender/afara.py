@@ -8,7 +8,7 @@ import random
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, text, uneste, exporta, trunchi, inel  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, text, uneste, exporta, trunchi, inel, desparte_fete  # noqa: E402
 
 NEGRU = p("262d2f")
 ALB = p("83b3b0")
@@ -686,6 +686,66 @@ def bomboana(cale):
 	exporta(os.path.join(cale, "bomboana.glb"))
 
 
+def garaje(cale):
+	"""Șirul de garaje de tablă din spatele blocului (6 × 3 m, adânci de 5,5 m), cu ușile spre -Y (spre spatele
+	blocului). Fiecare de altă culoare, cu nervuri pe uși, rugină, lacăte; pe unul scrie „NO PARKING”, pe altul un bec.
+	Originea = mijlocul șirului, la sol, în planul ușilor. `Bec` e separat (strălucește în joc)."""
+	curata()
+	r = random.Random(122)
+	culori = [p("445d46"), p("295555"), p("904a40"), p("6f6d7f"), p("30716f"), p("553e4d")]
+	piese = []
+	for i in range(6):
+		x = -7.5 + 3.0 * i
+		c = culori[i]
+		inalt = 2.25 + r.uniform(-0.05, 0.08)
+		piese.append(cub("Corp garaj", (2.94, 5.5, inalt), (x, 2.75, inalt / 2), c))
+		# acoperișul de tablă: iese puțin în față și cade spre spate
+		piese.append(cub("Acoperis", (3.0, 5.9, 0.05), (x, 2.75, inalt + 0.08), p("5e5356"), rot=(-0.04, 0, 0)))
+		# ușa: două foi, cu nervuri verticale, ramă, mâner și lacăt
+		piese.append(cub("Rama usa", (2.6, 0.03, 2.05), (x, -0.015, 1.04), p("262d2f")))
+		for k in (-1, 1):
+			piese.append(cub("Foaie usa", (1.22, 0.03, 1.96), (x + 0.62 * k, -0.04, 1.0), c))
+			for j in range(6):
+				piese.append(cub("Nervura", (0.035, 0.02, 1.9), (x + 0.62 * k - 0.5 + 0.2 * j, -0.065, 1.0), c))
+		piese.append(cub("Imbinare", (0.03, 0.03, 1.96), (x, -0.07, 1.0), p("262d2f")))
+		piese.append(cub("Zavor", (0.3, 0.03, 0.05), (x, -0.09, 1.05), p("6f6d7f")))
+		piese.append(cub("Lacat", (0.06, 0.03, 0.08), (x + 0.12, -0.115, 0.99), p("a18463")))
+		# rugina: pete pe jos și pe la colțuri
+		for _ in range(r.randint(2, 4)):
+			w, h = r.uniform(0.15, 0.5), r.uniform(0.1, 0.4)
+			piese.append(cub("Rugina", (w, 0.012, h), (x + r.uniform(-1.0, 1.0), -0.082, r.uniform(0.12, 1.6)),
+				r.choice([p("904a40"), p("7b383a"), p("a56850")])))
+	# „NO PARKING” vopsit strâmb pe primul garaj și un bec deasupra ușii celui de-al patrulea
+	piese.append(text("No parking", "NO PARKING", (-7.5, -0.1, 1.55), 0.22, p("83b3b0"), rot=(1.5708, 0.04, 0)))
+	piese.append(cub("Dulie", (0.08, 0.1, 0.08), (1.5, -0.05, 2.15), p("262d2f")))
+	uneste(piese, "Garaje")
+	desparte_fete(fixe=("Corp garaj", "Rama usa", "Foaie usa", "Acoperis"))
+	uneste([sfera("Bec", 0.045, (1.5, -0.12, 2.09), p("a18463"), segmente=6, inele=4)], "Bec")
+	# coliziunea: o cutie simplă cât tot șirul
+	uneste([cub("Coliziune", (18.0, 5.6, 2.4), (0, 2.75, 1.2), NEGRU)], "Coliziune")
+	exporta(os.path.join(cale, "garaje.glb"))
+
+
+def pereche(cale):
+	"""Perechea din spatele blocului (în picioare, cu `picioare_separate`: fug): ea se sprijină cu mâinile de ușa
+	garajului (brațele modelate înainte-sus; în joc trunchiul ei e aplecat), el o ține de șolduri. Îmbrăcați complet."""
+	import casino_oameni
+	piele, umbra = p("a56850"), p("904a40")
+	casino_oameni.om(cale, "pereche_ea", {
+		"piele": piele, "piele_umbra": umbra, "haina": p("7b383a"), "haina_umbra": p("5e363e"), "camasa": p("262d2f"),
+		"stil_haina": "geaca", "femeie": True, "par": p("a18463"), "par_suvita": p("a56850"), "stil_par": "voluminos",
+		"buze": p("7b383a"), "gura": p("5e363e"), "cercei": p("a18463"), "pantaloni": p("2a3c3d"), "pantofi": p("262d2f"),
+		"in_picioare": True, "sezut": 0.86, "gros_brat": 0.8, "picioare_separate": True,
+		"poza_D": ((-0.25, -0.17, 1.6), (-0.2, -0.4, 1.77)), "poza_S": ((0.25, -0.17, 1.6), (0.2, -0.4, 1.77)),
+	}, 301)
+	casino_oameni.om(cale, "pereche_el", {
+		"piele": piele, "piele_umbra": umbra, "haina": p("295555"), "haina_umbra": p("2a3c3d"), "camasa": p("83b3b0"),
+		"stil_haina": "trening", "dungi_maneca": p("83b3b0"), "pantaloni": p("295555"), "par": p("48313b"), "stil_par": "ras",
+		"lant": p("a18463"), "pantofi": p("83b3b0"), "in_picioare": True, "sezut": 0.86, "picioare_separate": True,
+		"poza_D": ((-0.27, -0.12, 1.12), (-0.19, -0.3, 0.98)), "poza_S": ((0.27, -0.12, 1.12), (0.19, -0.3, 0.98)),
+	}, 302)
+
+
 def toate(cale):
 	bloc(cale)
 	copac(cale, "copac_1", 21, 6.5, [p("904a40"), p("a56850"), p("7b383a")])
@@ -703,6 +763,8 @@ def toate(cale):
 	masina(cale)
 	baba(cale)
 	bomboana(cale)
+	garaje(cale)
+	pereche(cale)
 
 
 if __name__ == "__main__":

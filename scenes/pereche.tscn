@@ -1,0 +1,44 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/pereche.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/pereche_ea.glb" id="2"]
+[ext_resource type="PackedScene" path="res://models/pereche_el.glb" id="3"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="4"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/garaj_bufnit.ogg" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/pereche_gasp.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/pereche_gasp_2.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/fermoar.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="10"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="11"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="12"]
+[ext_resource type="AudioStream" path="res://sunete/pereche_gafait.ogg" id="13"]
+
+[node name="Pereche" type="Node3D"]
+script = ExtResource("1")
+bufnit = ExtResource("6")
+gasp_el = ExtResource("7")
+gasp_ea = ExtResource("8")
+fermoar = ExtResource("9")
+pasi = Array[AudioStream]([ExtResource("10"), ExtResource("11"), ExtResource("12")])
+
+[node name="Ea" type="Node3D" parent="."]
+
+[node name="Model" parent="Ea" instance=ExtResource("2")]
+script = ExtResource("4")
+material = ExtResource("5")
+
+[node name="El" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.4)
+
+[node name="Model" parent="El" instance=ExtResource("3")]
+script = ExtResource("4")
+material = ExtResource("5")
+
+[node name="Gafait" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -0.2)
+stream = ExtResource("13")
+volume_db = -80.0
+unit_size = 3.0
+max_distance = 25.0
+bus = &"Efecte"
