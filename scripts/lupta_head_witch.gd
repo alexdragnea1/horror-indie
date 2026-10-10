@@ -79,13 +79,21 @@ extends LuptaBoss
 @export var raza_piata := 13.5
 
 const SUNET_MUZICA := preload("res://sunete/muzica_warlock.ogg")
-const SUNET_RAGET := preload("res://sunete/demon_raget.ogg")
-const SUNET_CHEMARE := preload("res://sunete/demon_chemare.ogg")
-const SUNET_DEZINTEGRARE := preload("res://sunete/demon_dezintegrare.ogg")
+## Vocea ei și vrăjile ei (10.10, pachetele noi; vezi sunete.sh): urletul de vrăjitoare (faza întâi), urletul de demon
+## (faza a doua), strânsul puterii, corul, poarta de ceață, transformarea, mătura, raza, razele de la final, explozia ei.
+const SUNET_URLET := preload("res://sunete/sefa_urlet.ogg")
+const SUNET_RAGET := preload("res://sunete/sefa_demon_raget.ogg")
+const SUNET_STINGER := preload("res://sunete/stinger_aparitie.ogg")
+const SUNET_RAZA := preload("res://sunete/raza_matura.ogg")
+const SUNET_TASNESTE := preload("res://sunete/raza_tasneste.ogg")
+const SUNET_EXPLOZIE_EI := preload("res://sunete/sefa_explozie_finala.ogg")
+const SUNET_METEORI := preload("res://sunete/meteori.ogg")
+const SUNET_CHEMARE := preload("res://sunete/sefa_chemare.ogg")
+const SUNET_DEZINTEGRARE := preload("res://sunete/sefa_transformare.ogg")
 const SUNET_INIMA := preload("res://sunete/inima_rapida.ogg")
-const SUNET_VAJAIT := preload("res://sunete/vajait.ogg")
-const SUNET_UNDA := preload("res://sunete/vraja_unda.ogg")
-const SUNET_COR := preload("res://sunete/vraja_cor.ogg")
+const SUNET_VAJAIT := preload("res://sunete/matura_atac.ogg")
+const SUNET_UNDA := preload("res://sunete/poarta_ceata.ogg")
+const SUNET_COR := preload("res://sunete/sefa_cor.ogg")
 const SUNET_VANT := preload("res://sunete/vant.ogg")
 const SUNET_LUAT := preload("res://sunete/obiect_luat.ogg")
 const SUNET_PUS := preload("res://sunete/obiect_pus.ogg")
@@ -264,7 +272,7 @@ func _intro() -> void:
 		# strânge pumnii: îi trântește
 		_sefa.ridica_toiagul(0.2, 0.15)
 		_sefa.ridica_mana(0.2, 0.15, 0.0)
-		VrajaAtac.sunet_la(self, SUNET_ORB_BUM, mijloc, Sunet.VOLUM_EFECTE, 14.0)
+		VrajaAtac.sunet_la(self, SUNET_GLOB_BUM, mijloc, Sunet.VOLUM_EFECTE + 2.0, 14.0)
 		a.omoara(Vector3(0, -520.0, 0) + lat * -60.0)
 		b.omoara(Vector3(0, -520.0, 0) + lat * 60.0)
 		await get_tree().create_timer(0.35, false).timeout
@@ -338,7 +346,8 @@ func _intro() -> void:
 	_film(fata_ea + spre_mine * 2.4 + Vector3.UP * 0.1, fata_ea, 42.0, fata_ea + spre_mine * 1.9 + Vector3.UP * 0.05, 2.4, _sefa,
 		_sefa.plutire + 1.6)
 	_sefa.furie = 1.0
-	Sunet.reda(SUNET_CHEMARE, Sunet.VOLUM_EFECTE - 6.0, 0.05)
+	Sunet.reda(SUNET_CHEMARE, Sunet.VOLUM_EFECTE - 2.0, 0.0)
+	Sunet.reda(SUNET_STINGER, Sunet.VOLUM_EFECTE - 2.0)
 	await get_tree().create_timer(2.4, false).timeout
 	_camera_jucator.make_current()
 	var unde := j.global_position + (_sefa.global_position - j.global_position) * Vector3(1, 0, 1)
@@ -356,7 +365,7 @@ func _intro() -> void:
 	if Dialog.activ:
 		await Dialog.terminat
 	# „Fear my dick bitch.” → lupta
-	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE - 2.0, 14.0)
+	VrajaAtac.sunet_la(self, SUNET_URLET, _piept_boss(), Sunet.VOLUM_EFECTE, 14.0, 0.0)
 	_sefa.ridica_toiagul(-2.6, 0.4)
 	_sefa.ridica_mana(-2.4, 0.4, 0.6)
 	_lumina_scurta(_piept_boss(), MOV, 8.0, 14.0, 0.8)
@@ -460,7 +469,7 @@ func _poarta_ceata(pe_loc: bool) -> void:
 	fum.emitting = true
 	if not pe_loc:
 		create_tween().tween_method(func(v: float) -> void: mat.set_shader_parameter("putere", v), 0.0, 0.45, 1.2)
-		VrajaAtac.sunet_la(self, SUNET_UNDA, _poarta.global_position, Sunet.VOLUM_EFECTE - 4.0, 10.0)
+		VrajaAtac.sunet_la(self, SUNET_UNDA, _poarta.global_position, Sunet.VOLUM_EFECTE, 10.0)
 
 
 func _deschide_poarta() -> void:
@@ -714,7 +723,7 @@ func _ploaie(cate: int) -> void:
 	var r := _runda
 	_sefa.ridica_toiagul(-2.9, 0.5)
 	_sefa.ridica_mana(-2.9, 0.5, 0.4)
-	VrajaAtac.sunet_la(self, SUNET_TUNET, _sefa.global_position + Vector3.UP * 8.0, Sunet.VOLUM_EFECTE - 4.0, 16.0)
+	VrajaAtac.sunet_la(self, SUNET_METEORI, _sefa.global_position + Vector3.UP * 8.0, Sunet.VOLUM_EFECTE, 16.0)
 	if not await _asteapta(0.6):
 		return
 	for i in cate:
@@ -788,7 +797,7 @@ func _raza_care_matura() -> void:
 	var durata := 2.2
 	var raza := _raza(VERDE.lightened(0.3), 4.0)
 	_de_sters.append(raza)
-	VrajaAtac.sunet_la(self, SUNET_ABSORBTIE, _piept_boss(), Sunet.VOLUM_EFECTE, 16.0)
+	VrajaAtac.sunet_la(self, SUNET_RAZA, _piept_boss(), Sunet.VOLUM_EFECTE, 16.0)
 	var scantei := VrajaAtac.particule(self, 40, 0.5, 0.06, [Color(1, 1, 1), VERDE, Color(VERDE, 0.0)])
 	scantei.spread = 70.0
 	scantei.initial_velocity_min = 2.0
@@ -859,7 +868,7 @@ func _nova() -> void:
 	_bara.indicatie_scut(0.0)
 	avertizare.queue_free()
 	for k in 3:
-		VrajaAtac.sunet_la(self, SUNET_ORB_BUM, c, Sunet.VOLUM_EFECTE - 2.0, 16.0)
+		VrajaAtac.sunet_la(self, SUNET_UNDA_SOC, c, Sunet.VOLUM_EFECTE, 16.0)
 		_lumina_scurta(c + Vector3.UP * 2.0, culoare, 10.0, 18.0, 0.5)
 		Zguduire.porneste(_camera_jucator, 0.02, 0.3)
 		_val_de_soc(Vector3(c.x, centru.y, c.z), 18.0, 1.4, damage_nova, r)
@@ -898,7 +907,7 @@ func _transformare() -> void:
 	_bara.ascunde(0.6)
 	# urlă, se îndoaie, tresare
 	_sefa.tresare(_sefa.global_position - j.global_position, 2.5)
-	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE + 2.0, 20.0)
+	VrajaAtac.sunet_la(self, SUNET_URLET, _piept_boss(), Sunet.VOLUM_EFECTE + 2.0, 20.0, 0.0)
 	_lumina_scurta(_piept_boss(), MOV, 10.0, 14.0, 0.8)
 	await c.priveste(_piept_boss(), 0.5)
 	await get_tree().create_timer(0.6, false).timeout
@@ -942,7 +951,7 @@ func _transformare() -> void:
 	var flash := create_tween()
 	flash.tween_property(_alb, "color", Color(1, 1, 1, 1), 0.2)
 	await flash.finished
-	VrajaAtac.sunet_la(self, SUNET_ORB_BUM, _piept_boss(), Sunet.VOLUM_EFECTE + 4.0, 30.0)
+	VrajaAtac.sunet_la(self, SUNET_ORB_BUM, _piept_boss(), Sunet.VOLUM_EFECTE, 30.0)
 	Sunet.reda(SUNET_DEZINTEGRARE, Sunet.VOLUM_EFECTE)
 	vartej.emitting = false
 	get_tree().create_timer(2.0, false).timeout.connect(vartej.queue_free)
@@ -961,7 +970,7 @@ func _transformare() -> void:
 	create_tween().tween_property(_sefa, "aripi", 1.0, 1.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_sefa.ridica_toiagul(-1.0, 0.8)
 	_sefa.ridica_mana(-1.0, 0.8, 0.5)
-	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE + 4.0, 30.0)
+	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE, 30.0, 0.0)
 	Zguduire.porneste(_camera_film, 0.05, 1.2)
 	await get_tree().create_timer(1.8, false).timeout
 	# 5. coboară cu o undă de șoc, din ochii tăi
@@ -971,7 +980,7 @@ func _transformare() -> void:
 	jos.tween_property(_sefa, "plutire", 0.8, 0.7)
 	jos.parallel().tween_method(func(_k: float) -> void: _priveste_acum(_piept_boss()), 0.0, 1.0, 0.7)
 	await jos.finished
-	VrajaAtac.sunet_la(self, SUNET_ORB_BUM, loc_scena, Sunet.VOLUM_EFECTE + 2.0, 20.0)
+	VrajaAtac.sunet_la(self, SUNET_UNDA_SOC, loc_scena, Sunet.VOLUM_EFECTE + 4.0, 20.0, 0.0)
 	_praf(loc_scena)
 	_val_de_soc(loc_scena, 16.0, 0.9, 0.0, -1)
 	Zguduire.porneste(_camera_jucator, 0.05, 0.6)
@@ -1082,7 +1091,7 @@ func _finalul(_din_lupta: bool) -> void:
 	create_tween().tween_property(_muzica, "volume_db", -40.0, 2.0)
 	_bara.ascunde(0.6)
 	_sefa.tresare(_sefa.global_position - j.global_position, 3.0)
-	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE + 4.0, 30.0)
+	VrajaAtac.sunet_la(self, SUNET_RAGET, _piept_boss(), Sunet.VOLUM_EFECTE - 3.0, 30.0, 0.0)
 	_lumina_scurta(_piept_boss(), VERDE, 10.0, 14.0, 0.8)
 	await c.priveste(_piept_boss(), 0.5)
 	await get_tree().create_timer(0.5, false).timeout
@@ -1105,7 +1114,7 @@ func _finalul(_din_lupta: bool) -> void:
 		var raza := _raza(Color(0.85, 1.0, 0.9), 3.0 + k * 0.3)
 		raze.append(raza)
 		directii.append(d)
-		VrajaAtac.sunet_la(self, SUNET_VRAJA, _piept_boss(), Sunet.VOLUM_EFECTE - 2.0, 14.0, 0.2)
+		VrajaAtac.sunet_la(self, SUNET_TASNESTE, _piept_boss(), Sunet.VOLUM_EFECTE - 3.0, 14.0, 0.2)
 		_sefa._sclipire = 1.0
 		Zguduire.porneste(_camera_film, 0.015 + k * 0.006, 0.4)
 		_alb.color = Color(1, 1, 1, 0.1 + k * 0.03)
@@ -1125,6 +1134,7 @@ func _finalul(_din_lupta: bool) -> void:
 	for r in raze:
 		r.queue_free()
 	Explozie.creeaza(self, unde, Vector3.UP, 2.5)
+	Sunet.reda(SUNET_EXPLOZIE_EI, Sunet.VOLUM_EFECTE + 4.0)  # vârful jocului: peste tot ce a fost înainte (limitatorul de pe Master)
 	_cenusa(unde)
 	_sefa.hide()
 	Stare.marcheaza(marcaj_moarta)

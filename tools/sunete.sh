@@ -949,3 +949,292 @@ unic biliard_tac "$OUT/_tac.wav"
 unic biliard_manta "Other/subtle_knock.wav" mono "lowpass=f=900,lowpass=f=900,atrim=end=0.2,afade=t=out:st=0.1:d=0.1"
 unic biliard_buzunar "Materials/wood_small_drop.wav" mono "lowpass=f=2200,atrim=end=0.45,afade=t=out:st=0.3:d=0.15"
 rm -f "$OUT/_bile.wav" "$OUT/_tac.wav"
+
+# --- luptele cu vrăjitorii, refăcute „de film” (10.10) din pachetele noi ale owner-ului: atacul Warlock-ului asupra
+# conacului (atac_conac.gd), lupta cu Warlock-ul (lupta_warlock.gd) și cu Head Witch (lupta_head_witch.gd), partea comună
+# din lupta_boss.gd. Pachetele (în Sound/, ignorate):
+#   Soundpack 2 = „Horror SFX Free” (urlete, stingere, corul fantomelor, clopotul), licență neverificată;
+#   Soundpack 3 = „Helton Yan's Old-School Shonen SFX” (explozii, încărcări, lovituri, scântei), CC BY 4.0 -> trebuie
+#                 trecut în credite;
+#   Soundpack 4 = „Free Fantasy SFX Pack” de TomMusic (vrăji, gheață, piatră, bucla de furtună cu tunete adevărate),
+#                 licență neverificată.
+# ⚠️ Fișierele Shonen au câte 6 variante una după alta, despărțite de liniște (96 kHz): `b START SFARSIT VITEZA` taie
+# bucata (aici aproape mereu prima variantă, de la 0). Rămân neschimbate (owner: „îmi place”) scut.ogg, plus inima,
+# țiuitul, focul, tobele, ciocănitul și muzicile.
+# Ca la sacrificiu: cele „de film” la -13 LUFS și comprimate ($DENS); cele care se aud des în luptă mai jos (scrie la fiecare).
+TINTA_NORMALA_LUPTE=$TINTA_LUFS
+P2="Sound/Soundpack 2"
+P3="Sound/Soundpack 3"
+P4="Sound/Soundpack 4/WAV Files/SFX"
+FURTUNA="Sound/Soundpack 4/WAV Files/BGS Loops/Forest Night/Forest Night Storm.wav"
+# b START SFARSIT VITEZA -> mono 44,1 kHz, bucata [START, SFARSIT) din fișier, redată cu VITEZA (sub 1 = mai grav și mai lent)
+b() { echo "aformat=channel_layouts=mono,aresample=44100,atrim=start=$1:end=$2,asetpts=PTS-STARTPTS,asetrate=44100*$3,aresample=44100"; }
+# sub F0 F1 DURATA DESCRESTERE AMPLITUDINE -> basul care „lovește în piept”: sinus care alunecă de la F0 la F1 Hz
+sub() { echo "aevalsrc='$5*sin(2*PI*($1*t+($2-$1)*t*t/(2*$3)))*min(t/0.005\,1)*exp(-t*$4)':s=44100:d=$3"; }
+MIX="amix=normalize=0:duration=longest:inputs"
+ECOU_MARE="aecho=0.8:0.7:300|750|1400:0.4|0.28|0.16"
+ECOU_MIC="aecho=0.7:0.5:110|260:0.3|0.18"
+TINTA_LUFS=-13
+
+# 1. tunetul de departe (~6,5 s): un tunet ADEVĂRAT, din bucla de furtună (17,2-24,5 s), cu ploaia tăiată de un lowpass
+# (rămâne doar rostogolirea) și un bas care se umflă sub el
+ffmpeg -v error -y -i "$FURTUNA" -f lavfi -i "$(sub 50 30 7.3 0.5 0.5)" -filter_complex \
+	"[0]$(b 17.2 24.5 1),lowpass=f=700,equalizer=f=70:t=q:w=1:g=5,volume=2.5[t];[1]afade=t=in:d=0.6[s];[t][s]$MIX=2,$DENS,afade=t=in:d=0.15,afade=t=out:st=5.8:d=1.5,$ECOU_MIC,$STEREO" \
+	-ac 2 "$OUT/_tunet.wav"
+unic atac_tunet "$OUT/_tunet.wav" stereo
+# 2. fulgerul care lovește aproape (~3 s, 3D): pocnetul electric (scânteia Shonen), lovitura (explozia scurtă) și
+# rostogolirea tunetului adevărat care vine după
+ffmpeg -v error -y -i "$P3/ELECSprk_Anime Spark 3.wav" -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -i "$FURTUNA" -f lavfi -i "$(sub 70 35 3 3 0.9)" -filter_complex \
+	"[0]$(b 0 0.5 1),highpass=f=1200,afade=t=out:st=0.25:d=0.25[c];[1]$(b 0 1.4 0.85),lowpass=f=3500,volume=0.9[e];[2]$(b 17.4 20.4 1),lowpass=f=800,volume=2.2,adelay=150[r];[c][e][r][3]$MIX=4,$DENS,$ECOU_MIC,atrim=end=3,afade=t=out:st=2.3:d=0.7" \
+	-ac 1 "$OUT/_fulger.wav"
+unic atac_fulger "$OUT/_fulger.wav"
+# 3. cornul de război „de film” (~5,5 s): cornul sintetizat de mai sus (atac_corn.ogg) peste drone-ul de groază și
+# rezonanța de metal coborâtă, cu un bas care se umflă. Fișier nou (atac_corn rămâne sursa lui).
+ffmpeg -v error -y -i "$OUT/atac_corn.ogg" -i "$P2/Ambient/Drone_doom.wav" -i "$P2/Stingers and Spooky Triggers/Metal_resonance.wav" -f lavfi -i "$(sub 37 37 5.5 0.2 0.5)" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100[c];[1]$(b 0 5.5 0.8),volume=3[d];[2]$(b 0 5.5 0.7),lowpass=f=2000,volume=0.8[m];[3]afade=t=in:d=1.5[s];[c][d][m][s]$MIX=4,$DENS,atrim=end=5.5,afade=t=out:st=4.5:d=1,$ECOU_MARE,$STEREO" \
+	-ac 2 "$OUT/_corn.wav"
+unic atac_corn_film "$OUT/_corn.wav" stereo
+# 4. teleportul (~1,4 s, 3D; lovitura la t = 0, când apare): eliberarea de energie (Ability Release), explozia coborâtă
+# pentru greutate și basul care cade 95 -> 40 Hz
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Release 13.wav" -i "$P3/EXPLDsgn_Anime Explosion 5.wav" -f lavfi -i "$(sub 95 40 1.4 4 0.9)" -filter_complex \
+	"[0]$(b 0 1 1)[r];[1]$(b 0 1.45 0.75),lowpass=f=1600,volume=0.8[e];[r][e][2]$MIX=3,$DENS,$ECOU_MIC,atrim=end=1.4,afade=t=out:st=1:d=0.4" \
+	-ac 1 "$OUT/_aparitie.wav"
+unic atac_aparitie "$OUT/_aparitie.wav"
+# 5. sosirea Warlock-ului (~7 s): coboară din cer 2,9 s (încărcarea Shonen care tot crește, urletul grav al unui monstru
+# încetinit sub ea), apoi aterizarea la 2,9 s: explozia lungă coborâtă, trântitura grea, basul 60 -> 20 Hz și stingerul de
+# pian disonant, cu ecoul lung al dealurilor
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Charge 17.wav" -i "$P2/Monsters & Ghosts/Monster_Roar_4.wav" -i "$P3/EXPLDsgn_Anime Explosion 6.wav" \
+	-i "$P3/FGHTBf_Anime Land 11.wav" -f lavfi -i "$(sub 60 20 4 0.7 1.3)" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent.wav" -filter_complex \
+	"[0]$(b 0 3.25 0.9),volume='0.08+0.42*pow(min(t/2.9\,1)\,2)':eval=frame,afade=t=out:st=2.85:d=0.2[i];[1]$(b 0 4.15 0.6),lowpass=f=1400,volume='0.2+0.8*min(t/2.9\,1)':eval=frame,afade=t=out:st=3.4:d=1.5,volume=0.4[m];[2]$(b 0 3.4 0.75),lowpass=f=2600,adelay=2900,volume=1.3[e];[3]$(b 0 0.7 0.7),adelay=2900,volume=1.1[l];[4]adelay=2900[s];[5]$(b 0 2.9 0.9),adelay=2950,volume=0.7[p];[i][m][e][l][s][p]$MIX=6,$DENS,$ECOU_MARE,atrim=end=7,afade=t=out:st=5.8:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_sosire.wav"
+unic warlock_sosire "$OUT/_sosire.wav" stereo
+# 6. o vrajă aruncată (~1,2 s, 3D, -15: armata aruncă una la 0,2-0,3 s, salvele boss-ului 3-5 una după alta): mingea de
+# foc (Fantasy), „aruncarea” Shonen și o bufnitură joasă (reculul)
+ffmpeg -v error -y -i "$P4/Spells/Fireball 1.wav" -i "$P3/FGHTMisc_Anime Throw 4.wav" -f lavfi -i "$(sub 85 50 1.2 9 0.7)" -filter_complex \
+	"[0]$(b 0 1.2 1)[f];[1]$(b 0.1 0.6 0.9),volume=0.8[w];[f][w][2]$MIX=3,$DENS,atrim=end=1.2,afade=t=out:st=0.8:d=0.4" \
+	-ac 1 "$OUT/_vraja.wav"
+TINTA_LUFS=-15
+unic atac_vraja "$OUT/_vraja.wav"
+TINTA_LUFS=-13
+# 7. vraja lovește piatra (~2,4 s, 3D): explozia scurtă, impactul vrăjii, zidul care se rupe și moloz (Rock Wall), bas
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -i "$P4/Spells/Spell Impact 1.wav" -i "$P4/Spells/Rock Wall 1.wav" -f lavfi -i "$(sub 75 35 2.4 5 0.9)" -filter_complex \
+	"[0]$(b 0 1.4 0.9)[e];[1]$(b 0 0.35 0.9),volume=0.8[i];[2]$(b 0 2 0.85),adelay=60,volume=0.7[r];[e][i][r][3]$MIX=4,$DENS,$ECOU_MIC,atrim=end=2.4,afade=t=out:st=1.8:d=0.6" \
+	-ac 1 "$OUT/_impact.wav"
+TINTA_LUFS=-14
+unic atac_impact "$OUT/_impact.wav"
+TINTA_LUFS=-13
+# 8. scutul lui Head Witch se sparge (~2 s): gheața care se face țăndări (Ice Barrage + Ice Freeze = sticlă magică),
+# pocnetul (explozia tăiată) și clinchetul de sticlă din pachetul vechi
+ffmpeg -v error -y -i "$P4/Spells/Ice Barrage 2.wav" -i "$P4/Spells/Ice Freeze 1.wav" -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -i "$PACHET/Materials/glass_ping_big.wav" -filter_complex \
+	"[0]$(b 0 1.75 1)[a];[1]$(b 0 0.85 1.2),adelay=40[g];[2]$(b 0 0.6 1.1),highpass=f=300,afade=t=out:st=0.3:d=0.3,volume=0.7[e];[3]$(b 0 2 0.8),adelay=90,volume=0.4[p];[a][g][e][p]$MIX=4,$DENS,atrim=end=2,afade=t=out:st=1.4:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_spart.wav"
+unic scut_spart "$OUT/_spart.wav" stereo
+# 9. vraja mare de la conac se încarcă (~8,5 s): două încărcări Shonen coborâte, una după alta, riser-ul de groază
+# („Suspenseful pitch increase”), corul fantomelor care se umflă, scântei tot mai dese și inima tot mai rapidă.
+# Se termină în vârf (pleacă vraja).
+INIMA_URCA="0$(inima 0.8 0.3)$(inima 2.0 0.35)$(inima 3.0 0.4)$(inima 3.8 0.48)$(inima 4.5 0.55)$(inima 5.1 0.62)$(inima 5.6 0.7)$(inima 6.05 0.76)$(inima 6.45 0.82)$(inima 6.8 0.88)$(inima 7.12 0.94)$(inima 7.42 1.0)$(inima 7.7 1.0)$(inima 7.96 1.0)"
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Charge 4.wav" -i "$P3/MAGSpel_Anime Ability Charge 17.wav" -i "$P2/Stingers and Spooky Triggers/Suspenseful pitch increase.wav" \
+	-i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P3/ELECSprk_Anime Spark 3.wav" -f lavfi -i "aevalsrc='$INIMA_URCA':s=44100:d=8.5" -filter_complex \
+	"[0]$(b 0 3.15 0.7),afade=t=out:st=4:d=0.6[a];[1]$(b 0 3.25 0.85),adelay=4000,afade=t=in:st=4:d=0.5[b];[2]$(b 0 6.5 1),adelay=2000[r];[3]$(b 0 8.5 0.9),afade=t=in:d=4,volume=0.6[c];[4]$(b 0 3.4 1),highpass=f=1500,adelay=5000,volume=0.6[s];[5]lowpass=f=300,volume=1.5[i];[a][b][r][c][s][i]$MIX=6,$DENS,volume='0.12+0.88*pow(t/8.5\,1.6)':eval=frame,atrim=end=8.5,$STEREO" \
+	-ac 2 "$OUT/_incarcare.wav"
+unic orb_incarcare "$OUT/_incarcare.wav" stereo
+# 10. încărcarea globului în luptă (~4 s, 3D din toiag, -15): tare de la început (în luptă ține doar 1-1,4 s, în intro
+# până la 4 s cât ai timp de scut): încărcarea Shonen, tonul care urcă și pârâitul de scântei
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Charge 2.wav" -i "$P3/MAGSpel_Anime Ability Charge 14.wav" -i "$P3/ELECSprk_Anime Spark 4.wav" -filter_complex \
+	"[0]$(b 0 3.1 0.9),apad=whole_dur=4[a];[1]$(b 0 3.5 1),volume=2.5[t];[2]$(b 0 3.1 1),highpass=f=1000,volume=0.8[s];[a][t][s]$MIX=3,$DENS,atrim=end=4,afade=t=out:st=3.6:d=0.4" \
+	-ac 1 "$OUT/_boss_incarcare.wav"
+TINTA_LUFS=-15
+unic boss_incarcare "$OUT/_boss_incarcare.wav"
+TINTA_LUFS=-13
+# 11. vraja mare zboară pe deasupra ta (~2,6 s): vâjâitul care vine (întors, crește) și cel care pleacă (cade), mingea de
+# foc încetinită și tonul care coboară ca la o mașină care trece (doppler)
+ffmpeg -v error -y -i "$P3/SWSH_Anime Fly 5.wav" -i "$P3/SWSH_Anime Fly 4.wav" -i "$P4/Spells/Fireball 2.wav" \
+	-f lavfi -i "aevalsrc='0.6*sin(2*PI*(110*t-18*t*t))*exp(-pow((t-1.3)/0.55\,2))':s=44100:d=2.6" -filter_complex \
+	"[0]$(b 0 1.1 0.7),areverse[v];[1]$(b 0 1.05 0.6),adelay=1250[p];[2]$(b 0 1.2 0.6),adelay=600,volume=0.8[f];[v][p][f][3]$MIX=4,$DENS,atrim=end=2.9,afade=t=out:st=2.4:d=0.5,$STEREO" \
+	-ac 2 "$OUT/_orb_zbor.wav"
+unic orb_zbor "$OUT/_orb_zbor.wav" stereo
+# 12. vraja mare lovește conacul (~8 s, -12): explozia lungă coborâtă + cea seacă pentru pocnet, basul 60 -> 18 Hz,
+# zidurile care se prăbușesc (Rock Wall de două ori), tunetul adevărat care se rostogolește după, stingerul de pian
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 6.wav" -i "$P3/EXPLDsgn_Anime Explosion 11.wav" -f lavfi -i "$(sub 60 18 8 0.6 1.3)" \
+	-i "$P4/Spells/Rock Wall 1.wav" -i "$P4/Spells/Rock Wall 2.wav" -i "$FURTUNA" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent.wav" -filter_complex \
+	"[0]$(b 0 3.4 0.7),lowpass=f=2600,volume=1.3[e];[1]$(b 0 3.15 1),volume=0.8[p];[3]$(b 0 2 0.7),adelay=300,volume=0.8[r1];[4]$(b 0 2 0.6),adelay=900,volume=0.7[r2];[5]$(b 17.4 24.5 1),lowpass=f=600,adelay=1400,volume=2[t];[6]$(b 0 2.9 0.8),adelay=100,volume=0.6[s];[e][p][2][r1][r2][t][s]$MIX=7,$DENS,$ECOU_MARE,atrim=end=8.5,afade=t=out:st=6.5:d=2,$STEREO" \
+	-ac 2 "$OUT/_orb_bum.wav"
+TINTA_LUFS=-12
+unic orb_explozie "$OUT/_orb_bum.wav" stereo
+TINTA_LUFS=-13
+# 13. globul / unda lovesc în luptă (~2 s): explozia de mijloc, eliberarea de energie și basul. Înlocuiește în luptă
+# explozia de film de 8 s (se auzea la fiecare glob, cerc și undă)
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 5.wav" -i "$P3/MAGSpel_Anime Ability Release 13.wav" -f lavfi -i "$(sub 70 30 2 3 1)" -filter_complex \
+	"[0]$(b 0 1.45 0.85)[e];[1]$(b 0 1 0.8),volume=0.7[r];[e][r][2]$MIX=3,$DENS,$ECOU_MIC,atrim=end=2,afade=t=out:st=1.4:d=0.6" \
+	-ac 1 "$OUT/_boss_glob.wav"
+TINTA_LUFS=-14
+unic boss_glob_bum "$OUT/_boss_glob.wav"
+TINTA_LUFS=-13
+# 14. cercul de pe jos înainte de fulger (~1,3 s, 3D, -17: apar 3-4 deodată): energia care se strânge și sfârâie
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Charge 1.wav" -i "$P3/ELECSprk_Anime Spark 1.wav" -filter_complex \
+	"[0]$(b 0 1.15 1)[c];[1]$(b 0 0.65 1),volume=1.5,adelay=400[s];[c][s]$MIX=2,atrim=end=1.3,afade=t=out:st=1:d=0.3" \
+	-ac 1 "$OUT/_cerc.wav"
+TINTA_LUFS=-17
+unic boss_cerc "$OUT/_cerc.wav"
+TINTA_LUFS=-13
+# 15. unda de șoc: toiagul bate în pământ (~2,5 s, 3D): trântitura grea, explozia coborâtă, valul (Wave Attack) care
+# fuge pe jos și basul. Și la nova (de trei ori) și la coborârea după transformare.
+ffmpeg -v error -y -i "$P3/FGHTBf_Anime Land 11.wav" -i "$P3/EXPLDsgn_Anime Explosion 9.wav" -i "$P4/Spells/Wave Attack 1.wav" -f lavfi -i "$(sub 55 22 2.5 1.6 1.2)" -filter_complex \
+	"[0]$(b 0 0.7 0.6)[l];[1]$(b 0 2 0.75),lowpass=f=2500,volume=0.8[e];[2]$(b 1.2 3.2 1),afade=t=in:d=0.1,volume=0.7[w];[l][e][w][3]$MIX=4,$DENS,$ECOU_MIC,atrim=end=2.5,afade=t=out:st=1.8:d=0.7" \
+	-ac 1 "$OUT/_unda.wav"
+unic boss_unda "$OUT/_unda.wav"
+# 16. scutul tău oprește o vrajă (~0,8 s, -15): clinchetul de metal al parării, impactul vrăjii și o scânteie; se aude
+# PESTE scut.ogg (care rămâne)
+ffmpeg -v error -y -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Blocked 1.wav" -i "$P4/Spells/Spell Impact 2.wav" -i "$P3/ELECSprk_Anime Spark 2.wav" -f lavfi -i "$(sub 90 50 0.8 8 0.6)" -filter_complex \
+	"[0]$(b 0 0.5 0.8)[m];[1]$(b 0 0.4 1)[i];[2]$(b 0 0.4 1.1),highpass=f=1500,volume=0.8[s];[m][i][s][3]$MIX=4,$ECOU_MIC,atrim=end=0.9,afade=t=out:st=0.6:d=0.3" \
+	-ac 1 "$OUT/_parare.wav"
+TINTA_LUFS=-15
+unic boss_parare "$OUT/_parare.wav"
+TINTA_LUFS=-13
+# 17. te lovește o vrajă (~0,8 s): lovitura Shonen (pumnul), explozia scurtă înfundată (în corp) și bufnitura
+ffmpeg -v error -y -i "$P3/FGHTImpt_Anime Melee 1.wav" -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -f lavfi -i "$(sub 80 40 0.8 6 1)" -filter_complex \
+	"[0]$(b 0 0.5 0.9)[m];[1]$(b 0 0.6 1),lowpass=f=900,volume=0.7[e];[m][e][2]$MIX=3,$DENS,atrim=end=0.8,afade=t=out:st=0.5:d=0.3" \
+	-ac 1 "$OUT/_lovit_tu.wav"
+unic jucator_lovit "$OUT/_lovit_tu.wav"
+# 18. îl lovești pe boss (~0,5 s, -18: AK-ul trage repede; codul îl rărește): lovitura Shonen și sfârâitul vrăjii
+ffmpeg -v error -y -i "$P3/FGHTImpt_Anime Melee 3.wav" -i "$P4/Spells/Spell Impact 3.wav" -filter_complex \
+	"[0]$(b 0 0.45 1)[m];[1]$(b 0 0.4 0.9),volume=0.7[i];[m][i]$MIX=2,atrim=end=0.5,afade=t=out:st=0.35:d=0.15" \
+	-ac 1 "$OUT/_boss_lovit.wav"
+TINTA_LUFS=-18
+unic boss_lovit "$OUT/_boss_lovit.wav"
+TINTA_LUFS=-13
+# 19. cazi pe spate în luptă (~0,8 s): trântitura Shonen pe asfalt
+ffmpeg -v error -y -i "$P3/FGHTBf_Anime Land 3.wav" -f lavfi -i "$(sub 70 35 0.8 6 0.6)" -filter_complex \
+	"[0]$(b 0 0.7 0.85)[l];[l][1]$MIX=2,$ECOU_MIC,atrim=end=0.9,afade=t=out:st=0.6:d=0.3" -ac 1 "$OUT/_cazi.wav"
+unic boss_cazi "$OUT/_cazi.wav"
+# --- vocile: Warlock-ul și Head Witch (monștri și fantome din pachetul Horror, coborâți ca să sune mari)
+# 20. Warlock-ul geme când îl lovești (~0,6 s, 3D, -16; codul îl lasă cel mult o dată la 1,2 s)
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_grunt x2 (ghmmm).wav" -i "$P2/Monsters & Ghosts/Zombie_6.wav" -filter_complex \
+	"[0]$(b 0 0.35 0.75)[g];[1]$(b 0 0.85 0.7),lowpass=f=1800,volume=0.5[z];[g][z]$MIX=2,$ECOU_MIC,atrim=end=0.9,afade=t=out:st=0.6:d=0.3" \
+	-ac 1 "$OUT/_durere.wav"
+TINTA_LUFS=-16
+unic warlock_durere "$OUT/_durere.wav"
+TINTA_LUFS=-13
+# 21. Warlock-ul urlă la faza a doua (~4,5 s, 3D): urletul lung coborât, mârâitul dedesubt și basul
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_Roar_4.wav" -i "$P2/Monsters & Ghosts/Monster_growl_1.wav" -f lavfi -i "$(sub 45 30 4.5 0.6 0.6)" -filter_complex \
+	"[0]$(b 0 4.15 0.72)[r];[1]$(b 0 1.7 0.6),adelay=200,volume=0.6[g];[2]afade=t=in:d=0.4[s];[r][g][s]$MIX=3,$DENS,$ECOU_MARE,atrim=end=5,afade=t=out:st=3.8:d=1.2" \
+	-ac 1 "$OUT/_urlet_w.wav"
+unic warlock_urlet "$OUT/_urlet_w.wav"
+# 22. Warlock-ul cade învins (~2,5 s, 3D): urletul scurt, frânt, și horcăitul
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_Roar_2.wav" -i "$P2/Monsters & Ghosts/Zombie_8.wav" -filter_complex \
+	"[0]$(b 0 1.15 0.65)[r];[1]$(b 0 0.9 0.7),lowpass=f=1500,adelay=700,volume=0.7[z];[r][z]$MIX=2,$DENS,$ECOU_MARE,atrim=end=2.8,afade=t=out:st=2:d=0.8" \
+	-ac 1 "$OUT/_moare_w.wav"
+unic warlock_moare "$OUT/_moare_w.wav"
+# 23. Warlock-ul râde (~2,8 s, 3D): râsul înfiorător, coborât și grav, cu ecou (la apariția din motel și la „YOU DIED”)
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Laugh_spooky_4.wav" -filter_complex \
+	"[0]$(b 0 2.1 0.78),lowpass=f=3500,equalizer=f=180:t=q:w=1:g=4,$DENS,$ECOU_MARE,atrim=end=3.2,afade=t=out:st=2.5:d=0.7" \
+	-ac 1 "$OUT/_ras.wav"
+TINTA_LUFS=-14
+unic warlock_ras "$OUT/_ras.wav"
+TINTA_LUFS=-13
+# 24. stingerul de apariție (~3 s, stereo): lovitura de groază (Stinger) peste pianul disonant și un bas care cade.
+# Când apare Warlock-ul în spatele vostru la motel și când te vede Head Witch.
+ffmpeg -v error -y -i "$P2/Stingers and Spooky Triggers/Stinger.wav" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent.wav" -f lavfi -i "$(sub 65 25 3 1.2 1)" -filter_complex \
+	"[0]$(b 0 2.1 0.9)[a];[1]$(b 0 2.9 0.85),volume=0.8[p];[a][p][2]$MIX=3,$DENS,$ECOU_MARE,atrim=end=3.4,afade=t=out:st=2.6:d=0.8,$STEREO" \
+	-ac 2 "$OUT/_stinger.wav"
+unic stinger_aparitie "$OUT/_stinger.wav" stereo
+# 25. „YOU DIED” (~5,5 s, stereo): clopotul grav (Bell_low încetinit), pianul disonant care se stinge, chitara care
+# alunecă în jos și o bubuitură în piept
+ffmpeg -v error -y -i "$P2/Ambient/Bell_low.wav" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent_2.wav" -i "$P2/Stingers and Spooky Triggers/Slide guitar_decreasing pitch.wav" -f lavfi -i "$(sub 52 30 5.5 1.4 1.1)" -filter_complex \
+	"[0]$(b 0 5.5 0.8),volume=4[c];[1]$(b 0 2.15 0.7),volume=0.8[p];[2]$(b 0.15 4.65 0.85),adelay=300,volume=0.6[g];[c][p][g][3]$MIX=4,$DENS,$ECOU_MARE,atrim=end=5.5,afade=t=out:st=4.2:d=1.3,$STEREO" \
+	-ac 2 "$OUT/_murit.wav"
+unic ai_murit "$OUT/_murit.wav" stereo
+# 26. „… DEFEATED” (~4,5 s, stereo): acordul luminos-înfiorător (Harmonized Tone), sclipirea (Ability Ready), o bufnitură
+# blândă dedesubt
+ffmpeg -v error -y -i "$P2/Stingers and Spooky Triggers/Harmonized Tone_Pleasant but Spooky.wav" -i "$P3/MAGSpel_Anime Ability Ready 3.wav" -i "$P3/FGHTBf_Anime Land 12.wav" -filter_complex \
+	"[0]$(b 0 4.5 1)[h];[1]$(b 0 1.1 1),volume=0.5[r];[2]$(b 0 0.95 0.6),lowpass=f=600,volume=0.8[l];[h][r][l]$MIX=3,$ECOU_MARE,atrim=end=4.8,afade=t=out:st=3.6:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_doborat.wav"
+unic inamic_doborat "$OUT/_doborat.wav" stereo
+# 27. Head Witch îi absoarbe puterile Warlock-ului (~6 s): corul fantomelor care se umflă, energia trasă (încărcarea
+# Shonen întoarsă = aer care se strânge), pârâitul, apoi la 4,8 s implozia: explozia scurtă coborâtă și basul
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P3/MAGSpel_Anime Ability Release 4.wav" -i "$P3/ELECSprk_Anime Spark 4.wav" \
+	-i "$P3/EXPLDsgn_Anime Explosion 4.wav" -f lavfi -i "$(sub 70 25 1.2 2.5 1.2)" -filter_complex \
+	"[0]$(b 3 8 0.85),afade=t=in:d=3,afade=t=out:st=4.9:d=0.3,volume=0.7[c];[1]$(b 0 2.4 0.9),areverse,adelay=2400[r];[2]$(b 0 3.1 1),highpass=f=1200,adelay=1600,volume=0.6[s];[3]$(b 0 1.4 0.7),lowpass=f=1800,adelay=4800[e];[4]adelay=4800[b];[c][r][s][e][b]$MIX=5,$DENS,$ECOU_MARE,atrim=end=6.5,afade=t=out:st=5.6:d=0.9,$STEREO" \
+	-ac 2 "$OUT/_absorbtie.wav"
+unic absorbtie "$OUT/_absorbtie.wav" stereo
+
+# --- Head Witch (City Center)
+# 28. urletul ei (~2,5 s, 3D): țipătul de fantomă peste un țipăt de om și un mârâit, ca o vrăjitoare furioasă
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost_scream_3.wav" -i "$P2/Ambient/Scream.wav" -i "$P2/Monsters & Ghosts/Monster_growl_1.wav" -filter_complex \
+	"[0]$(b 0 2.6 0.95)[g];[1]$(b 0 2.15 0.9),volume=0.5[s];[2]$(b 0 1.7 0.8),volume=0.5[m];[g][s][m]$MIX=3,$DENS,$ECOU_MARE,atrim=end=3,afade=t=out:st=2.2:d=0.8" \
+	-ac 1 "$OUT/_urlet_s.wav"
+unic sefa_urlet "$OUT/_urlet_s.wav"
+# 29. ea ca demon (faza a doua; ~4,5 s, 3D, -12): urletul de monstru coborât, țipătul de fantomă dedesubt, mârâitul, basul
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_Roar_4.wav" -i "$P2/Monsters & Ghosts/Ghost_scream_3.wav" -i "$P2/Monsters & Ghosts/Monster_growl_5.wav" -f lavfi -i "$(sub 40 25 4.5 0.5 0.7)" -filter_complex \
+	"[0]$(b 0 4.15 0.62)[r];[1]$(b 0 4.1 0.75),volume=0.5[g];[2]$(b 0 1.75 0.55),volume=0.6[m];[3]afade=t=in:d=0.3[s];[r][g][m][s]$MIX=4,$DENS,$ECOU_MARE,atrim=end=5,afade=t=out:st=3.8:d=1.2" \
+	-ac 1 "$OUT/_raget.wav"
+TINTA_LUFS=-12
+unic sefa_demon_raget "$OUT/_raget.wav"
+TINTA_LUFS=-13
+# 30. ea strânge puterea (~2,6 s, 3D; te vede / nova): riser-ul de groază, geamătul adânc și încărcarea Shonen
+ffmpeg -v error -y -i "$P2/Stingers and Spooky Triggers/Suspenseful pitch increase.wav" -i "$P2/Monsters & Ghosts/Tone_Moaning_Deep_3.wav" -i "$P3/MAGSpel_Anime Ability Charge 8.wav" -filter_complex \
+	"[0]$(b 2.5 5.1 1)[r];[1]$(b 0 2.6 0.9),volume=3[m];[2]$(b 0 2.2 0.9),volume=0.8,adelay=300[c];[r][m][c]$MIX=3,$DENS,volume='0.4+0.6*t/2.6':eval=frame,atrim=end=2.6,afade=t=out:st=2.4:d=0.2" \
+	-ac 1 "$OUT/_chemare.wav"
+TINTA_LUFS=-14
+unic sefa_chemare "$OUT/_chemare.wav"
+TINTA_LUFS=-13
+# 31. corul ei (~4 s, stereo): îi ridică pe oameni în aer / se ridică la transformare: corul fantomelor, acordul înfiorător
+# și o încărcare coborâtă
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P2/Stingers and Spooky Triggers/Harmonized Tone_Pleasant but Spooky.wav" -i "$P3/MAGSpel_Anime Ability Charge 4.wav" -filter_complex \
+	"[0]$(b 6 10.5 1),afade=t=in:d=0.6[c];[1]$(b 0 4 0.75),volume=0.6[h];[2]$(b 0 3.15 0.8),volume=0.6[i];[c][h][i]$MIX=3,$DENS,$ECOU_MARE,atrim=end=4.3,afade=t=out:st=3.4:d=0.9,$STEREO" \
+	-ac 2 "$OUT/_cor.wav"
+unic sefa_cor "$OUT/_cor.wav" stereo
+# 32. poarta de ceață se închide (~2,8 s, 3D): drone-ul de groază coborât și eliberarea lungă de energie
+ffmpeg -v error -y -i "$P2/Ambient/Drone_doom.wav" -i "$P3/MAGSpel_Anime Ability Release 4.wav" -f lavfi -i "$(sub 50 35 2.8 1 0.5)" -filter_complex \
+	"[0]$(b 0 3 0.75),volume=3[d];[1]$(b 0 2.4 0.7),volume=0.8[r];[d][r][2]$MIX=3,$DENS,$ECOU_MARE,atrim=end=3,afade=t=out:st=2.2:d=0.8" \
+	-ac 1 "$OUT/_poarta.wav"
+TINTA_LUFS=-14
+unic poarta_ceata "$OUT/_poarta.wav"
+TINTA_LUFS=-13
+# 33. transformarea: lumina albă (~5 s, stereo, -12): explozia lungă, eliberarea de energie, urletul de monstru încetinit,
+# gheața care crapă (pielea care se rupe) și stingerul de pian
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 11.wav" -i "$P3/MAGSpel_Anime Ability Release 5.wav" -i "$P2/Monsters & Ghosts/Monster_Roar_2.wav" \
+	-i "$P4/Spells/Ice Barrage 1.wav" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent.wav" -f lavfi -i "$(sub 60 20 5 0.8 1.2)" -filter_complex \
+	"[0]$(b 0 3.15 0.7),lowpass=f=3000[e];[1]$(b 0 1.7 0.9),volume=0.8[r];[2]$(b 0 1.15 0.55),volume=0.8,adelay=150[m];[3]$(b 0 2.1 0.8),volume=0.6[g];[4]$(b 0 2.9 0.8),volume=0.6[p];[e][r][m][g][p][5]$MIX=6,$DENS,$ECOU_MARE,atrim=end=5.5,afade=t=out:st=4:d=1.5,$STEREO" \
+	-ac 2 "$OUT/_transformare.wav"
+TINTA_LUFS=-12
+unic sefa_transformare "$OUT/_transformare.wav" stereo
+TINTA_LUFS=-13
+# 34. zboară pe mătură spre tine (~1,3 s, 3D): vâjâitul Shonen și focul care trece
+ffmpeg -v error -y -i "$P3/SWSH_Anime Fly 5.wav" -i "$P3/FGHTMisc_Anime Dodge 4.wav" -i "$P4/Spells/Fireball 3.wav" -filter_complex \
+	"[0]$(b 0 1.1 0.85)[w];[1]$(b 0 0.6 0.9),volume=0.7[d];[2]$(b 0 1.2 0.8),volume=0.5[f];[w][d][f]$MIX=3,$DENS,atrim=end=1.4,afade=t=out:st=1:d=0.4" \
+	-ac 1 "$OUT/_matura.wav"
+unic matura_atac "$OUT/_matura.wav"
+# 35. raza care mătură piața (~2,8 s, 3D): flacăra continuă (Firespray), pârâitul electric și un zumzet jos
+ffmpeg -v error -y -i "$P4/Spells/Firespray 2.wav" -i "$P3/ELECSprk_Anime Spark 3.wav" -i "$P3/MAGSpel_Anime Ability Charge 17.wav" -filter_complex \
+	"[0]$(b 0 2.1 0.85)[f];[1]$(b 0 3 1),volume=0.7[s];[2]$(b 0 3 0.7),lowpass=f=700,volume=0.6[h];[f][s][h]$MIX=3,$DENS,atrim=end=2.8,afade=t=in:d=0.05,afade=t=out:st=2.4:d=0.4" \
+	-ac 1 "$OUT/_raza.wav"
+unic raza_matura "$OUT/_raza.wav"
+# 36. o rază de lumină țâșnește din ea la final (~0,9 s, 3D, -15; nouă una după alta)
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Release 6.wav" -i "$P3/ELECSprk_Anime Spark 2.wav" -filter_complex \
+	"[0]$(b 0 0.7 1)[r];[1]$(b 0 0.5 1.2),highpass=f=1500,volume=0.6[s];[r][s]$MIX=2,$ECOU_MIC,atrim=end=1,afade=t=out:st=0.7:d=0.3" \
+	-ac 1 "$OUT/_tasneste.wav"
+TINTA_LUFS=-15
+unic raza_tasneste "$OUT/_tasneste.wav"
+TINTA_LUFS=-13
+# 37. explozia ei finală (~8 s, stereo, -10: vârful jocului): explozia lungă coborâtă + cea seacă, țipătul ei care se pierde în explozie,
+# basul 55 -> 16 Hz și ecoul străzilor
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 8.wav" -i "$P3/EXPLDsgn_Anime Explosion 10.wav" -i "$P2/Monsters & Ghosts/Ghost_scream_3.wav" -f lavfi -i "$(sub 55 16 8 0.5 1.3)" \
+	-i "$P2/Stingers and Spooky Triggers/Harmonized Tone_Pleasant but Spooky.wav" -filter_complex \
+	"[0]$(b 0 3.1 0.65),lowpass=f=2400,volume=1.3[e];[1]$(b 0 1.95 1),volume=0.7[p];[2]$(b 0 4.1 1),afade=t=out:st=0.5:d=2.5,volume=0.5[s];[4]$(b 0 4 0.5),afade=t=in:st=0:d=1.5,adelay=1500,volume=0.5[h];[e][p][s][3][h]$MIX=5,$DENS,$ECOU_MARE,atrim=end=8,afade=t=out:st=6:d=2,$STEREO" \
+	-ac 2 "$OUT/_final.wav"
+TINTA_LUFS=-10
+unic sefa_explozie_finala "$OUT/_final.wav" stereo
+TINTA_LUFS=-13
+# 38. ploaia de meteoriți începe (~2,5 s, 3D): roiul de pietre (Rock Meteor Swarm) peste tunetul adevărat
+ffmpeg -v error -y -i "$P4/Spells/Rock Meteor Swarm 1.wav" -i "$FURTUNA" -filter_complex \
+	"[0]$(b 0 1.9 0.85)[m];[1]$(b 17.4 20 1),lowpass=f=700,volume=1.5[t];[m][t]$MIX=2,$DENS,atrim=end=2.6,afade=t=out:st=2:d=0.6" \
+	-ac 1 "$OUT/_meteori.wav"
+unic meteori "$OUT/_meteori.wav"
+TINTA_LUFS=$TINTA_NORMALA_LUPTE
+rm -f "$OUT"/_tunet.wav "$OUT"/_fulger.wav "$OUT"/_corn.wav "$OUT"/_aparitie.wav "$OUT"/_sosire.wav "$OUT"/_vraja.wav "$OUT"/_impact.wav \
+	"$OUT"/_spart.wav "$OUT"/_incarcare.wav "$OUT"/_boss_incarcare.wav "$OUT"/_orb_zbor.wav "$OUT"/_orb_bum.wav "$OUT"/_boss_glob.wav \
+	"$OUT"/_cerc.wav "$OUT"/_unda.wav "$OUT"/_parare.wav "$OUT"/_lovit_tu.wav "$OUT"/_boss_lovit.wav "$OUT"/_cazi.wav "$OUT"/_durere.wav \
+	"$OUT"/_urlet_w.wav "$OUT"/_moare_w.wav "$OUT"/_ras.wav "$OUT"/_stinger.wav "$OUT"/_murit.wav "$OUT"/_doborat.wav "$OUT"/_absorbtie.wav \
+	"$OUT"/_urlet_s.wav "$OUT"/_raget.wav "$OUT"/_chemare.wav "$OUT"/_cor.wav "$OUT"/_poarta.wav "$OUT"/_transformare.wav "$OUT"/_matura.wav \
+	"$OUT"/_raza.wav "$OUT"/_tasneste.wav "$OUT"/_final.wav "$OUT"/_meteori.wav

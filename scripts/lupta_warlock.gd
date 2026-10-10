@@ -55,6 +55,12 @@ extends LuptaBoss
 const SUNET_CIOCANIT := preload("res://sunete/usa_ciocanit.ogg")
 const SUNET_PAS := preload("res://sunete/pas_lemn_2.ogg")
 const SUNET_MUZICA := preload("res://sunete/muzica_warlock.ogg")
+## Vocea lui și stingerul de la apariție (10.10, pachetele noi; vezi sunete.sh).
+const SUNET_DURERE := preload("res://sunete/warlock_durere.ogg")
+const SUNET_RAS := preload("res://sunete/warlock_ras.ogg")
+const SUNET_URLET := preload("res://sunete/warlock_urlet.ogg")
+const SUNET_MOARE := preload("res://sunete/warlock_moare.ogg")
+const SUNET_STINGER := preload("res://sunete/stinger_aparitie.ogg")
 
 ## Raza dintre Warlock și palma ei (finalul): capetele, actualizate în fiecare cadru.
 var _raza_absorbtie: MeshInstance3D
@@ -67,6 +73,8 @@ func _ready() -> void:
 	if jucator == null or usa == null:
 		return
 	_pregateste(SUNET_MUZICA)
+	sunet_durere = SUNET_DURERE
+	sunet_ras = SUNET_RAS
 	usa.indiciu = "[E] Knock"
 	usa.folosit.connect(_bate_la_usa)
 	usa.activ = Stare.e_marcat(marcaj_camera) and not Stare.e_marcat(marcaj_lupta)
@@ -298,6 +306,7 @@ func _bate_la_usa() -> void:
 	var cer := loc_aparitie + Vector3(randf_range(-4, 4), 40, randf_range(-3, 3))
 	Fulger.loveste(self, cer, loc_aparitie, ROSU, 0.35, true, 1.6)
 	VrajaAtac.sunet_la(self, SUNET_TELEPORT, loc_aparitie + Vector3.UP, Sunet.VOLUM_EFECTE + 2.0, 18.0)
+	Sunet.reda(SUNET_STINGER, Sunet.VOLUM_EFECTE - 2.0)
 	_lumina_scurta(loc_aparitie + Vector3.UP * 2.0, ROSU, 14.0, 26.0, 1.2)
 	_fum(loc_aparitie + Vector3.UP * 0.8, 40)
 	Zguduire.porneste(_camera_jucator, 0.03, 0.5)
@@ -309,6 +318,7 @@ func _bate_la_usa() -> void:
 	var stalp := _stalp_lumina(loc_aparitie, 30.0, 0.9, ROSU)
 	_boss.aparitie(1.4)
 	_boss.priveste(_sefa_ref.global_position + Vector3.UP * 1.6)
+	get_tree().create_timer(0.9, false).timeout.connect(_rade)
 	var d := (loc_usa - loc_aparitie)
 	d.y = 0.0
 	d = d.normalized()
@@ -374,7 +384,7 @@ func _bate_la_usa() -> void:
 	await zbor.finished
 	var unde := glob.global_position
 	glob.queue_free()
-	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE - 3.0, 0.05)
+	Sunet.reda(SUNET_GLOB_BUM, Sunet.VOLUM_EFECTE + 2.0, 0.05)
 	if aparat:
 		_scut_lovit(unde)
 		Zguduire.porneste(_camera_jucator, 0.03, 0.4)
@@ -452,6 +462,7 @@ func _treci_in_faza_doi() -> void:
 	create_tween().tween_property(_boss, "furie", 1.0, 1.5)
 	create_tween().tween_property(_boss, "plutire", 1.1, 1.5).set_trans(Tween.TRANS_SINE)
 	VrajaAtac.sunet_la(self, SUNET_TUNET, centru + Vector3.UP * 8.0, Sunet.VOLUM_EFECTE, 18.0)
+	VrajaAtac.sunet_la(self, SUNET_URLET, _piept_boss(), Sunet.VOLUM_EFECTE + 2.0, 16.0, 0.0)
 	_tween_cer(1.0, 2.5)
 	for k in 4:
 		var u := k * TAU / 4.0 + randf() * 0.5
@@ -498,7 +509,8 @@ func _finalul(din_lupta: bool) -> void:
 		create_tween().tween_property(_muzica, "volume_db", -40.0, 2.0)
 		_boss.tresare(_boss.global_position - j.global_position, 2.5)
 		_lumina_scurta(_piept_boss(), ROSU, 8.0, 10.0, 0.6)
-		Sunet.reda(SUNET_IMPACT, Sunet.VOLUM_EFECTE)
+		Sunet.reda(SUNET_IMPACT, Sunet.VOLUM_EFECTE - 3.0)
+		VrajaAtac.sunet_la(self, SUNET_MOARE, _piept_boss(), Sunet.VOLUM_EFECTE + 2.0, 14.0, 0.0)
 		await c.priveste(_piept_boss(), 0.5)
 		# cade în genunchi (plan din lateral, de jos: de unde stai tu poate fi o mașină în cale)
 		var w := _boss.global_position
@@ -508,7 +520,7 @@ func _finalul(din_lupta: bool) -> void:
 		_film(w + spre_tine * 5.2 + latura * 2.8 + Vector3.UP * 1.3, w + Vector3.UP * 1.2, 50.0,
 			w + spre_tine * 4.4 + latura * 2.3 + Vector3.UP * 1.1, 4.5, _boss, 1.0)
 		await _boss.prabusire(1.3).finished
-		VrajaAtac.sunet_la(self, SUNET_CAZUT, _boss.global_position, Sunet.VOLUM_EFECTE + 4.0, 10.0)
+		VrajaAtac.sunet_la(self, SUNET_CAZI, _boss.global_position, Sunet.VOLUM_EFECTE + 3.0, 10.0)
 		_praf(_boss.global_position)
 		Zguduire.porneste(_camera_jucator, 0.02, 0.3)
 		Sunet.reda(SUNET_DOBORAT, Sunet.VOLUM_EFECTE)

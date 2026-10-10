@@ -25,7 +25,8 @@ const SHADER_RAZA := preload("res://shaders/raza_vraja.gdshader")
 const VRAJITOARE := [preload("res://models/vrajitoare_salon_1.glb"), preload("res://models/vrajitoare_salon_2.glb"),
 	preload("res://models/vrajitoare_salon_3.glb"), preload("res://models/vrajitoare_salon_4.glb")]
 const SUNET_TUNET := preload("res://sunete/atac_tunet.ogg")
-const SUNET_CORN := preload("res://sunete/atac_corn.ogg")
+## Cornul „de film” (10.10): cornul sintetizat peste drone-ul de groază și metalul care rezonează (vezi sunete.sh).
+const SUNET_CORN := preload("res://sunete/atac_corn_film.ogg")
 const SUNET_SOSIRE := preload("res://sunete/warlock_sosire.ogg")
 const SUNET_TOBE := preload("res://sunete/atac_tobe.ogg")
 const SUNET_SCUT := preload("res://sunete/scut.ogg")
@@ -157,6 +158,7 @@ func _jucator() -> CharacterBody3D:
 
 
 func _exit_tree() -> void:
+	VrajaAtac.volum_impact = 0.0
 	_scoate_filtrele()
 	# volumul general e și al Tranzitie: îl punem la loc doar dacă l-am coborât noi (leșinul) și nu l-am ridicat încă
 	if _volum_coborat:
@@ -289,6 +291,8 @@ func _atacul() -> void:
 			vr.arunca(tinta, randf_range(0.8, 1.2), randf_range(1.2, 1.7))
 			k += 1
 			await get_tree().create_timer(randf_range(0.18, 0.34)).timeout
+	# zeci de impacturi deodată: mai încet, ca vraja mare de la final să fie vârful scenei
+	VrajaAtac.volum_impact = -5.0
 	trage.call()
 	_stinge_conacul(7.0)
 	await get_tree().create_timer(1.0).timeout
@@ -301,6 +305,7 @@ func _atacul() -> void:
 
 	# 5. vrăjitoarele coven-ului apar în curte și trag înapoi: plan de pe podestul scării, din spatele lor, spre armată
 	bombardament[0] = false
+	get_tree().create_timer(1.6).timeout.connect(func() -> void: VrajaAtac.volum_impact = 0.0)
 	var scut_warlock := _scut(sol + Vector3.UP * 1.6, 3.4, Color(1.0, 0.2, 0.15))
 	_film(plan_aparatoare, loc_warlock + Vector3.UP * 2.5, 58.0, plan_aparatoare + Vector3(0.6, 0.15, 1.2), 9.5)
 	for i in 4:
@@ -415,7 +420,7 @@ func _vraja_mare(jucator: CharacterBody3D, cap: Node3D, sol: Vector3, scut_warlo
 
 	# 7. lovitura: alb, bubuitura, conacul se face ruină, suflul
 	glob.queue_free()
-	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE)
+	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE + 3.0)  # vârful scenei: mai tare decât bombardamentul (îl prinde limitatorul)
 	_alb.color.a = 1.0
 	create_tween().tween_property(_alb, "color:a", 0.0, 0.9).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	_zguduie(2.0, 3.0)

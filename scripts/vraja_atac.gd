@@ -14,6 +14,9 @@ const SUNET_ARUNCA := preload("res://sunete/atac_vraja.ogg")
 const SUNET_LOVIT := preload("res://sunete/atac_impact.ogg")
 ## Cât înfundă distanța sunetul (Godot implicit: -24 dB, care la 40 m lasă doar un huruit). Vezi sunet_la.
 const FILTRU_DEPARTE_DB := -6.0
+## Cât de tare (dB în plus) se aud impacturile: scenele îl coboară cât timp cad zeci deodată (bombardamentul din
+## atac_conac.gd), ca lovitura mare de după să iasă în față. Pune-l la loc la 0.
+static var volum_impact := 0.0
 ## [miezul, culoarea vrăjii, fumul] pentru fiecare fel.
 const CULORI := {
 	"foc": [Color(1.0, 0.92, 0.7), Color(1.0, 0.5, 0.18), Color(0.36, 0.3, 0.28)],
@@ -199,7 +202,7 @@ func _explodeaza() -> void:
 	_dara.emitting = false
 	var spre := (_de_la - _la).normalized()
 	if cu_sunet:
-		sunet_la(self, SUNET_LOVIT, _la, Sunet.VOLUM_EFECTE, 10.0 * marime, 0.12)
+		sunet_la(self, SUNET_LOVIT, _la, Sunet.VOLUM_EFECTE + volum_impact, 10.0 * marime, 0.12)
 	# energia / flăcările care se umflă și se fac fum
 	var foc := particule(self, int(40 * marime) + 10, 0.8, 0.5 * marime, [Color(c[0], 1.0), Color(c[1], 0.9), Color(c[2], 0.6), Color(c[2], 0.0)])
 	foc.one_shot = true
