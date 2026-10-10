@@ -111,14 +111,16 @@ def boschetar(cale):
 			cub("Talpa", (0.12, 0.25, 0.025), (xb, -0.62, z0 + 0.012), NEGRU),
 			cilindru("Caramb", 0.065, 0.065, 0.1, (xb, -0.56, z0 + 0.1), GHETE, laturi=8),
 		]
-	# --- cartonul cu scris, sprijinit de genunchi, puțin lăsat pe spate (spre el)
-	inclinare = -0.2
-	centru_semn = (0, -0.49, z0 + 0.4)
+	# --- cartonul cu scris, lăsat pe spate (spre el)
+	# sprijinit de gambe, cât sunt ele de înclinate (~32°), la 5-6 cm în fața lor (înainte trecea prin genunchi și gambe)
+	inclinare = -0.56
+	centru_semn = (0, -0.535, z0 + 0.36)
 	normala = (0, -math.cos(inclinare), -math.sin(inclinare))  # spre stradă
 	sus = (0, -math.sin(inclinare), math.cos(inclinare))
 	piese.append(cub("Semn", (0.56, 0.012, 0.34), centru_semn, CARTON, rot=(inclinare, 0, 0)))
 	# colțul rupt din dreapta jos și o pată
-	piese.append(cub("Semn rupt", (0.07, 0.014, 0.05), (0.25, -0.488, z0 + 0.25), CARTON_UMBRA, rot=(inclinare, 0, 0.5)))
+	colt = tuple(c + u * -0.14 + n * 0.002 for c, u, n in zip(centru_semn, sus, normala))
+	piese.append(cub("Semn rupt", (0.07, 0.014, 0.05), (0.25, colt[1], colt[2]), CARTON_UMBRA, rot=(inclinare, 0, 0.5)))
 	scris = []
 	for rand, (cuvinte, marime) in enumerate((("SAVING", 0.07), ("MONEY", 0.07), ("FOR DRUGS", 0.06))):
 		h = 0.085 - rand * 0.085
@@ -126,7 +128,8 @@ def boschetar(cale):
 		scris.append(text("Scris semn", cuvinte, loc, marime, NEGRU, rot=(1.5708 + inclinare, 0, 0)))
 	piese += scris
 	# --- brațul stâng (în corp): ține colțul din stânga sus al cartonului
-	_brat(piese, (0.22, 0.07, z0 + 0.56), (0.3, -0.18, z0 + 0.36), (0.24, -0.43, z0 + 0.5), "Brat")
+	# coatele pe lângă genunchi, mâinile peste muchia de sus (antebrațele rămân în spatele cartonului)
+	_brat(piese, (0.22, 0.07, z0 + 0.56), (0.33, -0.2, z0 + 0.36), (0.27, -0.43, z0 + 0.53), "Brat")
 	# --- paharul de carton cu mărunțiș, sticla în pungă, sacoșa
 	px, py = -0.36, -0.82
 	piese += [
@@ -153,7 +156,7 @@ def boschetar(cale):
 	# --- brațul drept (separat, originea în umăr): ține colțul din dreapta sus; la vrajă îl ridică
 	umar = (-0.22, 0.07, z0 + 0.56)
 	brat = []
-	mana = _brat(brat, umar, (-0.3, -0.18, z0 + 0.36), (-0.24, -0.43, z0 + 0.5), "BratDrept")
+	mana = _brat(brat, umar, (-0.33, -0.2, z0 + 0.36), (-0.27, -0.43, z0 + 0.53), "BratDrept")
 	ob_brat = uneste(brat, "BratDrept", umar)
 	palma = bpy.data.objects.new("Palma", None)
 	bpy.context.scene.collection.objects.link(palma)
