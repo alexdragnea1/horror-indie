@@ -1,4 +1,4 @@
-extends Interactabil
+extends ChemareDemon
 ## Ceaunul din camera ta (scenes/dormitor.tscn, nodul `Ceaun`). Folosibil doar cu pisica moartă din conac în inventar
 ## (`ID_PISICA`, vezi pisica.gd): „[E] Throw the cat in” pornește scena (cu benzi negre, vezi Cutscena):
 ##   1. faci un pas spre ceaun și arunci pisica înăuntru (pleoscăit, stropi);
@@ -16,20 +16,9 @@ extends Interactabil
 ## („dezintegrat” / „teleportat”; după el pentagrama mai mocnește puțin).
 ## Replicile sunt ale owner-ului; le poate schimba din Inspector.
 
-const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
-const MATERIAL := preload("res://shaders/material_model.tres")
-const SHADER_RAZA := preload("res://shaders/raza_vraja.gdshader")
-const MODEL_PISICA := preload("res://models/pisica.glb")
 const CEAUN_SPART := preload("res://models/ceaun_spart.glb")
-const DEMON := preload("res://scenes/demon.tscn")
-const SUNET_PLESCAIT := preload("res://sunete/cazan_plescait.ogg")
 const SUNET_INCINS := preload("res://sunete/ceaun_incins.ogg")
 const SUNET_EXPLOZIE := preload("res://sunete/ceaun_explozie.ogg")
-const SUNET_TIUIT := preload("res://sunete/tiuit.ogg")
-const SUNET_CHEMARE := preload("res://sunete/demon_chemare.ogg")
-const SUNET_VOCE_DEMON := preload("res://sunete/demon_voce.ogg")
-const SUNET_LUMANARE := preload("res://sunete/minge_foc_aprinsa.ogg")
-const ID_PISICA := "cadavru_pisica"
 ## Înălțimea poțiunii în ceaun (față de podea) și culoarea ei din model (materialul o înmulțește).
 const GURA := 0.55
 const CULOARE_MODEL_LICHID := Color("61a19f")
@@ -37,14 +26,8 @@ const CULOARE_MODEL_LICHID := Color("61a19f")
 const CULOARE_LUMANARE := Color(1.0, 0.68, 0.4)
 
 @export var marcaj_explodat := "ceaunul_a_explodat"
-@export var marcaj_demon := "demonul_chemat"
-@export var replica_demon := "Demon: There's a special place in hell for people like you."
-@export var replica_cu_pistol := "You: You're a bitch lmao."
-@export var replica_fara_pistol := "You: Kill yourself."
 ## Cât se încinge până explodează (secunde; sunetul `ceaun_incins` e cam atât de lung).
 @export var durata_incingere := 4.0
-## Câte gloanțe tragi în demon.
-@export var gloante := 3
 ## Unde te dai înapoi cât se încinge ceaunul și de unde vezi demonul (în camera ta: centrul ei e originea; lângă
 ## noptieră, la ~2,5 m de pentagramă, ca să-l vezi întreg).
 @export var loc_jucator := Vector3(2.2, 0.0, -0.35)
@@ -56,8 +39,6 @@ const CULOARE_LUMANARE := Color(1.0, 0.68, 0.4)
 var _in_curs := false
 var _tremur := 0.0
 var _timp := 0.0
-var _jucator: CharacterBody3D
-var _camera: Camera3D
 var _spart: Node3D  # ceaunul spart (după explozie)
 
 @onready var _model: Node3D = $Model
@@ -108,7 +89,7 @@ func interactioneaza() -> void:
 	await c.priveste(gura + Vector3.DOWN * 0.1, 0.6)
 
 	# 1. arunci pisica
-	await _arunca_pisica(gura)
+	await _pisica_in_ceaun(gura)
 	await get_tree().create_timer(0.8).timeout
 
 	# 2. se încinge
@@ -122,30 +103,8 @@ func interactioneaza() -> void:
 	var demon := await _cheama_demonul(c)
 	await get_tree().create_timer(0.5).timeout
 
-	# 5. ce-i spune și ce-i răspunzi
-	var cap_demon := demon.global_position + Vector3.UP * 1.8  # puțin sub cap: se vede și pieptul, nu doar tavanul
-	await c.priveste(cap_demon, 0.4)
-	demon.vorbeste = true
-	Dialog.spune([replica_demon])
-	Sunet.reda_la(SUNET_VOCE_DEMON, cap_demon, Sunet.VOLUM_EFECTE, 0.0)  # respirația și mârâitul lui, sub bipurile replicii
-	# falca se mișcă doar cât se scrie replica (45 de litere pe secundă, ca în Dialog)
-	get_tree().create_timer(replica_demon.length() / 45.0).timeout.connect(func() -> void:
-		if is_instance_valid(demon):
-			demon.vorbeste = false)
-	await Dialog.terminat
-	demon.vorbeste = false
-	var id_pistol := _pistolul()
-	if id_pistol != "":
-		await _impusca_demonul(c, demon, id_pistol)
-		Stare.marcheaza(marcaj_demon, "dezintegrat")
-	else:
-		Dialog.spune([replica_fara_pistol])
-		await Dialog.terminat
-		demon.mareste_furia(0.25, 0.4)
-		await get_tree().create_timer(0.9).timeout
-		demon.teleporteaza()
-		await get_tree().create_timer(1.2).timeout
-		Stare.marcheaza(marcaj_demon, "teleportat")
+	# 5. ce-i spune și ce-i răspunzi (ChemareDemon)
+	await _vorbeste_cu_demonul(c, demon)
 
 	# după: pentagrama se stinge până mai mocnește doar, lumânările revin la flacăra lor
 	await _stinge_chemarea()
@@ -154,27 +113,10 @@ func interactioneaza() -> void:
 	await c.opreste()
 
 
-## Pisica pleacă din brațele tale, zboară în arc peste buză (moale, dându-se peste cap) și se scufundă.
-func _arunca_pisica(gura: Vector3) -> void:
-	var pisica := MODEL_PISICA.instantiate() as Node3D
-	pisica.set_script(SCRIPT_MODEL)
-	pisica.set("material", MATERIAL)
-	get_tree().current_scene.add_child(pisica)
-	# culcată pe o parte, cu ochii închiși
-	var ochi := pisica.get_node_or_null("Cap/Ochi") as Node3D
-	if ochi:
-		ochi.scale.y = 0.15
-	var start := _camera.global_position - _camera.global_basis.z * 0.55 + Vector3.DOWN * 0.5
+## Pisica zboară din brațele tale peste buză (ChemareDemon._arunca_pisica) și se scufundă în poțiune.
+func _pisica_in_ceaun(gura: Vector3) -> void:
 	var sus := gura + Vector3.UP * 0.12
-	var rot_start := Vector3(0.0, _jucator.rotation.y, PI / 2.0)
-	var rot_capat := rot_start + Vector3(-2.6, 0.4, 0.3)
-	pisica.global_position = start
-	pisica.rotation = rot_start
-	var t := create_tween()
-	t.tween_method(func(f: float) -> void:
-		pisica.global_position = start.lerp(sus, f) + Vector3.UP * sin(f * PI) * 0.6
-		pisica.rotation = rot_start.lerp(rot_capat, f), 0.0, 1.0, 0.6)
-	await t.finished
+	var pisica := await _arunca_pisica(sus)
 	Sunet.reda_la(SUNET_PLESCAIT, gura, Sunet.VOLUM_EFECTE, 0.05, 1.15)
 	var stropi := _particule(30, 0.9, 0.05, PackedColorArray([CULOARE_MODEL_LICHID, Color(CULOARE_MODEL_LICHID, 0.0)]), false)
 	stropi.direction = Vector3.UP
@@ -185,7 +127,7 @@ func _arunca_pisica(gura: Vector3) -> void:
 	stropi.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	stropi.emission_sphere_radius = 0.15
 	_unic(stropi, gura)
-	t = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	var t := create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	t.tween_property(pisica, "global_position", sus + Vector3.DOWN * 0.5, 0.6)
 	await t.finished
 	pisica.queue_free()
@@ -370,7 +312,7 @@ func _cheama_demonul(c: Cutscena) -> Demon:
 	if t.is_running():
 		await t.finished
 	# stâlpul de lumină până în tavan
-	var raza := _stalp_lumina()
+	var raza := _stalp_lumina(culoare_pentagrama, 2.95, 0.95)
 	_covor.add_child(raza)
 	var mat: ShaderMaterial = raza.material_override
 	t = create_tween()
@@ -378,38 +320,7 @@ func _cheama_demonul(c: Cutscena) -> Demon:
 	t.tween_method(func(v: float) -> void: mat.set_shader_parameter("putere", v), 1.0, 0.0, 3.0)
 	t.tween_callback(raza.queue_free)
 	# demonul, cu fața spre tine
-	var demon := DEMON.instantiate() as Demon
-	get_parent().add_child(demon)
-	demon.global_position = centru
-	var spre := _jucator.global_position - centru
-	demon.rotation.y = atan2(spre.x, spre.z)
-	demon.privire = _camera
-	c.priveste(centru + Vector3.UP * 2.0, 2.6)
-	get_tree().create_timer(2.9).timeout.connect(_zguduie.bind(0.35, 1.6))
-	await demon.aparitie(2.6)
-	return demon
-
-
-## Scoți pistolul, îi spui replica și tragi în pieptul lui; se dezintegrează.
-func _impusca_demonul(c: Cutscena, demon: Demon, id_pistol: String) -> void:
-	Stare.tine_in_mana(id_pistol)
-	Pistol.in_scena = true
-	await get_tree().create_timer(0.45).timeout
-	Dialog.spune([replica_cu_pistol])
-	await Dialog.terminat
-	demon.mareste_furia(0.6, 0.3)
-	var pistol := _pistol_din_mana(id_pistol)
-	for i in gloante:
-		var tinta := demon.to_global(Vector3(randf_range(-0.08, 0.08), 1.45 + randf_range(-0.1, 0.12), 0.2))
-		await c.priveste(tinta, 0.35 if i == 0 else 0.12)
-		if pistol:
-			pistol.trage_acum()
-		await get_tree().create_timer(0.4).timeout
-	demon.mareste_furia(0.0, 0.2)
-	demon.dezintegreaza()
-	await c.priveste(demon.global_position + Vector3.UP * 1.6, 0.8)
-	await get_tree().create_timer(3.0).timeout
-	Pistol.in_scena = false
+	return await _ridica_demonul(c, centru, get_parent())
 
 
 ## După demon: pentagrama mai mocnește, lumina roșie se stinge, lumânările revin la flacăra lor.
@@ -433,24 +344,6 @@ func _stinge_chemarea() -> void:
 		lumina.queue_free()
 	if inel:
 		get_tree().create_timer(3.0).timeout.connect(inel.queue_free)
-
-
-## Pistolul din inventar: cel din mână, altfel cel roz, altfel cel de aur; "" = n-ai pistol.
-func _pistolul() -> String:
-	if Stare.in_mana in [Pistol.ID, Pistol.ID_AUR]:
-		return Stare.in_mana
-	if Stare.are_obiect(Pistol.ID):
-		return Pistol.ID
-	if Stare.are_obiect(Pistol.ID_AUR):
-		return Pistol.ID_AUR
-	return ""
-
-
-func _pistol_din_mana(id: String) -> Pistol:
-	for copil in _camera.get_children():
-		if copil is Pistol and (copil as Pistol).id == id:
-			return copil
-	return null
 
 
 # ---------------------------------------------------------------- ceaunul spart
@@ -549,103 +442,3 @@ func _lumanari() -> Array[Node3D]:
 	return lista
 
 
-## Camera se zguduie (`putere` 1 = explozia de lângă tine) și se liniștește în `durata` secunde.
-func _zguduie(putere: float, durata: float) -> void:
-	if _camera == null:
-		return
-	var t := create_tween()
-	t.tween_method(func(v: float) -> void:
-		_camera.h_offset = randf_range(-1.0, 1.0) * 0.05 * putere * v
-		_camera.v_offset = randf_range(-1.0, 1.0) * 0.05 * putere * v, 1.0, 0.0, durata)
-	await t.finished
-	_camera.h_offset = 0.0
-	_camera.v_offset = 0.0
-
-
-## Îți țiuie urechile: tot ce se aude (efecte, ambianță, muzică) trece prin filtru și se aude înfundat, apoi revine în
-## `durata` secunde; peste, un țiuit (pe canalul Interfata, nefiltrat).
-func _asurzeste(durata: float) -> void:
-	# pocnetul exploziei se aude curat (0,35 s), abia apoi se înfundă: rămân basul și vuietul
-	await get_tree().create_timer(0.35).timeout
-	var filtre := []
-	for nume in [&"Efecte", &"Ambianta", &"Muzica"]:
-		var i := AudioServer.get_bus_index(nume)
-		if i < 0:
-			continue
-		var f := AudioEffectLowPassFilter.new()
-		f.cutoff_hz = 300.0
-		AudioServer.add_bus_effect(i, f)
-		filtre.append([i, f])
-	# explozia se aude întâi (o clipă), abia apoi se înfundă totul
-	Sunet.reda(SUNET_TIUIT, Sunet.VOLUM_EFECTE - 10.0, 0.0, &"Interfata")
-	var t := create_tween()
-	t.tween_method(func(v: float) -> void:
-		for x in filtre:
-			(x[1] as AudioEffectLowPassFilter).cutoff_hz = v, 300.0, 20000.0, durata).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
-	await t.finished
-	for x in filtre:
-		var i: int = x[0]
-		for k in range(AudioServer.get_bus_effect_count(i) - 1, -1, -1):
-			if AudioServer.get_bus_effect(i, k) == x[1]:
-				AudioServer.remove_bus_effect(i, k)
-
-
-## Stâlpul de lumină roșie de pe pentagramă (ca unda de la cazanul din pădure, raza_vraja.gdshader), până în tavan.
-func _stalp_lumina() -> MeshInstance3D:
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = 0.85
-	mesh.bottom_radius = 0.95
-	mesh.height = 2.95
-	mesh.radial_segments = 16
-	mesh.rings = 1
-	mesh.cap_top = false
-	mesh.cap_bottom = false
-	var mat := ShaderMaterial.new()
-	mat.shader = SHADER_RAZA
-	mat.set_shader_parameter("culoare", culoare_pentagrama)
-	mat.set_shader_parameter("putere", 0.0)
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.material_override = mat
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.position.y = 1.5
-	return mi
-
-
-## Particule: pătrățele întoarse spre cameră, cu culoarea după viață (`culori`, de la naștere la moarte).
-func _particule(cate: int, viata: float, marime: float, culori: PackedColorArray, aditiv: bool) -> CPUParticles3D:
-	var p := CPUParticles3D.new()
-	var quad := QuadMesh.new()
-	quad.size = Vector2.ONE * marime
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-	mat.vertex_color_use_as_albedo = true
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	if aditiv:
-		mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	mat.disable_fog = true
-	quad.material = mat
-	p.mesh = quad
-	p.amount = cate
-	p.lifetime = viata
-	p.local_coords = false
-	var gradient := Gradient.new()
-	var offsets := PackedFloat32Array()
-	for i in culori.size():
-		offsets.append(float(i) / (culori.size() - 1))
-	gradient.offsets = offsets
-	gradient.colors = culori
-	p.color_ramp = gradient
-	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	return p
-
-
-## O singură izbucnire de particule în `punct`.
-func _unic(p: CPUParticles3D, punct: Vector3) -> void:
-	p.one_shot = true
-	p.explosiveness = 1.0  # altfel particulele care n-au pornit încă se văd ca un pătrat negru în `punct`
-	get_tree().current_scene.add_child(p)
-	p.global_position = punct
-	p.emitting = true
-	get_tree().create_timer(p.lifetime + 0.5).timeout.connect(p.queue_free)

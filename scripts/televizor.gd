@@ -9,9 +9,26 @@ extends Node3D
 @export var titlu := "STRANGE LIGHTS OVER TRIVALE FOREST"
 @export var banda_jos := "POLICE SEARCH TRIVALE FOREST AFTER NIGHT OF STRANGE LIGHTS  •  NIGHT BUS 13 DRIVER QUITS: \"I SAW SOMETHING RUN NEXT TO THE BUS\"  •  FOG WARNING FOR THE WHOLE WEEK  •  "
 @export var sunet: AudioStream
+@export_group("Spart")
+## Tragi în el (orice armă, Fireball-ul, o explozie): ecranul se crapă și se stinge, scântei, fum, vocea tace.
+## Rămâne spart (marcajul ăsta, și la Continue).
+@export var marcaj_spart := "televizorul_lexy_spart"
+@export var sunet_spart: AudioStream
+@export var sunet_scantei: AudioStream
 
 const LATIME := 192
 const INALTIME := 112
+## Ecranul, în coordonatele televizorului (pentru locul glonțului pe imagine): x ±0,46, y 0,62…1,16.
+const ECRAN_X := 0.46
+const ECRAN_Y := Vector2(0.62, 1.16)
+## Cutia în care îl poți nimeri: doar televizorul (nu și comoda), trasă puțin în față cât să o prindă glonțul
+## înaintea cutiei de coliziune a modelului (`coliziune` = Cutie, care e cât tot modelul).
+const CUTIE_TINTA := AABB(Vector3(-0.5, 0.58, -0.12), Vector3(1.0, 0.63, 0.39))
+const CULORI_CRAPATURI: Array[Color] = [Color("70706e"), Color("7e8d87"), Color("83b3b0")]
+
+var spart := false
+var _mat_ecran: StandardMaterial3D
+var _voce: AudioStreamPlayer3D
 
 var _ecran: SubViewport
 var _prezentatoare: Control
@@ -44,6 +61,7 @@ func _ready() -> void:
 		mat.albedo_texture = _ecran.get_texture()
 		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		plan.material_override = mat
+		_mat_ecran = mat
 		plan.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		mesh.add_child(plan)
 		plan.position = cutie.get_center() + Vector3(0, 0, cutie.size.z * 0.5 + 0.002)
@@ -65,6 +83,148 @@ func _ready() -> void:
 		voce.autoplay = true
 		add_child(voce)
 		voce.position = Vector3(0, 0.9, 0)
+		_voce = voce
+	TintaObiect.adauga(self, CUTIE_TINTA).lovit.connect(_lovit)
+	if Stare.e_marcat(marcaj_spart):
+		_sparge(Vector3(0.12, 0.95, 0.0), false)
+
+
+func _lovit(_directie: Vector3, punct: Vector3, _foc: bool) -> void:
+	if spart:
+		return
+	Stare.marcheaza(marcaj_spart)
+	_sparge(to_local(punct), true)
+
+
+## Ecranul se crapă din punctul `local` (coordonatele televizorului) și se stinge. `efecte` = acum (sunet, fulger,
+## scântei, fum); fără = deja spart la încărcare.
+func _sparge(local: Vector3, efecte: bool) -> void:
+	spart = true
+	set_process(false)
+	_ecran.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	var uv := Vector2(clampf((local.x + ECRAN_X) / (2.0 * ECRAN_X), 0.08, 0.92),
+		clampf(1.0 - (local.y - ECRAN_Y.x) / (ECRAN_Y.y - ECRAN_Y.x), 0.1, 0.9))
+	if _mat_ecran:
+		_mat_ecran.albedo_texture = _textura_crapata(uv)
+	if _voce:
+		_voce.stop()
+	if not efecte:
+		_lumina.light_energy = 0.0
+		return
+	var pe_ecran := to_global(Vector3((uv.x * 2.0 - 1.0) * ECRAN_X, lerpf(ECRAN_Y.y, ECRAN_Y.x, uv.y), 0.02))
+	Sunet.reda_la(sunet_spart, pe_ecran, Sunet.VOLUM_EFECTE, 0.05)
+	# fulgerul alb al ecranului care moare, apoi întuneric
+	_lumina.light_color = Color(0.85, 0.95, 1.0)
+	_lumina.light_energy = 3.0
+	var t := create_tween()
+	t.tween_property(_lumina, "light_energy", 0.0, 0.35).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	_scantei(pe_ecran, 40, 1.0)
+	_fum(pe_ecran)
+	# mai pârâie de câteva ori, tot mai rar
+	for i in 4:
+		await get_tree().create_timer(randf_range(0.4, 1.1) * (i + 1)).timeout
+		if not is_inside_tree():
+			return
+		Sunet.reda_la(sunet_scantei, pe_ecran, Sunet.VOLUM_EFECTE - 6.0 - i * 2.0, 0.15)
+		_scantei(pe_ecran + global_basis.x * randf_range(-0.15, 0.15) + Vector3.UP * randf_range(-0.1, 0.1), 10, 0.5)
+
+
+## Un pumn de scântei care sar din ecran și cad (particule rotunde, aditive).
+func _scantei(unde: Vector3, cate: int, putere: float) -> void:
+	var p := CPUParticles3D.new()
+	p.emitting = false
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.amount = cate
+	p.lifetime = 0.9
+	p.direction = Vector3(0, 0.3, 1)
+	p.spread = 70.0
+	p.initial_velocity_min = 1.0 * putere
+	p.initial_velocity_max = 3.5 * putere
+	p.gravity = Vector3(0, -9.8, 0)
+	var g := Gradient.new()
+	g.colors = PackedColorArray([Color(1.0, 0.95, 0.7, 1.0), Color(1.0, 0.6, 0.2, 1.0), Color(0.9, 0.3, 0.1, 0.0)])
+	g.offsets = PackedFloat32Array([0.0, 0.4, 1.0])
+	p.color_ramp = g
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2.ONE * 0.025
+	mesh.material = Arma.material_particule(true)
+	p.mesh = mesh
+	add_child(p)
+	p.global_position = unde
+	p.emitting = true
+	get_tree().create_timer(2.0).timeout.connect(p.queue_free)
+
+
+## Fumul subțire și gri care iese de după ecran câteva secunde.
+func _fum(unde: Vector3) -> void:
+	var p := CPUParticles3D.new()
+	p.emitting = false
+	p.amount = 18
+	p.lifetime = 2.5
+	p.preprocess = 2.5
+	p.direction = Vector3.UP
+	p.spread = 15.0
+	p.initial_velocity_min = 0.15
+	p.initial_velocity_max = 0.35
+	p.gravity = Vector3(0, 0.05, 0)
+	var g := Gradient.new()
+	g.colors = PackedColorArray([Color(0.25, 0.24, 0.24, 0.0), Color(0.25, 0.24, 0.24, 0.35), Color(0.2, 0.2, 0.2, 0.0)])
+	g.offsets = PackedFloat32Array([0.0, 0.25, 1.0])
+	p.color_ramp = g
+	var mesh := QuadMesh.new()
+	mesh.size = Vector2.ONE * 0.18
+	mesh.material = Arma.material_particule(false, 0.6)
+	p.mesh = mesh
+	add_child(p)
+	p.global_position = unde + Vector3.UP * 0.25 - global_basis.z * 0.08
+	p.emitting = true
+	await get_tree().create_timer(5.0).timeout
+	if is_instance_valid(p):
+		p.emitting = false
+		get_tree().create_timer(3.0).timeout.connect(p.queue_free)
+
+
+## Ecranul spart: negru, crăpături care pleacă din locul glonțului (raze strâmbe + două inele rupte), o gaură în mijloc
+## și câteva coloane de pixeli morți colorați, ca la un LCD stricat. Culorile din paletă.
+func _textura_crapata(uv: Vector2) -> ImageTexture:
+	var w := 96
+	var h := 56
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color("262d2f"))
+	var r := RandomNumberGenerator.new()
+	r.seed = 13
+	var morti: Array[Color] = [Color("61a19f"), Color("7b383a"), Color("83b3b0"), Color("438b88")]
+	for c in morti:
+		var x := r.randi_range(0, w - 1)
+		for y in h:
+			img.set_pixel(x, y, c.darkened(0.3))
+	var c0 := uv * Vector2(w, h)
+	for i in 11:
+		var unghi := TAU * i / 11.0 + r.randf_range(-0.25, 0.25)
+		var pasi := int(r.randf_range(14.0, 60.0))
+		var p := c0
+		var culoare: Color = CULORI_CRAPATURI[r.randi() % CULORI_CRAPATURI.size()]
+		for k in pasi:
+			unghi += r.randf_range(-0.12, 0.12)
+			p += Vector2(cos(unghi), sin(unghi))
+			if p.x < 0 or p.y < 0 or p.x >= w or p.y >= h:
+				break
+			img.set_pixelv(Vector2i(p), culoare.darkened(float(k) / pasi * 0.5))
+	for raza: float in [5.0, 11.0]:
+		for k in 40:
+			if r.randf() < 0.35:
+				continue
+			var a := TAU * k / 40.0
+			var q := c0 + Vector2(cos(a), sin(a)) * raza * r.randf_range(0.85, 1.15)
+			if q.x >= 0 and q.y >= 0 and q.x < w and q.y < h:
+				img.set_pixelv(Vector2i(q), CULORI_CRAPATURI[0])
+	for dx in range(-2, 3):
+		for dy in range(-2, 3):
+			var q := Vector2i(c0) + Vector2i(dx, dy)
+			if q.x >= 0 and q.y >= 0 and q.x < w and q.y < h and dx * dx + dy * dy <= 5:
+				img.set_pixelv(q, Color("83b3b0") if dx * dx + dy * dy >= 4 else Color.BLACK)
+	return ImageTexture.create_from_image(img)
 
 
 func _dreptunghi(parinte: Control, culoare: Color, pozitie: Vector2, marime: Vector2) -> ColorRect:

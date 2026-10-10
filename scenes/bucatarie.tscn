@@ -20,9 +20,13 @@
 [ext_resource type="PackedScene" path="res://models/calendar.glb" id="19"]
 [ext_resource type="PackedScene" path="res://models/deasupra_frigiderului.glb" id="20"]
 [ext_resource type="PackedScene" path="res://models/pres.glb" id="21"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="22"]
 
 [sub_resource type="BoxShape3D" id="forma_mobila"]
 size = Vector3(2.6, 0.9, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_oala"]
+size = Vector3(0.36, 0.36, 0.4)
 
 [sub_resource type="BoxShape3D" id="forma_aragaz"]
 size = Vector3(0.6, 1.1, 0.6)
@@ -130,6 +134,14 @@ unit_size = 1.2
 max_distance = 7.0
 autoplay = true
 bus = &"Efecte"
+
+[node name="Oala" type="StaticBody3D" parent="Aragaz"]
+script = ExtResource("22")
+replici = PackedStringArray("You: She's been cooking straight bullshit for 2 weeks now..")
+
+[node name="Forma" type="CollisionShape3D" parent="Aragaz/Oala"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.0, 0.42)
+shape = SubResource("forma_oala")
 
 [node name="Masa" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0.02, -0.3)

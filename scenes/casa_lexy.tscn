@@ -1,4 +1,4 @@
-[gd_scene load_steps=63 format=3]
+[gd_scene load_steps=67 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -52,6 +52,12 @@
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
 [ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="ms_sefa"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_lexy_afara.ogg" id="muzica_lexy_afara_ogg"]
+[ext_resource type="AudioStream" path="res://sunete/tv_spart.ogg" id="tv_spart"]
+[ext_resource type="AudioStream" path="res://sunete/tv_scantei.ogg" id="tv_scantei"]
+[ext_resource type="Script" path="res://scripts/interactabil.gd" id="bib1"]
+
+[sub_resource type="BoxShape3D" id="forma_biblioteca"]
+size = Vector3(1.48, 1.96, 0.4)
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -321,6 +327,8 @@ omni_range = 5.0
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.1, 0.45, -0.43)
 script = ExtResource("18")
 sunet = ExtResource("35")
+sunet_spart = ExtResource("tv_spart")
+sunet_scantei = ExtResource("tv_scantei")
 
 [node name="Model" parent="Televizor" instance=ExtResource("17")]
 script = ExtResource("3")
@@ -555,3 +563,11 @@ intrare = 2.5
 iesire = 2.5
 zona = NodePath("../CeataInterior")
 doar_afara = true
+
+[node name="Biblioteca" type="StaticBody3D" parent="."]
+script = ExtResource("bib1")
+replici = PackedStringArray("You: This bitch can't even read..")
+
+[node name="Forma" type="CollisionShape3D" parent="Biblioteca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.41, -7.22)
+shape = SubResource("forma_biblioteca")

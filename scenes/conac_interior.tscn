@@ -34,6 +34,10 @@
 [ext_resource type="PackedScene" path="res://scenes/pisica.tscn" id="32"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_conac_interior.ogg" id="muzica_loc_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
+[ext_resource type="Script" path="res://scripts/semineu_conac.gd" id="sd1"]
+
+[sub_resource type="BoxShape3D" id="forma_semineu_demon"]
+size = Vector3(1.7, 1.2, 0.3)
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -583,3 +587,15 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2, 3.615, -11.3)
 stream = ExtResource("muzica_loc_ogg")
 bus = &"Muzica"
 script = ExtResource("muzica_loc_gd")
+
+[node name="SemineuDemon" type="StaticBody3D" parent="." node_paths=PackedStringArray("lumina_semineu", "sunet_foc", "lumini")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12.3)
+script = ExtResource("sd1")
+marcaj_demon = "demonul_chemat_la_conac"
+lumina_semineu = NodePath("../Lumini/Semineu")
+sunet_foc = NodePath("../FocSemineu")
+lumini = NodePath("../Lumini")
+
+[node name="Forma" type="CollisionShape3D" parent="SemineuDemon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("forma_semineu_demon")
