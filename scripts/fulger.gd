@@ -10,6 +10,8 @@ const SUNET := preload("res://sunete/atac_fulger.ogg")
 ## (fulgerele cad la 30-40 m de tine și nu se auzeau deloc) și le pune la loc când pleacă; luptele le lasă așa.
 static var volum_sunet := 0.0
 static var marime_sunet := 18.0
+## Pocnetul: în lupte atac_fulger (magic); la conac atacul pune atac_fulger_natural (owner: „se aud prea a magie”).
+static var sunet_pocnet: AudioStream = SUNET
 
 var culoare := Color(1.0, 0.45, 0.4)
 var grosime := 0.22
@@ -27,7 +29,7 @@ static func loveste(nod: Node, sus: Vector3, jos: Vector3, culoare_ := Color(1.0
 	nod.get_tree().current_scene.add_child(f)
 	f._construieste(sus, jos, putere_lumina)
 	if sunet:
-		VrajaAtac.sunet_la(f, SUNET, jos, Sunet.VOLUM_EFECTE + volum_sunet, marime_sunet, 0.15)
+		VrajaAtac.sunet_la(f, sunet_pocnet, jos, Sunet.VOLUM_EFECTE + volum_sunet, marime_sunet, 0.15)
 	return f
 
 

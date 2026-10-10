@@ -17,6 +17,10 @@ const FILTRU_DEPARTE_DB := -6.0
 ## Cât de tare (dB în plus) se aud impacturile: scenele îl coboară cât timp cad zeci deodată (bombardamentul din
 ## atac_conac.gd), ca lovitura mare de după să iasă în față. Pune-l la loc la 0.
 static var volum_impact := 0.0
+## Ce sunete au vrăjile: luptele le folosesc pe cele „de film” (SUNET_ARUNCA / SUNET_LOVIT), atacul asupra conacului le
+## pune pe cele dinainte (atac_vraja_veche, atac_impact_vechi: owner, „ăla primul era bun”) și le pune la loc când pleacă.
+static var sunet_arunca: AudioStream = SUNET_ARUNCA
+static var sunet_lovit: AudioStream = SUNET_LOVIT
 ## [miezul, culoarea vrăjii, fumul] pentru fiecare fel.
 const CULORI := {
 	"foc": [Color(1.0, 0.92, 0.7), Color(1.0, 0.5, 0.18), Color(0.36, 0.3, 0.28)],
@@ -98,7 +102,7 @@ func _ready() -> void:
 	_dara.preprocess = 0.5
 	_dara.emitting = true
 	if cu_sunet:
-		sunet_la(self, SUNET_ARUNCA, _de_la, Sunet.VOLUM_EFECTE, 14.0 * marime, 0.12)
+		sunet_la(self, sunet_arunca, _de_la, Sunet.VOLUM_EFECTE, 14.0 * marime, 0.12)
 
 
 func _sfera(raza: float, culoare: Color, aditiv: bool) -> MeshInstance3D:
@@ -202,7 +206,7 @@ func _explodeaza() -> void:
 	_dara.emitting = false
 	var spre := (_de_la - _la).normalized()
 	if cu_sunet:
-		sunet_la(self, SUNET_LOVIT, _la, Sunet.VOLUM_EFECTE + volum_impact, 10.0 * marime, 0.12)
+		sunet_la(self, sunet_lovit, _la, Sunet.VOLUM_EFECTE + volum_impact, 10.0 * marime, 0.12)
 	# energia / flăcările care se umflă și se fac fum
 	var foc := particule(self, int(40 * marime) + 10, 0.8, 0.5 * marime, [Color(c[0], 1.0), Color(c[1], 0.9), Color(c[2], 0.6), Color(c[2], 0.0)])
 	foc.one_shot = true

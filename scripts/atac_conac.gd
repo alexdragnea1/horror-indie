@@ -38,7 +38,9 @@ const SUNET_INIMA := preload("res://sunete/inima_lenta.ogg")
 const SUNET_TIUIT := preload("res://sunete/tiuit.ogg")
 const SUNET_FOC := preload("res://sunete/foc_trosnet.ogg")
 const SUNET_MUZICA := preload("res://sunete/atac_tristete.ogg")
-const SUNET_IMPACT := preload("res://sunete/atac_impact.ogg")
+const SUNET_IMPACT := preload("res://sunete/atac_impact_vechi.ogg")
+const SUNET_VRAJA_VECHE := preload("res://sunete/atac_vraja_veche.ogg")
+const SUNET_FULGER := preload("res://sunete/atac_fulger_natural.ogg")
 const SUNET_TUNET_NEBUN := preload("res://sunete/atac_tunet_nebun.ogg")
 const SUNET_CUTREMUR := preload("res://sunete/atac_cutremur.ogg")
 ## Tunetul nebun vine după fulgerele care lovesc aproape, dar cel mult o dată la atâtea secunde (armata vine cu ~10
@@ -167,6 +169,9 @@ func _exit_tree() -> void:
 	VrajaAtac.volum_impact = 0.0
 	Fulger.volum_sunet = 0.0
 	Fulger.marime_sunet = 18.0
+	Fulger.sunet_pocnet = Fulger.SUNET
+	VrajaAtac.sunet_arunca = VrajaAtac.SUNET_ARUNCA
+	VrajaAtac.sunet_lovit = VrajaAtac.SUNET_LOVIT
 	_scoate_filtrele()
 	# volumul general e și al Tranzitie: îl punem la loc doar dacă l-am coborât noi (leșinul) și nu l-am ridicat încă
 	if _volum_coborat:
@@ -206,6 +211,10 @@ func _atacul() -> void:
 	# fulgerele cad la 30-40 m de tine: pocnetul lor (3D) mai tare și auzit de departe
 	Fulger.volum_sunet = 8.0
 	Fulger.marime_sunet = 45.0
+	# sunetele de dinainte de 10.10 pentru vrăji (owner: „ăla primul era bun”) și un fulger natural, nu de magie
+	Fulger.sunet_pocnet = SUNET_FULGER
+	VrajaAtac.sunet_arunca = SUNET_VRAJA_VECHE
+	VrajaAtac.sunet_lovit = SUNET_IMPACT
 	_camera_film = Camera3D.new()
 	_camera_film.fov = 52.0
 	_camera_film.near = 0.1

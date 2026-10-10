@@ -473,7 +473,7 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc='(random(1)*2-1)*(exp(-t*90)+0.5*gt(ran
 	-f lavfi -i "aevalsrc='1.1*sin(2*PI*(48*t+2*(1-exp(-t*20))))*min(t/0.005\,1)*exp(-t*3.5)':s=44100:d=3" -f lavfi -i "anoisesrc=c=brown:a=1:d=3:r=44100:s=43" \
 	-filter_complex "[0]highpass=f=900,volume=1.2[c];[2]lowpass=f=220,tremolo=f=4:d=0.5,volume='min(t/0.05\,1)*exp(-t*1.2)*1.8':eval=frame[r];[c][1][r]amix=inputs=3:normalize=0,$DENS,aecho=0.7:0.6:260|640:0.3|0.18,atrim=end=3,afade=t=out:st=2.3:d=0.7" \
 	-ac 1 "$OUT/_fulger.wav"
-unic atac_fulger "$OUT/_fulger.wav"
+unic atac_fulger_vechi "$OUT/_fulger.wav"
 # 3. cornul de război (~5 s): două alămuri grave (re, apoi la peste ea), care se umflă încet, cu ecoul dealurilor
 CORN="0.3*($(voce 73.42 0)*min(t/0.8\,1)+0.8*$(voce 110 1.3)*min(max(t-0.9\,0)/0.6\,1))*if(lt(t\,3.6)\,1\,max(0\,1-(t-3.6)/0.9))"
 ffmpeg -v error -y -f lavfi -i "aevalsrc='$CORN':s=44100:d=5" \
@@ -505,14 +505,14 @@ ffmpeg -v error -y -i "$PACHET/Other/whoosh_2.wav" -i "$PACHET/Environment/fire_
 	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*1.25,aresample=44100,highpass=f=200[w];[1]aformat=channel_layouts=mono,asetrate=44100*1.5,aresample=44100,volume=0.6[f];[w][f][2]amix=inputs=3:normalize=0:duration=longest,$DENS,atrim=end=1.1,afade=t=out:st=0.7:d=0.4" \
 	-ac 1 "$OUT/_vraja.wav"
 TINTA_LUFS=-14
-unic atac_vraja "$OUT/_vraja.wav"
+unic atac_vraja_veche "$OUT/_vraja.wav"
 # 7. vraja lovește piatra (~2,4 s, 3D): explozia, pietrele care se rup și cad, praful
 ffmpeg -v error -y -i "$PACHET/Retro/explosion_medium.wav" -i "$PACHET/Materials/stone_push_short.wav" -i "$PACHET/Combat and Gore/crunch.wav" \
 	-i "$PACHET/Materials/concrete_scrape.wav" -f lavfi -i "anoisesrc=c=brown:a=1:d=2.4:r=44100:s=45" \
 	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,volume=1.1[e];[1]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,adelay=120,volume=0.8[s];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,adelay=60,volume=0.7[c];[3]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=400,volume=0.5[r];[4]lowpass=f=200,volume='exp(-t*2)*1.4':eval=frame[v];[e][s][c][r][v]amix=inputs=5:normalize=0:duration=longest,$DENS,aecho=0.7:0.5:180|420:0.3|0.18,atrim=end=2.4,afade=t=out:st=1.8:d=0.6" \
 	-ac 1 "$OUT/_impact.wav"
 TINTA_LUFS=-13
-unic atac_impact "$OUT/_impact.wav"
+unic atac_impact_vechi "$OUT/_impact.wav"
 # 8. tobele de război (buclă de 4,8 s, 100 bpm): taiko-uri mari în ritm de marș. Facem trei măsuri cu ecou și o păstrăm pe
 # cea din mijloc: ecoul măsurii dinainte cade peste începutul ei, deci bucla se leagă singură.
 TOBE="0"
@@ -1344,17 +1344,29 @@ TUNET_CASA="Sound/Soundpack 4/WAV Files/BGS Loops/Interior Night/Inside Night St
 lovitura() { echo "volume='$1+(1-$1)*exp(-t*$2)':eval=frame"; }
 COMPRIMAT="acompressor=threshold=-30dB:ratio=6:attack=5:release=400:makeup=4"
 ROSTOGOLIRE="aecho=0.8:0.75:380|820|1500|2300:0.45|0.35|0.25|0.15"
-# 1. tunetul nebun (~7,5 s, stereo, din cap: atac_conac.gd îl dă după fulgerele care lovesc aproape, cel mult o dată la
-# 1,4 s): fulgerul original (atac_fulger.ogg) e lovitura, apoi trei tunete adevărate din bucla de furtună una după alta
-# (rostogolirea mare de la 16,3 s, pocnetul sec de la 40,1 s, tunetul de la 26 s), zgomot maro pentru bubuitură, explozia
-# Shonen foarte coborâtă pentru corp, basul 55 -> 25 Hz și ecourile dealurilor.
-ffmpeg -v error -y -i "$OUT/atac_fulger.ogg" -i "$TUNET_CASA" -f lavfi -i "anoisesrc=c=brown:a=0.9:d=7.5:r=44100" -i "$P3/EXPLDsgn_Anime Explosion 6.wav" \
+# pocnet DURATA -> pocnetul care rupe aerul (zgomot alb, 30 ms) și sfâșierea (~0,6 s: zgomot tăiat în rafale de câteva ms,
+# trei sinusuri care trec de un prag care crește), mono
+pocnet() { echo "aevalsrc='(random(0)*2-1)*(1.6*exp(-t*35)+0.9*gt(sin(2*PI*41*t)+sin(2*PI*67*t+1.3)+sin(2*PI*113*t+2.1)\,1.15+0.9*t)*exp(-t*3.5))':s=44100:d=$1"; }
+# 1. fulgerul NATURAL care lovește aproape (~4,5 s, 3D; owner: „fulgerele se aud prea a magie, fă-le mai naturale”):
+# nimic din pachetul anime (scânteia și explozia Shonen sunau a vrajă). Fulgerul vechi, sintetizat (atac_fulger_vechi:
+# pocnet, pârâit, bubuit), pocnetul care sfâșie aerul, pocnetul adevărat de tunet din bucla de furtună (40,1 s),
+# bubuitura de zgomot maro și rostogolirea adevărată (16,3 s). Doar la conac (Fulger.sunet); luptele păstrează atac_fulger.
+ffmpeg -v error -y -i "$OUT/atac_fulger_vechi.ogg" -f lavfi -i "$(pocnet 1)" -i "$TUNET_CASA" -f lavfi -i "anoisesrc=c=brown:a=0.9:d=4.5:r=44100" -f lavfi -i "$(sub 60 28 4.5 1.2 1)" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100[v];[1]highpass=f=200,lowpass=f=8000,volume=1.1[p];[2]asplit=2[s1][s2];[s1]$(b 40.1 41.8 1),highpass=f=80,$COMPRIMAT,volume=3[c];[s2]$(b 16.3 20.8 1),lowpass=f=1400,$COMPRIMAT,volume=3,adelay=200[r];[3]lowpass=f=300,lowpass=f=300,volume='min(t/0.01\,1)*(0.7*exp(-t*1.6)+0.3*exp(-t*0.4))':eval=frame,volume=7[m];[v][p][c][r][m][4]$MIX=6,$DENS,volume=2,asoftclip=type=tanh,$(lovitura 0.3 1),$ECOU_MIC,atrim=end=4.5,afade=t=out:st=3.4:d=1.1" \
+	-ac 1 "$OUT/_fulger_natural.wav"
+TINTA_LUFS=-10
+unic atac_fulger_natural "$OUT/_fulger_natural.wav"
+# 2. tunetul nebun (~7,5 s, stereo, din cap: atac_conac.gd îl dă după fulgerele care lovesc aproape, cel mult o dată la
+# 1,4 s): tot natural: pocnetul care sfâșie aerul, fulgerul vechi, apoi trei tunete adevărate din bucla de furtună una
+# după alta (rostogolirea mare de la 16,3 s, pocnetul sec de la 40,1 s, tunetul de la 26 s), zgomot maro pentru bubuitură,
+# basul 55 -> 25 Hz și ecourile dealurilor.
+ffmpeg -v error -y -i "$OUT/atac_fulger_vechi.ogg" -i "$TUNET_CASA" -f lavfi -i "anoisesrc=c=brown:a=0.9:d=7.5:r=44100" -f lavfi -i "$(pocnet 1.2)" \
 	-f lavfi -i "$(sub 55 25 7.5 0.45 1.1)" -filter_complex \
-	"[0]aformat=channel_layouts=mono,aresample=44100,volume=1.2[f];[1]asplit=3[s1][s2][s3];[s1]$(b 16.3 23.5 1),lowpass=f=1500,$COMPRIMAT,volume=3.2,adelay=250[t1];[s2]$(b 40.1 41.8 1),highpass=f=90,$COMPRIMAT,volume=3,adelay=1700[t2];[s3]$(b 25.9 28.5 1),lowpass=f=1200,$COMPRIMAT,volume=3,adelay=3300[t3];[2]lowpass=f=300,lowpass=f=300,volume='min(t/0.02\,1)*(0.7*exp(-t*0.9)+0.3*exp(-t*0.25))':eval=frame,volume=7[m];[3]$(b 0 3.4 0.55),lowpass=f=1300,volume=0.9[e];[f][t1][t2][t3][m][e][4]$MIX=7,$DENS,volume=2,asoftclip=type=tanh,$(lovitura 0.35 0.6),$ROSTOGOLIRE,atrim=end=7.5,afade=t=out:st=6:d=1.5,$STEREO" \
+	"[0]aformat=channel_layouts=mono,aresample=44100,volume=1.1[f];[1]asplit=3[s1][s2][s3];[s1]$(b 16.3 23.5 1),lowpass=f=1500,$COMPRIMAT,volume=3.2,adelay=250[t1];[s2]$(b 40.1 41.8 1),highpass=f=90,$COMPRIMAT,volume=3,adelay=1700[t2];[s3]$(b 25.9 28.5 1),lowpass=f=1200,$COMPRIMAT,volume=3,adelay=3300[t3];[2]lowpass=f=300,lowpass=f=300,volume='min(t/0.02\,1)*(0.7*exp(-t*0.9)+0.3*exp(-t*0.25))':eval=frame,volume=7[m];[3]highpass=f=200,lowpass=f=7000,volume=1.1[p];[f][t1][t2][t3][m][p][4]$MIX=7,$DENS,volume=2,asoftclip=type=tanh,$(lovitura 0.35 0.6),$ROSTOGOLIRE,atrim=end=7.5,afade=t=out:st=6:d=1.5,$STEREO" \
 	-ac 2 "$OUT/_tunet_nebun.wav"
 TINTA_LUFS=-10
 unic atac_tunet_nebun "$OUT/_tunet_nebun.wav" stereo
-# 2. cutremurul de la aterizarea Warlock-ului (~5 s, stereo, din cap, la 2,9 s după warlock_sosire, odată cu valul de
+# 3. cutremurul de la aterizarea Warlock-ului (~5 s, stereo, din cap, la 2,9 s după warlock_sosire, odată cu valul de
 # praf): trântitura grea și explozia coborâte, pământul care huruie și se zgâlțâie (zgomot maro modulat de două sinusuri,
 # 8,3 și 1,7 Hz = zguduituri neregulate), piatra care crapă (Rock Wall) și pietrele care se rostogolesc (Meteor Swarm),
 # valul de praf care fuge pe jos (Wave Attack), o replică la 1,3 s și basul 45 -> 22 Hz.
@@ -1364,5 +1376,5 @@ ffmpeg -v error -y -i "$P3/FGHTBf_Anime Land 11.wav" -i "$P3/EXPLDsgn_Anime Expl
 	-ac 2 "$OUT/_cutremur.wav"
 TINTA_LUFS=-10
 unic atac_cutremur "$OUT/_cutremur.wav" stereo
-rm -f "$OUT/_tunet_nebun.wav" "$OUT/_cutremur.wav"
+rm -f "$OUT/_tunet_nebun.wav" "$OUT/_cutremur.wav" "$OUT/_fulger_natural.wav"
 TINTA_LUFS=-20
