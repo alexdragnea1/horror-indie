@@ -568,9 +568,14 @@ func _unda(raza := 7.0) -> void:
 func _val_de_soc(centru: Vector3, raza: float, durata: float, damage: float, r: int) -> void:
 	var unda := _inel(centru + Vector3.UP * 0.06, 1.0, Color(culoare.lightened(0.15), 1.0))
 	var lovit := [false]
+	# La moarte _curata șterge inelul cât tween-ul încă merge: lambda-urile îl țin într-o listă (`u`) și îl verifică.
+	# Prins direct, Godot îl dă `null` (eroare, și jocul pornit din editor se oprea) și scrie „Lambda capture was freed”.
+	var u := [unda]
 	var pas := func(k: float) -> void:
+		if not is_instance_valid(u[0]):
+			return
 		var rz := lerpf(0.5, raza, k)
-		unda.scale = Vector3(rz, 0.04, rz)
+		(u[0] as Node3D).scale = Vector3(rz, 0.04, rz)
 		if lovit[0] or r != _runda:
 			return
 		var j := _jucator()
@@ -583,9 +588,12 @@ func _val_de_soc(centru: Vector3, raza: float, durata: float, damage: float, r: 
 				_raneste(damage, centru, false, 9.0)
 	var tw := create_tween()
 	tw.tween_method(pas, 0.0, 1.0, durata).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.parallel().tween_method(func(a: float) -> void: (unda.material_override as StandardMaterial3D).albedo_color.a = a, 1.0, 0.0, durata + 0.05)
+	tw.parallel().tween_method(func(a: float) -> void:
+		if is_instance_valid(u[0]):
+			((u[0] as MeshInstance3D).material_override as StandardMaterial3D).albedo_color.a = a, 1.0, 0.0, durata + 0.05)
 	await tw.finished
-	unda.queue_free()
+	if is_instance_valid(unda):
+		unda.queue_free()
 
 
 ## Se topește într-un fum și apare în alt loc (`locuri_teleport`), departe de tine.
