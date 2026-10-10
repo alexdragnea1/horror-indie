@@ -484,6 +484,10 @@ func _physics_process(delta: float) -> void:
 func _process(delta: float) -> void:
 	if _cam and _cam_lina:
 		_cam.global_transform = _cam.global_transform.interpolate_with(_cam_tinta, clampf(delta * 3.0, 0.0, 1.0))
+	if _cam:
+		# vederea de sus: lampa lungă de deasupra mesei (cu abajururile) acoperea mijlocul mesei; camera nu vede ce e
+		# mai aproape de SUS_TAIE (lampa, lanțurile), doar masa de sub ea
+		_cam.near = SUS_TAIE if _ochesti and _de_sus else 0.05
 	if not _ochesti:
 		return
 	if _incarci:
@@ -621,8 +625,14 @@ func _vedere_ansamblu(parte := 1.0) -> Transform3D:
 	return Transform3D(Basis.looking_at(spre - poz, Vector3.UP), poz)
 
 
+## Vederea de sus (click dreapta cât ochești): cât de sus deasupra postavului stă camera și de la ce distanță începe să
+## vadă (lampa mesei e la ~0,9–1,2 m deasupra postavului: rămâne mai aproape de cameră, deci nu se vede).
+const SUS_INALTIME := 1.75
+const SUS_TAIE := 0.97
+
+
 func _vedere_de_sus() -> Transform3D:
-	var poz := masa.global_position + Vector3.UP * 2.25
+	var poz := masa.global_position + Vector3.UP * SUS_INALTIME
 	return Transform3D(Basis.looking_at(Vector3.DOWN, masa.global_basis.z), poz)
 
 

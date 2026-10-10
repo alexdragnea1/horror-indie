@@ -1223,7 +1223,7 @@ def oameni(cale):
 
 def statie(cale):
 	import autobuz
-	autobuz.statie(cale, "GAVANA", "statie_gavana.glb")
+	autobuz.statie(cale, "VOMIT STREET", "statie_gavana.glb")
 
 
 def toate(cale):
