@@ -1298,3 +1298,67 @@ TINTA_LUFS=-20
 unic tv_scantei "$P3/ELECSprk_Anime Spark 2.wav" mono "$(b 0 0.5 1.2),highpass=f=1500,afade=t=out:st=0.25:d=0.25"
 rm -f "$OUT"/_tv.wav
 TINTA_LUFS=$TINTA_NORMALA_TV
+# --- atacul conacului, a treia oară (owner: „fulgerele nu sună a fulgere, să tune rău de tot; vrăjile par super weak;
+# exploziile nu se aud deloc, mai ales la vraja mare”). Tunetul adevărat de APROAPE are trei bucăți, pe care pachetele
+# nu le au separat (tunetele din buclele de furtună sunt departe, sub ploaie), deci le facem:
+#   1. pocnetul (primele 5-30 ms): zgomot alb care „rupe” aerul, cu bas, ca o lovitură de tun;
+#   2. sfâșierea (~0,6 s): zgomot tăiat în rafale de câteva ms (trei sinusuri care trec de un prag = pârâit neregulat)
+#      plus scânteia Shonen încetinită;
+#   3. bubuitura și rostogolirea: zgomot maro (doar bas) care se stinge în 3-4 s, tunetul adevărat din bucla de furtună
+#      (cea din casă are cea mai puțină ploaie: 16,3-23,5 s), comprimat tare ca să i se audă coada, și ecouri lungi.
+# Toate ies mai tare decât prima dată (-10/-11 LUFS, comprimate), iar codul le pornește și el mai tare (fulger.gd,
+# vraja_atac.gd, atac_conac.gd). Folosește funcțiile din „luptele cu vrăjitorii” și de la sacrificiu ($DENS, $STEREO, b, sub).
+TUNET_CASA="Sound/Soundpack 4/WAV Files/BGS Loops/Interior Night/Inside Night Storm.wav"
+# pocnet DURATA -> pocnetul + sfâșierea (zgomot în rafale), mono
+pocnet() { echo "aevalsrc='(random(0)*2-1)*(1.6*exp(-t*35)+0.9*gt(sin(2*PI*41*t)+sin(2*PI*67*t+1.3)+sin(2*PI*113*t+2.1)\,1.15+0.9*t)*exp(-t*3.5))':s=44100:d=$1"; }
+# bubuitura DURATA DESCRESTERE -> zgomot maro, doar bas, care pornește brusc și se stinge
+bubuitura() { echo "anoisesrc=c=brown:a=0.9:d=$1:r=44100,lowpass=f=140,lowpass=f=140,volume='min(t/0.02\,1)*exp(-t*$2)':eval=frame,volume=6"; }
+COMPRIMAT="acompressor=threshold=-30dB:ratio=6:attack=5:release=400:makeup=4"
+# lovitura CAT_RAMANE VITEZA -> după compresor: lovitura de la început rămâne întreagă, coada cade spre CAT_RAMANE (altfel
+# compresorul și tăria medie le fac la fel de tari de la cap la coadă și bubuitura nu mai iese în față)
+lovitura() { echo "volume='$1+(1-$1)*exp(-t*$2)':eval=frame"; }
+ROSTOGOLIRE="aecho=0.8:0.75:380|820|1500|2300:0.45|0.35|0.25|0.15"
+
+# 1. fulgerul care lovește aproape (~4 s, 3D): pocnetul care sfâșie aerul, scânteia electrică, explozia Shonen
+# coborâtă (corpul), bubuitura de bas și tunetul adevărat care se rostogolește după
+ffmpeg -v error -y -f lavfi -i "$(pocnet 1)" -i "$P3/ELECSprk_Anime Spark 3.wav" -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -f lavfi -i "$(bubuitura 4 1.1)" \
+	-i "$TUNET_CASA" -f lavfi -i "$(sub 65 28 4 1.3 1.2)" -filter_complex \
+	"[0]highpass=f=180,lowpass=f=9000,volume=1.3[p];[1]$(b 0 0.6 0.7),highpass=f=600,volume=0.8[c];[2]$(b 0 1.4 0.7),lowpass=f=2500[e];[4]$(b 16.3 20.3 1),lowpass=f=1100,$COMPRIMAT,volume=3,adelay=120[r];[p][c][e][3][r][5]$MIX=6,$DENS,$(lovitura 0.12 2.2),$ECOU_MIC,atrim=end=4,afade=t=out:st=3:d=1" \
+	-ac 1 "$OUT/_fulger.wav"
+TINTA_LUFS=-10
+unic atac_fulger "$OUT/_fulger.wav"
+# 2. tunetul (~7 s, stereo): același tunet, dar pocnetul vine întâi (mai înfundat, e mai departe) și apoi
+# rostogolirea lungă care trece de la un deal la altul
+ffmpeg -v error -y -f lavfi -i "$(pocnet 1.2)" -f lavfi -i "$(bubuitura 7 0.55)" -i "$TUNET_CASA" -i "$P3/EXPLDsgn_Anime Explosion 6.wav" -f lavfi -i "$(sub 50 25 7 0.45 0.9)" -filter_complex \
+	"[0]highpass=f=120,lowpass=f=4500,volume=1.2[p];[2]$(b 16.3 23.5 1),lowpass=f=1000,$COMPRIMAT,volume=3.5,adelay=80[r];[3]$(b 0 3.4 0.6),lowpass=f=1500,volume=0.8[e];[p][1][r][e][4]$MIX=5,$DENS,$(lovitura 0.25 1.4),$ROSTOGOLIRE,atrim=end=7,afade=t=out:st=5.5:d=1.5,$STEREO" \
+	-ac 2 "$OUT/_tunet.wav"
+TINTA_LUFS=-11
+unic atac_tunet "$OUT/_tunet.wav" stereo
+# 3. o vrajă aruncată (~1,2 s, 3D): „trântitura” de la plecare (eliberarea de energie Shonen + un pocnet scurt de
+# bas), mingea de foc care urlă (Fireball + Firebuff coborât) și vâjâitul aruncării. Era la -15; acum -12.
+ffmpeg -v error -y -i "$P4/Spells/Fireball 1.wav" -i "$P4/Spells/Firebuff 1.wav" -i "$P3/MAGSpel_Anime Ability Release 13.wav" -i "$P3/FGHTMisc_Anime Throw 4.wav" -f lavfi -i "$(sub 110 45 1.2 7 1.1)" -filter_complex \
+	"[0]$(b 0 1.2 0.9),volume=1.2[f];[1]$(b 0 1.4 0.75),lowpass=f=4000,volume=0.8[u];[2]$(b 0 0.8 1.1),volume=0.9[r];[3]$(b 0.1 0.6 0.9),volume=0.7[w];[f][u][r][w][4]$MIX=5,$DENS,$(lovitura 0.5 5),atrim=end=1.2,afade=t=out:st=0.85:d=0.35" \
+	-ac 1 "$OUT/_vraja.wav"
+TINTA_LUFS=-12
+unic atac_vraja "$OUT/_vraja.wav"
+# 4. vraja lovește piatra (~2,6 s, 3D): o explozie adevărată, nu un pocnet: explozia Shonen și cea retro (corpul),
+# pocnetul de aer, impactul vrăjii, piatra care se rupe și pietrele care cad (Rock Wall, Meteor), basul care lovește
+# în piept. Era la -14; acum -11.
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 4.wav" -i "$PACHET/Retro/explosion_large.wav" -f lavfi -i "$(pocnet 0.4)" -i "$P4/Spells/Spell Impact 1.wav" -i "$P4/Spells/Rock Wall 1.wav" \
+	-i "$P4/Spells/Rock Meteor Swarm 1.wav" -f lavfi -i "$(sub 80 30 2.6 3.2 1.4)" -f lavfi -i "$(bubuitura 2.6 2.2)" -filter_complex \
+	"[0]$(b 0 1.4 0.8),lowpass=f=6000[e];[1]aformat=channel_layouts=mono,aresample=44100,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,volume=0.6[x];[2]highpass=f=200,volume=0.7[p];[3]$(b 0 0.35 0.85),volume=0.6[i];[4]$(b 0 2 0.8),adelay=60,volume=0.7[r];[5]$(b 0 1.97 0.9),adelay=350,volume=0.4[m];[e][x][p][i][r][m][6][7]$MIX=8,$DENS,$(lovitura 0.15 3.5),$ECOU_MIC,atrim=end=2.6,afade=t=out:st=1.9:d=0.7" \
+	-ac 1 "$OUT/_impact.wav"
+TINTA_LUFS=-11
+unic atac_impact "$OUT/_impact.wav"
+# 5. vraja mare lovește conacul (~8,5 s, stereo). Totul e în FAȚĂ: în joc, la 0,55 s după, te asurzește (atac_conac.gd
+# o pornește pe busul Interfata, ca s-o lase întreagă). La t = 0: pocnetul de tunet, cele două explozii Shonen (lungă,
+# coborâtă + seacă), cea retro foarte coborâtă, bubuitura de bas și basul 55 -> 16 Hz; apoi zidurile care se prăbușesc,
+# pietrele care plouă, tunetul adevărat care se rostogolește și stingerul de pian. Era la -12; acum -10.
+ffmpeg -v error -y -f lavfi -i "$(pocnet 1.2)" -i "$P3/EXPLDsgn_Anime Explosion 6.wav" -i "$P3/EXPLDsgn_Anime Explosion 11.wav" -i "$PACHET/Retro/explosion_large.wav" \
+	-f lavfi -i "$(bubuitura 8.5 0.5)" -f lavfi -i "$(sub 55 16 8.5 0.55 1.6)" -i "$P4/Spells/Rock Wall 1.wav" -i "$P4/Spells/Rock Wall 2.wav" -i "$P4/Spells/Rock Meteor Swarm 2.wav" \
+	-i "$TUNET_CASA" -i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent.wav" -filter_complex \
+	"[0]highpass=f=150,volume=1.5[p];[1]$(b 0 3.4 0.65),lowpass=f=3000,volume=1.3[e];[2]$(b 0 3.15 0.9),volume=0.9[s];[3]aformat=channel_layouts=mono,aresample=44100,asetrate=44100*0.5,aresample=44100,lowpass=f=1500,volume=0.8[x];[6]$(b 0 2 0.7),adelay=250,volume=0.8[r1];[7]$(b 0 2 0.6),adelay=800,volume=0.7[r2];[8]$(b 0 1.97 0.8),adelay=1300,volume=0.5[m];[9]$(b 16.3 23.5 1),lowpass=f=900,$COMPRIMAT,volume=3,adelay=1000[t];[10]$(b 0 2.9 0.8),adelay=100,volume=0.5[pi];[p][e][s][x][4][5][r1][r2][m][t][pi]$MIX=11,$DENS,$(lovitura 0.18 1.1),$ROSTOGOLIRE,atrim=end=8.5,afade=t=out:st=6.5:d=2,$STEREO" \
+	-ac 2 "$OUT/_orb_bum.wav"
+TINTA_LUFS=-10
+unic orb_explozie "$OUT/_orb_bum.wav" stereo
+TINTA_LUFS=$TINTA_NORMALA_LUPTE

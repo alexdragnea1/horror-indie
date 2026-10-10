@@ -105,6 +105,7 @@ La un **joc nou**, înainte să înceapă, jocul îți arată toate tastele (ecr
     - **Biblioteca lui Lexy**: „You: This bitch can't even read..”.
     - **Televizorul lui Lexy** se strică dacă tragi în el (cu orice armă, Fireball sau explozie): ecranul se crapă din locul unde l-ai nimerit și se stinge, sar scântei, iese un fir de fum, mai pârâie de câteva ori. Rămâne spart și la Continue.
     - **Pisica moartă** se poate arunca și în **șemineul din conac** („[E] Throw the cat in the fire”): arde în foc, focul se face roșu și crește, apoi țâșnește în sală, luminile se fac mici, iar pe pentagrama de pe covorul mare se aprinde un cerc de flăcări și urcă **demonul**, cu aceeași replică și același final ca acasă (cu pistol îl împuști, fără pistol se teleportează). Pisica e una singură: ori în ceaunul de acasă, ori în șemineu.
+    - **Atacul Warlock-ului asupra conacului sună mai tare**: fulgerele pocnesc și tună de aproape (pocnetul care rupe aerul, bubuitura și tunetul care se rostogolește), vrăjile pleacă cu o trântitură, iar exploziile lor au bas și pietre care cad. Bubuitura vrăjii mari se aude acum întreagă, nu mai e înfundată de țiuitul din urechi.
 69. Urmează: tu hotărăști (playtest, build).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).

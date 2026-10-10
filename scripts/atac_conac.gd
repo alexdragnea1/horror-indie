@@ -159,6 +159,8 @@ func _jucator() -> CharacterBody3D:
 
 func _exit_tree() -> void:
 	VrajaAtac.volum_impact = 0.0
+	VrajaAtac.volum_tare = 0.0
+	VrajaAtac.departe = 1.0
 	_scoate_filtrele()
 	# volumul general e și al Tranzitie: îl punem la loc doar dacă l-am coborât noi (leșinul) și nu l-am ridicat încă
 	if _volum_coborat:
@@ -195,6 +197,9 @@ func _atacul() -> void:
 	_c = Cutscena.porneste(self)
 	jucator.seteaza_purtat(true)
 	_hud(false)
+	# vrăjile, impacturile și fulgerele: mai tari și auzite de mai departe decât în lupte (armata stă la 40 m)
+	VrajaAtac.volum_tare = 5.0
+	VrajaAtac.departe = 1.8
 	_camera_film = Camera3D.new()
 	_camera_film.fov = 52.0
 	_camera_film.near = 0.1
@@ -210,7 +215,7 @@ func _atacul() -> void:
 		create_tween().tween_property(vant, "volume_db", Sunet.VOLUM_AMBIANTA + 6.0, 6.0)
 	if sperieturi:
 		sperieturi.process_mode = Node.PROCESS_MODE_DISABLED
-	get_tree().create_timer(1.2).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE - 6.0))
+	get_tree().create_timer(1.2).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE))
 	get_tree().create_timer(2.4).timeout.connect(func() -> void: _fulger_departe(Vector3(-60, 0, 120)))
 	_c.priveste(loc_warlock + Vector3.UP * 4.0, 2.5)
 	await _mergi(jucator, [jucator.global_position, Vector3(0.6, 0.95, -6.6), Vector3(1.0, 0.05, -3.4), loc_jucator], 5.0)
@@ -292,7 +297,7 @@ func _atacul() -> void:
 			k += 1
 			await get_tree().create_timer(randf_range(0.18, 0.34)).timeout
 	# zeci de impacturi deodată: mai încet, ca vraja mare de la final să fie vârful scenei
-	VrajaAtac.volum_impact = -5.0
+	VrajaAtac.volum_impact = -2.0
 	trage.call()
 	_stinge_conacul(7.0)
 	await get_tree().create_timer(1.0).timeout
@@ -420,7 +425,9 @@ func _vraja_mare(jucator: CharacterBody3D, cap: Node3D, sol: Vector3, scut_warlo
 
 	# 7. lovitura: alb, bubuitura, conacul se face ruină, suflul
 	glob.queue_free()
-	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE + 3.0)  # vârful scenei: mai tare decât bombardamentul (îl prinde limitatorul)
+	# vârful scenei: mai tare decât bombardamentul (îl prinde limitatorul). Pe busul Interfata, nu Efecte: la 0,55 s după
+	# te asurzește (_asurzeste înfundă Efecte), iar bubuitura trebuie să se audă întreagă
+	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE + 4.0, 0.0, &"Interfata")
 	_alb.color.a = 1.0
 	create_tween().tween_property(_alb, "color:a", 0.0, 0.9).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	_zguduie(2.0, 3.0)
@@ -813,7 +820,7 @@ func _fulger_departe(p: Vector3) -> void:
 	var t := create_tween()
 	t.tween_property(_env, "ambient_light_energy", e + 0.7, 0.05)
 	t.tween_property(_env, "ambient_light_energy", e, 0.4)
-	get_tree().create_timer(0.9).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE - 4.0, 0.1))
+	get_tree().create_timer(0.9).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE + 2.0, 0.1))
 
 
 ## Fulger în conac (turnul, turela): lovește, pocnește piatra.

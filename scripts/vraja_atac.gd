@@ -17,6 +17,11 @@ const FILTRU_DEPARTE_DB := -6.0
 ## Cât de tare (dB în plus) se aud impacturile: scenele îl coboară cât timp cad zeci deodată (bombardamentul din
 ## atac_conac.gd), ca lovitura mare de după să iasă în față. Pune-l la loc la 0.
 static var volum_impact := 0.0
+## Cât de tare (dB în plus) și cât de departe (înmulțește `marime_sunet`) se aud TOATE sunetele din sunet_la (vrăjile,
+## impacturile, fulgerele): atacul asupra conacului le ridică (owner: „vrăjile par super weak”), luptele le lasă așa.
+## Cine le schimbă le pune la loc la 0 și 1 când pleacă.
+static var volum_tare := 0.0
+static var departe := 1.0
 ## [miezul, culoarea vrăjii, fumul] pentru fiecare fel.
 const CULORI := {
 	"foc": [Color(1.0, 0.92, 0.7), Color(1.0, 0.5, 0.18), Color(0.36, 0.3, 0.28)],
@@ -68,8 +73,8 @@ static func sunet_la(nod: Node, stream: AudioStream, pozitie: Vector3, volum := 
 	var s := AudioStreamPlayer3D.new()
 	s.stream = stream
 	s.bus = &"Efecte"
-	s.volume_db = volum
-	s.unit_size = marime_sunet
+	s.volume_db = volum + volum_tare
+	s.unit_size = marime_sunet * departe
 	s.max_distance = 160.0
 	s.attenuation_filter_db = FILTRU_DEPARTE_DB
 	s.pitch_scale = 1.0 + randf_range(-variatie, variatie)
