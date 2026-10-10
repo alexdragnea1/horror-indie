@@ -55,6 +55,8 @@
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="53_lp"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="54_lo"]
 [ext_resource type="AudioStream" path="res://sunete/ceas.ogg" id="55_ce"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_afara.ogg" id="muzica_afara_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -465,3 +467,12 @@ scartait_podea = ExtResource("52_sp")
 lanterna_pornita = ExtResource("53_lp")
 lanterna_oprita = ExtResource("54_lo")
 suprafata_implicita = "beton"
+
+[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+stream = ExtResource("muzica_afara_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+intrare = 2.5
+iesire = 1.5
+zona = NodePath("../CeataInterior")
+doar_afara = true

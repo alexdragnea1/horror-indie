@@ -54,7 +54,7 @@ extends LuptaBoss
 
 const SUNET_CIOCANIT := preload("res://sunete/usa_ciocanit.ogg")
 const SUNET_PAS := preload("res://sunete/pas_lemn_2.ogg")
-const SUNET_MUZICA := preload("res://sunete/muzica_warlock.ogg")
+const SUNET_MUZICA := preload("res://sunete/muzica_lupta_warlock.ogg")
 ## Vocea lui și stingerul de la apariție (10.10, pachetele noi; vezi sunete.sh).
 const SUNET_DURERE := preload("res://sunete/warlock_durere.ogg")
 const SUNET_RAS := preload("res://sunete/warlock_ras.ogg")
@@ -289,6 +289,9 @@ func _bate_la_usa() -> void:
 		bat.tween_property(cap, "position:z", cap.position.z - 0.03, 0.05)
 		bat.tween_property(cap, "position:z", cap.position.z, 0.12)
 		await get_tree().create_timer(0.36, false).timeout
+	# muzica luptei pornește imediat după bătaie (owner, 10.10), tare, și merge mai departe în luptă
+	_muzica.volume_db = Sunet.VOLUM_MUZICA
+	_muzica.play()
 	await get_tree().create_timer(0.9, false).timeout
 	Dialog.spune(replici_usa)
 	if Dialog.activ:

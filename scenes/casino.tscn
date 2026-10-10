@@ -72,6 +72,9 @@
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="69_abvj1"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="70_hn16x"]
 [ext_resource type="PackedScene" path="res://scenes/amanet.tscn" id="71_amanet"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_afara.ogg" id="muzica_afara_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_poker.ogg" id="muzica_poker_ogg"]
 
 [sub_resource type="Environment" id="Environment_1sto5"]
 background_mode = 1
@@ -126,6 +129,9 @@ size = Vector3(48, 8, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_spate"]
 size = Vector3(4, 8, 0.5)
+
+[sub_resource type="BoxShape3D" id="forma_poker"]
+size = Vector3(14, 3.4, 9.75)
 
 [node name="Casino" type="Node3D" unique_id=523571760]
 
@@ -860,3 +866,27 @@ contact = "Coven Retard"
 ora = "7:03"
 mesaje = PackedStringArray("Head Witch: I'm outside your apartment.", "Head Witch: I have info on the warlock, come quickly.", "You: Yeah bitch, hold up.", "You: I'm doing some shopping.")
 sarcina_noua = "Take the bus home."
+
+[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona", "zone_extra")]
+stream = ExtResource("muzica_afara_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+intrare = 2.5
+iesire = 1.5
+zona = NodePath("../CeataInterior")
+zone_extra = [NodePath("../Amanet/CeataAmanet")]
+doar_afara = true
+
+[node name="ZonaPoker" type="Area3D" parent="."]
+
+[node name="Forma" type="CollisionShape3D" parent="ZonaPoker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.85, -17.125)
+shape = SubResource("forma_poker")
+
+[node name="MuzicaPoker" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+stream = ExtResource("muzica_poker_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+intrare = 2.5
+iesire = 1.5
+zona = NodePath("../ZonaPoker")

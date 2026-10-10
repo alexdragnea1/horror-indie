@@ -1,4 +1,4 @@
-[gd_scene load_steps=62 format=3]
+[gd_scene load_steps=63 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -51,6 +51,7 @@
 
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="or1"]
 [ext_resource type="Script" path="res://scripts/mesaj_telefon.gd" id="ms_sefa"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_lexy_afara.ogg" id="muzica_lexy_afara_ogg"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -545,3 +546,12 @@ contact = "Coven Retard"
 ora = "7:03"
 mesaje = PackedStringArray("Head Witch: I'm outside your apartment.", "Head Witch: I have info on the warlock, come quickly.", "You: Yeah bitch, hold up.", "You: I'm doing some shopping.")
 sarcina_noua = "Take the bus home."
+
+[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+stream = ExtResource("muzica_lexy_afara_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+intrare = 2.5
+iesire = 2.5
+zona = NodePath("../CeataInterior")
+doar_afara = true

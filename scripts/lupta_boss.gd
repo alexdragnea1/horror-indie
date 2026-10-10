@@ -345,8 +345,10 @@ func _porneste_lupta() -> void:
 	_lupta_activa = true
 	_bara.arata(nume_boss)
 	_bara.viata_jucator(_viata_jucator, viata_jucator)
-	_muzica.volume_db = -30.0
-	_muzica.play()
+	# (la Warlock pornește deja din intro, după bătaia în ușă: n-o lua de la capăt)
+	if not _muzica.playing:
+		_muzica.volume_db = -30.0
+		_muzica.play()
 	create_tween().tween_property(_muzica, "volume_db", Sunet.VOLUM_MUZICA, 2.0)
 	_boss.furie = 0.5
 	_lupta()

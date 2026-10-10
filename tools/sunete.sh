@@ -853,7 +853,7 @@ unic fas_fosnet_2 "Materials/clothing_2.wav" mono "aformat=channel_layouts=mono,
 rm -f "$OUT"/_sfoara.wav "$OUT"/_papusa_cade.wav "$OUT"/_goana.wav "$OUT"/_tipat.wav "$OUT"/_inima_rapida.wav "$OUT"/_sperietura.wav \
 	"$OUT"/_icnit1.wav "$OUT"/_icnit2.wav "$OUT"/_part1.wav "$OUT"/_part2.wav "$OUT"/_plop.wav
 
-# --- lupta cu Warlock-ul de la motel (lupta_warlock.gd): bătaia în ușa camerei 122, muzica de boss, „YOU DIED”,
+# --- lupta cu Warlock-ul de la motel (lupta_warlock.gd): bătaia în ușa camerei 122, „YOU DIED”,
 # „GREAT ENEMY FELLED” și Head Witch care îi absoarbe puterile. Rulează doar secțiunea asta cu funcțiile de sus
 # (castig, castig_final, unic) și cu DENS / STEREO de la sacrificiu.
 TINTA_NORMALA_WARLOCK=$TINTA_LUFS
@@ -864,44 +864,6 @@ ffmpeg -v error -y -i "$PACHET/Environment/door_knock.wav" -i "$PACHET/Weapons/h
 	"[0]aformat=channel_layouts=mono,atrim=start=0.1:end=0.38,asetpts=PTS-STARTPTS,asetrate=44100*0.9,aresample=44100,volume=1.2[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=500,atrim=end=0.3,afade=t=out:st=0.12:d=0.18,volume=0.5[b];[a][b]amix=inputs=2:normalize=0:duration=longest,aecho=0.6:0.4:40:0.2,afade=t=out:st=0.25:d=0.08" \
 	-ac 1 "$OUT/_ciocan.wav"
 unic usa_ciocanit "$OUT/_ciocan.wav"
-# muzica de boss (buclă de 16 s, 120 bpm, re minor: Dm - Bb - Gm - A, câte două măsuri): ostinato de coarde grave în
-# optimi (accent pe pătrimi), basul care pulsează, alama la începutul fiecărui acord, corul „aah” care respiră între acorduri
-# și taiko-urile. Ca la tobe: se face de trei ori și se păstrează bucata din mijloc, deci ecoul se leagă singur.
-R="if(lt(mod(t\,16)\,4)\,73.42\,if(lt(mod(t\,16)\,8)\,58.27\,if(lt(mod(t\,16)\,12)\,49\,55)))"
-ferastrau() {
-	local f="$1" n="$2" s="" k
-	for k in $(seq 1 "$n"); do s="$s+sin(2*PI*$k*($f)*t)/$k"; done
-	echo "(0$s)"
-}
-OST="0.3*$(ferastrau "$R" 5)*exp(-mod(t\,0.25)*9)*min(mod(t\,0.25)/0.004\,1)*min((0.25-mod(t\,0.25))/0.012\,1)*(1+0.5*lt(mod(t\,0.5)\,0.25))"
-BAS="0.45*sin(2*PI*($R)*0.5*t)*exp(-mod(t\,1)*2.2)*min(mod(t\,1)/0.01\,1)*min((1-mod(t\,1))/0.03\,1)"
-ALAMA="0.16*($(ferastrau "($R)*2" 6)+0.8*$(ferastrau "($R)*3" 6))*exp(-mod(t\,4)*1.1)*min(mod(t\,4)/0.03\,1)"
-C1="if(lt(mod(t\,16)\,4)\,146.83\,if(lt(mod(t\,16)\,8)\,116.54\,if(lt(mod(t\,16)\,12)\,98\,110)))"
-C2="if(lt(mod(t\,16)\,4)\,174.61\,if(lt(mod(t\,16)\,8)\,146.83\,if(lt(mod(t\,16)\,12)\,116.54\,138.59)))"
-C3="if(lt(mod(t\,16)\,4)\,220\,if(lt(mod(t\,16)\,8)\,174.61\,if(lt(mod(t\,16)\,12)\,146.83\,164.81)))"
-vocea() {
-	local f="$1" ph="$2" s="" k
-	for k in 1 2 3 4 5; do s="$s+sin(2*PI*$k*(($f)*t+($f)*0.003*sin(2*PI*5.1*t+$ph)))/$k"; done
-	echo "(0$s)"
-}
-COR="0.1*($(vocea "$C1" 0)+$(vocea "$C2" 1.3)+$(vocea "$C3" 2.1)+0.7*$(vocea "($C1)*2" 0.7))*min(mod(t\,4)/0.35\,1)*min((4-mod(t\,4))/0.35\,1)"
-# o măsură de taiko (2 s), luată din mijlocul a trei, ca să se lege
-TOBA="0"
-for m in 0 1 2; do
-	for x in "0:1" "0.75:0.55" "1.0:0.9" "1.5:0.5" "1.75:0.65"; do
-		TOBA="$TOBA$(taiko $(awk -v a="${x%%:*}" -v m=$m 'BEGIN { printf "%.2f", a + m * 2 }') ${x##*:})"
-	done
-done
-ffmpeg -v error -y -f lavfi -i "aevalsrc='0.5*($TOBA)':s=44100:d=6" -af "lowpass=f=1800,equalizer=f=70:t=q:w=1:g=4,atrim=start=2:end=4,asetpts=PTS-STARTPTS" \
-	-ac 1 "$OUT/_toba.wav"
-ffmpeg -v error -y -f lavfi -i "aevalsrc='$OST+$BAS+$ALAMA':s=44100:d=48" -f lavfi -i "aevalsrc='$COR':s=44100:d=48" \
-	-stream_loop 23 -i "$OUT/_toba.wav" -filter_complex \
-	"[0]lowpass=f=3200,highpass=f=35[o];[1]equalizer=f=700:t=q:w=1.2:g=6,equalizer=f=1150:t=q:w=1.5:g=3,lowpass=f=2600,chorus=0.6:0.9:35|50:0.4|0.35:0.3|0.45:1.6|2.2[c];[2]volume=0.9[b];[o][c][b]amix=inputs=3:normalize=0:duration=first,$DENS,aecho=0.8:0.6:180|430:0.3|0.18,atrim=start=16:end=32,asetpts=PTS-STARTPTS,$STEREO,atrim=end=16" \
-	-ac 2 "$OUT/_boss.wav"
-TINTA_LUFS=-18
-g=$(castig_final "$OUT/_boss.wav" "anull")
-ffmpeg -v error -y -i "$OUT/_boss.wav" -af "volume=${g}dB,$LIMITATOR" -c:a libvorbis -q:a 5 "$OUT/muzica_warlock.ogg"
-echo "muzica_warlock.ogg  (buclă, 16 s)"
 # „YOU DIED” (~5 s): un gong grav (parțiale neîmpărțite, care bat între ele), bubuitura joasă și un cor care cade
 TINTA_LUFS=-13
 GONG="0"
@@ -1238,3 +1200,20 @@ rm -f "$OUT"/_tunet.wav "$OUT"/_fulger.wav "$OUT"/_corn.wav "$OUT"/_aparitie.wav
 	"$OUT"/_urlet_w.wav "$OUT"/_moare_w.wav "$OUT"/_ras.wav "$OUT"/_stinger.wav "$OUT"/_murit.wav "$OUT"/_doborat.wav "$OUT"/_absorbtie.wav \
 	"$OUT"/_urlet_s.wav "$OUT"/_raget.wav "$OUT"/_chemare.wav "$OUT"/_cor.wav "$OUT"/_poarta.wav "$OUT"/_transformare.wav "$OUT"/_matura.wav \
 	"$OUT"/_raza.wav "$OUT"/_tasneste.wav "$OUT"/_final.wav "$OUT"/_meteori.wav
+
+# --- muzica adusă de owner (10.10), toate în buclă din import (loop=true). Timpii de tăiere sunt după liniștea de la
+# început (silenceremove); coada de liniște iese, ca bucla să reînceapă repede.
+#  - muzica_afara: afară la Sketchy Laundromat, Gun Store și Town Hall (muzica_loc.gd cu `doar_afara`: se stinge când
+#    intri în clădire, revine când ieși);
+#  - muzica_lexy_afara: afară la Lexy (înăuntru e muzica_lexy);
+#  - muzica_poker: doar în camera de poker din spatele spălătoriei;
+#  - muzica_lupta_warlock / muzica_lupta_head_witch: luptele (lupta_boss.gd). Sunt mai tari decât restul (-18 LUFS, ca
+#    vechea muzică de boss sintetizată, pe care au înlocuit-o): în luptă se bat cu exploziile. Merg cap-coadă în buclă,
+#    deci doar o stingere de 30 ms la capăt, să nu pocnească la reluare.
+unic muzica_afara "Sound/Music/Afara General.mp3" stereo "atrim=end=121.5,afade=t=out:st=119.5:d=2"
+unic muzica_lexy_afara "Sound/Music/Afara la Lexy.mp3" stereo "atrim=end=184.3,afade=t=out:st=183.3:d=1"
+unic muzica_poker "Sound/Music/Poker Room.mp3" stereo "atrim=end=120.6,afade=t=out:st=120.2:d=0.4"
+TINTA_LUFS=-18
+unic muzica_lupta_warlock "Sound/Music/Warlock Battle.mp3" stereo "atrim=end=140.0,afade=t=out:st=139.97:d=0.03"
+unic muzica_lupta_head_witch "Sound/Music/Head Witch Battle.ogg" stereo "atrim=end=99.48,afade=t=out:st=99.45:d=0.03"
+TINTA_LUFS=-20

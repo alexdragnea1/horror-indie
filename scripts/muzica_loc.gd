@@ -5,6 +5,9 @@ extends AudioStreamPlayer
 ## Dacă scena e doar fundal (meniul principal folosește curtea blocului fără Jucator), tace.
 ##  - `zona`: se aude doar cât ești în zona asta (ex. înăuntrul casei lui Lexy): urcă la intrare, se stinge la ieșire
 ##    și, când revii, continuă de unde a rămas.
+##  - `zone_extra`: alte zone care contează la fel ca `zona` (ex. amanetul de lângă spălătorie).
+##  - `doar_afara`: invers, se aude doar cât NU ești în nicio zonă (ex. strada din fața spălătoriei): se stinge în
+##    `iesire` s când intri în clădire, urcă în `intrare` s când ieși.
 ##  - `marcaje_liniste`: cu oricare dintre ele pus, aici nu se mai aude (ex. curtea conacului de la atac încolo).
 ##  - `opreste(durata)`: o oprește de tot în scena asta (ex. la jaful de la Lexy, lexy_masa.gd).
 ##  - `cedeaza`: cât se aude un alt sunet care are `acoperire` (0..1, ex. Boombox), atât coboară ea, ca să nu se bată.
@@ -16,6 +19,8 @@ extends AudioStreamPlayer
 ## În câte secunde se stinge când ieși din `zona`.
 @export var iesire := 3.0
 @export var zona: Area3D
+@export var zone_extra: Array[Area3D] = []
+@export var doar_afara := false
 @export var marcaje_liniste: PackedStringArray = []
 @export var cedeaza: Node
 
@@ -40,9 +45,11 @@ func _ready() -> void:
 	_aplica()
 	if zona:
 		# un corp care e deja în zonă la încărcare (Continue înăuntru) dă și el body_entered, la primul pas de fizică
-		zona.body_entered.connect(_zona.bind(true))
-		zona.body_exited.connect(_zona.bind(false))
-	else:
+		# (cu `doar_afara` muzica abia a început să urce și se stinge la loc)
+		for z in _zone():
+			z.body_entered.connect(_zona.bind(z, true))
+			z.body_exited.connect(_zona.bind(z, false))
+	if zona == null or doar_afara:
 		_spre(1.0, intrare)
 
 
@@ -56,20 +63,38 @@ func opreste(durata := 0.3) -> void:
 	_spre(0.0, durata)
 
 
-func _zona(corp: Node3D, intra: bool) -> void:
+func _zone() -> Array[Area3D]:
+	var zone: Array[Area3D] = [zona]
+	for z in zone_extra:
+		if z:
+			zone.append(z)
+	return zone
+
+
+## Ești în vreo zonă (în afară de `fara`, din care tocmai ieși)?
+func _inauntru(corp: Node3D, fara: Area3D = null) -> bool:
+	for z in _zone():
+		if z != fara and z.overlaps_body(corp):
+			return true
+	return false
+
+
+func _zona(corp: Node3D, z: Area3D, intra: bool) -> void:
 	if not corp.is_in_group("jucator") or _oprita:
 		return
 	var forma := corp.get_node_or_null("Coliziune") as CollisionShape3D
 	if not intra and forma and forma.disabled:
-		# într-o scenă din cod (ex. conversația de pe canapea) jucătorul e „purtat”, fără coliziune, iar zona îl
-		# pierde: muzica merge mai departe și se stinge doar dacă, la final, chiar nu mai ești în zonă
+		# într-o scenă din cod (ex. conversația de pe canapea, masa de poker) jucătorul e „purtat”, fără coliziune, iar
+		# zona îl pierde: muzica rămâne cum era și se schimbă doar dacă, la final, chiar nu mai ești în zonă
 		while is_instance_valid(forma) and forma.disabled:
 			await get_tree().physics_frame
 		await get_tree().physics_frame
 		await get_tree().physics_frame
-		if not is_instance_valid(corp) or _oprita or zona.overlaps_body(corp):
+		if not is_instance_valid(corp) or _oprita or _inauntru(corp):
 			return
-	_spre(1.0 if intra else 0.0, intrare if intra else iesire)
+	var inauntru := intra or _inauntru(corp, z)
+	var se_aude := inauntru != doar_afara
+	_spre(1.0 if se_aude else 0.0, intrare if se_aude else iesire)
 
 
 func _spre(tinta: float, durata: float) -> void:

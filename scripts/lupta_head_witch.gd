@@ -78,7 +78,7 @@ extends LuptaBoss
 ## Cât de departe de centru poate ajunge (piața are 16,5 m până la clădiri).
 @export var raza_piata := 13.5
 
-const SUNET_MUZICA := preload("res://sunete/muzica_warlock.ogg")
+const SUNET_MUZICA := preload("res://sunete/muzica_lupta_head_witch.ogg")
 ## Vocea ei și vrăjile ei (10.10, pachetele noi; vezi sunete.sh): urletul de vrăjitoare (faza întâi), urletul de demon
 ## (faza a doua), strânsul puterii, corul, poarta de ceață, transformarea, mătura, raza, razele de la final, explozia ei.
 const SUNET_URLET := preload("res://sunete/sefa_urlet.ogg")
@@ -507,7 +507,6 @@ func _porneste_lupta() -> void:
 	_forma_tinta.set_deferred("disabled", false)
 	_bara.arata(nume_faza_doi if faza_doi else nume_boss)
 	_bara.viata_jucator(_viata_jucator, viata_jucator)
-	_muzica.pitch_scale = 1.1 if faza_doi else 1.0
 	_muzica.volume_db = -30.0
 	_muzica.play()
 	create_tween().tween_property(_muzica, "volume_db", Sunet.VOLUM_MUZICA, 2.0)
@@ -994,7 +993,6 @@ func _transformare() -> void:
 	_viata_jucator = maxf(_viata_jucator, viata_jucator * 0.5)
 	_bara.umple(nume_faza_doi, 1.6)
 	_bara.viata_jucator(_viata_jucator, viata_jucator)
-	_muzica.pitch_scale = 1.1
 	_muzica.volume_db = -20.0
 	_muzica.play()
 	create_tween().tween_property(_muzica, "volume_db", Sunet.VOLUM_MUZICA, 1.5)

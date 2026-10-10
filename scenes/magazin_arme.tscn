@@ -54,6 +54,8 @@
 [ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="51_lp"]
 [ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="52_lo"]
 [ext_resource type="AudioStream" path="res://sunete/camera_joc.ogg" id="53_cj"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_afara.ogg" id="muzica_afara_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="Environment" id="Environment_ma"]
 background_mode = 1
@@ -442,3 +444,12 @@ contact = "Coven Retard"
 ora = "7:03"
 mesaje = PackedStringArray("Head Witch: I'm outside your apartment.", "Head Witch: I have info on the warlock, come quickly.", "You: Yeah bitch, hold up.", "You: I'm doing some shopping.")
 sarcina_noua = "Take the bus home."
+
+[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+stream = ExtResource("muzica_afara_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
+intrare = 2.5
+iesire = 1.5
+zona = NodePath("../CeataInterior")
+doar_afara = true
