@@ -50,6 +50,10 @@ var _optiuni: HBoxContainer
 var _optiuni_sus: HBoxContainer
 var _flag_text: int  # cum stă replica în casetă (pe două rânduri de butoane o urcăm sus)
 var _cu_optiuni := false
+## Stilul casetei: cu butoane, replica coboară sub eticheta cu numele (marginea de sus crește).
+var _stil: StyleBoxFlat
+const MARGINE := 6
+const MARGINE_SUS_CU_BUTOANE := 15
 
 
 func _ready() -> void:
@@ -64,10 +68,11 @@ func _ready() -> void:
 	_panou.offset_top = -64
 	_panou.offset_bottom = -10
 	var stil := StyleBoxFlat.new()
+	_stil = stil
 	stil.bg_color = Color("262d2fe0")
 	stil.border_color = Color("a18463")
 	stil.set_border_width_all(1)
-	stil.set_content_margin_all(6)
+	stil.set_content_margin_all(MARGINE)
 	_panou.add_theme_stylebox_override("panel", stil)
 	_text = Label.new()
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -203,13 +208,15 @@ func _input(event: InputEvent) -> void:
 ## Cu `replica` goală apar doar butoanele, fără casetă (ex. ce-i spui lui Lexy la masă).
 func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	# butoanele stau pe rândul de jos al casetei: caseta e mai înaltă și replica stă sus, deasupra lor (centrată pe
-	# verticală intra sub butoane: Big Mike / Fast Eddie, owner 10.10)
+	# verticală intra sub butoane: Big Mike / Fast Eddie, owner 10.10); sus, marginea e mai mare, ca eticheta cu numele
+	# (lipită de muchia de sus, 26 px înaltă) să nu acopere primul rând
 	var inalta := not replica.is_empty()
-	_panou.offset_top = -80 if inalta else -64
-	_eticheta.offset_top = -95 if inalta else -79
-	_eticheta.offset_bottom = -80 if inalta else -64
+	_panou.offset_top = -90 if inalta else -64
+	_eticheta.offset_top = -105 if inalta else -79
+	_eticheta.offset_bottom = -90 if inalta else -64
 	if inalta:
 		_text.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		_stil.content_margin_top = MARGINE_SUS_CU_BUTOANE
 	if replica.is_empty():
 		activ = true
 		_text.text = ""
@@ -238,9 +245,9 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 		_optiuni_sus.offset_top = _optiuni.offset_bottom - 2 * rand.y - 4
 		_optiuni_sus.offset_bottom = _optiuni.offset_bottom - rand.y - 4
 		var sus := int(rand.y) + 4
-		_panou.offset_top = -86 - sus
-		_eticheta.offset_top = -101 - sus
-		_eticheta.offset_bottom = -86 - sus
+		_panou.offset_top = -90 - sus
+		_eticheta.offset_top = -105 - sus
+		_eticheta.offset_bottom = -90 - sus
 		_optiuni_sus.show()
 	_optiuni.show()
 	Stare.meniu_deschis = true
@@ -250,6 +257,7 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 	_optiuni.hide()
 	_optiuni_sus.hide()
 	_text.size_flags_vertical = _flag_text
+	_stil.content_margin_top = MARGINE
 	_cu_optiuni = false
 	Stare.meniu_deschis = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
