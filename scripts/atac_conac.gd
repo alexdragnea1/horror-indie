@@ -39,6 +39,11 @@ const SUNET_TIUIT := preload("res://sunete/tiuit.ogg")
 const SUNET_FOC := preload("res://sunete/foc_trosnet.ogg")
 const SUNET_MUZICA := preload("res://sunete/atac_tristete.ogg")
 const SUNET_IMPACT := preload("res://sunete/atac_impact.ogg")
+const SUNET_TUNET_NEBUN := preload("res://sunete/atac_tunet_nebun.ogg")
+const SUNET_CUTREMUR := preload("res://sunete/atac_cutremur.ogg")
+## Tunetul nebun vine după fulgerele care lovesc aproape, dar cel mult o dată la atâtea secunde (armata vine cu ~10
+## fulgere unul după altul, toiagul primește unul la 0,5-0,9 s).
+const PAUZA_TUNET := 1.4
 const PASI := [preload("res://sunete/pas_poteca_1.ogg"), preload("res://sunete/pas_poteca_2.ogg"), preload("res://sunete/pas_poteca_3.ogg"),
 	preload("res://sunete/pas_poteca_4.ogg")]
 
@@ -110,6 +115,7 @@ var _warlock: Warlock
 var _armata: Array[VrajitorArmata] = []
 var _aparatoare: Array[Node3D] = []
 var _de_sters: Array[Node] = []
+var _ultimul_tunet := -100.0
 var _tobe: AudioStreamPlayer
 var _muzica: AudioStreamPlayer
 var _ruina: Node3D
@@ -159,8 +165,8 @@ func _jucator() -> CharacterBody3D:
 
 func _exit_tree() -> void:
 	VrajaAtac.volum_impact = 0.0
-	VrajaAtac.volum_tare = 0.0
-	VrajaAtac.departe = 1.0
+	Fulger.volum_sunet = 0.0
+	Fulger.marime_sunet = 18.0
 	_scoate_filtrele()
 	# volumul general e și al Tranzitie: îl punem la loc doar dacă l-am coborât noi (leșinul) și nu l-am ridicat încă
 	if _volum_coborat:
@@ -197,9 +203,9 @@ func _atacul() -> void:
 	_c = Cutscena.porneste(self)
 	jucator.seteaza_purtat(true)
 	_hud(false)
-	# vrăjile, impacturile și fulgerele: mai tari și auzite de mai departe decât în lupte (armata stă la 40 m)
-	VrajaAtac.volum_tare = 5.0
-	VrajaAtac.departe = 1.8
+	# fulgerele cad la 30-40 m de tine: pocnetul lor (3D) mai tare și auzit de departe
+	Fulger.volum_sunet = 8.0
+	Fulger.marime_sunet = 45.0
 	_camera_film = Camera3D.new()
 	_camera_film.fov = 52.0
 	_camera_film.near = 0.1
@@ -215,7 +221,7 @@ func _atacul() -> void:
 		create_tween().tween_property(vant, "volume_db", Sunet.VOLUM_AMBIANTA + 6.0, 6.0)
 	if sperieturi:
 		sperieturi.process_mode = Node.PROCESS_MODE_DISABLED
-	get_tree().create_timer(1.2).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE))
+	get_tree().create_timer(1.2).timeout.connect(func() -> void: Sunet.reda(SUNET_TUNET, Sunet.VOLUM_EFECTE + 2.0))
 	get_tree().create_timer(2.4).timeout.connect(func() -> void: _fulger_departe(Vector3(-60, 0, 120)))
 	_c.priveste(loc_warlock + Vector3.UP * 4.0, 2.5)
 	await _mergi(jucator, [jucator.global_position, Vector3(0.6, 0.95, -6.6), Vector3(1.0, 0.05, -3.4), loc_jucator], 5.0)
@@ -263,7 +269,9 @@ func _atacul() -> void:
 	var coboara := create_tween()
 	coboara.tween_property(_warlock, "global_position", sol, 3.0).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	await get_tree().create_timer(2.9).timeout
-	_zguduie(1.2, 1.4)
+	# aterizarea: cutremurul (valul de praf fuge pe jos, pământul huruie câteva secunde)
+	Sunet.reda(SUNET_CUTREMUR, Sunet.VOLUM_EFECTE + 3.0)
+	_zguduie(2.2, 3.5)
 	_inel_praf(sol + Vector3.UP * 0.2, 9.0, Color(0.45, 0.2, 0.18))
 	_lumina_scurta(sol + Vector3.UP * 2.0, Color(1.0, 0.25, 0.15), 18.0, 25.0, 1.0)
 	create_tween().tween_method(func(v: float) -> void: (stalp.material_override as ShaderMaterial).set_shader_parameter("putere", v), 1.0, 0.0, 1.5)
@@ -297,7 +305,7 @@ func _atacul() -> void:
 			k += 1
 			await get_tree().create_timer(randf_range(0.18, 0.34)).timeout
 	# zeci de impacturi deodată: mai încet, ca vraja mare de la final să fie vârful scenei
-	VrajaAtac.volum_impact = -2.0
+	VrajaAtac.volum_impact = -5.0
 	trage.call()
 	_stinge_conacul(7.0)
 	await get_tree().create_timer(1.0).timeout
@@ -381,6 +389,7 @@ func _vraja_mare(jucator: CharacterBody3D, cap: Node3D, sol: Vector3, scut_warlo
 			if is_instance_valid(_warlock):
 				var varf := _warlock.varf_toiag()
 				Fulger.loveste(self, varf + Vector3(randf_range(-8, 8), 30, randf_range(-4, 8)), varf, Color(1.0, 0.35, 0.3), 0.3, true, 0.6)
+				_tuna()
 			await get_tree().create_timer(randf_range(0.5, 0.9)).timeout
 	loveste_toiagul.call()
 	# Head Witch ridică scutul în jurul vostru
@@ -425,9 +434,7 @@ func _vraja_mare(jucator: CharacterBody3D, cap: Node3D, sol: Vector3, scut_warlo
 
 	# 7. lovitura: alb, bubuitura, conacul se face ruină, suflul
 	glob.queue_free()
-	# vârful scenei: mai tare decât bombardamentul (îl prinde limitatorul). Pe busul Interfata, nu Efecte: la 0,55 s după
-	# te asurzește (_asurzeste înfundă Efecte), iar bubuitura trebuie să se audă întreagă
-	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE + 4.0, 0.0, &"Interfata")
+	Sunet.reda(SUNET_ORB_BUM, Sunet.VOLUM_EFECTE + 3.0)  # vârful scenei: mai tare decât bombardamentul (îl prinde limitatorul)
 	_alb.color.a = 1.0
 	create_tween().tween_property(_alb, "color:a", 0.0, 0.9).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	_zguduie(2.0, 3.0)
@@ -806,6 +813,7 @@ func _sol(p: Vector3) -> Vector3:
 
 func _aduce_vrajitor(loc: Vector3, i: int) -> void:
 	Fulger.loveste(self, loc + Vector3(randf_range(-6, 6), 34.0, randf_range(-3, 6)), loc, Color(1.0, 0.35, 0.3), 0.26, true, 0.8)
+	_tuna()
 	var vr := VrajitorArmata.creeaza(self, loc, i % 3, Vector3(0.0, 4.0, -8.0))
 	_armata.append(vr)
 	await get_tree().create_timer(0.08).timeout
@@ -826,6 +834,7 @@ func _fulger_departe(p: Vector3) -> void:
 ## Fulger în conac (turnul, turela): lovește, pocnește piatra.
 func _fulger_in(p: Vector3) -> void:
 	Fulger.loveste(self, p + Vector3(randf_range(-5, 5), 32.0, randf_range(-4, 4)), p, Color(1.0, 0.4, 0.35), 0.35, true, 1.5)
+	_tuna()
 	VrajaAtac.sunet_la(self, SUNET_IMPACT, p, Sunet.VOLUM_EFECTE, 16.0)
 	_zguduie(0.4, 0.6)
 
@@ -1245,3 +1254,13 @@ func _scoate_filtrele() -> void:
 			if AudioServer.get_bus_effect(i, k) == x[1]:
 				AudioServer.remove_bus_effect(i, k)
 	_filtre.clear()
+
+
+## Tunetul nebun după un fulger care lovește aproape (din cap, nu 3D: la 40 m s-ar pierde), cel mult o dată la
+## PAUZA_TUNET secunde; înălțimea variază puțin, ca să nu sune la fel de fiecare dată.
+func _tuna() -> void:
+	var acum := Time.get_ticks_msec() / 1000.0
+	if acum - _ultimul_tunet < PAUZA_TUNET:
+		return
+	_ultimul_tunet = acum
+	Sunet.reda(SUNET_TUNET_NEBUN, Sunet.VOLUM_EFECTE + 2.0, 0.08)

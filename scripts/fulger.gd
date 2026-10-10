@@ -6,6 +6,10 @@ extends Node3D
 ##   Fulger.loveste(self, cer, pamant, Color(1, 0.4, 0.35))
 
 const SUNET := preload("res://sunete/atac_fulger.ogg")
+## Cât de tare (dB în plus) și de departe (`unit_size`) se aude pocnetul fulgerului. Atacul asupra conacului le ridică
+## (fulgerele cad la 30-40 m de tine și nu se auzeau deloc) și le pune la loc când pleacă; luptele le lasă așa.
+static var volum_sunet := 0.0
+static var marime_sunet := 18.0
 
 var culoare := Color(1.0, 0.45, 0.4)
 var grosime := 0.22
@@ -23,7 +27,7 @@ static func loveste(nod: Node, sus: Vector3, jos: Vector3, culoare_ := Color(1.0
 	nod.get_tree().current_scene.add_child(f)
 	f._construieste(sus, jos, putere_lumina)
 	if sunet:
-		VrajaAtac.sunet_la(f, SUNET, jos, Sunet.VOLUM_EFECTE, 18.0, 0.15)
+		VrajaAtac.sunet_la(f, SUNET, jos, Sunet.VOLUM_EFECTE + volum_sunet, marime_sunet, 0.15)
 	return f
 
 
