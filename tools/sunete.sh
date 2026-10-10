@@ -495,55 +495,11 @@ FAZA="(if(lt(t\,0.15)\,650*t+1000*t*t\,120+950*(t-0.15)-384.6*(t-0.15)*(t-0.15))
 ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*$FAZA)+sin(4*PI*$FAZA)/2+sin(6*PI*$FAZA)/3+sin(8*PI*$FAZA)/4+sin(10*PI*$FAZA)/5)*min(1\,t/0.03)*if(gt(t\,0.55)\,max(0\,(0.85-t)/0.3)\,1)+(random(0)*2-1)*0.08*min(1\,t/0.03)*max(0\,1-t/0.85)':s=44100:d=0.85" \
 	-af "equalizer=f=1200:t=q:w=1.5:g=9,equalizer=f=2700:t=q:w=2:g=5,highpass=f=350,lowpass=f=6500,aecho=0.6:0.3:25:0.2" -ac 1 "$OUT/_miau.wav"
 unic pisica_moare "$OUT/_miau.wav"
-# ceaunul se încinge (~4 s): fierberea tot mai repede, un huruit care crește și metalul care pocnește și scârțâie
-ffmpeg -v error -y -i "$PACHET/Environment/water_boiling_loop.wav" -f lavfi -i "anoisesrc=c=brown:a=0.8:d=4.3:r=44100:s=11" \
-	-i "$PACHET/Materials/metal_clang.wav" -i "$PACHET/Materials/pottery_clang.wav" \
-	-filter_complex "[0]aformat=channel_layouts=mono,atrim=end=3.2,asetrate=44100*1.35,aresample=44100,afade=t=in:d=0.5,volume='0.5+0.5*t/2.4':eval=frame[f];[1]lowpass=f=160,volume='pow(t/4.3\,2)*2.2':eval=frame[h];[2]aformat=channel_layouts=mono,asplit=2[c0][c1];[c0]asetrate=44100*0.55,aresample=44100,lowpass=f=1800,adelay=1600,volume=0.45[m1];[3]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,lowpass=f=2500,adelay=3000,volume=0.5[m2];[c1]asetrate=44100*0.45,aresample=44100,lowpass=f=1200,adelay=3700,volume=0.6[m3];[f][h][m1][m2][m3]amix=inputs=5:normalize=0,atrim=end=4.3,afade=t=out:st=4.1:d=0.2" \
-	-ac 1 "$OUT/_incins.wav"
-unic ceaun_incins "$OUT/_incins.wav"
-# explozia ceaunului: bubuitura mare (încetinită), fonta care se sparge, poțiunea care plesnește, apoi cioburile care
-# cad prin cameră și un vuiet lung care se stinge, cu ecoul camerei
-ffmpeg -v error -y -i "$PACHET/Retro/explosion_large.wav" -i "$PACHET/Materials/metal_clang.wav" \
-	-i "$PACHET/Combat and Gore/crunch_splat.wav" -i "$PACHET/Materials/pottery_clang.wav" -f lavfi -i "anoisesrc=c=brown:a=1:d=3.5:r=44100:s=12" \
-	-i "$PACHET/Materials/metal_blunt_tap.wav" \
-	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=1600[b];[1]aformat=channel_layouts=mono,asplit=2[k0][k1];[k0]asetrate=44100*0.8,aresample=44100,volume=0.7[m];[2]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,volume=0.6[s];[3]aformat=channel_layouts=mono,asetrate=44100*1.1,aresample=44100,adelay=650,volume=0.35[c1];[k1]asetrate=44100*1.4,aresample=44100,adelay=900,volume=0.25[c2];[5]aformat=channel_layouts=mono,asetrate=44100*1.2,aresample=44100,adelay=1250,volume=0.3[c3];[4]lowpass=f=220,volume='exp(-t*1.3)*1.6':eval=frame[v];[b][m][s][c1][c2][c3][v]amix=inputs=7:normalize=0,aecho=0.7:0.5:70|160:0.3|0.2,atrim=end=3.5,afade=t=out:st=2.7:d=0.8" \
-	-ac 1 "$OUT/_explozie.wav"
-unic ceaun_explozie "$OUT/_explozie.wav"
+# ceaunul care se încinge, explozia și demonul: refăcute „de film” la sfârșitul fișierului (secțiunea „ceaunul de acasă și demonul”)
 # țiuitul din urechi după explozie: două sinusuri înalte, apropiate (bat ușor între ele), care se sting în 3,5 s
 ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*3700*t)+0.6*sin(2*PI*3745*t))*min(1\,t/0.05)*exp(-t*0.9)':s=44100:d=3.5" \
 	-af "afade=t=out:st=2.8:d=0.7" -ac 1 "$OUT/_tiuit.wav"
 unic tiuit "$OUT/_tiuit.wav"
-# chemarea demonului (~8 s): un bas adânc care urcă din podea (două sinusuri joase care bat, zgomot maro), peste o
-# fantomă întoarsă și încetinită, tot mai tare, cu un val la sfârșit
-ffmpeg -v error -y -f lavfi -i "aevalsrc='(sin(2*PI*(38+6*t/8)*t)+0.7*sin(2*PI*(57+9*t/8)*t)+0.4*sin(2*PI*76*t))*min(1\,t/2.5)':s=44100:d=8" \
-	-f lavfi -i "anoisesrc=c=brown:a=0.8:d=8:r=44100:s=13" -i "$PACHET/Other/ghost_long.wav" \
-	-filter_complex "[0]volume=0.5,tremolo=f=0.6:d=0.3[s];[1]lowpass=f=260,volume='0.3+0.9*t/8':eval=frame[z];[2]aformat=channel_layouts=mono,areverse,asetrate=44100*0.55,aresample=44100,lowpass=f=1500,adelay=1200,volume=0.8[g];[s][z][g]amix=inputs=3:normalize=0,aecho=0.6:0.5:90|200:0.3|0.2,atrim=end=8,afade=t=in:d=1.5,afade=t=out:st=6.8:d=1.2" \
-	-ac 1 "$OUT/_chemare.wav"
-unic demon_chemare "$OUT/_chemare.wav"
-# răcnetul demonului: o voce de bărbat încetinită de 2,5-3 ori, dublată de un mârâit (zgomot pe benzile vocii, „frânt” de
-# un tremolo rapid) și un bas, cu ecoul camerei
-ffmpeg -v error -y -i "$PACHET/Human/man_6.wav" -i "$PACHET/Human/man_4.wav" -f lavfi -i "anoisesrc=c=pink:a=0.8:d=2.2:r=44100:s=14" \
-	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.38,aresample=44100,lowpass=f=2000[v1];[1]aformat=channel_layouts=mono,asetrate=44100*0.32,aresample=44100,lowpass=f=1500,volume=0.8[v2];[2]bandpass=f=400:t=h:w=500,tremolo=f=38:d=0.9,volume='if(lt(t\,0.15)\,t/0.15\,exp(-(t-0.15)*1.6))':eval=frame[g];[v1][v2][g]amix=inputs=3:normalize=0,acrusher=bits=10:mix=0.25,equalizer=f=90:t=q:w=1:g=6,aecho=0.6:0.5:60|150:0.35|0.2,atrim=start=0.3:end=2.2,asetpts=PTS-STARTPTS,afade=t=out:st=1.4:d=0.5" \
-	-ac 1 "$OUT/_raget.wav"
-unic demon_raget "$OUT/_raget.wav"
-# glonțul intră în demon: carne (pleoscăit gros), o pocnitură de os și un mormăit scurt de durere, foarte jos
-ffmpeg -v error -y -i "$PACHET/Combat and Gore/squelching_3.wav" -i "$PACHET/Combat and Gore/bone_snap.wav" -i "$PACHET/Human/man_2.wav" \
-	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,volume=0.9[a];[1]aformat=channel_layouts=mono,volume=0.5[b];[2]aformat=channel_layouts=mono,asetrate=44100*0.42,aresample=44100,lowpass=f=1500,adelay=60,volume=0.8[c];[a][b][c]amix=inputs=3:normalize=0,atrim=end=1.0,afade=t=out:st=0.7:d=0.3" \
-	-ac 1 "$OUT/_lovit.wav"
-unic demon_lovit "$OUT/_lovit.wav"
-# se dezintegrează (~4 s): urletul (vocea încetinită, din ce în ce mai jos), flacăra care îl cuprinde, sfârâitul
-# și pârâitul jarului, apoi scrumul care se risipește
-ffmpeg -v error -y -i "$PACHET/Human/man_6.wav" -i "$PACHET/Human/man_9.wav" -i "$PACHET/Environment/fire_lighting.wav" \
-	-f lavfi -i "anoisesrc=c=white:a=0.5:d=4.2:r=44100:s=15" -i "$OUT/foc_trosnet.ogg" \
-	-filter_complex "[0]aformat=channel_layouts=mono,asetrate=44100*0.33,aresample=44100,lowpass=f=1800[u1];[1]aformat=channel_layouts=mono,asetrate=44100*0.26,aresample=44100,lowpass=f=1400,adelay=1100,volume=0.9[u2];[2]aformat=channel_layouts=mono,asetrate=44100*0.45,aresample=44100,volume=0.8[f];[3]highpass=f=3000,lowpass=f=9000,volume='0.25*min(1\,t/0.8)*max(0\,1-(t-2.4)/1.8)':eval=frame[s];[4]aformat=channel_layouts=mono,aresample=44100,atrim=end=4.2,volume='min(1\,t/0.6)*max(0\,1-(t-2.5)/1.7)':eval=frame[j];[u1][u2][f][s][j]amix=inputs=5:normalize=0,acrusher=bits=11:mix=0.2,aecho=0.6:0.5:70|170:0.3|0.2,atrim=end=4.2,afade=t=out:st=3.4:d=0.8" \
-	-ac 1 "$OUT/_dezintegrare.wav"
-unic demon_dezintegrare "$OUT/_dezintegrare.wav"
-# se teleportează: un vâjâit care se strânge (zgomot care crește tot mai repede, ~0,5 s), o pocnitură de aer și o
-# bufnitură joasă, apoi ecoul
-ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.8:d=0.55:r=44100:s=16" -i "$PACHET/Environment/air_burst.wav" -i "$PACHET/Weapons/harsh_thud.wav" \
-	-filter_complex "[0]bandpass=f=900:t=h:w=1400,volume='pow(t/0.55\,3)*1.4':eval=frame[w];[1]aformat=channel_layouts=mono,asetrate=44100*0.8,aresample=44100,adelay=520,volume=0.9[a];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=900,adelay=520,volume=0.9[t];[w][a][t]amix=inputs=3:normalize=0:duration=longest,aecho=0.6:0.5:80|190:0.35|0.2,atrim=end=1.8,afade=t=out:st=1.3:d=0.5" \
-	-ac 1 "$OUT/_teleport.wav"
-unic demon_teleport "$OUT/_teleport.wav"
 rm -f "$OUT"/_miau.wav "$OUT"/_incins.wav "$OUT"/_explozie.wav "$OUT"/_tiuit.wav "$OUT"/_chemare.wav "$OUT"/_raget.wav \
 	"$OUT"/_lovit.wav "$OUT"/_dezintegrare.wav "$OUT"/_teleport.wav
 
@@ -1200,6 +1156,102 @@ rm -f "$OUT"/_tunet.wav "$OUT"/_fulger.wav "$OUT"/_corn.wav "$OUT"/_aparitie.wav
 	"$OUT"/_urlet_w.wav "$OUT"/_moare_w.wav "$OUT"/_ras.wav "$OUT"/_stinger.wav "$OUT"/_murit.wav "$OUT"/_doborat.wav "$OUT"/_absorbtie.wav \
 	"$OUT"/_urlet_s.wav "$OUT"/_raget.wav "$OUT"/_chemare.wav "$OUT"/_cor.wav "$OUT"/_poarta.wav "$OUT"/_transformare.wav "$OUT"/_matura.wav \
 	"$OUT"/_raza.wav "$OUT"/_tasneste.wav "$OUT"/_final.wav "$OUT"/_meteori.wav
+
+
+# --- ceaunul de acasă și demonul, refăcute „de film” (10.10) din pachetele noi (vezi „luptele cu vrăjitorii” mai sus:
+# P2 / P3 / P4, `b`, `sub`, `MIX`, ecourile). ceaun_acasa.gd + demon.gd; aceleași nume, plus `demon_voce` (sub replica
+# lui). Timpii sunt ai scenei:
+#   ceaunul se încinge 4 s, apoi explozia; chemarea: pentagrama 2 s, stâlpul de lumină la 2 s, demonul urcă 2,6 s și
+#   răcnește la ~4,9 s de la începutul chemării; teleportul: sunetul pornește la 0,22 s, el dispare la ~0,53 s.
+# Explozia, chemarea și răgetul sunt stereo, în 2D (Sunet.reda): sunt „ale camerei”, nu ale unui punct.
+TINTA_NORMALA_DEMON=$TINTA_LUFS
+
+# 1. ceaunul se încinge (~4,1 s, 3D): fierberea care o ia razna, sfârâitul, fonta care geme sub presiune (rezonanța de
+# metal coborâtă, scârțâind), încărcarea Shonen care tot urcă și un bas care se umflă; se taie scurt la 4 s, chiar
+# înainte de bubuitură (o clipă de „vid”)
+ffmpeg -v error -y -i "$P2/House & Office/Water_Boiling_4.wav" -i "$P2/House & Office/Food_sizzling_5.wav" \
+	-i "$P2/Stingers and Spooky Triggers/Metal_resonance.wav" -i "$P3/MAGSpel_Anime Ability Charge 10.wav" \
+	-i "$P2/Stingers and Spooky Triggers/Metal_twang.wav" -f lavfi -i "$(sub 32 58 4.1 0 0.9)" -filter_complex \
+	"[0]$(b 0.3 5.63 1.3),volume='0.35+0.9*t/4.1':eval=frame[f];[1]$(b 0 4.1 1),highpass=f=1500,volume='0.1+0.6*pow(t/4.1\,2)':eval=frame[z];[2]$(b 0 4.1 0.55),lowpass=f=1300,vibrato=f=3:d=0.3,volume='pow(t/4.1\,2)*1.6':eval=frame[m];[3]$(b 0 3.2 0.9),adelay=850,volume=0.55[i];[4]$(b 0 1 0.7),asplit=2[k0][k1];[k0]adelay=2300,volume=0.5[k2];[k1]asetrate=44100*1.15,aresample=44100,adelay=3250,volume=0.6[k3];[5]volume='pow(t/4.1\,2.5)':eval=frame[s];[f][z][m][i][k2][k3][s]$MIX=7,$DENS,atrim=end=4.1,afade=t=out:st=3.98:d=0.12" \
+	-ac 1 "$OUT/_incins.wav"
+TINTA_LUFS=-16
+unic ceaun_incins "$OUT/_incins.wav"
+
+# 2. explozia ceaunului (~5,5 s, stereo): două explozii Shonen coborâte una peste alta (pocnetul + corpul), fonta care se
+# sparge (piatra Fantasy + metalul vechi), poțiunea care plesnește pe pereți (gore ud), cioburile care sună, un bas care
+# cade 90 -> 22 Hz și vuietul lung al camerei. În joc, după 0,35 s totul se înfundă (_asurzeste): basul și vuietul
+# rămân, deci ele duc greul.
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 11.wav" -i "$P3/EXPLDsgn_Anime Explosion 2.wav" -i "$P4/Spells/Rock Wall 2.wav" \
+	-i "$PACHET/Materials/metal_clang.wav" -i "$P2/Monsters & Ghosts/Gore_Wet_7.wav" -i "$P2/Stingers and Spooky Triggers/Metal_twang.wav" \
+	-f lavfi -i "$(sub 90 22 5.5 0.9 1.4)" -f lavfi -i "anoisesrc=c=brown:a=1:d=5.5:r=44100:s=31" -filter_complex \
+	"[0]$(b 0 3.15 0.72),lowpass=f=4000[e];[1]$(b 0 1.85 0.9),volume=0.8[p];[2]$(b 0 2 0.8),adelay=40,volume=0.8[r];[3]aformat=channel_layouts=mono,aresample=44100,asetrate=44100*0.7,aresample=44100,volume=0.7[m];[4]$(b 0 1.1 0.8),adelay=80,volume=0.6[g];[5]$(b 0 1 0.6),asplit=2[t0][t1];[t0]adelay=700,volume=0.35[t2];[t1]asetrate=44100*1.3,aresample=44100,adelay=1250,volume=0.25[t3];[6]volume=1[s];[7]lowpass=f=220,volume='1.3*exp(-t*0.8)':eval=frame[v];[e][p][r][m][g][t2][t3][s][v]$MIX=9,$DENS,$ECOU_MARE,atrim=end=5.5,afade=t=out:st=4.3:d=1.2,$STEREO" \
+	-ac 2 "$OUT/_explozie.wav"
+TINTA_LUFS=-12
+unic ceaun_explozie "$OUT/_explozie.wav" stereo
+
+# 3. chemarea demonului (~8 s, stereo): drone-ul de groază și corul fantomelor coborât, care se strâng ca o rugăciune
+# întoarsă; un geamăt adânc care urcă; la 2 s stâlpul de lumină (eliberarea Shonen + flacăra Fantasy), apoi podeaua
+# care se rupe sub el (zidul de piatră coborât) cât urcă (2-4,6 s), cu inima tot mai rapidă și urcarea de pian care
+# se oprește la 4,8 s, ca răgetul (la ~4,9 s) să intre în liniște; dedesubt rămâne drone-ul, sub replica lui
+ffmpeg -v error -y -i "$P2/Ambient/Drone_doom.wav" -i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P2/Monsters & Ghosts/Tone_Moaning_Deep_3.wav" \
+	-i "$P3/MAGSpel_Anime Ability Release 11.wav" -i "$P4/Spells/Firebuff 1.wav" -i "$P4/Spells/Rock Wall 1.wav" \
+	-i "$P2/Stingers and Spooky Triggers/Suspenseful pitch increase.wav" -f lavfi -i "$(sub 30 48 8 0 0.7)" \
+	-f lavfi -i "aevalsrc='0$(inima 2.6 0.7)$(inima 3.3 0.8)$(inima 3.85 0.9)$(inima 4.3 1)':s=44100:d=5" -filter_complex \
+	"[0]$(b 0 4.75 0.75),volume=2.2,asplit=2[d0][d1];[d1]areverse[d2];[d0][d2]concat=n=2:v=0:a=1,atrim=end=8,afade=t=in:d=1.2[d];[1]$(b 2 10 0.62),lowpass=f=1600,volume='0.15+0.55*min(t/4.6\,1)':eval=frame,afade=t=out:st=4.7:d=0.25,volume=0.7[c];[2]$(b 0 8 0.7),lowpass=f=900,volume='0.4+0.8*min(t/4.6\,1)':eval=frame[g];[3]$(b 0 3.55 0.8),adelay=2000,volume=0.6[l];[4]$(b 0 1.3 0.8),adelay=1950,volume=0.6[fl];[5]$(b 0 2 0.6),lowpass=f=1800,adelay=2150,volume=0.9,asplit=2[p0][p1];[p1]adelay=1200,volume=0.6[p2];[6]$(b 2.3 6.4 1),volume='pow(min(t/2.5\,1)\,2)*0.7':eval=frame,adelay=700,afade=t=out:st=4.72:d=0.08[u];[7]volume='min(t/4.6\,1)':eval=frame[s];[8]lowpass=f=200,volume=1.1[h];[d][c][g][l][fl][p0][p2][u][s][h]$MIX=10,$DENS,volume='if(lt(t\,4.8)\,0.25+0.75*pow(t\/4.8\,1.6)\,0.4)':eval=frame,atrim=end=8,afade=t=out:st=6:d=2,$STEREO" \
+	-ac 2 "$OUT/_chemare.wav"
+TINTA_LUFS=-15
+unic demon_chemare "$OUT/_chemare.wav" stereo
+
+# 4. răgetul (~4 s, stereo): trei fiare coborâte una peste alta (răgetul scurt de monstru încetinit pentru corp, mârâitul
+# lung pentru gât, mârâitul gros dedesubt), aripile care se deschid (zborul Shonen, coborât), un bas, stingerul
+# disonant de pian și ecoul mare. Diferit de al lui Head Witch (sefa_demon_raget): alte voci, mai grav.
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_Roar_2.wav" -i "$P2/Monsters & Ghosts/Monster_grunt_long.wav" \
+	-i "$P2/Monsters & Ghosts/Monster_growl_5.wav" -i "$P3/SWSH_Anime Fly 3.wav" -f lavfi -i "$(sub 65 32 3 1.2 1)" \
+	-i "$P2/Stingers and Spooky Triggers/Piano_stinger_dissonent_2.wav" -filter_complex \
+	"[0]$(b 0 1.2 0.5),lowpass=f=2400,volume=1.1[a];[1]$(b 0 2.5 0.62),lowpass=f=1800,volume=0.8[c];[2]$(b 0 1.8 0.55),lowpass=f=900,adelay=100,volume=0.8[d];[3]$(b 0 1.1 0.6),adelay=120,volume=0.5[w];[5]$(b 0 2.15 0.85),adelay=60,volume=0.45[p];[a][c][d][w][4][p]$MIX=6,acrusher=bits=10:mix=0.25,$DENS,$ECOU_MARE,atrim=end=4,afade=t=out:st=3:d=1,$STEREO" \
+	-ac 2 "$OUT/_raget.wav"
+TINTA_LUFS=-13
+unic demon_raget "$OUT/_raget.wav" stereo
+
+# 5. vocea lui, sub replică (~2,5 s, 3D): o respirație de fiară coborâtă și un mârâit adânc, ca să nu „vorbească” doar
+# bipul din Dialog
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Monster_breath.wav" -i "$P2/Monsters & Ghosts/Monster_grunt x2 (ghmmm).wav" \
+	-i "$P2/Monsters & Ghosts/Tone_Moaning.wav" -filter_complex \
+	"[0]$(b 0 1.48 0.6),lowpass=f=1500[r];[1]$(b 0 1.2 0.55),lowpass=f=1100,adelay=500,volume=0.7[m];[2]$(b 0 1.9 0.5),lowpass=f=700,volume=0.5[t];[r][m][t]$MIX=3,$DENS,$ECOU_MIC,atrim=end=2.6,afade=t=out:st=1.9:d=0.7" \
+	-ac 1 "$OUT/_voce_demon.wav"
+TINTA_LUFS=-18
+unic demon_voce "$OUT/_voce_demon.wav"
+
+# 6. glonțul intră în el (~1,2 s, 3D): lovitura Shonen cu sânge, carnea ruptă, și un urlet scurt de durere, foarte jos
+ffmpeg -v error -y -i "$P3/FGHTImpt_Anime Melee Gore 2.wav" -i "$P2/Monsters & Ghosts/Gore_Ripping_5.wav" -i "$P2/Monsters & Ghosts/Zombie_6.wav" \
+	-f lavfi -i "$(sub 80 45 0.6 8 0.7)" -filter_complex \
+	"[0]$(b 0 0.6 0.85)[i];[1]$(b 0.25 1.3 0.9),volume=0.7[g];[2]$(b 0 0.85 0.55),lowpass=f=1500,adelay=90,volume=0.9[u];[i][g][u][3]$MIX=4,$DENS,$ECOU_MIC,atrim=end=1.3,afade=t=out:st=0.9:d=0.4" \
+	-ac 1 "$OUT/_lovit.wav"
+TINTA_LUFS=-15
+unic demon_lovit "$OUT/_lovit.wav"
+
+# 7. se dezintegrează (~5 s, 3D): urletul lui de agonie (țipătul coborât, apoi încă unul mai jos), flacăra care îl
+# cuprinde (Firespray + sfârâitul), la 1,5 s corpul care se surpă în scrum (piatra coborâtă, carnea ruptă), un vânt de
+# cenușă (vâjâitul întors) și basul care se stinge; la capăt, o notă de pian disonant, ca un ecou
+ffmpeg -v error -y -i "$P2/Ambient/Scream.wav" -i "$P2/Monsters & Ghosts/Ghost_moan_2.wav" -i "$P4/Spells/Firespray 1.wav" \
+	-i "$P2/House & Office/Food_sizzling.wav" -i "$P4/Spells/Rock Wall 2.wav" -i "$P2/Monsters & Ghosts/Gore_Ripping_4.wav" \
+	-i "$P2/Character/woosh_5.wav" -f lavfi -i "$(sub 60 25 5 0.6 0.9)" -i "$P2/Stingers and Spooky Triggers/Slow Stinger.wav" -filter_complex \
+	"[0]$(b 0 2.15 0.55),lowpass=f=2500,volume=1.1[u1];[1]$(b 0 3 0.6),lowpass=f=1400,adelay=1300,volume=0.8[u2];[2]$(b 0 2.1 0.9),volume=0.8,afade=t=in:d=0.2[f];[3]$(b 0 2.39 0.8),highpass=f=1200,adelay=300,volume=0.5[z];[4]$(b 0 2 0.5),lowpass=f=1500,adelay=1500,volume=0.8[p];[5]$(b 0 1.1 0.7),adelay=1550,volume=0.6[g];[6]aformat=channel_layouts=mono,aresample=44100,areverse,asetrate=44100*0.7,aresample=44100,adelay=1800,volume=0.6[w];[8]$(b 2.55 4.3 0.8),adelay=3200,volume=0.5[n];[u1][u2][f][z][p][g][w][7][n]$MIX=9,$DENS,$ECOU_MARE,atrim=end=5.2,afade=t=out:st=4.2:d=1" \
+	-ac 1 "$OUT/_dezintegrare.wav"
+TINTA_LUFS=-13
+unic demon_dezintegrare "$OUT/_dezintegrare.wav"
+
+# 8. se teleportează (~2,5 s, 3D): aerul tras spre el (încărcarea Shonen întoarsă, ~0,3 s), pocnitura la 0,31 s (când
+# dispare: explozia scurtă + scânteia roșie + bas) și râsul lui care se pierde în ecou
+ffmpeg -v error -y -i "$P3/MAGSpel_Anime Ability Charge 12.wav" -i "$P3/EXPLDsgn_Anime Explosion 5.wav" -i "$P3/ELECSprk_Anime Spark 1.wav" \
+	-f lavfi -i "$(sub 90 35 1.5 4 1)" -i "$P2/Monsters & Ghosts/Laugh_spooky_4.wav" -filter_complex \
+	"[0]$(b 0 0.9 1),areverse,atrim=start=0.59,asetpts=PTS-STARTPTS,afade=t=in:d=0.05,volume=0.9[s];[1]$(b 0 1.45 0.8),lowpass=f=3000,adelay=310[e];[2]$(b 0 0.65 0.9),adelay=310,volume=0.6[c];[3]adelay=310[b];[4]$(b 0 2 0.55),lowpass=f=1800,adelay=650,volume=0.55,afade=t=out:st=1.8:d=0.85[r];[s][e][c][b][r]$MIX=5,$DENS,$ECOU_MARE,atrim=end=2.8,afade=t=out:st=2:d=0.8" \
+	-ac 1 "$OUT/_teleport.wav"
+TINTA_LUFS=-14
+unic demon_teleport "$OUT/_teleport.wav"
+TINTA_LUFS=$TINTA_NORMALA_DEMON
+rm -f "$OUT"/_incins.wav "$OUT"/_explozie.wav "$OUT"/_chemare.wav "$OUT"/_raget.wav "$OUT"/_voce_demon.wav "$OUT"/_lovit.wav \
+	"$OUT"/_dezintegrare.wav "$OUT"/_teleport.wav
 
 # --- muzica adusă de owner (10.10), toate în buclă din import (loop=true). Timpii de tăiere sunt după liniștea de la
 # început (silenceremove); coada de liniște iese, ca bucla să reînceapă repede.

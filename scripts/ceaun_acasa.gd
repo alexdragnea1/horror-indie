@@ -27,6 +27,7 @@ const SUNET_INCINS := preload("res://sunete/ceaun_incins.ogg")
 const SUNET_EXPLOZIE := preload("res://sunete/ceaun_explozie.ogg")
 const SUNET_TIUIT := preload("res://sunete/tiuit.ogg")
 const SUNET_CHEMARE := preload("res://sunete/demon_chemare.ogg")
+const SUNET_VOCE_DEMON := preload("res://sunete/demon_voce.ogg")
 const SUNET_LUMANARE := preload("res://sunete/minge_foc_aprinsa.ogg")
 const ID_PISICA := "cadavru_pisica"
 ## Înălțimea poțiunii în ceaun (față de podea) și culoarea ei din model (materialul o înmulțește).
@@ -126,6 +127,7 @@ func interactioneaza() -> void:
 	await c.priveste(cap_demon, 0.4)
 	demon.vorbeste = true
 	Dialog.spune([replica_demon])
+	Sunet.reda_la(SUNET_VOCE_DEMON, cap_demon, Sunet.VOLUM_EFECTE, 0.0)  # respirația și mârâitul lui, sub bipurile replicii
 	# falca se mișcă doar cât se scrie replica (45 de litere pe secundă, ca în Dialog)
 	get_tree().create_timer(replica_demon.length() / 45.0).timeout.connect(func() -> void:
 		if is_instance_valid(demon):
@@ -248,7 +250,7 @@ func _incins_ceaun(v: float) -> void:
 ## Bubuitura: ceaunul întreg dispare, în locul lui cioburile încinse zboară prin cameră.
 func _explodeaza() -> void:
 	var centru := global_position + Vector3.UP * 0.35
-	Sunet.reda_la(SUNET_EXPLOZIE, centru, Sunet.VOLUM_EFECTE + 4.0, 0.0)
+	Sunet.reda(SUNET_EXPLOZIE, Sunet.VOLUM_EFECTE)  # stereo, cu ecoul camerei: 2D
 	_tremur = 0.0
 	_model.hide()
 	$Coliziune.set_deferred("disabled", true)
@@ -324,7 +326,7 @@ func _explodeaza() -> void:
 func _cheama_demonul(c: Cutscena) -> Demon:
 	var centru := _covor.global_position
 	c.priveste(centru + Vector3.UP * 0.2, 1.4)
-	Sunet.reda_la(SUNET_CHEMARE, centru + Vector3.UP * 0.5, Sunet.VOLUM_EFECTE, 0.0)
+	Sunet.reda(SUNET_CHEMARE, Sunet.VOLUM_EFECTE)
 	var lumina := OmniLight3D.new()
 	lumina.name = "LuminaChemare"
 	lumina.light_color = culoare_pentagrama
@@ -563,6 +565,8 @@ func _zguduie(putere: float, durata: float) -> void:
 ## Îți țiuie urechile: tot ce se aude (efecte, ambianță, muzică) trece prin filtru și se aude înfundat, apoi revine în
 ## `durata` secunde; peste, un țiuit (pe canalul Interfata, nefiltrat).
 func _asurzeste(durata: float) -> void:
+	# pocnetul exploziei se aude curat (0,35 s), abia apoi se înfundă: rămân basul și vuietul
+	await get_tree().create_timer(0.35).timeout
 	var filtre := []
 	for nume in [&"Efecte", &"Ambianta", &"Muzica"]:
 		var i := AudioServer.get_bus_index(nume)

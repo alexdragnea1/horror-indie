@@ -124,7 +124,7 @@ func aparitie(durata := 2.6) -> void:
 	t.tween_property(_lumina, "light_energy", _lumina.light_energy, durata).from(0.0)
 	await t.finished
 	await get_tree().create_timer(0.3).timeout
-	Sunet.reda_la(SUNET_RAGET, global_position + Vector3.UP * 2.0, Sunet.VOLUM_EFECTE + 2.0, 0.0)
+	Sunet.reda(SUNET_RAGET, Sunet.VOLUM_EFECTE)  # stereo, cu ecoul camerei: 2D
 	t = create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	t.tween_property(self, "_furie", 1.0, 0.35)
 	t.tween_property(self, "_aripi", 0.0, 0.5)
@@ -166,7 +166,7 @@ func impuscat(directie: Vector3, punct := Vector3.ZERO) -> void:
 ## Se aprinde ca jarul (de la gheare și copite spre trunchi), se zbate, apoi se face scrum și cenușă care cade.
 func dezintegreaza() -> void:
 	set_deferred("collision_layer", 0)
-	Sunet.reda_la(SUNET_DEZINTEGRARE, global_position + Vector3.UP * 1.5, Sunet.VOLUM_EFECTE + 2.0, 0.0)
+	Sunet.reda_la(SUNET_DEZINTEGRARE, global_position + Vector3.UP * 1.5, Sunet.VOLUM_EFECTE, 0.0)
 	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
 	t.tween_property(self, "_agonie", 1.0, 0.3)
 	t.tween_property(self, "_aripi", 0.0, 0.4)
@@ -235,7 +235,7 @@ func teleporteaza() -> void:
 	fum.emitting = true
 	# pocnitura din sunet (la ~0,3 s) cade când dispare
 	get_tree().create_timer(0.22).timeout.connect(Sunet.reda_la.bind(SUNET_TELEPORT, global_position + Vector3.UP * 1.3,
-		Sunet.VOLUM_EFECTE + 2.0, 0.0))
+		Sunet.VOLUM_EFECTE, 0.0))
 	await t.finished
 	fum.emitting = false
 	# pleacă: întins în sus, subțire, dispare pe pixeli
