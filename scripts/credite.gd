@@ -1,5 +1,5 @@
 extends Node
-## Genericul de final (scenes/credite.tscn), după „Fuck witches” din City Center (lupta_head_witch.gd): pe negru urcă
+## Genericul de final (scenes/credite.tscn), după „Fuck magic” din City Center (lupta_head_witch.gd): pe negru urcă
 ## încet titlul (`titlu`) și rândurile (`randuri`), cu muzica din meniu. Orice tastă / click / buton de controller
 ## (după `blocat_primele` secunde, ca să nu-l sari din greșeală) sau sfârșitul lui te duce în meniul principal.
 ## Textul e al owner-ului (10.10): se păstrează exact cum l-a scris.

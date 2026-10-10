@@ -15,11 +15,11 @@ extends LuptaBoss
 ##  4. Faza a doua (verde, `putere_faza_doi` × damage, mai rapidă): tot ce avea, plus raza care mătură piața (te
 ##     ascunzi după ceva sau ții scutul) și nova (trei unde de șoc una după alta, pe toată piața: scutul).
 ##  5. Finalul (`_finalul`): urlă, se ridică, razele de lumină țâșnesc din ea, explodează („HEAD WITCH DEFEATED”); din
-##     explozie începe să ningă peste oraș (Zapada); pălăria ei cade lin la picioarele tale; o ridici și o pui jos;
-##     pe ecran `mesaj_final` („Fuck witches”, owner); negru; genericul (`scena_credite`).
+##     explozie începe să ningă peste oraș (Zapada); pălăria ei cade lin la picioarele tale; o ridici și o pui pe cap;
+##     pe ecran `mesaj_final` („Fuck magic”, owner); negru; genericul (`scena_credite`).
 ## „YOU DIED”: o iei de la intrarea în piață; în faza a doua (`reia_din_faza_doi`) de la începutul fazei a doua.
 ## La Continue: în luptă = de la intrarea în piață (oamenii sunt deja morți); după explozie = de la pălărie; după
-## final = ninge, pălăria e unde ai pus-o, nu mai e nimeni.
+## final = ninge, nu mai e nimeni (pălăria e pe capul tău).
 ## Replicile și mesajul sunt ale owner-ului: nu le corecta.
 
 @export var declansator: Area3D
@@ -34,7 +34,7 @@ extends LuptaBoss
 @export var marcaj_faza_doi := "head_witch_faza_doi"
 ## Pus când explodează (de aici ninge).
 @export var marcaj_moarta := "head_witch_moarta"
-## Unde ai pus pălăria (valoarea: [x, y, z, unghi]).
+## Pus când îți pui pălăria pe cap.
 @export var marcaj_palarie := "palaria_head_witch"
 ## Pus înainte de generic.
 @export var marcaj_final := "jocul_terminat"
@@ -45,7 +45,7 @@ extends LuptaBoss
 @export_multiline var replici_intro: PackedStringArray = ["Head Witch: What are you doing here child?",
 	"You: I knew you were stupid.", "You: I didn't know you're this retarded..",
 	"Head Witch: Fear my power, you insolent child!", "You: Fear my dick bitch."]
-@export var mesaj_final := "Fuck witches"
+@export var mesaj_final := "Fuck magic"
 @export_file("*.tscn") var scena_credite := "res://scenes/credite.tscn"
 
 @export_group("Faze")
@@ -1062,7 +1062,7 @@ func _reia_lupta() -> void:
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# 4. Finalul: explodează, ninge, pălăria, „Fuck witches”, genericul
+# 4. Finalul: explodează, ninge, pălăria pe cap, „Fuck magic”, genericul
 # ---------------------------------------------------------------------------------------------------------------
 
 func _la_invins() -> void:
@@ -1183,13 +1183,14 @@ func _fulgi_din_explozie(unde: Vector3) -> void:
 	get_tree().create_timer(7.0, false).timeout.connect(p.queue_free)
 
 
-## Pălăria cade din explozie, lin, ca o frunză, în fața ta; o ridici, te uiți la ea, o pui jos. Apoi mesajul și genericul.
+## Pălăria cade din explozie, lin, ca o frunză, în fața ta; o ridici, te uiți la ea, o pui pe cap. Apoi mesajul și genericul.
 func _palaria(de_unde: Vector3) -> void:
 	var j := _jucator()
 	var cap: Node3D = j.get_node("Cap")
 	var inainte := ((de_unde - j.global_position) * Vector3(1, 0, 1)).normalized()
 	if inainte.length() < 0.1:
 		inainte = -j.global_basis.z
+	inainte = _spre_loc_liber(j, inainte, 2.4)
 	var jos := j.global_position + inainte * 2.4
 	jos.y = centru.y + 0.02
 	_palarie = MODEL_PALARIE.instantiate() as Node3D
@@ -1233,41 +1234,40 @@ func _palaria(de_unde: Vector3) -> void:
 	_palarie.reparent(_camera_jucator)
 	_palarie.transform = in_mana
 	await get_tree().create_timer(2.0, false).timeout
-	await _pune_palaria_jos(j, cap, inainte)
+	await _pune_palaria_pe_cap(cap)
 
 
-## Te întorci spre fântână, faci doi pași, te apleci și pui pălăria pe pavajul nins; rămâi aplecat, cu ochii pe ea.
-func _pune_palaria_jos(j: CharacterBody3D, cap: Node3D, inainte: Vector3) -> void:
-	var spre_fantana := ((centru - j.global_position) * Vector3(1, 0, 1))
-	var dir := spre_fantana.normalized() if spre_fantana.length() > 0.5 else inainte
-	var la := j.global_position + dir * minf(1.5, maxf(spre_fantana.length() - raza_fantana - 1.0, 0.0))
-	var unghi := atan2(-dir.x, -dir.z)
-	var mers := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	mers.tween_property(j, "global_position", la, 1.4)
-	mers.tween_method(func(v: float) -> void: j.rotation.y = v, j.rotation.y, j.rotation.y + angle_difference(j.rotation.y, unghi), 1.4)
-	await mers.finished
-	var jos := j.global_position + dir * 0.85
-	jos.y = centru.y + 0.02
-	var palarie_unghi := randf() * TAU
-	var de_la := _palarie.global_transform
-	var tinta := Transform3D(Basis(Vector3.UP, palarie_unghi), jos)
-	_palarie.reparent(self)
-	_palarie.global_transform = de_la
-	var pune := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	pune.tween_property(cap, "position:y", 0.8, 1.2)
-	pune.tween_method(func(k: float) -> void:
-		_palarie.global_transform = de_la.interpolate_with(tinta, k)
-		_priveste_acum(jos + Vector3.UP * 0.25), 0.0, 1.0, 1.4)
-	await pune.finished
-	Sunet.reda_la(SUNET_PUS, jos, Sunet.VOLUM_EFECTE - 3.0, 0.05)
-	Stare.marcheaza(marcaj_palarie, [jos.x, jos.y, jos.z, palarie_unghi])
-	# te ridici puțin, cu ochii pe ea; ninge peste ea
-	var sus := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
-	sus.tween_property(cap, "position:y", 1.3, 2.0)
-	sus.tween_method(func(_k: float) -> void: _priveste_acum(jos + Vector3.UP * 0.2), 0.0, 1.0, 2.0)
+## O pui pe cap: o ridici deasupra capului (te uiți după ea), o tragi pe cap (se vede borul în partea de sus a
+## ecranului, până la final), apoi te uiți în sus, la zăpadă. Apoi mesajul și genericul.
+func _pune_palaria_pe_cap(cap: Node3D) -> void:
+	# în sus, în fața ochilor, apoi peste cap
+	var deasupra := Transform3D(Basis(Vector3.RIGHT, -0.25), Vector3(0.0, 0.22, -0.5))
+	var pe_cap := Transform3D(Basis(Vector3.RIGHT, -0.1), Vector3(0.0, 0.13, 0.05))
+	var de_la := _palarie.transform
+	var sus := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	sus.tween_method(func(k: float) -> void: _palarie.transform = de_la.interpolate_with(deasupra, k), 0.0, 1.0, 1.1)
+	sus.tween_property(cap, "rotation:x", 0.15, 1.1)
 	await sus.finished
-	await get_tree().create_timer(0.8, false).timeout
-	# „Fuck witches”
+	await get_tree().create_timer(0.3, false).timeout
+	# pe cap: coboară, privirea revine înainte, capul se lasă puțin sub ea
+	var jos := create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	jos.tween_method(func(k: float) -> void: _palarie.transform = deasupra.interpolate_with(pe_cap, k), 0.0, 1.0, 0.45)
+	jos.tween_property(cap, "rotation:x", 0.0, 0.45)
+	await jos.finished
+	Sunet.reda(SUNET_PUS, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+	var y := cap.position.y
+	var apasat := create_tween().set_trans(Tween.TRANS_SINE)
+	apasat.tween_property(cap, "position:y", y - 0.05, 0.12)
+	apasat.tween_property(cap, "position:y", y, 0.4)
+	await apasat.finished
+	Stare.marcheaza(marcaj_palarie)
+	await get_tree().create_timer(1.0, false).timeout
+	# te uiți în sus, la zăpada care cade peste oraș, cu borul ei deasupra ochilor
+	var cer := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	cer.tween_property(cap, "rotation:x", 0.32, 2.5)
+	await cer.finished
+	await get_tree().create_timer(0.5, false).timeout
+	# „Fuck magic”
 	var t := create_tween()
 	t.tween_property(_mesaj, "modulate:a", 1.0, 1.8).set_trans(Tween.TRANS_SINE)
 	t.parallel().tween_property(_mesaj, "scale", Vector2.ONE * 1.05, 5.5)
@@ -1286,7 +1286,32 @@ func _pune_palaria_jos(j: CharacterBody3D, cap: Node3D, inainte: Vector3) -> voi
 	Tranzitie.mergi_la(scena_credite)
 
 
-## „Fuck witches” pe mijlocul ecranului (mare, cu umbră), sub negru (așa dispare odată cu el).
+## Direcția (cât mai aproape de `dir`) în care pălăria poate cădea la `departe` metri de tine: pe pavaj liber, nu în
+## fântână, nu pe o bancă / un felinar, și fără nimic între tine și ea (te duci după ea).
+func _spre_loc_liber(j: CharacterBody3D, dir: Vector3, departe: float) -> Vector3:
+	var spatiu := get_world_3d().direct_space_state
+	for i in 13:
+		var unghi := ceilf(i / 2.0) * 0.45 * (1.0 if i % 2 == 0 else -1.0)
+		var d := dir.rotated(Vector3.UP, unghi)
+		var p := j.global_position + d * departe
+		var de_la_centru := Vector2(p.x - centru.x, p.z - centru.z).length()
+		if de_la_centru < raza_fantana + 1.2 or de_la_centru > raza_piata - 0.8:
+			continue
+		# nimic pe drum (la înălțimea genunchilor) și pavaj gol sub ea
+		var drum := PhysicsRayQueryParameters3D.create(j.global_position + Vector3.UP * 0.4, p + Vector3.UP * 0.4, 1)
+		drum.exclude = [j.get_rid()]
+		if not spatiu.intersect_ray(drum).is_empty():
+			continue
+		var sub := PhysicsRayQueryParameters3D.create(p + Vector3.UP * 3.0, p + Vector3.DOWN, 1)
+		sub.exclude = [j.get_rid()]
+		var lovit := spatiu.intersect_ray(sub)
+		if lovit.is_empty() or (lovit.position as Vector3).y > centru.y + 0.15:
+			continue
+		return d
+	return dir
+
+
+## „Fuck magic” pe mijlocul ecranului (mare, cu umbră), sub negru (așa dispare odată cu el).
 func _fa_mesajul() -> void:
 	var strat := CanvasLayer.new()
 	strat.layer = 18
@@ -1307,7 +1332,7 @@ func _fa_mesajul() -> void:
 	strat.add_child(_mesaj)
 
 
-## După final (Continue): ninge, e seară de iarnă, pălăria e unde ai pus-o; nu mai e nimeni în piață. Dacă ai ieșit
+## După final (Continue): ninge, e seară de iarnă; nu mai e nimeni în piață. Dacă ai ieșit
 ## între explozie și generic, finalul o ia de la pălărie.
 func _dupa_moarte() -> void:
 	if declansator:
@@ -1315,14 +1340,7 @@ func _dupa_moarte() -> void:
 	if civili:
 		civili.hide()
 	_spre_iarna(0.01)
-	var unde = Stare.valoare_marcaj(marcaj_palarie, null)
-	if Stare.e_marcat(marcaj_final) and unde is Array and (unde as Array).size() >= 4:
-		_palarie = MODEL_PALARIE.instantiate() as Node3D
-		_palarie.set_script(SCRIPT_MODEL)
-		_palarie.set("material", MATERIAL)
-		add_child(_palarie)
-		_palarie.global_position = Vector3(unde[0], unde[1], unde[2])
-		_palarie.rotation.y = unde[3]
+	if Stare.e_marcat(marcaj_final):
 		return
 	# între explozie și generic: de la pălărie
 	await get_tree().process_frame

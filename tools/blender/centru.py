@@ -6,7 +6,7 @@
 #   civil_1..6             oamenii din piață, în picioare, speriați (casino_oameni.om)
 #   vrajitoare_sefa_lupta  Head Witch în faza întâi (coven.vrajitoare_sefa cu ambele brațe libere)
 #   vrajitoare_sefa_demon  Head Witch în faza a doua: mare, plutește, fără picioare, aripi de os, coarne, gheare
-#   palarie_sefa           pălăria ei, singură (cade din explozie la final; o pui jos)
+#   palarie_sefa           pălăria ei, singură (cade din explozie la final; o pui pe cap)
 #   blender --background --factory-startup --python tools/blender/centru.py                  (toate)
 #   blender --background --factory-startup --python tools/blender/centru.py -- centru_oras   (doar unele)
 # Axe Blender: Z în sus. Godot = (x, z, -y) din Blender. Bulevardul e pe X, la y < 0 (în Godot z > 0, ca la bar și la
