@@ -1,6 +1,6 @@
-extends Interactabil
-## „Fast Eddie”, omul de la masa de biliard din barul „URBAN” (bar.tscn). E → `replica_oferta` cu mizele (doar cele pe
-## care le ai în cash) + `optiune_refuz`. Pariezi → o partidă de 8-ball (reguli simplificate, de bar):
+extends JocBar
+## „Fast Eddie”, omul de la masa de biliard din barul „URBAN” (bar.tscn). Pariul, plecarea cu E și moartea sunt în
+## JocBar. O partidă de 8-ball (reguli simplificate, de bar):
 ##  - tu spargi; masa e „deschisă” până bagă cineva o bilă (după spargere): atunci el are grupa ei (plinele 1–7 sau cele
 ##    cu dungă 9–15), celălalt cealaltă;
 ##  - joci cât timp bagi bile de-ale tale fără fault; fault = albă în buzunar, n-ai atins nimic sau ai atins întâi altă
@@ -9,7 +9,8 @@ extends Interactabil
 ## Rândul tău: mouse-ul rotește tacul (Shift = fin), linia arată unde lovește albă și încotro pleacă bila atinsă; click
 ## stânga ținut = forța (urcă și coboară), dai drumul = lovești; click dreapta ținut = masa de sus. Băutura (`Betie`)
 ## mișcă puțin tacul la lovire. Rândul lui: își alege cea mai bună lovitură (bila, buzunarul, unghiul tăieturii, drumul
-## liber) și o trage cu `precizie` (abaterea, radiani). Fizica e în `FizicaBiliard`.
+## liber), se teleportează în spatele albei (mersul în jurul mesei trecea prin ea: owner 10.10) și o trage cu `precizie`
+## (abaterea, radiani). Fizica e în `FizicaBiliard`.
 ## Replicile lui Eddie sunt ale lui Claude (owner-ul le poate schimba).
 
 signal _tras
@@ -22,33 +23,17 @@ const SUNET_BILE := preload("res://sunete/biliard_bile.ogg")
 const SUNET_MANTA := preload("res://sunete/biliard_manta.ogg")
 const SUNET_BUZUNAR := preload("res://sunete/biliard_buzunar.ogg")
 const SUNET_TAC := preload("res://sunete/biliard_tac.ogg")
-const SUNET_BANI := preload("res://sunete/bancnota.ogg")
 const SUNET_CASTIG := preload("res://sunete/poker_castig.ogg")
 const SUNET_PIERDERE := preload("res://sunete/poker_pierdere.ogg")
-const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sunete/pas_lemn_2.ogg"), preload("res://sunete/pas_lemn_3.ogg")]
 const CULORI := {1: "a18463", 2: "295555", 3: "7b383a", 4: "655269", 5: "904a40", 6: "445d46", 7: "5e363e", 8: "262d2f"}
 const R := FizicaBiliard.R
 
-@export var om: OmLaMasa
 ## Mijlocul suprafeței de joc, la nivelul postavului; X local = lungimea mesei, Z local = lățimea.
 @export var masa: Marker3D
-@export var nume_el := "Fast Eddie"
-@export var mize: PackedInt32Array = [10, 20, 50, 100]
 ## Cât de bine trage el (abaterea unghiului, radiani; 0,008 ≈ jumătate de grad).
 @export var precizie := 0.009
 @export var viteza_maxima := 4.6
 
-@export_group("Replici")
-@export var replica_oferta := "Fast Eddie: Rack 'em up? Loser pays."
-@export var optiune_refuz := "Nah"
-@export_multiline var replici_fara_bani: PackedStringArray = ["Fast Eddie: No cash, no game."]
-@export_multiline var replici_reguli: PackedStringArray = ["Fast Eddie: Eight-ball. You break."]
-@export_multiline var replici_refuz: PackedStringArray = ["Fast Eddie: Your loss."]
-@export_multiline var replici_castigi: PackedStringArray = ["Fast Eddie: ...", "Fast Eddie: Hustled by a kid. Take it."]
-@export_multiline var replici_pierzi: PackedStringArray = ["Fast Eddie: Thanks for the donation, sweetheart."]
-
-var _in_curs := false
-var _jucator: CharacterBody3D
 var _f: FizicaBiliard
 var _rng := RandomNumberGenerator.new()
 var _bile: Array[Node3D] = []
@@ -73,64 +58,37 @@ var _de_sus := false
 var _unghi := 0.0
 var _putere := 0.0
 var _putere_t := 0.0
-var _repaus_om: Transform3D
 var _cam_tinta := Transform3D.IDENTITY
 var _cam_lina := false
+## Pe ce latură a mesei e camera de ansamblu acum (vezi _vedere_ansamblu).
+var _parte_cam := 1.0
+
+
+func _init() -> void:
+	nume_el = "Fast Eddie"
+	marcaj_castig = "a_castigat_la_biliard"
+	marcaj_pierdut = "a_pierdut_la_biliard"
+	marcaj_mort = "fast_eddie_mort"
+	marcaj_luat = "fast_eddie_luat"
+	id_cadavru = "cadavru_fast_eddie"
+	nume_cadavru = "Fast Eddie"
+	indiciu_cadavru = "[E] Pick up Fast Eddie"
+	replica_oferta = "Fast Eddie: Rack 'em up? Loser pays."
+	replici_fara_bani = ["Fast Eddie: No cash, no game."]
+	replici_reguli = ["Fast Eddie: Eight-ball. You break."]
+	replici_refuz = ["Fast Eddie: Your loss."]
+	replici_castigi = ["Fast Eddie: ...", "Fast Eddie: Hustled by a kid. Take it."]
+	replici_pierzi = ["Fast Eddie: Thanks for the donation, sweetheart."]
+	replici_parasit = ["Fast Eddie: Leaving in the middle of a game? That's a forfeit, sweetheart.", "Fast Eddie: Pay up."]
 
 
 func _ready() -> void:
-	indiciu = "[E] Talk to %s" % nume_el
-	await get_tree().process_frame
-	_jucator = get_tree().get_first_node_in_group("jucator") as CharacterBody3D
-	if _jucator and om:
-		om.privire = _jucator.get_node("Cap")
-	_repaus_om = om.transform
-	TintaOm.adauga(om)
+	super()
 	_rng.randomize()
 	# bilele stau pe masă și când nu jucați (în triunghi)
 	_f = FizicaBiliard.new()
 	_f.aseaza(_rng)
 	_pune_bilele()
-
-
-func poate_fi_folosit() -> bool:
-	return not _in_curs and _jucator != null
-
-
-func interactioneaza() -> void:
-	if not poate_fi_folosit():
-		return
-	_in_curs = true
-	folosit.emit()
-	var posibile: Array[int] = []
-	for m in mize:
-		if Bani.suma() >= m * 100:
-			posibile.append(m)
-	if posibile.is_empty():
-		await _spune(replici_fara_bani)
-		_in_curs = false
-		return
-	var butoane := PackedStringArray()
-	for m in posibile:
-		butoane.append("$%d" % m)
-	butoane.append(optiune_refuz)
-	var i := await Dialog.intreaba(replica_oferta, butoane)
-	if i < 0 or i >= posibile.size():
-		await _spune(replici_refuz)
-		_in_curs = false
-		return
-	var miza: int = posibile[i]
-	await _spune(replici_reguli)
-	var castigat := await _joaca()
-	if castigat:
-		await _spune(replici_castigi)
-		Bani.adauga(miza * 100)
-		Stare.marcheaza("a_castigat_la_biliard")
-	else:
-		await _spune(replici_pierzi)
-		Bani.plateste(mini(miza * 100, Bani.suma()))
-	Sunet.reda(SUNET_BANI, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-	_in_curs = false
 
 
 # ---------------------------------------------------------------- partida
@@ -148,6 +106,7 @@ func _joaca() -> bool:
 	_cam = Camera3D.new()
 	_cam.fov = 60.0
 	get_tree().current_scene.add_child(_cam)
+	_parte_cam = 1.0
 	_cam.global_transform = _vedere_ansamblu()
 	_cam.make_current()
 	_tac = _model(MODEL_TAC)
@@ -166,15 +125,17 @@ func _joaca() -> bool:
 	var la_rand := 0
 	var spargere := true
 	var castigator := -1
-	while castigator == -1:
+	while castigator == -1 and not _parasit:
 		_arata_sus()
 		var curata := _grupa_terminata(la_rand)
 		if la_rand == 0:
 			await _lovitura_ta(spargere)
 		else:
 			await _lovitura_lui()
-		while _f.se_misca():
+		while _f.se_misca() and not _parasit:
 			await get_tree().physics_frame
+		if _parasit:
+			break
 		_simuleaza = false
 		await _asteapta(0.5)
 		# ce s-a întâmplat
@@ -217,19 +178,32 @@ func _joaca() -> bool:
 		spargere = false
 		if not continua:
 			la_rand = 1 - la_rand
-	var castigat := castigator == 0
-	_mesaj("You win!" if castigat else "%s wins." % nume_el)
-	Sunet.reda(SUNET_CASTIG if castigat else SUNET_PIERDERE, Sunet.VOLUM_EFECTE - 2.0)
-	await _asteapta(2.5)
+			if la_rand == 0 and not om.transform.is_equal_approx(_repaus_om):
+				# rândul tău: el se întoarce la locul lui, din calea camerei tale
+				await _teleporteaza_om(_repaus_om)
+	var castigat := castigator == 0 and not _parasit
+	if not _parasit:
+		_mesaj("You win!" if castigat else "%s wins." % nume_el)
+		Sunet.reda(SUNET_CASTIG if castigat else SUNET_PIERDERE, Sunet.VOLUM_EFECTE - 2.0)
+		await _asteapta(2.5)
+	_simuleaza = false
+	_ochesti = false
+	_incarci = false
+	_de_sus = false
+	_cam_lina = false
 	_hud.queue_free()
 	_linie.queue_free()
 	_tac.queue_free()
 	_cam.queue_free()
 	(_jucator.get_node("Cap/Camera3D") as Camera3D).make_current()
-	om.aplecare = 0.0
+	om.priveste_punct = Vector3.INF
 	om.lasa_mana("D", 0.3)
 	om.lasa_mana("S", 0.3)
-	await _mergi_om(_repaus_om, 1.0)
+	var t := create_tween().set_trans(Tween.TRANS_SINE)
+	t.tween_property(om, "aplecare", 0.0, 0.3)
+	await t.finished
+	if not om.transform.is_equal_approx(_repaus_om):
+		await _teleporteaza_om(_repaus_om)
 	om.privire = _jucator.get_node("Cap")
 	_jucator.seteaza_purtat(false)
 	Stare.meniu_deschis = false
@@ -256,26 +230,39 @@ func _lovitura_ta(spargere: bool) -> void:
 	await _tras
 	_ajutor.hide()
 	_linie.hide()
+	if _parasit:
+		_bara.hide()
+		_tac.hide()
+		return
 	var unghi := _unghi + randfn(0.0, 0.006 * Betie.nivel())
 	await _loveste(unghi, _putere)
 	_bara.hide()
-	_misca_camera(_vedere_ansamblu(), true)
+	_misca_camera(_vedere_ansamblu(_parte_cam), true)
 
 
 func _lovitura_lui() -> void:
 	_mesaj("%s's shot." % nume_el)
-	_misca_camera(_vedere_ansamblu(), true)
 	var alegere := _alege()
 	var unghi: float = alegere[0]
 	var putere: float = alegere[1]
 	var dir := Vector2.from_angle(unghi)
-	# vine în spatele albei, se apleacă, mâinile pe tac
+	# se teleportează în spatele albei (mersul în jurul mesei trecea prin ea), se apleacă, mâinile pe tac
 	var spate := _loc_in_spate(dir)
-	var spre := _local_3d(_f.poz[0]) - _local_3d(spate)
-	var tinta_om := Transform3D(Basis.looking_at(-(masa.global_basis * spre).normalized(), Vector3.UP),
+	# camera de pe partea cealaltă a mesei: de pe partea lui stătea cu pălăria în fața ei
+	# (trecerea pe partea cealaltă = tăietură, nu alunecare: altfel camera trecea prin lampa mesei)
+	var parte := -signf(spate.y) if absf(spate.y) > 0.3 else 1.0
+	_misca_camera(_vedere_ansamblu(parte), parte == _parte_cam)
+	_parte_cam = parte
+	var spre := masa.global_basis * (_local_3d(_f.poz[0]) - _local_3d(spate))
+	spre.y = 0.0
+	var tinta_om := Transform3D(Basis.looking_at(-spre.normalized(), Vector3.UP),
 		masa.global_transform * Vector3(spate.x, 0.0, spate.y))
 	tinta_om.origin.y = _repaus_om.origin.y + (om.get_parent() as Node3D).global_position.y
-	await _mergi_om((om.get_parent() as Node3D).global_transform.affine_inverse() * tinta_om, 1.3)
+	await _asteapta(0.5)
+	await _teleporteaza_om((om.get_parent() as Node3D).global_transform.affine_inverse() * tinta_om)
+	if _parasit:
+		return
+	await _asteapta(0.2)
 	_tac.show()
 	_pune_tacul(dir, 0.12)
 	var prinza_s := Marker3D.new()
@@ -293,10 +280,11 @@ func _lovitura_lui() -> void:
 	for k in 2:
 		await _tween_tac(dir, 0.04, 0.35)
 		await _tween_tac(dir, 0.16, 0.35)
-	unghi += randfn(0.0, precizie)
-	await _loveste(unghi, putere)
+	if not _parasit:
+		unghi += randfn(0.0, precizie)
+		await _loveste(unghi, putere)
+		await _asteapta(0.4)
 	om.priveste_punct = Vector3.INF
-	await _asteapta(0.4)
 	t = create_tween().set_trans(Tween.TRANS_SINE)
 	t.tween_property(om, "aplecare", 0.0, 0.5)
 	om.lasa_mana("S", 0.5)
@@ -305,6 +293,14 @@ func _lovitura_lui() -> void:
 	_tac.hide()
 	prinza_s.queue_free()
 	prinza_d.queue_free()
+
+
+## E în timpul jocului (JocBar): dacă ochești, renunți la lovitură.
+func _la_parasire() -> void:
+	if _ochesti:
+		_ochesti = false
+		_incarci = false
+		_tras.emit()
 
 
 ## Tacul lovește albă: înapoi cât e forța, înainte repede, apoi albă pleacă.
@@ -508,6 +504,7 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	super(event)  # E = pleci (JocBar)
 	if not _ochesti:
 		return
 	if event is InputEventMouseMotion:
@@ -617,8 +614,9 @@ func _pune_bilele() -> void:
 	_actualizeaza_bile(0.0)
 
 
-func _vedere_ansamblu() -> Transform3D:
-	var poz := masa.global_transform * Vector3(-0.35, 1.45, 1.55)
+## Masa de pe o latură lungă: `parte` 1 = partea obișnuită, -1 = cea de vizavi (Eddie trage de pe partea obișnuită).
+func _vedere_ansamblu(parte := 1.0) -> Transform3D:
+	var poz := masa.global_transform * Vector3(-0.35 * parte, 1.45, 1.55 * parte)
 	var spre := masa.global_position
 	return Transform3D(Basis.looking_at(spre - poz, Vector3.UP), poz)
 
@@ -633,23 +631,6 @@ func _misca_camera(tinta: Transform3D, lin: bool) -> void:
 	_cam_lina = lin
 	if not lin:
 		_cam.global_transform = tinta
-
-
-## Eddie merge până la `unde` (transform în coordonatele părintelui lui `om`).
-func _mergi_om(unde: Transform3D, durata: float) -> void:
-	var de_la := om.transform
-	var pasi := 4
-	var misca := func(v: float) -> void:
-		var tr := de_la.interpolate_with(unde, v)
-		tr.origin += Vector3.UP * absf(sin(v * PI * pasi)) * 0.02
-		om.transform = tr
-	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_method(misca, 0.0, 1.0, durata)
-	for i in pasi:
-		Sunet.reda_la(SUNET_PASI[i % SUNET_PASI.size()], om.global_position, Sunet.VOLUM_PASI - 3.0, 0.1)
-		await get_tree().create_timer(durata / pasi).timeout
-	if t.is_running():
-		await t.finished
 
 
 func _model(scena: PackedScene) -> Node3D:
@@ -750,14 +731,3 @@ func _mesaj(text: String) -> void:
 	if _eticheta_mesaj and is_instance_valid(_eticheta_mesaj):
 		_eticheta_mesaj.text = text
 
-
-func _spune(replici: PackedStringArray) -> void:
-	if replici.is_empty():
-		return
-	Dialog.spune(replici)
-	if Dialog.activ:
-		await Dialog.terminat
-
-
-func _asteapta(secunde: float) -> void:
-	await get_tree().create_timer(secunde).timeout

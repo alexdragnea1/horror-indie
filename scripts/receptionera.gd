@@ -21,7 +21,7 @@ extends Interactabil
 
 const SUNET_MAINI_SUS := preload("res://sunete/maini_sus.ogg")
 ## De la cea mai „șmecheră” la cea mai slabă; fără niciuna, Fireball-ul.
-const ARME := ["bazooka", "ak47", "shotgun", "pistol_aur", "pistol_roz", "cutit", "vraja_foc"]
+const ARME := ["bazooka", "ak47", "shotgun", "pistol_aur", "pistol_roz", "katana", "cutit", "vraja_foc"]
 
 var _in_curs := false
 

@@ -47,6 +47,8 @@ extends Node3D
 @export var viata_maxima := 2000
 @export var damage_pistol := 5
 @export var damage_cutit := 10
+## Katana din parcarea barului URBAN (katana.gd).
+@export var damage_katana := 20
 ## Shotgun: de aproape (sub `distanta_shotgun` metri) și de departe.
 @export var damage_shotgun_aproape := 50
 @export var damage_shotgun_departe := 10
@@ -454,6 +456,8 @@ func _lovit(arma: String, directie: Vector3, punct: Vector3) -> void:
 			damage = damage_pistol
 		"cutit":
 			damage = damage_cutit
+		"katana":
+			damage = damage_katana
 		"shotgun":
 			var d := _jucator().global_position.distance_to(_warlock.global_position)
 			damage = damage_shotgun_aproape if d <= distanta_shotgun else damage_shotgun_departe

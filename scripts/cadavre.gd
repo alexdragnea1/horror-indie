@@ -22,6 +22,9 @@ const MODELE := {
 	"cadavru_vrajitoare5": {"scena": "res://models/vrajitoare_2.glb", "mijloc": 0.9, "lipite": ["Ochi"], "cu_fata_in_jos": true,
 		"indiciu": "[E] Pick up the witch"},
 	"cadavru_lexy": {"scena": "res://models/lexy.glb", "mijloc": 0.9, "indiciu": "[E] Pick up Lexy"},
+	# cei de la barul URBAN (JocBar): omorâbili după ce ai pierdut la ei
+	"cadavru_big_mike": {"scena": "res://models/jucator_darts.glb", "mijloc": 1.0, "indiciu": "[E] Pick up Big Mike"},
+	"cadavru_fast_eddie": {"scena": "res://models/jucator_biliard.glb", "mijloc": 0.95, "indiciu": "[E] Pick up Fast Eddie"},
 	"cadavru_pisica": {"scena": "res://models/pisica.glb", "mijloc": 0.12, "lipite": ["Ochi"], "masa": 3.0,
 		"indiciu": "[E] Pick up the cat", "mic": true},
 }

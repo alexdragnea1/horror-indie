@@ -202,11 +202,14 @@ func _input(event: InputEvent) -> void:
 ## pe butonul selectat). Cât alegi, jucătorul stă pe loc și mouse-ul se vede.
 ## Cu `replica` goală apar doar butoanele, fără casetă (ex. ce-i spui lui Lexy la masă).
 func intreaba(replica: String, optiuni: PackedStringArray) -> int:
-	# multe butoane (ex. Gun Clerk, 5) ocupă tot rândul de jos: caseta crește, ca replica să rămână deasupra lor
-	var inalta := not replica.is_empty() and "".join(optiuni).length() > 32
+	# butoanele stau pe rândul de jos al casetei: caseta e mai înaltă și replica stă sus, deasupra lor (centrată pe
+	# verticală intra sub butoane: Big Mike / Fast Eddie, owner 10.10)
+	var inalta := not replica.is_empty()
 	_panou.offset_top = -80 if inalta else -64
 	_eticheta.offset_top = -95 if inalta else -79
 	_eticheta.offset_bottom = -80 if inalta else -64
+	if inalta:
+		_text.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	if replica.is_empty():
 		activ = true
 		_text.text = ""
@@ -238,7 +241,6 @@ func intreaba(replica: String, optiuni: PackedStringArray) -> int:
 		_panou.offset_top = -86 - sus
 		_eticheta.offset_top = -101 - sus
 		_eticheta.offset_bottom = -86 - sus
-		_text.size_flags_vertical = Control.SIZE_SHRINK_BEGIN  # replica sus, deasupra celor două rânduri
 		_optiuni_sus.show()
 	_optiuni.show()
 	Stare.meniu_deschis = true

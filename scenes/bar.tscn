@@ -58,6 +58,8 @@
 [ext_resource type="PackedScene" path="res://models/jucator_darts.glb" id="56_jd"]
 [ext_resource type="Script" path="res://scripts/biliard_bar.gd" id="57_bg"]
 [ext_resource type="PackedScene" path="res://models/jucator_biliard.glb" id="58_jb"]
+[ext_resource type="PackedScene" path="res://models/katana.glb" id="59_kt"]
+[ext_resource type="Script" path="res://scripts/katana_jos.gd" id="60_kj"]
 
 [sub_resource type="Environment" id="Environment_bar"]
 background_mode = 1
@@ -98,6 +100,9 @@ size = Vector3(0.5, 8, 24)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_fata"]
 size = Vector3(40, 8, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_katana"]
+size = Vector3(1.15, 0.12, 0.3)
 
 [node name="Bar" type="Node3D"]
 
@@ -424,6 +429,23 @@ pauza_privire = Vector2(0, 0)
 script = ExtResource("4_mp")
 material = ExtResource("5_mt")
 stralucitoare = PackedStringArray()
+
+[node name="KatanaJos" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.1, 0.15, -11.55)
+script = ExtResource("60_kj")
+indiciu = "[E] Take the katana"
+replici = PackedStringArray("You: Who the fuck throws away a katana?")
+
+[node name="Model" type="Node3D" parent="KatanaJos" instance=ExtResource("59_kt")]
+transform = Transform3D(0, -0.17, -0.985, 1, 0, 0, 0, -0.985, 0.17, -0.4, 0.042, 0)
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+stralucitoare = PackedStringArray("Lama")
+stralucire = 0.5
+
+[node name="Forma" type="CollisionShape3D" parent="KatanaJos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.06, -0.08)
+shape = SubResource("BoxShape3D_katana")
 
 [node name="Statie" type="StaticBody3D" parent="." instance=ExtResource("23_sg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.15, 2.4)

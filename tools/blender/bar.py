@@ -1112,9 +1112,10 @@ def sticle_turnat(cale):
 # ---------------------------------------------------------------------------------------------------------------
 
 BARMAN = {
-	# barmanul: masiv, ras în cap, barbă deasă, tricou negru cu mânecă scurtă, șorț, tatuaje pe antebrațe; palmele pe blat
+	# barmanul: masiv, ras în cap, barbă deasă, tricou negru cu mânecă scurtă, șorț; palmele pe blat (tatuajele scoase:
+	# la 480x270 erau pete verzi pe brațe, owner 10.10)
 	"piele": p("a56850"), "piele_umbra": p("904a40"), "haina": p("262d2f"), "haina_umbra": p("2a3c3d"), "camasa": p("262d2f"),
-	"maneca": p("262d2f"), "stil_haina": "tricou", "scris_tricou": p("a18463"), "maneca_scurta": True, "tatuaj": p("295555"),
+	"maneca": p("262d2f"), "stil_haina": "tricou", "scris_tricou": p("a18463"), "maneca_scurta": True,
 	"sort": p("48313b"), "pantaloni": p("2a3c3d"), "pantofi": p("262d2f"),
 	"in_picioare": True, "sezut": 0.86, "masa": BZ - FL,
 	"par": p("48313b"), "stil_par": "ras", "barba": p("48313b"), "mustata": p("48313b"), "incruntat": 0.35,
@@ -1148,6 +1149,72 @@ JUCATOR_BILIARD = {
 }
 
 
+def katana(cale):
+	"""Katana din parcare (owner, 10.10): lama ușor curbată (crește spre muchie: tăișul în jos, -Z), vârful „kissaki”
+	ridicat spre muchie, inelul de alamă (habaki), garda ovală (tsuba) neagră cu margine de aur, mânerul (tsuka) cu
+	împletitura neagră în romburi peste pielea albă de rechin, ornamentele de aur (menuki) și capacul (kashira).
+	Originea = mijlocul mânerului; lama spre +Y (în Godot spre -Z, ca restul armelor). `Lama` e piesă separată
+	(strălucește puțin în joc), `Katana` restul."""
+	curata()
+	from coven import _parinte
+
+	def curba(y):  # cât urcă muchia lamei (sori), de la gardă la vârf
+		u = max(0.0, (y - 0.17) / 0.72)
+		return 0.028 * u * u
+
+	# lama: inele turtite (grosime pe X, lățime pe Z) de-a lungul curbei; lățimea scade spre vârf, apoi kissaki
+	inele = []
+	for k in range(9):
+		y = 0.17 + k * 0.08
+		u = k / 8.0
+		inele.append(((0, y, curba(y) + 0.0005 * k), 0.0036 - 0.0012 * u, 0.0158 - 0.0028 * u))
+	inele.append(((0, 0.86, curba(0.86) + 0.004), 0.0022, 0.0105))
+	inele.append(((0, 0.885, curba(0.885) + 0.008), 0.0016, 0.0055))
+	inele.append(((0, 0.9, curba(0.9) + 0.011), 0.0, 0.0))
+	lama = trunchi("Lama", inele, CROM, laturi=6, ref=(1, 0, 0))
+	# linia de călire (hamon), deschisă, pe ambele fețe, aproape de tăiș
+	hamon = []
+	for s in (-1, 1):
+		puncte = []
+		for k in range(8):
+			y = 0.2 + k * 0.08
+			puncte.append(((s * (0.0036 - 0.0012 * k / 8.0) * 0.72, y, curba(y) - 0.0085 + 0.0005 * k), 0.0006, 0.0028))
+		hamon.append(trunchi("Hamon", puncte, ALB, laturi=4, ref=(1, 0, 0)))
+	ob_lama = uneste([lama] + hamon, "Lama")
+
+	piese = [
+		# habaki (inelul de alamă de la baza lamei) și seppa (șaibele)
+		cub("Habaki", (0.011, 0.032, 0.036), (0, 0.152, 0.0), AUR),
+		cilindru("Seppa", 0.026, 0.026, 0.004, (0, 0.134, 0.0), AUR, laturi=10, rot=(-1.5708, 0, 0), scara=(0.8, 1.0, 1.0)),
+		# tsuba: garda ovală, neagră, cu marginea de aur
+		cilindru("Tsuba", 0.038, 0.038, 0.007, (0, 0.128, 0.0), NEGRU, laturi=14, rot=(-1.5708, 0, 0), scara=(0.75, 1.0, 1.0)),
+		cilindru("Margine tsuba", 0.04, 0.04, 0.0035, (0, 0.128, 0.0), AUR, laturi=14, rot=(-1.5708, 0, 0), scara=(0.75, 1.0, 1.0)),
+		cilindru("Seppa", 0.026, 0.026, 0.004, (0, 0.122, 0.0), AUR, laturi=10, rot=(-1.5708, 0, 0), scara=(0.8, 1.0, 1.0)),
+		# fuchi (gulerul mânerului) și kashira (capacul)
+		trunchi("Fuchi", [((0, 0.098, 0), 0.0135, 0.0175), ((0, 0.118, 0), 0.0145, 0.0185)], METAL_INCHIS, laturi=8, ref=(1, 0, 0)),
+		trunchi("Kashira", [((0, -0.152, 0), 0.0135, 0.0175), ((0, -0.135, 0), 0.0135, 0.0175)], METAL_INCHIS, laturi=8,
+			ref=(1, 0, 0)),
+		# tsuka: pielea albă de rechin (samegawa) dedesubt
+		trunchi("Tsuka", [((0, -0.136, 0), 0.0125, 0.0165), ((0, -0.02, 0), 0.0135, 0.0175), ((0, 0.098, 0), 0.0125, 0.0165)],
+			ALB, laturi=8, ref=(1, 0, 0)),
+	]
+	# împletitura (ito): romburi negre pe fiecare parte, care lasă să se vadă pielea albă printre ele
+	for s in (-1, 1):
+		for i in range(7):
+			y = -0.112 + i * 0.032
+			piese.append(cub("Ito", (0.003, 0.022, 0.022), (s * 0.0128, y, 0.0), NEGRU, rot=(0.785, 0, 0)))
+	for z in (-1, 1):
+		for i in range(7):
+			y = -0.112 + i * 0.032
+			piese.append(cub("Ito", (0.016, 0.012, 0.0028), (0, y, z * 0.0168), NEGRU))
+	# menuki (ornamentele de aur sub împletitură)
+	for s in (-1, 1):
+		piese.append(sfera("Menuki", 0.007, (s * 0.0145, -0.01 * s, 0.0), AUR, scara=(0.5, 1.8, 0.9), segmente=6, inele=4))
+	ob = uneste(piese, "Katana")
+	_parinte(ob_lama, ob)
+	exporta(os.path.join(cale, "katana.glb"))
+
+
 def oameni(cale):
 	casino_oameni.om(cale, "barman_urban", BARMAN, 91)
 	casino_oameni.om(cale, "jucator_darts", JUCATOR_DARTS, 92)
@@ -1171,6 +1238,7 @@ def toate(cale):
 	bile(cale)
 	pahare(cale)
 	sticle_turnat(cale)
+	katana(cale)
 	oameni(cale)
 	statie(cale)
 

@@ -1,11 +1,11 @@
-extends Interactabil
-## „Big Mike”, omul de la darts din barul „URBAN” (bar.tscn). E → `replica_oferta` cu mizele (doar cele pe care le ai
-## în cash) + `optiune_refuz`. Pariezi → jucați `runde` runde, câte 3 săgeți fiecare; câștigă scorul mai mare (la egalitate
-## încă o rundă). Câștigi → primești miza; pierzi → o plătești.
+extends JocBar
+## „Big Mike”, omul de la darts din barul „URBAN” (bar.tscn). Pariul, plecarea cu E și moartea sunt în JocBar.
+## Jucați `runde` runde, câte 3 săgeți fiecare; câștigă scorul mai mare (la egalitate încă o rundă).
 ## Rândul tău: camera stă la linia de aruncare (`linie`), mouse-ul mută ținta pe tablă, dar mâna tremură (mai tare cu
 ## cât ai băut: `Betie`); click dreapta ținut = îți ții respirația (tremură mult mai puțin câteva secunde, apoi mai
 ## tare); click stânga = arunci. Rândul lui: camera din lateral (`loc_spectator`), el vine la linie și aruncă spre
-## triplul 20 cu `precizie` (abaterea, în metri). Scorul e cel de pe o tablă adevărată (razele din bar.py).
+## triplul 20 cu `precizie` (abaterea, în metri), apoi se întoarce la locul lui (stătea la linie, cu capul fix în
+## camera ta, și cozorocul șepcii acoperea tabla: owner 10.10). Scorul e cel de pe o tablă adevărată (razele din bar.py).
 ## Replicile lui Big Mike sunt ale lui Claude (owner-ul le poate schimba).
 
 signal _gata_aruncat
@@ -25,20 +25,15 @@ const MATERIAL := preload("res://shaders/material_model.tres")
 const SUNET_ARUNCAT := preload("res://sunete/darts_aruncat.ogg")
 const SUNET_INFIPT := preload("res://sunete/darts_infipt.ogg")
 const SUNET_RATAT := preload("res://sunete/obiect_aruncat.ogg")
-const SUNET_BANI := preload("res://sunete/bancnota.ogg")
 const SUNET_CASTIG := preload("res://sunete/poker_castig.ogg")
 const SUNET_PIERDERE := preload("res://sunete/poker_pierdere.ogg")
-const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sunete/pas_lemn_2.ogg"), preload("res://sunete/pas_lemn_3.ogg")]
 
-@export var om: OmLaMasa
 ## Ținta (originea = centrul, fața spre +Z local).
 @export var tabla: Node3D
 ## Linia de aruncare (unde stai, cu fața spre tablă).
 @export var linie: Marker3D
 ## De unde se vede rândul lui (camera, privește spre `tabla`).
 @export var loc_spectator: Marker3D
-@export var nume_el := "Big Mike"
-@export var mize: PackedInt32Array = [10, 20, 50, 100]
 @export var runde := 3
 ## Cât de bine aruncă el (abaterea de la ținta lui, în metri). 0,015 ≈ 21 de puncte pe săgeată (Monte Carlo); tu,
 ## ochind fix pe triplul 20 cu tremurul de bază, ≈ 29: îl bați dacă ochești bine și nu ești beat.
@@ -47,17 +42,6 @@ const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sune
 @export var tremur := 0.017
 @export var ochi := 1.62
 
-@export_group("Replici")
-@export var replica_oferta := "Big Mike: You wanna lose some money at darts, kid?"
-@export var optiune_refuz := "Nah"
-@export_multiline var replici_fara_bani: PackedStringArray = ["Big Mike: Come back when you got some cash, kid."]
-@export_multiline var replici_reguli: PackedStringArray = ["Big Mike: Three rounds, three darts each.", "Big Mike: Highest score takes the money."]
-@export_multiline var replici_refuz: PackedStringArray = ["Big Mike: Chicken."]
-@export_multiline var replici_castigi: PackedStringArray = ["Big Mike: Beginner's luck.", "Big Mike: Here, take your damn money."]
-@export_multiline var replici_pierzi: PackedStringArray = ["Big Mike: Better luck next time, kid.", "Big Mike: Pay up."]
-
-var _in_curs := false
-var _jucator: CharacterBody3D
 var _cam: Camera3D
 var _hud: CanvasLayer
 var _eticheta_scor: Label
@@ -75,58 +59,24 @@ var _ochesti := false
 var _respiratie := 0.0
 var _tinut := 0.0
 var _obosit := 0.0
-var _repaus_om: Transform3D
 
 
-func _ready() -> void:
-	indiciu = "[E] Talk to %s" % nume_el
-	await get_tree().process_frame
-	_jucator = get_tree().get_first_node_in_group("jucator") as CharacterBody3D
-	if _jucator and om:
-		om.privire = _jucator.get_node("Cap")
-	_repaus_om = om.transform
-	TintaOm.adauga(om)
-
-
-func poate_fi_folosit() -> bool:
-	return not _in_curs and _jucator != null
-
-
-func interactioneaza() -> void:
-	if not poate_fi_folosit():
-		return
-	_in_curs = true
-	folosit.emit()
-	var posibile: Array[int] = []
-	for m in mize:
-		if Bani.suma() >= m * 100:
-			posibile.append(m)
-	if posibile.is_empty():
-		await _spune(replici_fara_bani)
-		_in_curs = false
-		return
-	var butoane := PackedStringArray()
-	for m in posibile:
-		butoane.append("$%d" % m)
-	butoane.append(optiune_refuz)
-	var i := await Dialog.intreaba(replica_oferta, butoane)
-	if i < 0 or i >= posibile.size():
-		await _spune(replici_refuz)
-		_in_curs = false
-		return
-	var miza: int = posibile[i]
-	await _spune(replici_reguli)
-	var castigat := await _joaca()
-	if castigat:
-		await _spune(replici_castigi)
-		Bani.adauga(miza * 100)
-		Sunet.reda(SUNET_BANI, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-		Stare.marcheaza("a_castigat_la_darts")
-	else:
-		await _spune(replici_pierzi)
-		Bani.plateste(mini(miza * 100, Bani.suma()))
-		Sunet.reda(SUNET_BANI, Sunet.VOLUM_EFECTE - 2.0, 0.05)
-	_in_curs = false
+func _init() -> void:
+	nume_el = "Big Mike"
+	marcaj_castig = "a_castigat_la_darts"
+	marcaj_pierdut = "a_pierdut_la_darts"
+	marcaj_mort = "big_mike_mort"
+	marcaj_luat = "big_mike_luat"
+	id_cadavru = "cadavru_big_mike"
+	nume_cadavru = "Big Mike"
+	indiciu_cadavru = "[E] Pick up Big Mike"
+	replica_oferta = "Big Mike: You wanna lose some money at darts, kid?"
+	replici_fara_bani = ["Big Mike: Come back when you got some cash, kid."]
+	replici_reguli = ["Big Mike: Three rounds, three darts each.", "Big Mike: Highest score takes the money."]
+	replici_refuz = ["Big Mike: Chicken."]
+	replici_castigi = ["Big Mike: Beginner's luck.", "Big Mike: Here, take your damn money."]
+	replici_pierzi = ["Big Mike: Better luck next time, kid.", "Big Mike: Pay up."]
+	replici_parasit = ["Big Mike: Walking out on me? That's a forfeit, kid.", "Big Mike: Pay up."]
 
 
 # ---------------------------------------------------------------- jocul
@@ -140,25 +90,34 @@ func _joaca() -> bool:
 	get_tree().current_scene.add_child(_cam)
 	_fa_hud()
 	var runda := 1
-	while true:
+	while not _parasit:
 		_arata_runda(runda)
 		await _randul_tau()
+		if _parasit:
+			break
 		await _randul_lui()
+		if _parasit:
+			break
 		if runda >= runde and _scor[0] != _scor[1]:
 			break
 		if runda >= runde:
 			_mesaj("Tie! One more round.")
 			await _asteapta(1.5)
 		runda += 1
-	var castigat: bool = _scor[0] > _scor[1]
-	_mesaj("You win!" if castigat else "%s wins." % nume_el)
-	Sunet.reda(SUNET_CASTIG if castigat else SUNET_PIERDERE, Sunet.VOLUM_EFECTE - 2.0)
-	await _asteapta(2.2)
+	var castigat: bool = _scor[0] > _scor[1] and not _parasit
+	if not _parasit:
+		_mesaj("You win!" if castigat else "%s wins." % nume_el)
+		Sunet.reda(SUNET_CASTIG if castigat else SUNET_PIERDERE, Sunet.VOLUM_EFECTE - 2.0)
+		await _asteapta(2.2)
+	_ochesti = false
 	_curata_sagetile()
 	_hud.queue_free()
 	_cam.queue_free()
 	(_jucator.get_node("Cap/Camera3D") as Camera3D).make_current()
-	await _mergi_om(_repaus_om, 1.0)
+	om.priveste_punct = Vector3.INF
+	om.lasa_mana("D", 0.3)
+	if not om.transform.is_equal_approx(_repaus_om):
+		await _mergi_om(_repaus_om, 1.0)
 	om.privire = _jucator.get_node("Cap")
 	_jucator.seteaza_purtat(false)
 	Stare.meniu_deschis = false
@@ -177,11 +136,15 @@ func _randul_tau() -> void:
 	_mesaj("Your turn.")
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	for k in 3:
+		if _parasit:
+			break
 		_arata_sageti(3 - k)
 		_ochesti = true
 		_cerc.show()
 		await _gata_aruncat
 		_cerc.hide()
+		if _parasit:
+			break
 		var unde := _tinta + _tremur_acum() + Vector2(randfn(0.0, 0.004), randfn(0.0, 0.004)) * (1.0 + Betie.nivel() * 0.5)
 		_respiratie = 0.0
 		_tinut = 0.0
@@ -190,7 +153,8 @@ func _randul_tau() -> void:
 		await _asteapta(0.5)
 	_arata_sageti(0)
 	_ajutor.hide()
-	await _asteapta(0.8)
+	if not _parasit:
+		await _asteapta(0.8)
 
 
 func _randul_lui() -> void:
@@ -207,6 +171,8 @@ func _randul_lui() -> void:
 	om.priveste_punct = tabla.global_position
 	for k in 3:
 		await _asteapta(0.6)
+		if _parasit:
+			break
 		# brațul în spate, lângă ureche, apoi înainte, repede: săgeata pleacă din mână
 		await om.du_mana("D", om.global_transform * Vector3(-0.2, 1.72, 0.05), 0.45)
 		await _asteapta(0.35)
@@ -224,7 +190,19 @@ func _randul_lui() -> void:
 		await _asteapta(1.1)
 		_vedere_laterala()
 	om.priveste_punct = Vector3.INF
-	await _asteapta(1.0)
+	if _parasit:
+		return
+	# înapoi la locul lui, din calea ta: la linie camera ta ar fi în capul lui (cozorocul acoperea tabla)
+	await _asteapta(0.4)
+	await _mergi_om(_repaus_om, 1.0)
+	await _asteapta(0.3)
+
+
+## E în timpul jocului (JocBar): dacă ochești, renunți la aruncare.
+func _la_parasire() -> void:
+	if _ochesti:
+		_ochesti = false
+		_gata_aruncat.emit()
 
 
 ## Săgeata zboară în arc de la `de_la` la punctul `unde` de pe tablă (coordonatele ei) și se înfige; scorul îl ia
@@ -319,6 +297,7 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	super(event)  # E = pleci (JocBar)
 	if not _ochesti:
 		return
 	if event is InputEventMouseMotion:
@@ -343,23 +322,6 @@ func _curata_sagetile() -> void:
 			t.tween_method(func(v: float) -> void: ModelPS2.disparitie(s, v), 0.0, 1.0, 0.3)
 			t.tween_callback(s.queue_free)
 	_infipte.clear()
-
-
-## Big Mike merge până la `unde` (transform în coordonatele părintelui lui `om`).
-func _mergi_om(unde: Transform3D, durata: float) -> void:
-	var de_la := om.transform
-	var pasi := 4
-	var misca := func(v: float) -> void:
-		var tr := de_la.interpolate_with(unde, v)
-		tr.origin += Vector3.UP * absf(sin(v * PI * pasi)) * 0.02
-		om.transform = tr
-	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_method(misca, 0.0, 1.0, durata)
-	for i in pasi:
-		Sunet.reda_la(SUNET_PASI[i % SUNET_PASI.size()], om.global_position, Sunet.VOLUM_PASI - 3.0, 0.1)
-		await get_tree().create_timer(durata / pasi).timeout
-	if t.is_running():
-		await t.finished
 
 
 func _fa_hud() -> void:
@@ -437,18 +399,6 @@ func _arata_sageti(cate: int) -> void:
 func _mesaj(text: String) -> void:
 	if _eticheta_mesaj:
 		_eticheta_mesaj.text = text
-
-
-func _spune(replici: PackedStringArray) -> void:
-	if replici.is_empty():
-		return
-	Dialog.spune(replici)
-	if Dialog.activ:
-		await Dialog.terminat
-
-
-func _asteapta(secunde: float) -> void:
-	await get_tree().create_timer(secunde).timeout
 
 
 ## Rândul lui, din spate și puțin din dreapta lui (`loc_spectator`): el în stânga cadrului, tabla spre mijloc (din

@@ -8,6 +8,9 @@ extends StaticBody3D
 const SUNET_CARNE := preload("res://sunete/cutit_carne.ogg")
 
 var om: OmLaMasa
+## Opțional: cine hotărăște ce se întâmplă la glonț (ex. Big Mike / Fast Eddie de la bar, omorâbili după ce ai pierdut
+## la ei). Are `lovit_om(directie, punct) -> bool`: adevărat = s-a ocupat el (a murit), deci omul nu mai tresare.
+var stapan: Object
 
 
 static func adauga(om_la_masa: OmLaMasa) -> TintaOm:
@@ -31,6 +34,8 @@ static func adauga(om_la_masa: OmLaMasa) -> TintaOm:
 
 
 func impuscat(directie: Vector3, punct := Vector3.ZERO) -> void:
+	if stapan and is_instance_valid(stapan) and stapan.call("lovit_om", directie, punct):
+		return
 	om.tresare(directie)
 	Sunet.reda_la(SUNET_CARNE, punct if punct != Vector3.ZERO else global_position, Sunet.VOLUM_EFECTE, 0.1)
 

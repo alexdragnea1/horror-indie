@@ -47,6 +47,17 @@ const MODELE := {
 		"ridicare": 0.016,
 		"raft": Vector3(0.0, 0.0, PI / 2.0),
 	},
+	# katana din parcarea barului URBAN (katana_jos.gd): pe jos pe o parte (garda o ridică), pe raft rezemată, cu mânerul jos
+	"katana": {
+		"scena": "res://models/katana.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.042,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.2, 0.0, 0.0),
+		"sprijin_y": 0.16,
+		"stralucitoare": ["Lama"],
+		"stralucire": 0.35,
+	},
 	"shotgun": {
 		"scena": "res://models/shotgun.glb",
 		"jos": Vector3(0.0, 0.0, PI / 2.0),

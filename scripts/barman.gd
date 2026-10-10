@@ -26,6 +26,10 @@ const SUNET_CAPAC := preload("res://sunete/capac_bere.ogg")
 const SUNET_TURNAT := preload("res://sunete/turnat_bautura.ogg")
 const SUNET_SCAUN := preload("res://sunete/canapea_asezat.ogg")
 const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sunete/pas_lemn_2.ogg"), preload("res://sunete/pas_lemn_3.ogg")]
+## În coordonatele lui (fața spre +Z): sub tejghea, pe partea lui (blatul începe la ~0,27 m în fața lui), și unde ține
+## sticla când merge cu ea (în fața burții, dar cu fundul deasupra blatului: mai jos intra în el la tejghea).
+const SUB_TEJGHEA := Vector3(0.05, 0.85, 0.225)
+const PURTARE := Vector3(-0.12, 1.16, 0.3)
 
 @export var om: OmLaMasa
 ## Unde stai pe scaun (picioarele jucătorului) și cât de sus îți sunt ochii (față de picioare).
@@ -183,7 +187,10 @@ func _mita() -> void:
 	Bani.plateste(mita * 100)
 	om.priveste_punct = Vector3.INF
 	om.privire = _cap
-	await om.du_mana("S", om.global_transform * Vector3(0.12, 0.72, 0.22), 0.55)
+	# peste blat pe partea lui, apoi jos în buzunarul șorțului (nu prin tejghea)
+	var la_el := om.global_transform * SUB_TEJGHEA
+	await om.du_mana("S", Vector3(la_el.x, _peste_blat() + 0.04, la_el.z), 0.35)
+	await om.du_mana("S", om.global_transform * Vector3(0.12, 0.72, 0.22), 0.45)
 	teanc.queue_free()
 	om.lasa_mana("S", 0.45)
 	await _asteapta(0.3)
@@ -216,7 +223,7 @@ func _serveste(bautura: Dictionary) -> Node3D:
 		await _strange_tejgheaua(true)
 	var pahar := _model(bautura.model)
 	get_tree().current_scene.add_child(pahar)
-	var sub := om.global_transform * Vector3(0.05, 0.75, 0.3)  # sub tejghea, în fața lui
+	var sub := om.global_transform * SUB_TEJGHEA  # sub tejghea, în fața lui (pe partea lui, nu sub blat)
 	pahar.global_position = sub
 	pahar.global_rotation = Vector3(0.0, randf_range(-0.5, 0.5), 0.0)
 	var lichid := pahar.find_child("Lichid", true, false) as Node3D
@@ -229,11 +236,16 @@ func _serveste(bautura: Dictionary) -> Node3D:
 	await om.du_mana(mana, prinza, 0.5)
 	if lichid:
 		lichid.scale.y = 0.001
+	# drept în sus pe partea lui (până deasupra blatului), peste blat până deasupra suportului, apoi jos: în linie
+	# dreaptă trecea prin tejghea (owner 10.10)
 	var t := _tween()
-	t.tween_property(pahar, "global_position", pe_tejghea.global_position + Vector3.UP * 0.12, 0.45)
+	t.tween_property(pahar, "global_position", Vector3(sub.x, _peste_blat(), sub.z), 0.3)
 	await t.finished
 	t = _tween()
-	t.tween_property(pahar, "global_position", pe_tejghea.global_position, 0.25)
+	t.tween_property(pahar, "global_position", pe_tejghea.global_position + Vector3.UP * 0.06, 0.35)
+	await t.finished
+	t = _tween()
+	t.tween_property(pahar, "global_position", pe_tejghea.global_position, 0.2)
 	await t.finished
 	Sunet.reda_la(SUNET_PAHAR, pe_tejghea.global_position, Sunet.VOLUM_EFECTE - 3.0, 0.08)
 	if bautura.sticla == "":
@@ -279,7 +291,7 @@ func _toarna(nume: String, pahar: Node3D, lichid: Node3D) -> void:
 	await om.du_mana("D", prinza, 0.45)
 	var purtare := Marker3D.new()
 	om.add_child(purtare)
-	purtare.position = Vector3(-0.12, 1.02, 0.3)
+	purtare.position = PURTARE
 	var t := _tween()
 	t.tween_property(sticla, "global_position", purtare.global_position, 0.4)
 	await t.finished
@@ -298,9 +310,17 @@ func _toarna(nume: String, pahar: Node3D, lichid: Node3D) -> void:
 	var drept := pivot.global_basis
 	var sus := pivot.global_position
 	var deasupra := pe_tejghea.global_position + Vector3.UP * (_inaltime(pahar) + 0.035) - spre * 0.02
+	# întâi o apleacă sus, deasupra paharului (corpul sticlei trece peste blat), abia apoi coboară gâtul la pahar și
+	# o apleacă de tot; aplecată în timp ce cobora, fundul ei intra în tejghea (owner 10.10)
+	var aplecata := Basis(axa, 1.45) * drept
+	var turnat := Basis(axa, 2.1) * drept
 	t = _tween()
-	t.tween_property(pivot, "global_position", deasupra, 0.6)
-	t.tween_property(pivot, "global_basis", Basis(axa, 2.1) * drept, 0.6)
+	t.tween_property(pivot, "global_position", deasupra + Vector3.UP * 0.2, 0.5)
+	t.tween_property(pivot, "global_basis", aplecata, 0.5)
+	await t.finished
+	t = _tween()
+	t.tween_property(pivot, "global_position", deasupra, 0.3)
+	t.tween_property(pivot, "global_basis", turnat, 0.3)
 	await t.finished
 	Sunet.reda_la(SUNET_TURNAT, pe_tejghea.global_position, Sunet.VOLUM_EFECTE - 2.0, 0.05)
 	if lichid:
@@ -309,6 +329,11 @@ func _toarna(nume: String, pahar: Node3D, lichid: Node3D) -> void:
 		await t.finished
 	else:
 		await _asteapta(1.2)
+	# înapoi la fel: întâi se ridică, apoi se îndreaptă
+	t = _tween()
+	t.tween_property(pivot, "global_position", deasupra + Vector3.UP * 0.2, 0.3)
+	t.tween_property(pivot, "global_basis", aplecata, 0.3)
+	await t.finished
 	t = _tween()
 	t.tween_property(pivot, "global_position", sus, 0.45)
 	t.tween_property(pivot, "global_basis", drept, 0.45)
@@ -394,7 +419,12 @@ func _strange_tejgheaua(acum := false) -> void:
 			continue
 		await om.du_mana("S", obiect.global_position + Vector3.UP * 0.05, 0.5)
 		obiect.reparent(om.nod_mana("S"), true)
-		await om.du_mana("S", om.global_transform * Vector3(0.1, 0.75, 0.3), 0.45)
+		# sus, înapoi peste blat pe partea lui, apoi jos sub tejghea (nu prin ea)
+		var sus := obiect.global_position + Vector3.UP * 0.08
+		await om.du_mana("S", sus, 0.2)
+		var la_el := om.global_transform * SUB_TEJGHEA
+		await om.du_mana("S", Vector3(la_el.x, sus.y, la_el.z), 0.3)
+		await om.du_mana("S", la_el + Vector3.UP * 0.05, 0.3)
 		obiect.queue_free()
 		om.lasa_mana("S", 0.4)
 		await _asteapta(0.5)
@@ -417,6 +447,11 @@ func _mergi(unde: Vector3, unghi: float, durata: float) -> void:
 		await get_tree().create_timer(durata / pasi).timeout
 	if t.is_running():
 		await t.finished
+
+
+## Înălțimea (globală) la care un pahar trece peste blat fără să-l atingă.
+func _peste_blat() -> float:
+	return pe_tejghea.global_position.y + 0.06
 
 
 func _fata() -> Vector3:
