@@ -159,7 +159,9 @@ def cladire(cale):
 		_strange(piese, "Cladire")
 
 	# --- podeaua: scânduri pe Y, trei nuanțe închise, peste o șapă
-	piese.append(cub("Sapa", (2 * W + 2 * G, D + G, 0.2), (0, (D + G) / 2, FL - 0.12), METAL_INCHIS))
+	# șapa și acoperișul stau cu 2 cm înăuntrul pereților: cu fețele laterale în planul pereților de afară se băteau cu ei
+	# pe ecran (marginea de sus a pereților laterali și a spatelui, din parcare)
+	piese.append(cub("Sapa", (2 * W + 2 * G - 0.04, D + G - 0.04, 0.2), (0, (D + G) / 2, FL - 0.12), METAL_INCHIS))
 	_cutie_coliziune(col, (2 * W + 2 * G, D + G, 0.3), (0, (D + G) / 2, FL - 0.15))
 	x, k = -W, 0
 	r = random.Random(5)
@@ -291,7 +293,7 @@ def cladire(cale):
 	PZ0, PZ1 = TOP, TOP + 1.1
 	piese.append(cub("Parapet", (2 * W + 2 * G, G, PZ1 - PZ0), (0, G / 2, (PZ0 + PZ1) / 2), CARAMIDA))
 	piese.append(cub("Copertina parapet", (2 * W + 2 * G + 0.1, G + 0.1, 0.06), (0, G / 2, PZ1 + 0.03), METAL_INCHIS))
-	piese.append(cub("Acoperis", (2 * W + 2 * G, D + G, 0.25), (0, (D + G) / 2, TOP - 0.125), METAL_INCHIS))
+	piese.append(cub("Acoperis", (2 * W + 2 * G - 0.04, D + G - 0.04, 0.25), (0, (D + G) / 2, TOP - 0.135), METAL_INCHIS))
 	_cutie_coliziune(col, (2 * W + 2 * G, D + G, 0.3), (0, (D + G) / 2, TOP - 0.15))
 	fx0, fx1, fz0, fz1 = -3.6, 3.6, TOP - 0.45, TOP + 0.95
 	piese.append(cub("Firma", (fx1 - fx0, 0.12, fz1 - fz0), (0, -0.06, (fz0 + fz1) / 2), NEGRU))

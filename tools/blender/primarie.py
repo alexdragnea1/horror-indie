@@ -652,8 +652,10 @@ def interior(cale):
 	piese.append(cub("Taviță ghiseu", (0.5, 0.25, 0.03), (3.0, GG - 0.05, TZ + 0.015), METAL))
 	# peretele de lemn și sticlă din stânga (închide spatele ghișeului până la scară)
 	piese.append(cub("Perete ghiseu", (0.06, SY0 - GY1 - 0.02, TZ - FL), (GX0, (GY1 + 0.02 + SY0) / 2, (FL + TZ) / 2), LEMN))
-	piese.append(cub("Rama geam ghiseu", (0.04, SY0 - GY0, 0.03), (GX0, (GY0 + SY0) / 2, ZG1 - 0.003), CROM))
-	geamuri.append(cub("Geam ghiseu", (0.012, SY0 - GY1 - 0.04, ZG1 - TZ - 0.02), (GX0, (GY1 + SY0) / 2, (TZ + ZG1) / 2), GEAM))
+	# sticla și bara de sus pornesc din colțul geamului din față (GG): înainte sticla începea abia la GY1 (gaură între ele,
+	# deasupra tejghelei) și bara ieșea în față, dincolo de geam
+	piese.append(cub("Rama geam ghiseu", (0.04, SY0 - GG, 0.03), (GX0, (GG + SY0) / 2, ZG1 - 0.003), CROM))
+	geamuri.append(cub("Geam ghiseu", (0.012, SY0 - GG - 0.035, ZG1 - TZ - 0.02), (GX0, (GG + 0.015 + SY0 - 0.02) / 2, (TZ + ZG1) / 2), GEAM))
 	_cutie_coliziune(col, (0.08, SY0 - GY0, ZG1 - FL), (GX0, (GY0 + SY0) / 2, (FL + ZG1) / 2))
 	# în spatele ghișeului: scaunul înalt al funcționarei, biroul cu monitorul vechi, dulapul cu dosare, ceainicul
 	piese.append(cilindru("Picior scaun inalt", 0.03, 0.03, 0.62, (3.0, 7.0, FL + 0.31), METAL_INCHIS, laturi=6))
@@ -882,12 +884,24 @@ def interior(cale):
 	piese.append(sfera("Bust umeri", 0.22, (-3.75, 1.85, z + 1.28), CROM, scara=(1.3, 0.8, 0.6), segmente=8, inele=5))
 	piese.append(sfera("Bust cap", 0.14, (-3.75, 1.85, z + 1.5), CROM, scara=(0.9, 1.0, 1.15), segmente=8, inele=6))
 	_cutie_coliziune(col, (0.4, 0.4, 1.6), (-3.75, 1.85, z + 0.8))
-	for (px, py) in ((3.7, 1.8), (-3.2, 6.6)):
+	# palmierii: ghiveciul stătea pe peretele oval (frunzele intrau prin el și se vedeau doar câteva bețe drepte): acum stau
+	# mai în cameră (la 82% din drumul de la centru spre perete), cu tulpina scurtă și frunze arcuite (urcă, apoi cad)
+	rp = random.Random(17)  # separat de `r`, ca restul decorului să rămână la fel
+	for t in (-0.667, 2.34):
+		wx, wy = _elipsa(t)
+		px, py = wx * 0.82, OCY + (wy - OCY) * 0.82
 		piese.append(cilindru("Ghiveci palmier", 0.24, 0.2, 0.45, (px, py, z + 0.225), AUR, laturi=10))
-		for k in range(8):
-			a = k * 2 * math.pi / 8 + r.uniform(-0.2, 0.2)
-			piese.append(os_intre("Frunza palmier", (px, py, z + 0.6), (px + 0.6 * math.cos(a), py + 0.6 * math.sin(a),
-				z + 1.4 + r.uniform(-0.2, 0.3)), 0.05, VERDE, laturi=3))
+		piese.append(cilindru("Pamant palmier", 0.215, 0.215, 0.02, (px, py, z + 0.44), LEMN_INCHIS, laturi=10))
+		varf = (px, py, z + 1.15)
+		piese.append(cilindru("Tulpina palmier", 0.05, 0.035, 0.72, (px, py, z + 0.8), LEMN, laturi=6))
+		for k in range(9):
+			a = k * 2 * math.pi / 9 + rp.uniform(-0.2, 0.2)
+			ca, sa = math.cos(a), math.sin(a)
+			lung = rp.uniform(0.45, 0.58)
+			mij = (px + ca * lung * 0.5, py + sa * lung * 0.5, varf[2] + rp.uniform(0.22, 0.32))
+			capat = (px + ca * lung, py + sa * lung, varf[2] + rp.uniform(-0.05, 0.1))
+			piese.append(os_intre("Frunza palmier", varf, mij, 0.045, VERDE, laturi=3))
+			piese.append(os_intre("Frunza palmier", mij, capat, 0.035, VERDE, laturi=3))
 		_cutie_coliziune(col, (0.5, 0.5, 1.4), (px, py, z + 0.7))
 	piese.append(cilindru("Cos auriu", 0.13, 0.11, 0.3, (0.95, 1.05, z + 0.15), AUR, laturi=8))
 	# tablourile de pe pereți (peisaje) și aplicele dintre ferestre

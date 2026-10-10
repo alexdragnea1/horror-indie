@@ -13,7 +13,7 @@ import sys
 import bpy
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, trunchi  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, trunchi, desparte_fete  # noqa: E402
 from lexy import perete  # noqa: E402
 from coven import _parinte  # noqa: E402
 from casino import _text, _text_o_fata, _tor, _cutie_coliziune  # noqa: E402
@@ -68,7 +68,9 @@ def cladire(cale):
 		piese[:] = [uneste(piese, "Cladire")]
 
 	# --- podeaua: scânduri pe Y, trei nuanțe, peste o șapă
-	piese.append(cub("Sapa", (2 * W + 2 * G, D + G, 0.2), (0, (D + G) / 2, FL - 0.12), METAL_INCHIS))
+	# șapa și acoperișul stau cu 2 cm înăuntrul pereților: cu fețele laterale în planul pereților de afară se băteau cu ei
+	# pe ecran (pereții laterali, spatele, fațada sub parapet)
+	piese.append(cub("Sapa", (2 * W + 2 * G - 0.04, D + G - 0.04, 0.2), (0, (D + G) / 2, FL - 0.12), METAL_INCHIS))
 	_cutie_coliziune(col, (2 * W + 2 * G, D + G, 0.3), (0, (D + G) / 2, FL - 0.15))
 	x, k = -W, 0
 	while x < W - 0.001:
@@ -210,11 +212,14 @@ def cladire(cale):
 	PZ0, PZ1 = TOP, TOP + 1.35
 	piese.append(cub("Parapet", (2 * W + 2 * G, G, PZ1 - PZ0), (0, G / 2, (PZ0 + PZ1) / 2), CARAMIDA))
 	piese.append(cub("Copertina parapet", (2 * W + 2 * G + 0.1, G + 0.1, 0.06), (0, G / 2, PZ1 + 0.03), METAL))
-	piese.append(cub("Acoperis", (2 * W + 2 * G, D + G, 0.25), (0, (D + G) / 2, TOP - 0.125), METAL_INCHIS))
+	piese.append(cub("Acoperis", (2 * W + 2 * G - 0.04, D + G - 0.04, 0.25), (0, (D + G) / 2, TOP - 0.135), METAL_INCHIS))
 	_cutie_coliziune(col, (2 * W + 2 * G, D + G, 0.3), (0, (D + G) / 2, TOP - 0.15))
 	banner(piese, PZ0 + 0.1, PZ1 - 0.12)
 	strange()
 
+	# fețele lipite (desenele bannerului pe placa lui, rosturile, ramele): piesa mai mică iese puțin în față
+	desparte_fete(fixe=("Fatada", "Fatada int", "Perete lateral", "Spate", "Spate int", "Sapa", "Tavan", "Parapet",
+		"Acoperis", "Banner", "Lambriu", "Scandura"))
 	uneste(piese, "Cladire")
 	uneste(lumini, "Lumini")
 	uneste(geamuri, "Geamuri")
@@ -228,14 +233,16 @@ def banner(piese, z0, z1):
 	bw = 2 * W + 0.1
 	zm = (z0 + z1) / 2
 	piese.append(cub("Banner", (bw, 0.03, z1 - z0), (0, -0.03, zm), NEGRU))
-	for zz in (z0 + 0.025, z1 - 0.025):
-		piese.append(cub("Tiv banner", (bw, 0.045, 0.05), (0, -0.035, zz), ROSU))
-	for xx in (-bw / 2 + 0.025, bw / 2 - 0.025):
-		piese.append(cub("Tiv banner", (0.05, 0.045, z1 - z0), (xx, -0.035, zm), ROSU))
+	for zz in (z0 + 0.02, z1 - 0.02):
+		# tivul iese puțin peste muchiile plăcii (jos, sus, în lateral): cu ele în același plan se băteau
+		piese.append(cub("Tiv banner", (bw + 0.01, 0.04, 0.05), (0, -0.04, zz), ROSU))
+	for xx in (-bw / 2 + 0.02, bw / 2 - 0.02):
+		piese.append(cub("Tiv banner", (0.05, 0.04, z1 - z0 + 0.01), (xx, -0.04, zm), ROSU))
 	for sx in (-1, 1):  # șuruburile cu care e prins
 		for zz in (z0 + 0.12, z1 - 0.12):
 			piese.append(cilindru("Surub", 0.02, 0.02, 0.012, (sx * (bw / 2 - 0.12), -0.064, zz), CROM, laturi=6, rot=(1.5708, 0, 0)))
-	y = -0.052  # fața desenelor
+	# fața desenelor: la 2,5 cm în fața plăcii (la 0,7 cm dungile steagului se băteau cu placa pe ecran, de jos din stradă)
+	y = -0.07
 	# --- steagul american: 13 dungi (roșu sus și jos), cantonul albastru cu 50 de stele (rânduri de 6 și de 5)
 	fx0, fx1 = -bw / 2 + 0.2, -1.55
 	fz0, fz1 = z0 + 0.14, z1 - 0.14
