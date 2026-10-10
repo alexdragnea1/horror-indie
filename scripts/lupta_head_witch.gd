@@ -17,7 +17,7 @@ extends LuptaBoss
 ##  5. Finalul (`_finalul`): urlă, se ridică, razele de lumină țâșnesc din ea, explodează („HEAD WITCH DEFEATED”); din
 ##     explozie începe să ningă peste oraș (Zapada); pălăria ei cade lin la picioarele tale; o ridici și o pui pe cap;
 ##     pe ecran `mesaj_final` („Fuck magic”, owner); negru; genericul (`scena_credite`).
-## „YOU DIED”: o iei de la intrarea în piață; în faza a doua (`reia_din_faza_doi`) de la începutul fazei a doua.
+## „YOU DIED” (+ butonul „Retry”): o iei de la intrarea în piață; în faza a doua (`reia_din_faza_doi`) de la începutul fazei a doua.
 ## La Continue: în luptă = de la intrarea în piață (oamenii sunt deja morți); după explozie = de la pălărie; după
 ## final = ninge, nu mai e nimeni (pălăria e pe capul tău).
 ## Replicile și mesajul sunt ale owner-ului: nu le corecta.

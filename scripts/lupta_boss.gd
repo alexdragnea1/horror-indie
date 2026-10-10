@@ -737,7 +737,8 @@ func _ai_murit() -> void:
 	t.tween_property(cap, "position:y", 0.25, 1.0)
 	t.tween_property(cap, "rotation:x", 0.1, 1.0)
 	t.tween_property(_camera_jucator, "rotation:z", 1.25, 1.0)
-	await _bara.mesaj("YOU DIED", BaraBoss.ROSU_DESCHIS, 3.2)
+	# rămâne pe ecran până apeși „Retry” (owner 10.10)
+	await _bara.mesaj_cu_buton("YOU DIED", BaraBoss.ROSU_DESCHIS, "Retry")
 	var negru := create_tween()
 	negru.tween_property(_negru, "color:a", 1.0, 1.0)
 	await negru.finished

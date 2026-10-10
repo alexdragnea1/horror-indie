@@ -32,6 +32,7 @@ var _jucator_urma: ColorRect
 var _rosu: ColorRect
 var _banda: ColorRect
 var _mesaj: Label
+var _buton: Button
 var _indicatie: Control
 var _indicatie_text: Label
 var _indicatie_timp: ColorRect
@@ -148,6 +149,20 @@ func _fa_mesajul() -> void:
 	_mesaj.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_mesaj.pivot_offset = Vector2(240, 135)
 	_mesaj.modulate.a = 0.0
+	# butonul de sub „YOU DIED” (mesaj_cu_buton)
+	_buton = TemaMeniu.buton(_radacina, "", func() -> void: pass)
+	_buton.theme = TemaMeniu.creeaza()
+	_buton.anchor_left = 0.5
+	_buton.anchor_right = 0.5
+	_buton.anchor_top = 0.5
+	_buton.anchor_bottom = 0.5
+	_buton.offset_left = -36
+	_buton.offset_right = 36
+	_buton.offset_top = 34
+	_buton.offset_bottom = 54
+	_buton.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_buton.modulate.a = 0.0
+	_buton.hide()
 
 
 func _fa_indicatia() -> void:
@@ -256,6 +271,35 @@ func mesaj(text: String, culoare: Color, durata: float) -> void:
 	t.chain().tween_property(_mesaj, "modulate:a", 0.0, 1.0)
 	t.parallel().tween_property(_banda, "color:a", 0.0, 1.0)
 	await t.finished
+
+
+## Ca `mesaj`, dar mesajul rămâne pe ecran și sub el apare butonul `text_buton` (ex. „Retry” la „YOU DIED”, owner
+## 10.10), cu mouse-ul vizibil; se termină când îl apeși (click, Enter sau Space), după ce mesajul se stinge.
+func mesaj_cu_buton(text: String, culoare: Color, text_buton: String) -> void:
+	_mesaj.text = text
+	_mesaj.add_theme_color_override("font_color", culoare)
+	_mesaj.scale = Vector2.ONE * 0.94
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
+	t.tween_property(_banda, "color:a", 0.7, 1.2)
+	t.tween_property(_mesaj, "modulate:a", 1.0, 1.6)
+	t.tween_property(_mesaj, "scale", Vector2.ONE * 1.04, 3.0)
+	await get_tree().create_timer(1.4, false).timeout
+	_buton.text = text_buton
+	_buton.show()
+	create_tween().tween_property(_buton, "modulate:a", 1.0, 0.5)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_buton.grab_focus()
+	await _buton.pressed
+	_buton.release_focus()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if t.is_running():
+		t.kill()
+	t = create_tween().set_parallel()
+	t.tween_property(_mesaj, "modulate:a", 0.0, 0.6)
+	t.tween_property(_banda, "color:a", 0.0, 0.6)
+	t.tween_property(_buton, "modulate:a", 0.0, 0.4)
+	await t.finished
+	_buton.hide()
 
 
 ## Indicația scutului: „Press Ctrl to shield” și o bară care se golește în `timp` secunde. `timp` 0 = o ascunde.

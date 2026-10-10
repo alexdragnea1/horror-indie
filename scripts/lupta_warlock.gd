@@ -11,7 +11,7 @@ extends LuptaBoss
 ##     opresc toate cu scutul (Ctrl): salve de vrăji roșii (te poți și feri), fulgere din cer pe cercuri roșii de pe asfalt,
 ##     globul mare care te urmărește și te dărâmă, iar dacă stai lângă el, unda de șoc (te aruncă), apoi se teleportează.
 ##     Sub jumătate de viață (`faza a doua`) se înfurie: cerul se înroșește, atacă mai des și mai mult.
-##     Viața ta: `viata_jucator` (doar în lupta asta). La 0: „YOU DIED”, apoi lupta o ia de la capăt de la ușă.
+##     Viața ta: `viata_jucator` (doar în lupta asta). La 0: „YOU DIED” cu butonul „Retry” (owner 10.10), apoi lupta o ia de la capăt de la ușă.
 ##  3. Finalul (când „îl omori”, `marcaj_invins`): cade în genunchi, „WARLOCK DEFEATED”, Head Witch se ridică, vine la
 ##     el și îi absoarbe puterile (raza roșie, el se ridică în aer și se face cenușă), vine la tine, `replici_final`
 ##     (owner), apoi dispare (sefa_motel.gd, `marcaj_plecata`). → `sarcina_dupa`.
