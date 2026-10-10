@@ -14,6 +14,9 @@ extends Interactabil
 
 const ID_BANI := "bani_5"
 const NUME_BANI := "$5"
+## La împrumut (ziua în oraș) îți dă 20 de dolari, nu 5.
+const ID_BANI_IMPRUMUT := "bani_20"
+const NUME_BANI_IMPRUMUT := "$20"
 const ID_CADAVRU := "cadavru_lexy"
 const NUME_CADAVRU := "Lexy"
 
@@ -50,7 +53,7 @@ const NUME_CADAVRU := "Lexy"
 
 @export_group("Ziua în oraș")
 ## Ziua de după atac (`marcaj_zi_oras`): dacă n-ai jefuit-o, E pornește direct împrumutul (`replici_imprumut`, apoi îți
-## întinde bancnota de 5 dolari și o iei, apoi `replici_dupa_bani`); `marcaj_imprumut` după. Ziua asta „Leave Lexy's
+## întinde o bancnotă de 20 de dolari și o iei, apoi `replici_dupa_bani`); `marcaj_imprumut` după. Ziua asta „Leave Lexy's
 ## House” nu mai cheamă autobuzul: pleci de la orarul din stație.
 @export var marcaj_zi_oras := "ziua_orasului"
 @export var marcaj_imprumut := "a_imprumutat_de_la_lexy"
@@ -58,7 +61,7 @@ const NUME_CADAVRU := "Lexy"
 @export_multiline var replici_imprumut: PackedStringArray = ["You: Hey bitch can you lend me some money?",
 	"Lexy: What for?", "You: My mother lost the rent money and I need it ASAP.",
 	"You: I promise I will give it back, you know me..", "Lexy: Ok bitch..Here's some money."]
-@export_multiline var replici_dupa_bani: PackedStringArray = ["You: This is only 5 dollars bitch..",
+@export_multiline var replici_dupa_bani: PackedStringArray = ["You: This is only 20 dollars bitch..",
 	"Lexy: All I had.", "You: Kill yourself."]
 
 var _in_curs := false
@@ -121,7 +124,7 @@ func interactioneaza() -> void:
 	if zi_oras and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut):
 		# bancnota trebuie să încapă în inventar (altfel nici nu începe conversația, ca la Helga)
 		if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(Bani.ID):
-			Stare.adauga_obiect(ID_BANI, NUME_BANI)
+			Stare.adauga_obiect(ID_BANI_IMPRUMUT, NUME_BANI_IMPRUMUT)
 			return
 		_in_curs = true
 		folosit.emit()
@@ -199,8 +202,9 @@ func _jefuieste() -> void:
 	await c.opreste()
 
 
-## Iei bancnota din mâna ei: ți-o aduci în fața ochilor, te uiți la ea, o bagi în buzunar („$5” în inventar).
-func _ia_bancnota(bancnota: Node3D) -> void:
+## Iei bancnota din mâna ei: ți-o aduci în fața ochilor, te uiți la ea, o bagi în buzunar (intră în cash: 5 dolari la
+## jaf, 20 la împrumut).
+func _ia_bancnota(bancnota: Node3D, id := ID_BANI, nume := NUME_BANI) -> void:
 	bancnota.reparent(_camera, true)
 	# lipită de cameră n-o prinde nicio lumină: un pic de luciu, ca să se vadă desenul
 	for m in bancnota.find_children("*", "MeshInstance3D", true, false):
@@ -216,7 +220,7 @@ func _ia_bancnota(bancnota: Node3D) -> void:
 	t.tween_property(bancnota, "basis", Basis(Vector3.RIGHT, 0.4) * Basis(Vector3.FORWARD, 0.6), 0.4)
 	await t.finished
 	bancnota.queue_free()
-	Stare.adauga_obiect(ID_BANI, NUME_BANI)
+	Stare.adauga_obiect(id, nume)
 
 
 # ---------------------------------------------------------------- împrumutul (ziua în oraș)
@@ -235,7 +239,7 @@ func _imprumuta() -> void:
 	await c.priveste(predare + Vector3.UP * 0.05, 0.35)
 	await get_tree().create_timer(0.3).timeout
 	lexy.lasa_mana("S", 0.8)
-	await _ia_bancnota(bancnota)
+	await _ia_bancnota(bancnota, ID_BANI_IMPRUMUT, NUME_BANI_IMPRUMUT)
 	Stare.marcheaza(marcaj_imprumut)
 	await c.priveste(lexy.global_position + Vector3.UP * 0.75, 0.5)
 	await _spune(replici_dupa_bani)

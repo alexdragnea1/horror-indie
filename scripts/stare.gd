@@ -141,10 +141,10 @@ func importa(date: Dictionary) -> void:
 
 
 func adauga_obiect(id: String, nume: String) -> bool:
-	# banii se adună mereu într-un singur obiect: bancnota de 5 dolari intră în cash
+	# banii se adună mereu într-un singur obiect: bancnotele de la Lexy (5 dolari la jaf, 20 la împrumut) intră în cash
 	var suma_noua := -1
-	if id == LexyMasa.ID_BANI:
-		suma_noua = Bani.suma() + Bani.BANCNOTA
+	if id == LexyMasa.ID_BANI or id == LexyMasa.ID_BANI_IMPRUMUT:
+		suma_noua = Bani.suma() + (Bani.BANCNOTA if id == LexyMasa.ID_BANI else Bani.BANCNOTA_IMPRUMUT)
 		id = Bani.ID
 	if obiecte.size() >= LOCURI_INVENTAR and not obiecte.has(id):
 		_arata_mesaj("Inventory full")

@@ -11,6 +11,8 @@ const MARCAJ := "cash_suma"
 ## Bancnota de 5 dolari de la Lexy (`LexyMasa.ID_BANI`), în cenți: n-are obiect al ei, intră mereu în cash
 ## (Stare.adauga_obiect o adună, Stare.importa unește salvările vechi).
 const BANCNOTA := 500
+## Bancnota de 20 de dolari pe care ți-o dă Lexy la împrumut (`LexyMasa.ID_BANI_IMPRUMUT`), tot în cenți, tot în cash.
+const BANCNOTA_IMPRUMUT := 2000
 
 
 static func suma() -> int:
