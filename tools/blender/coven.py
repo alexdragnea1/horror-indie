@@ -311,10 +311,13 @@ SEFA = dict(piele=p("7e8d87"), piele_umbra=p("70706e"), roba=p("655269"), roba_u
 	cocoasa=0.0, nas=1.15, varf=(0.22, 0.1), inaltime=1.06, par_lung=0.6, bor=0.31, inaltime_palarie=0.62)
 
 
-def vrajitoare_sefa(cale):
+def vrajitoare_sefa(cale, lupta=False):
 	"""Head Witch: mai înaltă, robă mov cu fir de aur, guler înalt ca evantaiul, păr roșu lung, amuletă verde la gât.
 	Stă dreaptă, cu mâna stângă în șold. Piese separate: `Cap` (originea în gât) cu `Ochi`, `BratDrept` (originea în
-	umăr, atârnă pe lângă corp: îți întinde pistolul, scoate mătura), `Amuleta` (strălucește)."""
+	umăr, atârnă pe lângă corp: îți întinde pistolul, scoate mătura), `Amuleta` (strălucește).
+	`lupta` = varianta pentru lupta din City Center (vrajitoare_sefa_lupta.glb, vezi centru.py): și brațul stâng atârnă,
+	separat (`BratStang`), fiecare braț are punctul gol `Palma` (de acolo pleacă vrăjile), amuleta se cheamă `Lumini`
+	(o aprinde furia, vezi warlock.gd)."""
 	curata()
 	r = random.Random(1313)
 	s = SEFA
@@ -335,17 +338,18 @@ def vrajitoare_sefa(cale):
 		cade = math.sin(u)
 		piese.append(cub("Za", (0.014, 0.01, 0.01), (math.cos(u) * 0.075, -0.07 - cade * 0.07, 1.42 * h - cade * 0.09), AUR,
 			rot=(0.5, 0, u)))
-	# brațul stâng: în șold, cotul în lături
-	umar, cot, inch = (0.21, 0.0, z_umar), (0.36, 0.05, z_umar - 0.25), (0.21, -0.03, z_umar - 0.42)
-	_maneca(piese, umar, cot, inch, s["roba"], s["roba_umbra"])
-	_mana(piese, _lerp(cot, inch, 1.02), (-0.6, -0.1, -0.79), (0.0, -1.0, 0.0), s["piele"], NEGRU, r, deschisa=False)
-	piese.append(trunchi("Manseta aur", [(_lerp(cot, inch, 0.96), 0.104, 0.102), (_lerp(cot, inch, 1.0), 0.106, 0.104)], AUR, laturi=8,
-		ref=(0, 0, 1)))
+	# brațul stâng: în șold, cotul în lături (la luptă atârnă, ca dreptul, și e separat: vezi mai jos)
+	if not lupta:
+		umar, cot, inch = (0.21, 0.0, z_umar), (0.36, 0.05, z_umar - 0.25), (0.21, -0.03, z_umar - 0.42)
+		_maneca(piese, umar, cot, inch, s["roba"], s["roba_umbra"])
+		_mana(piese, _lerp(cot, inch, 1.02), (-0.6, -0.1, -0.79), (0.0, -1.0, 0.0), s["piele"], NEGRU, r, deschisa=False)
+		piese.append(trunchi("Manseta aur", [(_lerp(cot, inch, 0.96), 0.104, 0.102), (_lerp(cot, inch, 1.0), 0.106, 0.104)], AUR, laturi=8,
+			ref=(0, 0, 1)))
 	uneste(piese, "Corp")
 	uneste([
-		trunchi("Amuleta", [((0, -0.17, 1.33 * h), 0.0, 0.0), ((0, -0.17, 1.34 * h), 0.03, 0.03), ((0, -0.17, 1.36 * h), 0.03, 0.03),
+		trunchi("Lumini" if lupta else "Amuleta", [((0, -0.17, 1.33 * h), 0.0, 0.0), ((0, -0.17, 1.34 * h), 0.03, 0.03), ((0, -0.17, 1.36 * h), 0.03, 0.03),
 			((0, -0.17, 1.37 * h), 0.0, 0.0)], p("438b88"), laturi=6, ref=(1, 0, 0)),
-	], "Amuleta")
+	], "Lumini" if lupta else "Amuleta")
 	# rama de aur a amuletei, în spatele pietrei
 	piese_rama = [cilindru("Rama amuleta", 0.038, 0.038, 0.012, (0, -0.158, 1.35 * h), AUR, laturi=6, rot=(1.5708, 0, 0))]
 	ob_corp = bpy_obiect("Corp")
@@ -359,13 +363,25 @@ def vrajitoare_sefa(cale):
 	_mana(brat, _lerp(cot, inch, 1.02), (0.06, -0.15, -0.99), (0.9, -0.3, 0.0), s["piele"], NEGRU, r)
 	brat.append(trunchi("Manseta aur", [(_lerp(cot, inch, 0.96), 0.104, 0.102), (_lerp(cot, inch, 1.0), 0.106, 0.104)], AUR, laturi=8,
 		ref=(0, 0, 1)))
-	uneste(brat, "BratDrept", umar)
+	ob_brat = uneste(brat, "BratDrept", umar)
+	if lupta:
+		from casino_oameni import _punct
+		_punct("Palma", _lerp(cot, inch, 1.2), ob_brat)
+		# brațul stâng, la fel (în oglindă)
+		umar_s, cot_s, inch_s = (0.21, 0.0, z_umar), (0.25, 0.02, z_umar - 0.28), (0.235, -0.04, z_umar - 0.53)
+		brat = []
+		_maneca(brat, umar_s, cot_s, inch_s, s["roba"], s["roba_umbra"])
+		_mana(brat, _lerp(cot_s, inch_s, 1.02), (-0.06, -0.15, -0.99), (-0.9, -0.3, 0.0), s["piele"], NEGRU, r)
+		brat.append(trunchi("Manseta aur", [(_lerp(cot_s, inch_s, 0.96), 0.104, 0.102), (_lerp(cot_s, inch_s, 1.0), 0.106, 0.104)], AUR,
+			laturi=8, ref=(0, 0, 1)))
+		ob_stang = uneste(brat, "BratStang", umar_s)
+		_punct("Palma", _lerp(cot_s, inch_s, 1.2), ob_stang)
 
 	cap, ochi = [], []
 	_cap(cap, ochi, (0, -0.02, 1.475 * h), s, r)
 	ob_cap = uneste(cap, "Cap", (0, -0.02, 1.445 * h))
 	_parinte(uneste(ochi, "Ochi", (0, -0.1, 1.6 * h)), ob_cap)
-	exporta(os.path.join(cale, "vrajitoare_sefa.glb"))
+	exporta(os.path.join(cale, "vrajitoare_sefa_lupta.glb" if lupta else "vrajitoare_sefa.glb"))
 
 
 def bpy_obiect(nume):

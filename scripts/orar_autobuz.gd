@@ -27,6 +27,10 @@ static var cu_autobuzul := false
 ## ordine (gol = nu). Ex. Town Hall: de când citești știrile (`a_citit_stirile`) până iei banii de la primar
 ## (`a_luat_banii_de_la_primar`).
 @export var singur_pana_la: PackedStringArray = []
+## Marcajul fără de care locul, deși se vede în orar, nu e încă gata de mers acolo, în aceeași ordine (gol = gata):
+## alegându-l spui doar `replici_indisponibil`. Ex. City Center abia după ce barmanul îți spune că vrăjitoarea e acolo
+## (`barmanul_a_zis_de_centru`).
+@export var disponibile_dupa: PackedStringArray = []
 @export var optiune_anulare := "Not now"
 ## Locurile fără scenă (scrise de Claude, owner-ul le poate schimba).
 @export_multiline var replici_indisponibil: PackedStringArray = ["You: Nah, not today."]
@@ -89,6 +93,8 @@ func interactioneaza() -> void:
 	var ales := locuri[buton] if buton >= 0 and buton < locuri.size() else -1
 	if ales >= 0:
 		var scena := scene[ales] if ales < scene.size() else ""
+		if ales < disponibile_dupa.size() and disponibile_dupa[ales] != "" and not Stare.e_marcat(disponibile_dupa[ales]):
+			scena = ""
 		if scena == "":
 			Dialog.spune(replici_indisponibil)
 			if Dialog.activ:

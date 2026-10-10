@@ -1,0 +1,344 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="1_ac"]
+[ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="2_vt"]
+[ext_resource type="PackedScene" path="res://models/centru_oras.glb" id="3_or"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="4_mp"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="5_mt"]
+[ext_resource type="Shader" path="res://shaders/cer_amurg.gdshader" id="6_cer"]
+[ext_resource type="PackedScene" path="res://scenes/copac_gol.tscn" id="7_cp"]
+[ext_resource type="Script" path="res://scripts/civil.gd" id="8_cv"]
+[ext_resource type="PackedScene" path="res://models/civil_1.glb" id="9_c1"]
+[ext_resource type="PackedScene" path="res://models/civil_2.glb" id="10_c2"]
+[ext_resource type="PackedScene" path="res://models/civil_3.glb" id="11_c3"]
+[ext_resource type="PackedScene" path="res://models/civil_4.glb" id="12_c4"]
+[ext_resource type="PackedScene" path="res://models/civil_5.glb" id="13_c5"]
+[ext_resource type="PackedScene" path="res://models/civil_6.glb" id="14_c6"]
+[ext_resource type="Script" path="res://scripts/zapada.gd" id="15_zp"]
+[ext_resource type="Script" path="res://scripts/lupta_head_witch.gd" id="16_lh"]
+[ext_resource type="PackedScene" path="res://scenes/statie_centru.tscn" id="23_sc"]
+[ext_resource type="PackedScene" path="res://scenes/autobuz.tscn" id="24_ab"]
+[ext_resource type="Script" path="res://scripts/autobuz.gd" id="25_ag"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_deschise.ogg" id="26_ud"]
+[ext_resource type="AudioStream" path="res://sunete/usi_autobuz_inchise.ogg" id="27_ui"]
+[ext_resource type="Script" path="res://scripts/plecare_autobuz.gd" id="28_pa"]
+[ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="29_sa"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_1.ogg" id="30_b1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_3.ogg" id="31_b3"]
+[ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="32_fr"]
+[ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="33_or"]
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="34_jt"]
+[ext_resource type="Script" path="res://scripts/jucator.gd" id="35_jg"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="36_l1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="37_l2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_3.ogg" id="38_l3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_4.ogg" id="39_l4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_1.ogg" id="40_c1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_2.ogg" id="41_c2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_3.ogg" id="42_c3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_covor_4.ogg" id="43_c4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_2.ogg" id="44_b2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_beton_4.ogg" id="45_b4"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="46_f1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="47_f2"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="48_f3"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_4.ogg" id="49_f4"]
+[ext_resource type="AudioStream" path="res://sunete/scartait_podea.ogg" id="50_sp"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_pornita.ogg" id="51_lp"]
+[ext_resource type="AudioStream" path="res://sunete/lanterna_oprita.ogg" id="52_lo"]
+
+[sub_resource type="ShaderMaterial" id="mat_cer"]
+shader = ExtResource("6_cer")
+shader_parameter/culoare_sus = Color(0.03, 0.05, 0.18, 1)
+shader_parameter/culoare_mijloc = Color(0.09, 0.15, 0.42, 1)
+shader_parameter/culoare_orizont = Color(0.3, 0.36, 0.64, 1)
+shader_parameter/culoare_apus = Color(0.86, 0.5, 0.44, 1)
+shader_parameter/directie_apus = Vector3(0.15, 0, -1)
+shader_parameter/putere_apus = 1.0
+shader_parameter/densitate_stele = 0.01
+shader_parameter/directie_luna = Vector3(0.55, 0.35, 0.75)
+
+[sub_resource type="Sky" id="cer"]
+sky_material = SubResource("mat_cer")
+radiance_size = 0
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 2
+sky = SubResource("cer")
+ambient_light_source = 2
+ambient_light_color = Color(0.36, 0.44, 0.84, 1)
+ambient_light_energy = 0.66
+reflected_light_source = 1
+fog_enabled = true
+fog_light_color = Color(0.2, 0.24, 0.48, 1)
+fog_density = 0.014
+fog_sky_affect = 0.22
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.008
+volumetric_fog_albedo = Color(0.55, 0.58, 0.82, 1)
+volumetric_fog_length = 40.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_orar"]
+size = Vector3(0.1, 0.45, 0.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lat"]
+size = Vector3(0.5, 8, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_intrare"]
+size = Vector3(12, 3, 1.2)
+
+[node name="CentruOras" type="Node3D"]
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Apus" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.917, 0.4, 0, -0.4, -0.917, 0, 30, 0)
+light_color = Color(1, 0.62, 0.5, 1)
+light_energy = 0.38
+light_volumetric_fog_energy = 0.4
+shadow_enabled = true
+
+[node name="Cer" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8, 0.36, -0.48, 0, 0.8, 0.6, 0.6, -0.48, 0.64, 0, 30, 0)
+light_color = Color(0.55, 0.64, 1, 1)
+light_energy = 0.22
+light_volumetric_fog_energy = 0.2
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("1_ac")
+marime_camera = 0.4
+amortizare = 0.45
+ecou = 0.18
+
+[node name="Vant" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_vt")
+volume_db = -18.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="Oras" type="Node3D" parent="." instance=ExtResource("3_or")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+stralucitoare = PackedStringArray("Lumini")
+stralucire = 1.4
+coliziune = 3
+
+[node name="Felinare" type="Node3D" parent="."]
+
+[node name="Felinar1" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.31, 4.3, -10.06)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar2" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.45, 4.3, -18.13)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar3" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.54, 4.3, -28.22)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar4" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.06, 4.3, -35.05)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar5" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.06, 4.3, -35.05)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar6" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.54, 4.3, -28.22)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar7" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.45, 4.3, -18.13)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="Felinar8" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.31, 4.3, -10.06)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.6
+omni_range = 9.0
+
+[node name="FelinarBulevardStanga" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 4.3, 3)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.4
+omni_range = 9.0
+
+[node name="FelinarBulevardDreapta" type="OmniLight3D" parent="Felinare"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 4.3, 3)
+light_color = Color(1, 0.78, 0.52, 1)
+light_energy = 1.4
+omni_range = 9.0
+
+[node name="Copaci" type="Node3D" parent="."]
+
+[node name="Copac1" parent="Copaci" instance=ExtResource("7_cp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.08, 0.7, -28.08)
+
+[node name="Copac2" parent="Copaci" instance=ExtResource("7_cp")]
+transform = Transform3D(-0.5, 0, 0.866, 0, 1, 0, -0.866, 0, -0.5, -6.08, 0.7, -28.08)
+
+[node name="Copac3" parent="Copaci" instance=ExtResource("7_cp")]
+transform = Transform3D(0.5, 0, -0.866, 0, 1, 0, 0.866, 0, 0.5, -6.08, 0.7, -15.92)
+
+[node name="Copac4" parent="Copaci" instance=ExtResource("7_cp")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 6.08, 0.7, -15.92)
+
+[node name="Civili" type="Node3D" parent="."]
+
+[node name="Om1" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0.15, -13.5)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om1" instance=ExtResource("10_c2")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Om2" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.15, -15)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om2" instance=ExtResource("12_c4")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Om3" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.15, -19.5)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om3" instance=ExtResource("9_c1")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Om4" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.15, -20.5)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om4" instance=ExtResource("14_c6")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Om5" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.15, -11)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om5" instance=ExtResource("11_c3")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Om6" type="Node3D" parent="Civili"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.15, -10.5)
+script = ExtResource("8_cv")
+
+[node name="Model" parent="Civili/Om6" instance=ExtResource("13_c5")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Zapada" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -22)
+script = ExtResource("15_zp")
+
+[node name="IntrarePiata" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -7)
+
+[node name="Forma" type="CollisionShape3D" parent="IntrarePiata"]
+shape = SubResource("BoxShape3D_intrare")
+
+[node name="LuptaHeadWitch" type="Node3D" parent="." node_paths=PackedStringArray("declansator", "civili", "zapada", "mediu")]
+script = ExtResource("16_lh")
+declansator = NodePath("../IntrarePiata")
+civili = NodePath("../Civili")
+zapada = NodePath("../Zapada")
+mediu = NodePath("../Mediu")
+nume_boss = "Head Witch"
+viata_maxima = 8000
+
+[node name="Statie" type="StaticBody3D" parent="." instance=ExtResource("23_sc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0.15, 2.4)
+
+[node name="AutobuzOrasSosit" type="AnimatableBody3D" parent="." instance=ExtResource("24_ab")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 10, 0, 5.95)
+sync_to_physics = false
+script = ExtResource("25_ag")
+sunet_usi_deschise = ExtResource("26_ud")
+sunet_usi_inchise = ExtResource("27_ui")
+
+[node name="Autobuz" type="AnimatableBody3D" parent="." instance=ExtResource("24_ab")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 200, 0, 5.95)
+sync_to_physics = false
+script = ExtResource("25_ag")
+sunet_usi_deschise = ExtResource("26_ud")
+sunet_usi_inchise = ExtResource("27_ui")
+
+[node name="CoborareOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("28_pa")
+autobuz = NodePath("../AutobuzOrasSosit")
+marcaj = ""
+sarcina_noua = ""
+doar_din_orar = true
+loc_jucator = Vector3(7.2, 0.17, 3.1)
+unghi_jucator = 0.5
+
+[node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
+script = ExtResource("29_sa")
+autobuz = NodePath("../Autobuz")
+marcaj = ""
+marcaj_oprire = ""
+intarziere = 4.0
+loc_oprire = Vector3(10, 0, 5.95)
+marcaj_urcare = ""
+sunete_urcare = Array[AudioStream]([ExtResource("30_b1"), ExtResource("31_b3"), ExtResource("30_b1"), ExtResource("27_ui"), ExtResource("32_fr")])
+sunet_frana = ExtResource("32_fr")
+
+[node name="OrarCentru" type="StaticBody3D" parent="." node_paths=PackedStringArray("sosire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.42, 1.65, 2.85)
+script = ExtResource("33_or")
+sosire = NodePath("../SosireOras")
+optiuni = PackedStringArray("Home", "Sketchy Laundromat", "Lexy\'s Place", "Gun Store", "Town Hall", "Bar")
+scene = PackedStringArray("res://scenes/afara_bloc.tscn", "res://scenes/casino.tscn", "res://scenes/casa_lexy.tscn", "res://scenes/magazin_arme.tscn", "res://scenes/primarie.tscn", "res://scenes/bar.tscn")
+titluri = PackedStringArray("Block M7, Entrance B", "Sketchy Laundromat", "Lexy\'s place", "Freedom Gun Store", "Town Hall", "Urban Bar")
+ascunse_dupa = PackedStringArray("", "", "lexy_moarta", "", "", "")
+replici = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="OrarCentru"]
+shape = SubResource("BoxShape3D_orar")
+
+[node name="Limite" type="StaticBody3D" parent="."]
+
+[node name="Stanga" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 4, 5)
+shape = SubResource("BoxShape3D_lat")
+
+[node name="Dreapta" type="CollisionShape3D" parent="Limite"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 4, 5)
+shape = SubResource("BoxShape3D_lat")
+
+[node name="Jucator" type="CharacterBody3D" parent="." groups=["jucator"] instance=ExtResource("34_jt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 0.17, 3.1)
+floor_constant_speed = true
+floor_snap_length = 0.3
+script = ExtResource("35_jg")
+pasi_lemn = Array[AudioStream]([ExtResource("36_l1"), ExtResource("37_l2"), ExtResource("38_l3"), ExtResource("39_l4")])
+pasi_covor = Array[AudioStream]([ExtResource("40_c1"), ExtResource("41_c2"), ExtResource("42_c3"), ExtResource("43_c4")])
+pasi_beton = Array[AudioStream]([ExtResource("30_b1"), ExtResource("44_b2"), ExtResource("31_b3"), ExtResource("45_b4")])
+pasi_frunze = Array[AudioStream]([ExtResource("46_f1"), ExtResource("47_f2"), ExtResource("48_f3"), ExtResource("49_f4")])
+scartait_podea = ExtResource("50_sp")
+lanterna_pornita = ExtResource("51_lp")
+lanterna_oprita = ExtResource("52_lo")
+suprafata_implicita = "beton"

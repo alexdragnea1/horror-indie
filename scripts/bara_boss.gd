@@ -268,3 +268,16 @@ func indicatie_scut(timp: float) -> void:
 	var t := create_tween()
 	t.tween_property(_indicatie, "modulate:a", 1.0, 0.15)
 	create_tween().tween_property(_indicatie_timp, "size:x", 0.0, timp)
+
+
+## Bara boss-ului se umple de la gol la plin în `durata` s, cu alt nume (faza a doua a lui Head Witch).
+func umple(nume: String, durata: float) -> void:
+	_nume.text = nume
+	_numar.modulate.a = 0.0
+	_adunat = 0
+	var t := create_tween().set_parallel()
+	t.tween_property(_boss, "modulate:a", 1.0, 0.5)
+	t.tween_property(_jucator_bara, "modulate:a", 1.0, 0.5)
+	t.tween_method(func(v: float) -> void:
+		_fractie = v
+		_fractie_urma = v, 0.0, 1.0, durata).set_trans(Tween.TRANS_SINE)
