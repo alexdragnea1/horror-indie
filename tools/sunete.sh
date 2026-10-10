@@ -1362,3 +1362,37 @@ ffmpeg -v error -y -f lavfi -i "$(pocnet 1.2)" -i "$P3/EXPLDsgn_Anime Explosion 
 TINTA_LUFS=-10
 unic orb_explozie "$OUT/_orb_bum.wav" stereo
 TINTA_LUFS=$TINTA_NORMALA_LUPTE
+# --- pianul cu coadă din conac (pian_conac.gd): trei note sintetizate (do3, do4, do5), din care jocul face toate
+# celelalte cu pitch_scale (cel mult o jumătate de octavă în sus sau în jos). Un pian adevărat, din aditivă:
+#   - 10 armonice ușor „întinse” (inarmonicitatea corzii: f_k = k·f·√(1 + B·k²)), cele de sus mai slabe și mai scurte;
+#   - câte două corzi pe notă, dezacordate cu 0,07% (de aici „bătaia” care face sunetul viu);
+#   - stingerea în două trepte (repede la început, apoi o coadă lungă), mai scurtă la notele de sus;
+#   - ciocănelul: un pocnet de zgomot roz de câteva ms.
+# Ies la -18 LUFS; jocul le stinge când ridici degetul (Space ținut = pedala, le lasă să sune).
+# nota_pian FRECVENTA -> expresia aevalsrc
+nota_pian() {
+	awk -v f="$1" 'BEGIN {
+		s = "0"; r = (f / 261.63) ^ 0.55
+		for (k = 1; k <= 10; k++) {
+			fk = k * f * sqrt(1 + 0.0004 * k * k)
+			if (fk > 16000) break
+			a = 1 / (k ^ 1.25); if (k == 2 || k == 3) a *= 1.25
+			d = (0.9 + 0.5 * k) * r
+			for (c = 0; c < 2; c++) {
+				fc = fk * (c ? 1.0007 : 1)
+				s = s sprintf("+%.4f*sin(2*PI*%.3f*t+%.2f)*(0.6*exp(-t*%.3f)+0.4*exp(-t*%.3f))", a / 2, fc, k * 0.7 + c, d, d * 0.15)
+			}
+		}
+		printf "(%s)*(1-exp(-t*1500))", s
+	}'
+}
+for nota in "do3 130.81" "do4 261.63" "do5 523.25"; do
+	set -- $nota
+	ffmpeg -v error -y -f lavfi -i "aevalsrc='$(nota_pian $2)':s=44100:d=5" -f lavfi -i "anoisesrc=c=pink:a=0.5:d=0.05:r=44100" -filter_complex \
+		"[1]lowpass=f=2500,volume='exp(-t*90)':eval=frame,volume=0.6[h];[0][h]amix=normalize=0:duration=longest:inputs=2,lowpass=f=9000,afade=t=out:st=4:d=1" \
+		-ac 1 "$OUT/_pian.wav"
+	TINTA_LUFS=-18
+	unic pian_$1 "$OUT/_pian.wav"
+	TINTA_LUFS=-20
+done
+rm -f "$OUT/_pian.wav"

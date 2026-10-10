@@ -35,6 +35,7 @@
 [ext_resource type="AudioStream" path="res://sunete/muzica_conac_interior.ogg" id="muzica_loc_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 [ext_resource type="Script" path="res://scripts/semineu_conac.gd" id="sd1"]
+[ext_resource type="Script" path="res://scripts/pian_conac.gd" id="pian1"]
 
 [sub_resource type="BoxShape3D" id="forma_semineu_demon"]
 size = Vector3(1.7, 1.2, 0.3)
@@ -77,6 +78,9 @@ size = Vector3(3.6, 1, 3.6)
 
 [sub_resource type="BoxShape3D" id="covor_dormitor"]
 size = Vector3(3.2, 1, 3.6)
+
+[sub_resource type="BoxShape3D" id="forma_pian"]
+size = Vector3(0.3, 0.5, 1.55)
 
 [node name="ConacInterior" type="Node3D"]
 
@@ -583,10 +587,11 @@ suprafata_implicita = "lemn"
 [node name="Pisica" parent="." instance=ExtResource("32")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2, 3.615, -11.3)
 
-[node name="Muzica" type="AudioStreamPlayer" parent="."]
+[node name="Muzica" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("cedeaza")]
 stream = ExtResource("muzica_loc_ogg")
 bus = &"Muzica"
 script = ExtResource("muzica_loc_gd")
+cedeaza = NodePath("../Pian")
 
 [node name="SemineuDemon" type="StaticBody3D" parent="." node_paths=PackedStringArray("lumina_semineu", "sunet_foc", "lumini")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12.3)
@@ -599,3 +604,10 @@ lumini = NodePath("../Lumini")
 [node name="Forma" type="CollisionShape3D" parent="SemineuDemon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 shape = SubResource("forma_semineu_demon")
+
+[node name="Pian" type="StaticBody3D" parent="."]
+script = ExtResource("pian1")
+
+[node name="Forma" type="CollisionShape3D" parent="Pian"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0.85, -12)
+shape = SubResource("forma_pian")
