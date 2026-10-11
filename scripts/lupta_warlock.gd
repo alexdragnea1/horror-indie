@@ -6,7 +6,7 @@ extends LuptaBoss
 ##     Witch, care cade și rămâne jos; își încarcă toiagul spre tine și apare „Press Ctrl to shield!” cu `fereastra_scut`
 ##     secunde: cu scutul ridicat la timp vraja se sparge în el, altfel te lovește, cazi și te ridici repede.
 ##     → `marcaj_lupta`, `sarcina_lupta`.
-##  2. Lupta (ca un boss din Dark Souls, BaraBoss): Warlock-ul are `viata_maxima` (2000); damage-ul vine după armă
+##  2. Lupta (ca un boss din Dark Souls, BaraBoss): Warlock-ul are `viata_maxima` (3500, owner 11.10); damage-ul vine după armă
 ##     (`lovit_de`, chemat de pistol, Arma, cuțit, rachetă / explozie, mingea de foc; vezi `damage_*`). Atacurile lui se
 ##     opresc toate cu scutul (Ctrl): salve de vrăji roșii (te poți și feri), fulgere din cer pe cercuri roșii de pe asfalt,
 ##     globul mare care te urmărește și te dărâmă, iar dacă stai lângă el, unda de șoc (te aruncă), apoi se teleportează.

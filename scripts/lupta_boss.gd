@@ -14,7 +14,7 @@ extends Node3D
 @export var nume_boss := "Warlock"
 
 @export_group("Viață și damage")
-@export var viata_maxima := 2000
+@export var viata_maxima := 3500  # Warlock-ul (owner 11.10); Head Witch își pune valoarea ei în centru.tscn
 @export var damage_pistol := 5
 @export var damage_cutit := 10
 ## Katana din parcarea barului URBAN (katana.gd).
