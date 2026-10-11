@@ -205,15 +205,22 @@ func _vinde(o: Dictionary, jaf := false) -> void:
 	scena.add_child(arma)
 	arma.global_transform = arma_raft.global_transform
 	arma_raft.hide()
+	# Mânerul îl prinde mâna din partea în care e mânerul: dacă țeava armei de pe perete îi vine spre dreapta (armele
+	# atârnă așa), mânerul e în stânga lui, deci îl ia cu stânga și țeava cu dreapta. Altfel (dreapta pe mâner mereu)
+	# brațele i se încrucișau când lua arma și până o punea pe tejghea (owner, 11.10: „tot are mâinile încrucișate”).
+	var teava_la_el: Vector3 = om.global_basis.inverse() * -arma.global_basis.z
+	var semn := 1.0 if teava_la_el.x >= 0.0 else -1.0  # 1 = țeava spre stânga lui (+X), mânerul în dreapta
+	var mana_maner := "D" if semn > 0.0 else "S"
+	var mana_teava := "S" if semn > 0.0 else "D"
 	var prinza_d := Marker3D.new()
 	arma.add_child(prinza_d)
 	var prinza_s: Marker3D = null
-	om.du_mana("D", prinza_d, 0.55)
+	om.du_mana(mana_maner, prinza_d, 0.55)
 	if PRINZA_S[o.raft] != null:
 		prinza_s = Marker3D.new()
 		arma.add_child(prinza_s)
 		prinza_s.position = PRINZA_S[o.raft]
-		om.du_mana("S", prinza_s, 0.6)
+		om.du_mana(mana_teava, prinza_s, 0.6)
 	await get_tree().create_timer(0.65).timeout
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(arma, "global_position", arma.global_position + Vector3(0, 0.06, 0.18), 0.35)
@@ -221,7 +228,7 @@ func _vinde(o: Dictionary, jaf := false) -> void:
 	# o coboară în fața pieptului (mânerul în dreapta lui, țeava spre stânga): așa o duce, nu sus la nivelul raftului,
 	# unde la întoarcere îi încrucișa brațele (owner, 08.10)
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_property(arma, "global_position", om.to_global(Vector3(-float(CENTRU[o.raft]), 1.12, 0.38)), 0.45)
+	t.tween_property(arma, "global_position", om.to_global(Vector3(-semn * float(CENTRU[o.raft]), 1.12, 0.38)), 0.45)
 	await t.finished
 	# 5. se întoarce cu ea (arma merge cu el) și o pune culcată pe tejghea
 	arma.reparent(om, true)
@@ -229,14 +236,17 @@ func _vinde(o: Dictionary, jaf := false) -> void:
 	await _mergi(repaus_om.origin, 0.0, durata_drum)
 	arma.reparent(scena, true)
 	var culcat: Array = PE_TEJGHEA[o.raft]
-	var tinta := Transform3D(culcat[0], pe_tejghea.global_position + Vector3.UP * float(culcat[1]))
+	# țeava rămâne de aceeași parte a lui ca în mâini (cu mânerul în stânga: întoarsă cu 180°), ca să nu-și încrucișeze
+	# brațele când o așază
+	var baza: Basis = culcat[0] if semn > 0.0 else Basis(Vector3.UP, PI) * (culcat[0] as Basis)
+	var tinta := Transform3D(baza, pe_tejghea.global_position + Vector3.UP * float(culcat[1]))
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(arma, "global_transform", tinta, 0.7)
 	await t.finished
 	Sunet.reda_la(SUNET_PUSA, pe_tejghea.global_position, Sunet.VOLUM_EFECTE - 1.0, 0.05)
-	om.lasa_mana("D", 0.5)
+	om.lasa_mana(mana_maner, 0.5)
 	if prinza_s:
-		om.lasa_mana("S", 0.5)
+		om.lasa_mana(mana_teava, 0.5)
 	await get_tree().create_timer(0.3).timeout
 	await _spune(replici_dupa_jaf if jaf else replici_dupa)
 	# 6. o iei: vine spre tine și intră în inventar, deja în mână (la jaf, Fireball-ul de până acum o lasă locul)
