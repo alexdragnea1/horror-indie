@@ -4,7 +4,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 
 ## Cum îl pornești
 1. Deschide Godot 4.7 → **Import** → alege `project.godot` din folderul ăsta.
-2. Apasă **F5**. Pornește meniul principal: Start / Continue, Select Save File (3 fișiere), Settings (ecran complet, volum Music și Effects, taste), Quit.
+2. Apasă **F5**. Pornește meniul principal: Start / Continue, Select Save File (3 fișiere), Settings (ecran complet, volum Music și Effects — la prima pornire 20% și 10% —, taste), Quit.
 
 ## Controale
 | Tastă | Ce face |

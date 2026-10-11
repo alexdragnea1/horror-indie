@@ -27,8 +27,8 @@ const MARIME_FEREASTRA := Vector2i(1440, 810)
 
 var ecran_complet := false
 ## 0..1 (0 = oprit).
-var volum_muzica := 0.7
-var volum_efecte := 1.0
+var volum_muzica := 0.2  # la prima pornire (fără setari.cfg), owner 11.10
+var volum_efecte := 0.1  # la prima pornire (fără setari.cfg), owner 11.10
 ## Fișierul de salvare ales în meniu (1..Salvare.LOCURI).
 var slot := 1
 
