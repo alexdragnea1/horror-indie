@@ -7,7 +7,7 @@ extends JocBar
 ##    grupă (sau pe 8 înainte de vreme) → la rând celălalt (albă băgată revine la „head spot”);
 ##  - 8 la final, după toate ale tale = ai câștigat; 8 băgat mai devreme sau cu fault = ai pierdut.
 ## Rândul tău: mouse-ul rotește tacul (Shift = fin), linia arată unde lovește albă și încotro pleacă bila atinsă; click
-## stânga ținut = forța (urcă și coboară), dai drumul = lovești; click dreapta ținut = masa de sus. Băutura (`Betie`)
+## stânga ținut = forța (urcă și coboară), dai drumul = lovești; click dreapta = masa de sus (comutator, owner 11.10). Băutura (`Betie`)
 ## mișcă puțin tacul la lovire. Rândul lui: își alege cea mai bună lovitură (bila, buzunarul, unghiul tăieturii, drumul
 ## liber), se teleportează în spatele albei (mersul în jurul mesei trecea prin ea: owner 10.10) și o trage cu `precizie`
 ## (abaterea, radiani). Fizica e în `FizicaBiliard`.
@@ -218,7 +218,7 @@ func _joaca() -> bool:
 
 func _lovitura_ta(spargere: bool) -> void:
 	_mesaj("Break!" if spargere else "Your shot.")
-	_ajutor.text = "Mouse: aim (Shift: fine)   Hold left click: power   Right click: top view"
+	_ajutor.text = "Mouse: aim (Shift: fine)   Hold left click: power   Right click: top view on/off"
 	_ajutor.show()
 	_unghi = 0.0 if spargere else _unghi_spre_cea_mai_apropiata(0)
 	_putere = 0.0
@@ -253,8 +253,8 @@ func _lovitura_lui() -> void:
 	var parte := -signf(spate.y) if absf(spate.y) > 0.3 else 1.0
 	_misca_camera(_vedere_ansamblu(parte), parte == _parte_cam)
 	_parte_cam = parte
-	var spre := masa.global_basis * (_local_3d(_f.poz[0]) - _local_3d(spate))
-	spre.y = 0.0
+	# privește pe direcția loviturii (paralel cu tacul), nu spre albă: altfel, mutat într-o parte, ar sta strâmb
+	var spre := masa.global_basis * Vector3(dir.x, 0.0, dir.y)
 	var tinta_om := Transform3D(Basis.looking_at(-spre.normalized(), Vector3.UP),
 		masa.global_transform * Vector3(spate.x, 0.0, spate.y))
 	tinta_om.origin.y = _repaus_om.origin.y + (om.get_parent() as Node3D).global_position.y
@@ -441,18 +441,24 @@ func _repune_alba() -> void:
 	_bile[0].position = _local_3d(p)
 
 
-## Unde stă el ca să tragă pe `dir`: în spatele albei, dar în afara mesei.
+## Cât de mult în stânga liniei tacului stă el: tacul îi trece pe lângă șoldul drept, pe sub umărul drept (stând pe linia
+## lui, capătul tacului îi trecea prin burtă și prin picioare: owner 11.10).
+const LANGA_TAC := 0.24
+
+
+## Unde stă el ca să tragă pe `dir`: în spatele albei, cu tacul pe dreapta lui (LANGA_TAC), dar în afara mesei.
 func _loc_in_spate(dir: Vector2) -> Vector2:
 	var c: Vector2 = _f.poz[0]
+	var stanga := Vector2(dir.y, -dir.x)
 	var ex := FizicaBiliard.L / 2 + 0.36
 	var ey := FizicaBiliard.W / 2 + 0.36
-	var t := 0.8
+	var t := 0.95
 	while t < 3.0:
-		var p := c - dir * t
+		var p := c - dir * t + stanga * LANGA_TAC
 		if absf(p.x) > ex or absf(p.y) > ey:
 			return p
 		t += 0.05
-	return c - dir * 3.0
+	return c - dir * 3.0 + stanga * LANGA_TAC
 
 
 # ---------------------------------------------------------------- în fiecare cadru
@@ -529,7 +535,9 @@ func _input(event: InputEvent) -> void:
 					_tras.emit()
 			get_viewport().set_input_as_handled()
 		elif b.button_index == MOUSE_BUTTON_RIGHT:
-			_de_sus = b.pressed
+			# comutator (owner 11.10): un click dreapta = de sus, încă unul = înapoi; rămâne așa și la loviturile următoare
+			if b.pressed:
+				_de_sus = not _de_sus
 			get_viewport().set_input_as_handled()
 
 

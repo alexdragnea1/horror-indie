@@ -78,7 +78,7 @@ def _aseaza(ob, rot, loc):
 def curte(cale):
 	"""Curtea din spate: betonul crăpat de lângă ușă, pământul, gardul de scânduri pe trei laturi (cu stâlpi și
 	traverse), ușa de metal din spate cu lampa cu grilaj, aparatul de aer condiționat și țevile, butoaiele de bere,
-	lăzile de sticle, sacii de gunoi, un scaun de bar rupt, copacul uscat din colț, plăcuța „DO NOT TOUCH” de lângă
+	lăzile de sticle, sacii de gunoi, un scaun de bar rupt, copacul uscat din colț, plăcuța „Ancient Curse - DO NOT TOUCH OR REMOVE” de lângă
 	piatră (piatra e separată)."""
 	curata()
 	r = random.Random(41)
@@ -248,14 +248,14 @@ def curte(cale):
 		piese.append(os_intre("Radacina", (tx, ty, FL + 0.15), (tx + 0.6 * math.cos(a), ty + 0.6 * math.sin(a), FL - 0.02), 0.06, LEMN_INCHIS, laturi=5))
 	strange()
 
-	# --- plăcuța de carton prinsă pe un țăruș lângă piatră: „DO NOT TOUCH - MGMT”
+	# --- plăcuța de carton prinsă pe un țăruș lângă piatră: „Ancient Curse - DO NOT TOUCH OR REMOVE” (owner, 11.10)
 	px, py = PIATRA[0] + 1.35, PIATRA[1] - 1.1
 	piese.append(os_intre("Tarus", (px, py, FL - 0.05), (px, py, FL + 1.0), 0.02, LEMN_DESCHIS, laturi=5))
 	# cartonul e întors spre ușă (fața spre -Y, rotit 0,35 rad); scrisul stă la 1,4 cm în fața lui, pe normală
 	nx, ny = math.sin(0.35), -math.cos(0.35)
 	cx, cy = px + nx * 0.03, py + ny * 0.03
-	piese.append(cub("Carton", (0.5, 0.012, 0.34), (cx, cy, FL + 0.88), AUR, rot=(0, 0, 0.35)))
-	piese.append(_text_o_fata("Scris carton", "DO NOT TOUCH\n-MGMT", (cx + nx * 0.014, cy + ny * 0.014, FL + 0.88), 0.055, NEGRU,
+	piese.append(cub("Carton", (0.56, 0.012, 0.38), (cx, cy, FL + 0.88), AUR, rot=(0, 0, 0.35)))
+	piese.append(_text_o_fata("Scris carton", "Ancient Curse\nDO NOT TOUCH\nOR REMOVE", (cx + nx * 0.014, cy + ny * 0.014, FL + 0.88), 0.05, NEGRU,
 		rot=(1.5708, 0, 0.35)))
 	_cutie_coliziune(col, (0.12, 0.12, 1.0), (px, py, FL + 0.5))
 	strange()

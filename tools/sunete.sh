@@ -1480,3 +1480,21 @@ TINTA_LUFS=-20
 ffmpeg -v error -y -i "$PACHET/Other/keyboard_typing.wav" -af "atrim=end=3.25" -ac 1 "$OUT/_tastatura.wav"
 bucla tastatura "$OUT/_tastatura.wav" 0.25 mono
 rm -f "$OUT/_tastatura.wav"
+
+# --- 8 Ball Enjoyer din baia barului (prizator_baie.gd, owner 11.10). Pachetele n-au niciun „tras pe nas”: e făcut din
+# zgomot (ca fum_tras), mai sus și mai „ud” (tremolo rapid), care crește și se taie scurt la capăt.
+# priza_trasa (~0,9 s): o linie trasă dintr-o suflare
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=0.95:r=44100" -f lavfi -i "anoisesrc=c=pink:a=0.6:d=0.95:r=44100:seed=7" \
+	-filter_complex "[0]bandpass=f=2800:t=h:w=2600,tremolo=f=23:d=0.35[a];[1]bandpass=f=900:t=h:w=500,volume=0.55[b];[a][b]amix=inputs=2:normalize=0,afade=t=in:st=0:d=0.7:curve=qsin,afade=t=out:st=0.84:d=0.07" \
+	-ac 1 "$OUT/_priza.wav"
+unic priza_trasa "$OUT/_priza.wav"
+# nas_sniff (~0,5 s): două trageri scurte pe nas, după
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=pink:a=0.6:d=0.2:r=44100" -f lavfi -i "anoisesrc=c=pink:a=0.6:d=0.16:r=44100:seed=3" \
+	-filter_complex "[0]bandpass=f=3000:t=h:w=2400,tremolo=f=25:d=0.3,afade=t=in:st=0:d=0.12,afade=t=out:st=0.15:d=0.05[a];[1]bandpass=f=3300:t=h:w=2400,afade=t=in:st=0:d=0.08,afade=t=out:st=0.11:d=0.05,adelay=300[b];[a][b]amix=inputs=2:normalize=0,apad=pad_dur=0.05" \
+	-ac 1 "$OUT/_sniff.wav"
+unic nas_sniff "$OUT/_sniff.wav"
+# card_tocat: cardul care bate pe sticla telefonului cât „taie” liniile (un clic scurt din card_draw_1, fără foșnet)
+TINTA_LUFS=-24
+unic card_tocat "Card and Board/card_draw_1.wav" mono "atrim=end=0.05,highpass=f=1800,afade=t=out:st=0.02:d=0.03"
+TINTA_LUFS=-20
+rm -f "$OUT/_priza.wav" "$OUT/_sniff.wav"

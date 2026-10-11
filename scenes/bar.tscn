@@ -66,6 +66,10 @@
 [ext_resource type="PackedScene" path="res://models/piatra_sabie.glb" id="62_ps"]
 [ext_resource type="Script" path="res://scripts/usa_teleport.gd" id="63_ut"]
 [ext_resource type="Script" path="res://scripts/sabie_piatra.gd" id="64_sp"]
+[ext_resource type="PackedScene" path="res://models/bar_baie.glb" id="65_bb"]
+[ext_resource type="PackedScene" path="res://models/recuzita_8ball.glb" id="66_r8"]
+[ext_resource type="PackedScene" path="res://models/prizator_baie.glb" id="67_pz"]
+[ext_resource type="Script" path="res://scripts/prizator_baie.gd" id="68_pb"]
 
 [sub_resource type="Environment" id="Environment_bar"]
 background_mode = 1
@@ -122,6 +126,9 @@ size = Vector3(0.35, 0.7, 0.35)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_curte"]
 size = Vector3(14.5, 1.2, 6.8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_baie"]
+size = Vector3(4, 2.6, 3.2)
 
 [node name="Bar" type="Node3D"]
 
@@ -617,3 +624,102 @@ shape = SubResource("CylinderShape3D_piatra")
 [node name="FormaManer" type="CollisionShape3D" parent="SabiePiatra"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
 shape = SubResource("BoxShape3D_maner_sabie")
+
+[node name="UsaBaie" type="StaticBody3D" parent="." node_paths=PackedStringArray("destinatie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0.15, -12.94)
+script = ExtResource("63_ut")
+destinatie = NodePath("../IntrareBaie")
+sunet_usa = ExtResource("9_sc")
+sunete_tranzitie = Array[AudioStream]([ExtResource("10_ui"), ExtResource("30_b1"), ExtResource("31_b3")])
+indiciu = "[E] Open"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaBaie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.075, 0)
+shape = SubResource("BoxShape3D_usa_angajati")
+
+[node name="IesireBaie" type="Marker3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.7, 0.17, -12.2)
+
+[node name="Baie" type="Node3D" parent="." instance=ExtResource("65_bb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8, -6)
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+stralucitoare = PackedStringArray("Lumini")
+coliziune = 3
+
+[node name="FormaBaie" type="CollisionShape3D" parent="CeataInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6.7, -6)
+shape = SubResource("BoxShape3D_baie")
+
+[node name="IntrareBaie" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, -7.98, -5.1)
+
+[node name="UsaIesireBaie" type="StaticBody3D" parent="." node_paths=PackedStringArray("destinatie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3, -8, -4.43)
+script = ExtResource("63_ut")
+destinatie = NodePath("../IesireBaie")
+sunet_usa = ExtResource("9_sc")
+sunete_tranzitie = Array[AudioStream]([ExtResource("10_ui"), ExtResource("36_l1"), ExtResource("37_l2")])
+indiciu = "[E] Go back to the bar"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaIesireBaie"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.075, 0)
+shape = SubResource("BoxShape3D_usa_angajati")
+
+[node name="BazaitBaie" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -5.6, -6.2)
+stream = ExtResource("13_bz")
+volume_db = -20.0
+unit_size = 2.0
+autoplay = true
+bus = &"Ambianta"
+
+[node name="NeonBaie" type="OmniLight3D" parent="." node_paths=PackedStringArray("bazait")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -5.6, -6.2)
+light_color = Color(0.85, 1, 0.92, 1)
+light_energy = 1.3
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 5.5
+script = ExtResource("12_lp")
+energie_normala = 1.3
+sansa_stingere = 0.06
+bazait = NodePath("../BazaitBaie")
+
+[node name="LampaOglinda" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, -6.05, -5.3)
+light_color = Color(1, 0.82, 0.55, 1)
+light_energy = 0.6
+light_volumetric_fog_energy = 0.0
+omni_range = 2.4
+
+[node name="Recuzita8Ball" type="Node3D" parent="." instance=ExtResource("66_r8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8, -6)
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+umbre = false
+stralucitoare = PackedStringArray("Linie1", "Linie2", "Linie3")
+stralucire = 0.5
+
+[node name="LocTuBaie" type="Marker3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.08, -7.98, -5.3)
+
+[node name="Prizator" type="StaticBody3D" parent="." node_paths=PackedStringArray("om", "recuzita", "loc_tu")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.15, -8, -5.3)
+script = ExtResource("68_pb")
+om = NodePath("Om")
+recuzita = NodePath("../Recuzita8Ball")
+loc_tu = NodePath("../LocTuBaie")
+
+[node name="Forma" type="CollisionShape3D" parent="Prizator"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("CapsuleShape3D_om")
+
+[node name="Om" type="Node3D" parent="Prizator"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="Prizator/Om" instance=ExtResource("67_pz")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
