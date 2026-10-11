@@ -1,8 +1,8 @@
-# City Center (owner, 10.10): o piață rotundă între clădiri, la apus / „blue hour”, unde Head Witch omoară oameni și
+# Town Center (owner, 10.10): o piață rotundă între clădiri, la apus / „blue hour”, unde Head Witch omoară oameni și
 # unde o înfrunți (lupta finală, scripts/lupta_head_witch.gd). Aici sunt:
 #   centru_oras            piața (pavaj cu cercuri, fântâna cu statuia, felinare, bănci, jardiniere), cele 8 clădiri din
 #                          jurul ei, pasajul spre bulevard, bulevardul cu stația și clădirile de vizavi
-#   statie_centru          stația de autobuz „CITY CENTER” (autobuz.statie)
+#   statie_centru          stația de autobuz „TOWN CENTER” (autobuz.statie)
 #   civil_1..6             oamenii din piață, în picioare, speriați (casino_oameni.om)
 #   vrajitoare_sefa_lupta  Head Witch în faza întâi (coven.vrajitoare_sefa cu ambele brațe libere)
 #   vrajitoare_sefa_demon  Head Witch în faza a doua: mare, plutește, fără picioare, aripi de os, coarne, gheare
@@ -370,7 +370,7 @@ def centru_oras(cale):
 
 def statie(cale):
 	import autobuz
-	autobuz.statie(cale, "CITY CENTER", "statie_centru.glb")
+	autobuz.statie(cale, "TOWN CENTER", "statie_centru.glb")
 
 
 # ---------------------------------------------------------------------------------------------------------------

@@ -1023,7 +1023,7 @@ ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P3/MAGSpel_An
 	-ac 2 "$OUT/_absorbtie.wav"
 unic absorbtie "$OUT/_absorbtie.wav" stereo
 
-# --- Head Witch (City Center)
+# --- Head Witch (Town Center)
 # 28. urletul ei (~2,5 s, 3D): țipătul de fantomă peste un țipăt de om și un mârâit, ca o vrăjitoare furioasă
 ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost_scream_3.wav" -i "$P2/Ambient/Scream.wav" -i "$P2/Monsters & Ghosts/Monster_growl_1.wav" -filter_complex \
 	"[0]$(b 0 2.6 0.95)[g];[1]$(b 0 2.15 0.9),volume=0.5[s];[2]$(b 0 1.7 0.8),volume=0.5[m];[g][s][m]$MIX=3,$DENS,$ECOU_MARE,atrim=end=3,afade=t=out:st=2.2:d=0.8" \

@@ -1,7 +1,7 @@
 class_name LuptaBoss
 extends Node3D
 ## Ce au în comun luptele cu boși „ca în Dark Souls”: Warlock-ul de la motel (lupta_warlock.gd) și Head Witch în
-## City Center (lupta_head_witch.gd). Scriptul fiecărei lupte extinde clasa asta și scrie doar ce e al lui: intro-ul,
+## Town Center (lupta_head_witch.gd). Scriptul fiecărei lupte extinde clasa asta și scrie doar ce e al lui: intro-ul,
 ## ordinea atacurilor (`_lupta`), faza a doua și finalul (`_finalul`).
 ## Aici sunt:
 ##  - boss-ul (`_boss`, un Warlock sau ce-l extinde, ca VrajitoareBoss) și ținta pe care o lovesc armele (`Tinta`);

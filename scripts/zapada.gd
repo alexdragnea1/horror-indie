@@ -1,6 +1,6 @@
 class_name Zapada
 extends Node3D
-## Zăpada care cade peste oraș după ce moare Head Witch (City Center, lupta_head_witch.gd): fulgi albi, mari (PS2), care
+## Zăpada care cade peste oraș după ce moare Head Witch (Town Center, lupta_head_witch.gd): fulgi albi, mari (PS2), care
 ## cad încet și se leagănă, dintr-o cutie largă deasupra pieței. `intensitate` (0..1) = cât de deasă e; o crește lupta
 ## încet, din explozie: fulgii sunt în `STRATURI` straturi care pornesc unul după altul (un strat pornit începe să
 ## ningă de sus, deci nu apare nimic dintr-odată). Stratul de pe jos (`pe_jos`, un disc alb care se așterne peste

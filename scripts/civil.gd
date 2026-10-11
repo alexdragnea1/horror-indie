@@ -1,6 +1,6 @@
 class_name Civil
 extends Node3D
-## Un om din piața din City Center (centru.tscn), îngrozit de Head Witch: tremură, se uită la ea, din când în când țipă.
+## Un om din piața din Town Center (centru.tscn), îngrozit de Head Witch: tremură, se uită la ea, din când în când țipă.
 ## Modelul e copilul `Model` (models/civil_N.glb, din tools/blender/centru.py; stă în picioare, cu mâinile sus sau la
 ## gură). Îl omoară intro-ul luptei (lupta_head_witch.gd): `ridica` (îl ia în aer), `omoara` (ragdoll).
 

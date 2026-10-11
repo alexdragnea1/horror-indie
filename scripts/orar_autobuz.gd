@@ -28,12 +28,12 @@ static var cu_autobuzul := false
 ## (`a_luat_banii_de_la_primar`).
 @export var singur_pana_la: PackedStringArray = []
 ## Marcajul de la care locul, cât timp se vede în orar, e singurul (în afară de `optiune_anulare`), în aceeași ordine
-## (gol = nu), până la `singur_dupa_pana_la`. Ex. City Center după ce barmanul îți spune că vrăjitoarea e acolo
-## (`barmanul_a_zis_de_centru`, owner 10.10: „după bar să poți merge doar la City Center”), până o omori.
+## (gol = nu), până la `singur_dupa_pana_la`. Ex. Town Center după ce barmanul îți spune că vrăjitoarea e acolo
+## (`barmanul_a_zis_de_centru`, owner 10.10: „după bar să poți merge doar la Town Center”), până o omori.
 @export var singur_dupa: PackedStringArray = []
 @export var singur_dupa_pana_la := "head_witch_moarta"
 ## Marcajul fără de care locul, deși se vede în orar, nu e încă gata de mers acolo, în aceeași ordine (gol = gata):
-## alegându-l spui doar `replici_indisponibil`. (City Center nu-l mai folosește: owner 10.10, mergi direct, și fără bar.)
+## alegându-l spui doar `replici_indisponibil`. (Town Center nu-l mai folosește: owner 10.10, mergi direct, și fără bar.)
 @export var disponibile_dupa: PackedStringArray = []
 @export var optiune_anulare := "Not now"
 ## Locurile fără scenă (scrise de Claude, owner-ul le poate schimba).
@@ -92,7 +92,7 @@ func interactioneaza() -> void:
 			break
 		if i < singur_dupa.size() and singur_dupa[i] != "" and Stare.e_marcat(singur_dupa[i]) \
 				and (singur_dupa_pana_la == "" or not Stare.e_marcat(singur_dupa_pana_la)):
-			# doar el (ex. City Center după bar)
+			# doar el (ex. Town Center după bar)
 			locuri = [i]
 			butoane = PackedStringArray([optiuni[i]])
 			break

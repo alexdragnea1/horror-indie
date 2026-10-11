@@ -1,6 +1,6 @@
 class_name VrajitoareBoss
 extends Warlock
-## Head Witch în lupta din City Center (lupta_head_witch.gd, făcută din cod). Se mișcă la fel ca Warlock-ul (aceleași
+## Head Witch în lupta din Town Center (lupta_head_witch.gd, făcută din cod). Se mișcă la fel ca Warlock-ul (aceleași
 ## comenzi: `ridica_toiagul` = brațul drept, `ridica_mana` = brațul stâng, `plutire`, `furie`, `priveste`, `aparitie`,
 ## `ascunde`, `tresare`, `prabusire`, `smuls`), doar că are modelul ei și culorile ei:
 ##  - faza întâi: models/vrajitoare_sefa_lupta.glb (din tools/blender/centru.py), lumină mov;

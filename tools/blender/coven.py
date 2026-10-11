@@ -315,7 +315,7 @@ def vrajitoare_sefa(cale, lupta=False):
 	"""Head Witch: mai înaltă, robă mov cu fir de aur, guler înalt ca evantaiul, păr roșu lung, amuletă verde la gât.
 	Stă dreaptă, cu mâna stângă în șold. Piese separate: `Cap` (originea în gât) cu `Ochi`, `BratDrept` (originea în
 	umăr, atârnă pe lângă corp: îți întinde pistolul, scoate mătura), `Amuleta` (strălucește).
-	`lupta` = varianta pentru lupta din City Center (vrajitoare_sefa_lupta.glb, vezi centru.py): și brațul stâng atârnă,
+	`lupta` = varianta pentru lupta din Town Center (vrajitoare_sefa_lupta.glb, vezi centru.py): și brațul stâng atârnă,
 	separat (`BratStang`), fiecare braț are punctul gol `Palma` (de acolo pleacă vrăjile), amuleta se cheamă `Lumini`
 	(o aprinde furia, vezi warlock.gd)."""
 	curata()

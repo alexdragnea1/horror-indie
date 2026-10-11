@@ -1,5 +1,5 @@
 extends LuptaBoss
-## Lupta finală cu Head Witch, în piața rotundă din City Center (centru.tscn, nodul `LuptaHeadWitch`; owner, 10.10).
+## Lupta finală cu Head Witch, în piața rotundă din Town Center (centru.tscn, nodul `LuptaHeadWitch`; owner, 10.10).
 ## Partea comună cu lupta cu Warlock-ul (viața, armele, atacurile de bază, „YOU DIED”, efectele) e în lupta_boss.gd.
 ##  1. Înainte: Head Witch plutește deasupra pieței (VrajitoareBoss), cu brațele ridicate; oamenii (Civil) tremură și
 ##     țipă. Când intri în piață (`declansator`) pornește intro-ul (Cutscena, planuri „de film”): îi omoară pe rând

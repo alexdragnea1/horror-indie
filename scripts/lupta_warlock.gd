@@ -17,7 +17,7 @@ extends LuptaBoss
 ##     (owner), apoi dispare (sefa_motel.gd, `marcaj_plecata`). → `sarcina_dupa`.
 ## La Continue: în lupta începută o iei de la ușă; după `marcaj_invins`, finalul de la ridicarea ei.
 ## Replicile sunt ale owner-ului: nu le corecta.
-## Partea comună cu lupta din City Center (viața, armele, atacurile, „YOU DIED”, efectele) e în lupta_boss.gd.
+## Partea comună cu lupta din Town Center (viața, armele, atacurile, „YOU DIED”, efectele) e în lupta_boss.gd.
 
 @export var usa: Interactabil
 @export var sefa: Node3D
