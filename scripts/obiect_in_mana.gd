@@ -224,7 +224,7 @@ func _mananca_acum() -> void:
 
 
 ## Bomboana din tomberon: stomacul chiorăie, două sughițuri de greață, apoi te apleci și vomiți pe jos (două valuri),
-## tușești și te ridici. Balta rămâne acolo. Replica e a lui Claude.
+## tușești și te ridici. Balta rămâne acolo. Replica e a owner-ului (11.10).
 func _vomita(camera: Camera3D) -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	if jucator == null:
@@ -256,7 +256,7 @@ func _vomita(camera: Camera3D) -> void:
 	Voma.sunet(Voma.SUNET_TUSE)
 	await get_tree().create_timer(0.9).timeout
 	await c.roteste(jucator.rotation.y, 0.0, 0.8)
-	Dialog.spune(PackedStringArray(["You: Note to self: candy from the trash is still trash."]))
+	Dialog.spune(PackedStringArray(["You: That wasn't very yummy.."]))
 	if Dialog.activ:
 		await Dialog.terminat
 	await c.opreste()
