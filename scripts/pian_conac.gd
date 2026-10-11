@@ -52,9 +52,12 @@ func interactioneaza() -> void:
 	t.tween_property(jucator, "global_position", loc, 0.8)
 	t.tween_property(cap, "position:y", ochi_jos, 0.8)
 	t.tween_property(self, "acoperire", 0.85, 1.5)
-	await get_tree().create_timer(0.3).timeout
-	await c.priveste(clape, 0.6)
-	await t.finished
+	# unghiul spre clape se socotește din locul de pe banchetă, nu de unde ești acum: cu `priveste` (din mers)
+	# rămâneai întors într-o parte dacă veneai la pian din lateral (owner 11.10)
+	var d := clape - (loc + Vector3.UP * ochi_jos)
+	await c.roteste(atan2(-d.x, -d.z), atan2(d.y, Vector2(d.x, d.z).length()), 0.8)
+	if t.is_running():
+		await t.finished
 	c.queue_free()
 	Stare.meniu_deschis = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
