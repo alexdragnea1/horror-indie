@@ -12,6 +12,10 @@ const DURATA_STINGERE := 0.22
 
 ## Unde stai pe banchetă (doar x și z; înălțimea rămâne a podelei), cu fața spre `clape`.
 @export var loc_bancheta := Vector3(4.12, 0.0, -12.0)
+## Unde ajungi când te ridici (Esc): în spatele banchetei, mereu în același loc liber. Înainte te dădeai 0,55 m spre
+## locul de unde veniseși, iar dacă veneai din lateral rămâneai în banchetă și nu mai puteai merge (owner 11.10).
+## Banca și pianul blochează de la x ≈ 3,65 încolo, deci aici rămân 20 cm de rezervă.
+@export var loc_ridicare := Vector3(3.45, 0.0, -12.0)
 ## Mijlocul claviaturii.
 @export var clape := Vector3(4.79, 0.77, -12.0)
 ## Înălțimea ochilor cât stai jos.
@@ -44,7 +48,6 @@ func interactioneaza() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	var cap: Node3D = jucator.get_node("Cap")
 	var inaltime := cap.position.y
-	var de_unde := jucator.global_position
 	var c := Cutscena.porneste(self)
 	jucator.seteaza_purtat(true)
 	var loc := Vector3(loc_bancheta.x, jucator.global_position.y, loc_bancheta.z)
@@ -71,8 +74,7 @@ func interactioneaza() -> void:
 	for n in _suna.keys():
 		_stinge(n, 0.8)
 	# te ridici și te dai un pas înapoi, de unde ai venit
-	var inapoi := loc + (de_unde - loc).normalized() * 0.55
-	inapoi.y = loc.y
+	var inapoi := Vector3(loc_ridicare.x, loc.y, loc_ridicare.z)
 	t = create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(jucator, "global_position", inapoi, 0.6)
 	t.tween_property(cap, "position:y", inaltime, 0.6)
