@@ -98,12 +98,20 @@ func _apasa(n: int) -> void:
 	s.volume_db = volum
 	s.unit_size = 6.0
 	s.max_distance = 40.0
-	s.finished.connect(s.queue_free)
+	s.finished.connect(_terminata.bind(n, s))
 	add_child(s)
 	# basul în stânga, sus în dreapta (claviatura merge de-a lungul lui Z: stai cu fața spre +X)
 	s.global_position = clape + Vector3(0.0, 0.0, (n / 24.0 - 0.5) * 1.2)
 	s.play()
 	_suna[n] = s
+
+
+## Sunetul s-a terminat singur (nota ținută / pedala mai mult de ~5 s): îl scoate și din `_suna`, altfel `_stinge`
+## găsea acolo un nod șters și jocul se oprea cu eroare (owner 11.10: „a dat crash când cântam la pian”).
+func _terminata(n: int, s: AudioStreamPlayer3D) -> void:
+	if _suna.get(n) == s:
+		_suna.erase(n)
+	s.queue_free()
 
 
 func _ridica(n: int) -> void:
@@ -123,10 +131,11 @@ func _seteaza_pedala(apasata: bool) -> void:
 
 ## Amortizorul cade pe coardă: nota se stinge în `durata` secunde.
 func _stinge(n: int, durata: float) -> void:
-	var s: AudioStreamPlayer3D = _suna.get(n)
+	var x: Variant = _suna.get(n)
 	_suna.erase(n)
-	if s == null or not is_instance_valid(s):
+	if x == null or not is_instance_valid(x):
 		return
+	var s := x as AudioStreamPlayer3D
 	var t := s.create_tween()
 	t.tween_property(s, "volume_db", s.volume_db - 40.0, durata).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
 	t.tween_callback(s.queue_free)
