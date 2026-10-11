@@ -64,6 +64,7 @@ func _ready() -> void:
 	# armele de la Gun Store (magazin_arme.tscn), fiecare cu animația ei de tras
 	_camera.add_child(Cutit.new())
 	_camera.add_child(Katana.new())  # (din parcarea barului URBAN, katana_jos.gd)
+	_camera.add_child(SabieBlestemata.new())  # (din piatra din curtea barului URBAN, sabie_piatra.gd)
 	_camera.add_child(Shotgun.new())
 	_camera.add_child(AK47.new())
 	_camera.add_child(Bazooka.new())

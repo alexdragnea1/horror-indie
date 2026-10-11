@@ -1378,3 +1378,67 @@ TINTA_LUFS=-10
 unic atac_cutremur "$OUT/_cutremur.wav" stereo
 rm -f "$OUT/_tunet_nebun.wav" "$OUT/_cutremur.wav" "$OUT/_fulger_natural.wav"
 TINTA_LUFS=-20
+
+# ---------------------------------------------------------------------------------------------------------------
+# --- sabia din piatră (curtea barului URBAN, sabie_piatra.gd) și sabia blestemată (sabie_blestemata.gd), owner 11.10.
+# Din Soundpack 2 (corul fantomelor, geamătul, drone-ul), 3 (Shonen: explozia, încărcarea, eliberarea, tăietura,
+# lovitura) și 4 (sabia: atacurile, lovitura, scoaterea din teacă; piatra: Rock Wall; focul: Firebuff, Fireball,
+# Torch Loop). Folosește $P2 $P3 $P4, b, sub, MIX, DENS, ECOU_* și STEREO de mai sus (secțiunea luptelor).
+# 1. un clic de tras (~0,45 s, 3D, se aude des: -18 LUFS): piatra care scrâșnește (Rock Wall, o bucată) și sabia
+# care zăngăne în fantă (Sword Parry, mai grav)
+TINTA_LUFS=-18
+ffmpeg -v error -y -i "$P4/Spells/Rock Wall 1.wav" -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Parry 1.wav" -filter_complex \
+	"[0]$(b 0.12 0.62 1.15),afade=t=in:d=0.01,afade=t=out:st=0.25:d=0.25[p];[1]$(b 0 0.25 0.7),volume=0.6[m];[p][m]$MIX=2,atrim=end=0.5" \
+	-ac 1 "$OUT/_sabie_trage.wav"
+unic sabie_trage "$OUT/_sabie_trage.wav"
+# 2. sabia care alunecă la loc în piatră când n-ai reușit (~1,6 s, 3D): oțelul care intră (Sword Sheath, grav),
+# bufnitura în piatră (Rock Meteor Throw) și basul
+TINTA_LUFS=-14
+ffmpeg -v error -y -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Sheath 1.wav" -i "$P4/Spells/Rock Meteor Throw 1.wav" -f lavfi -i "$(sub 70 32 1.6 3 0.7)" -filter_complex \
+	"[0]$(b 0 1 0.8)[s];[1]$(b 0 0.5 0.7),adelay=380[t];[2]adelay=400[j];[s][t][j]$MIX=3,$DENS,$ECOU_MIC,atrim=end=1.6,afade=t=out:st=1.1:d=0.5" \
+	-ac 1 "$OUT/_sabie_cade.wav"
+unic sabie_cade "$OUT/_sabie_cade.wav"
+# 3. sabia smulsă din piatră (~3,5 s, stereo, din cap, „de film”: -12 LUFS): oțelul scos (Unsheath, grav), piatra
+# care crapă (Rock Wall 2), explozia Shonen, eliberarea de energie, basul care lovește în piept și ecoul curții
+TINTA_LUFS=-12
+ffmpeg -v error -y -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Unsheath 1.wav" -i "$P4/Spells/Rock Wall 2.wav" -i "$P3/EXPLDsgn_Anime Explosion 4.wav" \
+	-i "$P3/MAGSpel_Anime Ability Release 1.wav" -f lavfi -i "$(sub 52 24 3.5 1.1 1)" -filter_complex \
+	"[0]$(b 0 0.75 0.85),volume=1.3[u];[1]$(b 0 2 0.8),volume=1.1[p];[2]$(b 0 1.42 0.8),lowpass=f=4000,volume=0.9,adelay=60[e];[3]$(b 0 3.1 0.85),volume=0.7,adelay=120[r];[u][p][e][r][4]$MIX=5,$DENS,volume=2,asoftclip=type=tanh,$(lovitura 0.35 1.2),$ECOU_MARE,atrim=end=3.5,afade=t=out:st=2.6:d=0.9,$STEREO" \
+	-ac 2 "$OUT/_sabie_scoasa.wav"
+unic sabie_scoasa "$OUT/_sabie_scoasa.wav" stereo
+# 4. blestemul (~6,5 s, stereo, din cap): focul verde care se aprinde pe lamă (Firebuff, grav), corul fantomelor,
+# geamătul adânc, drone-ul de groază și încărcarea Shonen, care urcă până la flacăra mare de la 4,2 s
+TINTA_LUFS=-13
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost chior.wav" -i "$P2/Monsters & Ghosts/Tone_Moaning_Deep_3.wav" -i "$P2/Ambient/Drone_doom.wav" \
+	-i "$P4/Spells/Firebuff 1.wav" -i "$P3/MAGSpel_Anime Ability Charge 1.wav" -i "$P4/Spells/Firebuff 2.wav" -f lavfi -i "$(sub 45 30 6.5 0.4 0.6)" -filter_complex \
+	"[0]$(b 0 6.5 0.9),afade=t=in:d=1.2,volume=1.2[c];[1]$(b 0 6.5 0.85),volume=1.1[g];[2]$(b 0 4.7 0.75),volume=1.4[d];[3]$(b 0 1.44 0.7),volume=1.2[f];[4]$(b 0 1.17 0.6),volume=0.8,adelay=2900[i];[5]$(b 0 1.44 0.6),volume=1.3,adelay=4200[f2];[6]afade=t=in:d=2[s];[c][g][d][f][i][f2][s]$MIX=7,$DENS,volume=1.6,asoftclip=type=tanh,$ECOU_MARE,atrim=end=6.5,afade=t=out:st=5.2:d=1.3,$STEREO" \
+	-ac 2 "$OUT/_sabie_blestem.wav"
+unic sabie_blestem "$OUT/_sabie_blestem.wav" stereo
+# 5. focul verde de pe lamă cât ții sabia (buclă, 3D, încet: -22 LUFS): Torch Loop, mai grav și înfundat
+TINTA_LUFS=-22
+bucla sabie_aura "$P4/Torch/Torch Loop.wav" 1.0 mono "$(b 0 6 0.75),lowpass=f=2500"
+# 6. cele trei lovituri ale combo-ului (~0,7 s, din cap: -15 LUFS): oțelul care taie aerul (Sword Attack), tăietura
+# Shonen și flacăra care trece (Fireball, doar „whoosh”-ul), din ce în ce mai grele
+TINTA_LUFS=-15
+for k in 1 2 3; do
+	v=$(awk -v k=$k 'BEGIN { printf "%.2f", 1.0 - 0.08 * k }')
+	ffmpeg -v error -y -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Attack $k.wav" -i "$P3/FGHTClth_Anime Swing $k.wav" -i "$P4/Spells/Fireball $k.wav" -filter_complex \
+		"[0]$(b 0 0.5 $v),volume=1.2[s];[1]$(b 0 0.36 $v),volume=0.8[a];[2]$(b 0 0.7 0.8),lowpass=f=3000,afade=t=out:st=0.3:d=0.4,volume=0.8[f];[s][a][f]$MIX=3,$DENS,atrim=end=0.75,afade=t=out:st=0.5:d=0.25" \
+		-ac 1 "$OUT/_sabie_atac.wav"
+	unic "sabie_atac_$k" "$OUT/_sabie_atac.wav"
+done
+# 7. lovitura în cineva (~0,8 s, 3D, -14 LUFS): Sword Impact Hit, lovitura Shonen cu sânge, impactul de vrajă
+TINTA_LUFS=-14
+ffmpeg -v error -y -i "$P4/Attacks/Sword Attacks Hits and Blocks/Sword Impact Hit 1.wav" -i "$P3/FGHTImpt_Anime Melee Gore 1.wav" -i "$P4/Spells/Spell Impact 1.wav" -filter_complex \
+	"[0]$(b 0 0.5 0.9)[s];[1]$(b 0 0.6 0.9),volume=0.8[g];[2]$(b 0 0.37 0.75),volume=0.9[v];[s][g][v]$MIX=3,$DENS,$ECOU_MIC,atrim=end=0.8,afade=t=out:st=0.55:d=0.25" \
+	-ac 1 "$OUT/_sabie_lovit.wav"
+unic sabie_lovit "$OUT/_sabie_lovit.wav"
+# 8. a treia lovitură, izbitura în pământ cu unda de foc verde (~2,2 s, stereo, din cap, -12 LUFS): explozia Shonen,
+# piatra care crapă, impactul de vrajă, basul
+TINTA_LUFS=-12
+ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 9.wav" -i "$P4/Spells/Rock Wall 1.wav" -i "$P4/Spells/Spell Impact 2.wav" -f lavfi -i "$(sub 60 26 2.2 1.8 1)" -filter_complex \
+	"[0]$(b 0 2.02 0.85),lowpass=f=5000[e];[1]$(b 0 2 0.9),volume=0.9[p];[2]$(b 0 0.4 0.7)[v];[e][p][v][3]$MIX=4,$DENS,volume=1.8,asoftclip=type=tanh,$(lovitura 0.3 2),$ECOU_MARE,atrim=end=2.2,afade=t=out:st=1.5:d=0.7,$STEREO" \
+	-ac 2 "$OUT/_sabie_bum.wav"
+unic sabie_bum "$OUT/_sabie_bum.wav" stereo
+rm -f "$OUT/_sabie_trage.wav" "$OUT/_sabie_cade.wav" "$OUT/_sabie_scoasa.wav" "$OUT/_sabie_blestem.wav" "$OUT/_sabie_atac.wav" "$OUT/_sabie_lovit.wav" "$OUT/_sabie_bum.wav"
+TINTA_LUFS=-20

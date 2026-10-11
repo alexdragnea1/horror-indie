@@ -58,6 +58,18 @@ const MODELE := {
 		"stralucitoare": ["Lama"],
 		"stralucire": 0.35,
 	},
+	# sabia blestemată din piatra din curtea barului (sabie_piatra.gd): culcată pe o față (craniul în sus), pe raft
+	# rezemată ca katana; runele și gema strălucesc
+	"sabie_blestemata": {
+		"scena": "res://models/sabie_blestemata.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.046,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.2, 0.0, 0.0),
+		"sprijin_y": 0.18,
+		"stralucitoare": ["Rune"],
+		"stralucire": 1.0,
+	},
 	"shotgun": {
 		"scena": "res://models/shotgun.glb",
 		"jos": Vector3(0.0, 0.0, PI / 2.0),

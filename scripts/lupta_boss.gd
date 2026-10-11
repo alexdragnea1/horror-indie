@@ -19,6 +19,8 @@ extends Node3D
 @export var damage_cutit := 10
 ## Katana din parcarea barului URBAN (katana.gd).
 @export var damage_katana := 20
+## Sabia blestemată din piatra din curtea barului URBAN (sabie_blestemata.gd): pe fiecare lovitură (și la izbitură).
+@export var damage_sabie := 600
 ## Shotgun: de aproape (sub `distanta_shotgun` metri) și de departe.
 @export var damage_shotgun_aproape := 50
 @export var damage_shotgun_departe := 10
@@ -262,6 +264,8 @@ func _damage_arma(arma: String) -> int:
 			return damage_cutit
 		"katana":
 			return damage_katana
+		"sabie_blestemata":
+			return damage_sabie
 		"shotgun":
 			var d := _jucator().global_position.distance_to(_boss.global_position)
 			return damage_shotgun_aproape if d <= distanta_shotgun else damage_shotgun_departe

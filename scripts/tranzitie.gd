@@ -82,6 +82,34 @@ func mergi_la(cale: String, titlu := "", sunete: Array[AudioStream] = []) -> voi
 		_arata_titlu(titlu)
 
 
+## Te mută în aceeași scenă (ușa „EMPLOYEES ONLY” din bar → curtea din spate, UsaTeleport): ecranul se întunecă, pe
+## negru se aud `sunete`, jucătorul apare la `tinta` (cu fața spre -Z-ul ei), apoi imaginea revine. Fără încărcare.
+func teleporteaza(tinta: Node3D, sunete: Array[AudioStream] = []) -> void:
+	if activa:
+		return
+	activa = true
+	var tween := create_tween()
+	tween.tween_property(_negru, "modulate:a", 1.0, DURATA_INTUNECARE * 0.7)
+	await tween.finished
+	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
+	if jucator and is_instance_valid(tinta):
+		jucator.global_position = tinta.global_position
+		jucator.rotation.y = tinta.global_rotation.y
+		jucator.get_node("Cap").rotation.x = 0.0
+		jucator.velocity = Vector3.ZERO
+	await _asteapta(0.2)
+	for sunet in sunete:
+		if sunet == null:
+			continue
+		Sunet.reda(sunet, Sunet.VOLUM_EFECTE, 0.05)
+		await _asteapta(maxf(PAUZA_SUNETE, minf(sunet.get_length(), 1.4) * 0.7))
+	await _asteapta(0.2)
+	tween = create_tween()
+	tween.tween_property(_negru, "modulate:a", 0.0, DURATA_LUMINARE * 0.6).set_trans(Tween.TRANS_SINE)
+	await _asteapta(DURATA_LUMINARE * 0.3)
+	activa = false
+
+
 func _arata_titlu(text: String) -> void:
 	if Dialog.activ:
 		return  # a început deja o conversație: numele locului nu mai apare

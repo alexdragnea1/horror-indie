@@ -62,6 +62,10 @@
 [ext_resource type="Script" path="res://scripts/katana_jos.gd" id="60_kj"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_poker.ogg" id="muzica_poker_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
+[ext_resource type="PackedScene" path="res://models/bar_curte.glb" id="61_cu"]
+[ext_resource type="PackedScene" path="res://models/piatra_sabie.glb" id="62_ps"]
+[ext_resource type="Script" path="res://scripts/usa_teleport.gd" id="63_ut"]
+[ext_resource type="Script" path="res://scripts/sabie_piatra.gd" id="64_sp"]
 
 [sub_resource type="Environment" id="Environment_bar"]
 background_mode = 1
@@ -105,6 +109,19 @@ size = Vector3(40, 8, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_katana"]
 size = Vector3(1.15, 0.12, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_usa_angajati"]
+size = Vector3(0.92, 2.15, 0.06)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_piatra"]
+height = 1.0
+radius = 0.62
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_maner_sabie"]
+size = Vector3(0.35, 0.7, 0.35)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_curte"]
+size = Vector3(14.5, 1.2, 6.8)
 
 [node name="Bar" type="Node3D"]
 
@@ -534,3 +551,69 @@ script = ExtResource("muzica_loc_gd")
 intrare = 2.5
 iesire = 1.5
 zona = NodePath("../CeataInterior")
+
+[node name="Curte" type="Node3D" parent="." instance=ExtResource("61_cu")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+stralucitoare = PackedStringArray("Lumini")
+coliziune = 3
+
+[node name="LampaCurte" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 2.7, -13.5)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 1.2
+omni_range = 6.0
+
+[node name="PamantCurte" type="Area3D" parent="."]
+script = ExtResource("14_zs")
+suprafata = "frunze"
+
+[node name="Forma" type="CollisionShape3D" parent="PamantCurte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -19.65)
+shape = SubResource("BoxShape3D_curte")
+
+[node name="UsaAngajati" type="StaticBody3D" parent="." node_paths=PackedStringArray("destinatie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 0.15, -12.94)
+script = ExtResource("63_ut")
+destinatie = NodePath("../IesireCurte")
+sunet_usa = ExtResource("9_sc")
+sunete_tranzitie = Array[AudioStream]([ExtResource("10_ui"), ExtResource("30_b1"), ExtResource("31_b3")])
+indiciu = "[E] Open"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaAngajati"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.075, 0)
+shape = SubResource("BoxShape3D_usa_angajati")
+
+[node name="IesireCurte" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 0.17, -14.1)
+
+[node name="UsaSpate" type="StaticBody3D" parent="." node_paths=PackedStringArray("destinatie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 0.15, -13.3)
+script = ExtResource("63_ut")
+destinatie = NodePath("../IntrareBar")
+sunet_usa = ExtResource("9_sc")
+sunete_tranzitie = Array[AudioStream]([ExtResource("10_ui"), ExtResource("36_l1"), ExtResource("37_l2")])
+indiciu = "[E] Go back inside"
+
+[node name="Forma" type="CollisionShape3D" parent="UsaSpate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.075, 0)
+shape = SubResource("BoxShape3D_usa_angajati")
+
+[node name="IntrareBar" type="Marker3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.8, 0.17, -12.2)
+
+[node name="SabiePiatra" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, -19)
+script = ExtResource("64_sp")
+
+[node name="Piatra" type="Node3D" parent="SabiePiatra" instance=ExtResource("62_ps")]
+script = ExtResource("4_mp")
+material = ExtResource("5_mt")
+
+[node name="Forma" type="CollisionShape3D" parent="SabiePiatra"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CylinderShape3D_piatra")
+
+[node name="FormaManer" type="CollisionShape3D" parent="SabiePiatra"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("BoxShape3D_maner_sabie")
