@@ -7,6 +7,8 @@ extends Interactabil
 ## îl ridică în fața ochilor și se uită la el (cadavrele doar le privește), îl bagă sub tejghea (cadavrele le trage
 ## după tejghea), numără banii, îi pune pe tejghea, `replici_dupa` / `replici_cadavru`, iar tu îi iei: intră în cash (Bani).
 ## Prețurile sunt ale owner-ului. Ce vinzi de la Gun Store apare iar pe peretele de acolo, la prețul întreg.
+## Bomboana (din tomberon) n-o bagă sub tejghea: o mănâncă pe loc, cu ambalaj cu tot, și vomită pe tejghea și pe jos
+## în fața ei (`_mananca_bomboana`, Voma; owner 11.10), apoi te plătește și zice `replici_bomboana`.
 
 ## id din inventar -> numele de pe buton și prețul (dolari).
 const OFERTA := {
@@ -28,6 +30,7 @@ const SUNET_BANI := preload("res://sunete/bancnota.ogg")
 const SUNET_ARMA := preload("res://sunete/arma_pe_tejghea.ogg")
 const SUNET_OBIECT := preload("res://sunete/obiect_pus.ogg")
 const SUNET_CADAVRU := preload("res://sunete/corp_cazut.ogg")
+const SUNET_RONTA := preload("res://sunete/bomboana_ronta.ogg")
 const MODEL_BANCNOTA := preload("res://models/bancnota.glb")
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
@@ -42,6 +45,7 @@ const ARME := ["pistol_roz", "pistol_aur", "shotgun", "cutit", "katana", "sabie_
 ## Replicile lui Claude (owner-ul le poate schimba): după ce ți-a cumpărat ceva, după un cadavru, când n-ai nimic.
 @export_multiline var replici_dupa: PackedStringArray = ["Johnny: Pleasure doing business."]
 @export_multiline var replici_cadavru: PackedStringArray = ["Johnny: I don't ask questions."]
+@export_multiline var replici_bomboana: PackedStringArray = ["Johnny: ...Where did you get that candy?", "You: The trash.", "Johnny: Pleasure doing business."]
 @export_multiline var replici_fara_marfa: PackedStringArray = ["You: Nothing, just looking.", "Johnny: Then stop fogging up my glass."]
 
 var _in_curs := false
@@ -125,6 +129,8 @@ func _cumpara(id: String) -> void:
 	if cadavru:
 		await get_tree().create_timer(1.4).timeout
 		await _trage_dupa_tejghea(obiect)
+	elif id == "bomboana":
+		await _mananca_bomboana(obiect, jucator)
 	else:
 		await _ridica_si_ia(obiect)
 	om.priveste_punct = Vector3.INF
@@ -144,7 +150,7 @@ func _cumpara(id: String) -> void:
 	Sunet.reda_la(SUNET_BANI, plata.global_position, Sunet.VOLUM_EFECTE, 0.05)
 	om.lasa_mana("S", 0.5)
 	await get_tree().create_timer(0.35).timeout
-	await _spune(replici_cadavru if cadavru else replici_dupa)
+	await _spune(replici_cadavru if cadavru else (replici_bomboana if id == "bomboana" else replici_dupa))
 	# 4. iei banii: vin spre tine și intră în cash
 	teanc.reparent(camera, true)
 	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
@@ -196,6 +202,63 @@ func _ridica_si_ia(obiect: Node3D) -> void:
 	await om.du_mana("D", om.global_position + om.global_basis * Vector3(-0.2, 0.8, 0.1), 0.5)
 	obiect.queue_free()
 	om.lasa_mana("D", 0.4)
+
+
+## Bomboana: o ridică în fața ochilor, ridică din umeri și o bagă în gură cu ambalaj cu tot, ronțăie uitându-se la
+## tine; stomacul chiorăie, două sughițuri, apoi se apleacă peste tejghea și vomită (pe sticlă și pe jos, în fața ei),
+## tușește și se șterge la gură cu mâneca. Sunetele sunt ale vomei tale, 3D și mai groase.
+func _mananca_bomboana(obiect: Node3D, jucator: Node3D) -> void:
+	await om.du_mana("D", obiect.global_position + Vector3.UP * 0.02, 0.5)
+	obiect.reparent(om.nod_mana("D"), true)
+	var ochi := om.gura() + om.global_basis * Vector3(0.04, 0.06, 0.3)
+	om.priveste_punct = ochi
+	await om.du_mana("D", ochi, 0.6)
+	await get_tree().create_timer(0.7).timeout
+	# în gură, cu ambalaj cu tot, cu ochii la tine
+	om.priveste_punct = Vector3.INF
+	om.privire = jucator.get_node("Cap")
+	await om.du_mana("D", om.gura() + om.global_basis * Vector3(0.0, -0.02, 0.07), 0.4)
+	obiect.queue_free()
+	Sunet.reda_la(SUNET_RONTA, om.gura(), Sunet.VOLUM_EFECTE, 0.05, 0.85)
+	om.lasa_mana("D", 0.5)
+	for pas in [[0.4, 0.8, -3.0], [0.4, 0.75, -6.0], [0.45, 0.7, -9.0]]:  # [pauză, înălțime, volum]
+		await get_tree().create_timer(pas[0]).timeout
+		Sunet.reda_la(SUNET_RONTA, om.gura(), Sunet.VOLUM_EFECTE + pas[2], 0.0, pas[1])
+	await get_tree().create_timer(0.9).timeout
+	Voma.sunet(Voma.SUNET_STOMAC, om.gura(), 2.0, 0.85)
+	await get_tree().create_timer(1.6).timeout
+	# greața: trunchiul se smucește de două ori în față
+	Voma.sunet(Voma.SUNET_GREATA, om.gura(), 0.0, 0.85)
+	await _apleaca(0.3, 0.12)
+	await _apleaca(0.05, 0.4)
+	await _apleaca(0.38, 0.12)
+	await _apleaca(0.1, 0.4)
+	# se apleacă peste tejghea și vomită spre tine
+	om.privire = null
+	om.priveste_punct = pe_tejghea.global_position + om.global_basis * Vector3(0, 0, 0.4)
+	await _apleaca(0.55, 0.25)
+	var v := Voma.porneste(get_tree().current_scene, [get_rid()])
+	for val in [[1.5, 1.0, 0.0], [0.8, 0.8, -4.0]]:  # [durata, putere, volum]
+		Voma.sunet(Voma.SUNET_JET, om.gura(), val[2], 0.85 if val[2] == 0.0 else 0.92)
+		var sus := create_tween().set_loops(int(val[0] / 0.25))
+		sus.tween_property(om, "aplecare", 0.62, 0.12)
+		sus.tween_property(om, "aplecare", 0.55, 0.13)
+		await v.jet(om.gura() + om.global_basis * Vector3(0, -0.04, 0.06), om.global_basis * Vector3(0, -0.5, 0.35) * val[1], val[0])
+		sus.kill()
+		await get_tree().create_timer(0.5).timeout
+	v.opreste()
+	Voma.sunet(Voma.SUNET_TUSE, om.gura(), 0.0, 0.85)
+	await _apleaca(0.0, 0.8)
+	# se șterge la gură cu mâneca (stânga), apoi se uită iar la tine
+	await om.du_mana("S", om.gura() + om.global_basis * Vector3(0.08, -0.03, 0.08), 0.35)
+	await om.du_mana("S", om.gura() + om.global_basis * Vector3(-0.1, -0.02, 0.08), 0.3)
+	om.lasa_mana("S", 0.5)
+
+
+func _apleaca(cat: float, durata: float) -> void:
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(om, "aplecare", cat, durata)
+	await t.finished
 
 
 ## Cadavrul îl prinde cu ambele mâini, îl trage spre el până la marginea din spate a tejghelei și îl lasă să cadă jos,

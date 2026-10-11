@@ -1,5 +1,5 @@
 extends Personaj
-## Tom Berone, boschetarul din fața magazinului de băuturi („LIQUOR”, lângă Gun Store, magazin_arme.tscn; owner 11.10).
+## Tom Berone, boschetarul de la Paradise Motel, în fața camerei 124 (motel.tscn; owner 11.10, înainte stătea lângă Gun Store).
 ## Stă jos pe un carton cu „SAVING MONEY FOR DRUGS”. La E: „Hey, do you have any change?” cu „Give him money” /
 ## „Don't give him anything”. Îi dai cât poți: $10, altfel $5, altfel $1 (Bani, în cenți); fără niciun dolar butonul e
 ## gri (Dialog.intreaba cu `dezactivate`). Prima dată când îi dai, Tom (magician în secret) ridică mâna și îți

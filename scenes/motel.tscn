@@ -54,6 +54,8 @@
 [ext_resource type="Script" path="res://scripts/sosire_autobuz.gd" id="56_sa"]
 [ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="57_fr"]
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="58_or"]
+[ext_resource type="PackedScene" path="res://models/boschetar.glb" id="tb_m"]
+[ext_resource type="Script" path="res://scripts/boschetar.gd" id="tb_s"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("24_ca")
@@ -109,6 +111,9 @@ size = Vector3(1.0, 2.1, 0.12)
 
 [sub_resource type="BoxShape3D" id="forma_orar"]
 size = Vector3(0.1, 0.45, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_boschetar"]
+size = Vector3(1, 1, 1.05)
 
 [node name="Motel" type="Node3D"]
 
@@ -224,6 +229,12 @@ omni_range = 4.0
 
 [node name="Lampa123" type="OmniLight3D" parent="Lumini"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 2.45, -9.55)
+light_color = Color(1, 0.8, 0.5, 1)
+light_energy = 0.8
+omni_range = 4.0
+
+[node name="Lampa124" type="OmniLight3D" parent="Lumini"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.8, 2.45, -9.55)
 light_color = Color(1, 0.8, 0.5, 1)
 light_energy = 0.8
 omni_range = 4.0
@@ -487,3 +498,21 @@ scartait_podea = ExtResource("46_sp")
 lanterna_pornita = ExtResource("47_lp")
 lanterna_oprita = ExtResource("48_lo")
 suprafata_implicita = "beton"
+
+[node name="Boschetar" type="StaticBody3D" parent="." node_paths=PackedStringArray("brat", "palma", "cap")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.525, 0.15, -9.72)
+script = ExtResource("tb_s")
+brat = NodePath("Model/BratDrept")
+palma = NodePath("Model/BratDrept/Palma")
+cap = NodePath("Model/Cap")
+distanta_privire = 6.0
+unghi_maxim_cap = 60.0
+se_intoarce = false
+
+[node name="Model" parent="Boschetar" instance=ExtResource("tb_m")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+
+[node name="Forma" type="CollisionShape3D" parent="Boschetar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.32)
+shape = SubResource("forma_boschetar")

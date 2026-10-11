@@ -7,6 +7,7 @@ extends Node3D
 ## îl lași jos, ca pistolul.
 ## Un obiect cu `"mancare": true` (bomboana) se mănâncă la click (acțiunea "trage"): îl desfaci, ambalajul (`Ambalaj`)
 ## cade, iar ce e dinăuntru (`Bomboana`) îl duci la gură și îl ronțăi din două mușcături; apoi iese din inventar.
+## Cu `"voma": true` (bomboana din tomberon) te ia cu greață și vomiți pe jos (`_vomita`, Voma).
 ## Ca să adaugi un obiect: o intrare în `MODELE` cu id-ul din inventar (vezi ObiectLuat.id_obiect).
 
 ## id -> scena modelului, unde îl ții (față de cameră; originea modelului), cum e rotit; opțional `mancare`
@@ -40,6 +41,8 @@ const MODELE := {
 		"pozitie": Vector3(0.15, -0.15, -0.34),
 		"rotatie": Vector3(0.35, 0.55, 0.25),
 		"mancare": true,
+		# e din tomberon: după ce o mănânci, vomiți (owner 11.10)
+		"voma": true,
 		# lanterna nu prinde ce e lipit de cameră: un pic de luciu, ca la o bomboană tare
 		"stralucitoare": ["Bomboana", "Ambalaj"],
 		"stralucire": 0.3,
@@ -210,11 +213,53 @@ func _mananca_acum() -> void:
 		await get_tree().create_timer(0.38).timeout
 		Sunet.reda(SUNET_RONTA, Sunet.VOLUM_EFECTE + pas[1], 0.0, &"Efecte", pas[0])
 		_tresare(camera, 0.5)
+	var voma: bool = _date(id).get("voma", false)
 	Stare.scoate_obiect(id)
 	_jos = 1.0
 	_schimba("")
 	visible = false
+	if voma:
+		await _vomita(camera)
 	_mananca = false
+
+
+## Bomboana din tomberon: stomacul chiorăie, două sughițuri de greață, apoi te apleci și vomiți pe jos (două valuri),
+## tușești și te ridici. Balta rămâne acolo. Replica e a lui Claude.
+func _vomita(camera: Camera3D) -> void:
+	var jucator := get_tree().get_first_node_in_group("jucator") as CharacterBody3D
+	if jucator == null:
+		return
+	await get_tree().create_timer(1.0).timeout
+	Voma.sunet(Voma.SUNET_STOMAC)
+	await get_tree().create_timer(1.8).timeout
+	var c := Cutscena.porneste(self)
+	Voma.sunet(Voma.SUNET_GREATA)
+	_tresare(camera, 3.0)
+	await get_tree().create_timer(0.65).timeout
+	_tresare(camera, 4.0)
+	await get_tree().create_timer(0.45).timeout
+	await c.roteste(jucator.rotation.y, deg_to_rad(-50), 0.3)
+	var v := Voma.porneste(get_tree().current_scene, [jucator.get_rid()])
+	var inainte := -jucator.global_basis.z
+	inainte.y = 0.0
+	inainte = inainte.normalized()
+	for val in [[1.4, 1.0, 0.0], [0.7, 0.75, -5.0]]:  # [durata, putere, volum]
+		Voma.sunet(Voma.SUNET_JET, Vector3.INF, val[2], 1.0 if val[2] == 0.0 else 1.08)
+		var gura := camera.global_position + camera.global_basis * Vector3(0.0, -0.1, -0.12)
+		var tremur := create_tween().set_loops(int(val[0] / 0.2))
+		tremur.tween_callback(_tresare.bind(camera, 1.5))
+		tremur.tween_interval(0.2)
+		await v.jet(gura, (inainte * 1.3 + Vector3.DOWN * 0.6) * val[1], val[0])
+		tremur.kill()
+		await get_tree().create_timer(0.45).timeout
+	v.opreste()
+	Voma.sunet(Voma.SUNET_TUSE)
+	await get_tree().create_timer(0.9).timeout
+	await c.roteste(jucator.rotation.y, 0.0, 0.8)
+	Dialog.spune(PackedStringArray(["You: Note to self: candy from the trash is still trash."]))
+	if Dialog.activ:
+		await Dialog.terminat
+	await c.opreste()
 
 
 ## Capul tresare puțin la o mușcătură (camera în jos și înapoi).

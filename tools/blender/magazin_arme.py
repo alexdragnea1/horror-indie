@@ -268,7 +268,8 @@ def banner(piese, z0, z1):
 	piese.append(cub("Linie", (2.3, 0.01, 0.025), (tx, y, zm - 0.24), AUR))
 	piese.append(_text("Scris banner", "GUNS & AMMO  *  EST. 1776", (tx, y - 0.01, zm - 0.36), 0.12, AUR))
 	# --- Glock-ul din profil (țeava spre dreapta): închizătorul cu zimți, cadrul, mânerul înclinat, trăgaciul, apărătoarea
-	gx, gz = 2.75, zm + 0.02
+	# (urcat cu 13 cm: mânerul ieșea pe sub banner, peste cărămizi; owner 11.10 „pistolul e bugat”)
+	gx, gz = 2.75, zm + 0.15
 	piese.append(cub("Inchizator", (1.55, 0.016, 0.26), (gx, y - 0.004, gz + 0.12), CROM))
 	for i in range(7):  # zimții din spate
 		piese.append(cub("Zimt", (0.025, 0.01, 0.2), (gx - 0.72 + i * 0.05, y - 0.016, gz + 0.12), METAL_INCHIS))
@@ -277,12 +278,19 @@ def banner(piese, z0, z1):
 	piese.append(cub("Inaltator", (0.06, 0.01, 0.05), (gx - 0.68, y - 0.012, gz + 0.27), METAL_INCHIS))
 	piese.append(cub("Cadru", (1.4, 0.016, 0.13), (gx + 0.05, y, gz - 0.06), METAL))
 	piese.append(cub("Sina", (0.4, 0.01, 0.025), (gx + 0.45, y - 0.012, gz - 0.11), METAL_INCHIS))
-	piese.append(cub("Maner", (0.36, 0.016, 0.72), (gx - 0.48, y, gz - 0.36), METAL, rot=(0, -0.3, 0)))
+	# mânerul: înclinat cu talpa spre spate (stânga), ca la un pistol adevărat (înainte era invers, cu talpa spre țeavă);
+	# canelurile merg pe axa lui, de-a curmezișul
+	unghi = 0.3
+	ax, az = -math.sin(unghi), -math.cos(unghi)  # axa mânerului, în jos
+	mx, mz = gx - 0.5, gz - 0.33
+	piese.append(cub("Maner", (0.34, 0.016, 0.55), (mx, y, mz), METAL, rot=(0, unghi, 0)))
 	for i in range(5):  # canelurile mânerului
-		piese.append(cub("Canelura", (0.3, 0.01, 0.02), (gx - 0.42 - 0.04 * i, y - 0.012, gz - 0.2 - 0.11 * i), METAL_INCHIS, rot=(0, -0.3, 0)))
-	piese.append(cub("Aparatoare", (0.42, 0.016, 0.045), (gx - 0.02, y, gz - 0.33), METAL))
-	piese.append(cub("Aparatoare", (0.045, 0.016, 0.2), (gx + 0.18, y, gz - 0.23), METAL, rot=(0, 0.3, 0)))
-	piese.append(cub("Tragaci", (0.035, 0.012, 0.14), (gx - 0.02, y - 0.006, gz - 0.2), METAL_INCHIS, rot=(0, 0.2, 0)))
+		t = -0.08 + 0.065 * i
+		piese.append(cub("Canelura", (0.26, 0.01, 0.02), (mx + ax * t, y - 0.012, mz + az * t), METAL_INCHIS, rot=(0, unghi, 0)))
+	# apărătoarea trăgaciului: de la mâner până sub cadru, în față
+	piese.append(cub("Aparatoare", (0.5, 0.016, 0.045), (gx - 0.07, y, gz - 0.33), METAL))
+	piese.append(cub("Aparatoare", (0.045, 0.016, 0.24), (gx + 0.17, y, gz - 0.22), METAL, rot=(0, 0.3, 0)))
+	piese.append(cub("Tragaci", (0.035, 0.012, 0.14), (gx - 0.04, y - 0.006, gz - 0.2), METAL_INCHIS, rot=(0, 0.2, 0)))
 	piese.append(cilindru("Gura teava", 0.06, 0.06, 0.01, (gx + 0.776, y - 0.004, gz + 0.12), NEGRU, laturi=10, rot=(0, 1.5708, 0)))
 
 

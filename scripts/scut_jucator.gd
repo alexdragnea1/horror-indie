@@ -13,7 +13,7 @@ extends Node3D
 
 const MARCAJ := "a_invatat_scutul"
 const MARCAJ_FOLOSIT := "a_folosit_scutul"
-## Pus de Tom Berone, boschetarul din fața magazinului de băuturi (boschetar.gd), când îi dai bani: pauza scade la
+## Pus de Tom Berone, boschetarul de la motel (boschetar.gd), când îi dai bani: pauza scade la
 ## PAUZA_IMBUNATATITA (owner 11.10: „îți face o vrajă să ai shield-ul la o secundă”).
 const MARCAJ_IMBUNATATIT := "scutul_imbunatatit_de_tom"
 const PAUZA_IMBUNATATITA := 1.0

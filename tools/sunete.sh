@@ -1442,3 +1442,35 @@ ffmpeg -v error -y -i "$P3/EXPLDsgn_Anime Explosion 9.wav" -i "$P4/Spells/Rock W
 unic sabie_bum "$OUT/_sabie_bum.wav" stereo
 rm -f "$OUT/_sabie_trage.wav" "$OUT/_sabie_cade.wav" "$OUT/_sabie_scoasa.wav" "$OUT/_sabie_blestem.wav" "$OUT/_sabie_atac.wav" "$OUT/_sabie_lovit.wav" "$OUT/_sabie_bum.wav"
 TINTA_LUFS=-20
+
+# ---------------------------------------------------------------------------------------------------------------
+# --- voma (voma.gd): bomboana din tomberon (obiect_in_mana.gd) și Johnny de la amanet (johnny_amanet.gd), owner 11.10.
+# Toate mono (le aude și jucătorul din cap, și Johnny 3D, mai grav). Folosește $P2, b, MIX, DENS și ECOU_MIC de mai sus.
+# 1. stomacul care chiorăie (~2 s, încet: -22 LUFS): gâlgâitul de apă, mult mai grav și înfundat
+TINTA_LUFS=-22
+ffmpeg -v error -y -i "$PACHET/Environment/gurgling.wav" -filter_complex \
+	"[0]$(b 0 2.15 0.55),lowpass=f=450,lowpass=f=450,atrim=end=2.2,afade=t=in:d=0.25,afade=t=out:st=1.5:d=0.6" \
+	-ac 1 "$OUT/_voma_stomac.wav"
+unic voma_stomac "$OUT/_voma_stomac.wav"
+# 2. două sughițuri de greață, pe gol (~1,3 s, -16 LUFS): râgâielile, mai lente și mai groase, cu un pic de lichid
+TINTA_LUFS=-16
+ffmpeg -v error -y -i "$PACHET/Human/belch_3.wav" -i "$PACHET/Human/belch_1.wav" -i "$P2/Liquids/Liquid_slosh.wav" -filter_complex \
+	"[0]$(b 0 0.33 0.72)[a];[1]$(b 0 0.42 0.62),volume=1.15,adelay=650[c];[2]$(b 0 0.5 0.8),lowpass=f=1500,volume=0.35,adelay=700[l];[a][c][l]$MIX=3,$DENS,atrim=end=1.4,afade=t=out:st=1.1:d=0.3" \
+	-ac 1 "$OUT/_voma_greata.wav"
+unic voma_greata "$OUT/_voma_greata.wav"
+# 3. voma (~2,4 s, -13 LUFS): gâtul care „aruncă” (Zombie_8, gâlgâit de voce, și râgâiala grea), apoi lichidul
+# care se varsă (Gore_Wet, Liquid_slosh) și plescăie pe jos (water_splashing, splat, Liquid_plash)
+TINTA_LUFS=-13
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Zombie_8.wav" -i "$PACHET/Human/belch_2.wav" -i "$P2/Monsters & Ghosts/Gore_Wet_4.wav" \
+	-i "$PACHET/Environment/water_splashing.wav" -i "$P2/Liquids/Liquid_plash poor.wav" -i "$PACHET/Combat and Gore/crunch_splat_2.wav" -filter_complex \
+	"[0]$(b 0 1.46 1.0),lowpass=f=3500[z];[1]$(b 0 0.93 0.6),volume=1.1[r];[2]$(b 0 1.18 0.9),volume=0.9,adelay=150[g];[3]$(b 0 1.15 0.8),volume=0.9,adelay=380[s];[4]$(b 0 1.11 0.9),volume=0.8,adelay=950[p];[5]$(b 0 0.6 0.85),volume=0.45,adelay=420[c];[z][r][g][s][p][c]$MIX=6,$DENS,$ECOU_MIC,atrim=end=2.4,afade=t=out:st=1.8:d=0.6" \
+	-ac 1 "$OUT/_voma_jet.wav"
+unic voma_jet "$OUT/_voma_jet.wav"
+# 4. tusea de după, cu scuipat (~1,3 s, -17 LUFS)
+TINTA_LUFS=-17
+ffmpeg -v error -y -i "$PACHET/Human/cough_double.wav" -i "$P2/Liquids/Spray.wav" -filter_complex \
+	"[0]$(b 0 1.2 0.92)[t];[1]$(b 0 0.47 0.7),lowpass=f=2500,volume=0.4,adelay=1000[s];[t][s]$MIX=2,atrim=end=1.5,afade=t=out:st=1.2:d=0.3" \
+	-ac 1 "$OUT/_voma_tuse.wav"
+unic voma_tuse "$OUT/_voma_tuse.wav"
+rm -f "$OUT/_voma_stomac.wav" "$OUT/_voma_greata.wav" "$OUT/_voma_jet.wav" "$OUT/_voma_tuse.wav"
+TINTA_LUFS=-20

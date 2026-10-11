@@ -53,7 +53,7 @@ TENCUIALA = AUR          # stucco bej, decolorat
 TENCUIALA_PATA = MASLINIU
 SINDRILA = LEMN_INCHIS
 # lămpile de lângă uși care încă merg (în motel.tscn au câte o lumină adevărată; restul sunt arse)
-LAMPI_APRINSE = (118, 121, 122, 123, 217, 220, 224)
+LAMPI_APRINSE = (118, 121, 122, 123, 124, 217, 220, 224)
 
 # --- aripa cu camere (Blender: fațada la y = YF, corpul spre +Y)
 YF = 10.0       # fațada
