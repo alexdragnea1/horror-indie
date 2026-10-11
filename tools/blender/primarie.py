@@ -90,6 +90,11 @@ YHOL = 7.6
 USA_BIROU = (-0.55, 0.55)
 # biroul primarului (masa) și scaunul
 MX, MY, MZ = 0.0, 1.75, 0.78
+# ușa de la Taxe (în zidul din stânga al holului, x = -XI…-XC): golul pe Y și cât e de înalt; dincolo de ea, biroul
+# Taxe ocupă toată aripa stângă (aripa nu mai e plină): pe X de la -XA + G la -XC, pe Y de la G la YB - G
+TAXE = (5.2, 6.2)
+TAXE_SUS = FL + 2.15
+TX0, TX1, TY0, TY1 = -XA + G, -XC, G, YB - G
 
 
 def _ramas(piese, nume):
@@ -231,14 +236,19 @@ def cladire(cale):
 	perete(piese, "Zid", "x", -XC, XC, YB - G, YB, 0, TOP, GALBEN, goluri_spate)
 	for semn in (-1, 1):
 		x0, x1 = (-XC, -XI) if semn < 0 else (XI, XC)
-		perete(piese, "Zid", "y", G, YB - G, x0, x1, 0, TOP, GALBEN)
+		# în stânga, golul ușii de la Taxe (owner 11.10: biroul din aripa stângă); dedesubt zidul rămâne prag, la FL
+		perete(piese, "Zid", "y", G, YB - G, x0, x1, 0, TOP, GALBEN, [(TAXE[0], TAXE[1], FL, TAXE_SUS)] if semn < 0 else [])
 	# coliziunea zidurilor (ferestrele sunt pline, ușa e gol)
 	for (x0, x1) in ((-XC, USA[0]), (USA[1], XC)):
 		_cutie_coliziune(col, (x1 - x0, G, TOP), ((x0 + x1) / 2, G / 2, TOP / 2))
 	_cutie_coliziune(col, (USA[1] - USA[0], G, TOP - FL - 2.45), (0, G / 2, (FL + 2.45 + TOP) / 2))
 	_cutie_coliziune(col, (2 * XC, G, TOP), (0, YB - G / 2, TOP / 2))
-	for semn in (-1, 1):
-		_cutie_coliziune(col, (G, YB, TOP), (semn * (XC - G / 2), YB / 2, TOP / 2))
+	_cutie_coliziune(col, (G, YB, TOP), (XC - G / 2, YB / 2, TOP / 2))
+	xz = -(XC - G / 2)
+	_cutie_coliziune(col, (G, TAXE[0], TOP), (xz, TAXE[0] / 2, TOP / 2))
+	_cutie_coliziune(col, (G, YB - TAXE[1], TOP), (xz, (TAXE[1] + YB) / 2, TOP / 2))
+	_cutie_coliziune(col, (G, TAXE[1] - TAXE[0], TOP - TAXE_SUS), (xz, sum(TAXE) / 2, (TAXE_SUS + TOP) / 2))
+	_cutie_coliziune(col, (G, TAXE[1] - TAXE[0], FL), (xz, sum(TAXE) / 2, FL / 2))
 	for a, b in FER_JOS:
 		_fereastra(piese, geamuri, a, b, FZ_JOS[0], FZ_JOS[1], 0.0, -1)
 	for a, b in FER_SUS:
@@ -279,7 +289,15 @@ def cladire(cale):
 	for semn in (-1, 1):
 		x0, x1 = (-XA, -XC) if semn < 0 else (XC, XA)
 		xm = (x0 + x1) / 2
-		piese.append(cub("Aripa", (x1 - x0, YB, HA), (xm, YB / 2, HA / 2), GALBEN))
+		if semn > 0:
+			piese.append(cub("Aripa", (x1 - x0, YB, HA), (xm, YB / 2, HA / 2), GALBEN))
+		else:
+			# aripa stângă e goală pe dinăuntru: e biroul Taxe (pereții, placa de jos până la FL, tavanul de la HC1)
+			piese.append(cub("Aripa", (x1 - x0, G, HA), (xm, G / 2, HA / 2), GALBEN))
+			piese.append(cub("Aripa", (x1 - x0, G, HA), (xm, YB - G / 2, HA / 2), GALBEN))
+			piese.append(cub("Aripa", (G, YB - 2 * G, HA), (x0 + G / 2, YB / 2, HA / 2), GALBEN))
+			piese.append(cub("Aripa", (TX1 - TX0, TY1 - TY0, FL - 0.02), ((TX0 + TX1) / 2, YB / 2, (FL - 0.02) / 2), BETON))
+			piese.append(cub("Aripa", (TX1 - TX0, TY1 - TY0, HA - HC1), ((TX0 + TX1) / 2, YB / 2, (HC1 + HA) / 2), ALB))
 		piese.append(cub("Cornisa aripa", (x1 - x0 + 0.2, YB + 0.2, 0.18), (xm, YB / 2, HA - 0.05), ALB))
 		for fx in (xm - 1.15, xm + 1.15):
 			_fereastra_oarba(piese, fx - 0.55, fx + 0.55, FZ_JOS[0], FZ_JOS[1], 0.0, -1, r)
@@ -297,7 +315,14 @@ def cladire(cale):
 		piese.append(cilindru("Burlan", 0.05, 0.05, HA, (bx, -0.12, HA / 2), METAL, laturi=6))
 		piese.append(cub("Rugina burlan", (0.12, 0.12, 0.5), (bx, -0.12, 0.6), RUGINA))
 		_coscos(piese, x0 + 0.3, x1 - 0.3, 0.0, 0.62, FZ_JOS[0] - 0.06, -1, r, n=2)
-		_cutie_coliziune(col, (x1 - x0, YB, HA), (xm, YB / 2, HA / 2))
+		if semn > 0:
+			_cutie_coliziune(col, (x1 - x0, YB, HA), (xm, YB / 2, HA / 2))
+		else:
+			_cutie_coliziune(col, (x1 - x0, G, HA), (xm, G / 2, HA / 2))
+			_cutie_coliziune(col, (x1 - x0, G, HA), (xm, YB - G / 2, HA / 2))
+			_cutie_coliziune(col, (G, YB, HA), (x0 + G / 2, YB / 2, HA / 2))
+			_cutie_coliziune(col, (TX1 - TX0, TY1 - TY0, FL), ((TX0 + TX1) / 2, YB / 2, FL / 2))
+			_cutie_coliziune(col, (TX1 - TX0, TY1 - TY0, HA - HC1), ((TX0 + TX1) / 2, YB / 2, (HC1 + HA) / 2))
 	_coscos(piese, -XC + 0.3, -1.0, 0.0, 0.62, FZ_JOS[0] - 0.06, -1, r, n=2)
 	_coscos(piese, 1.0, XC - 0.3, 0.0, 0.62, FZ_JOS[0] - 0.06, -1, r, n=2)
 	# aerul condiționat de pe aripa din stânga (cu dâra de rugină sub el) și un cablu de curent pe fațadă
@@ -369,13 +394,22 @@ def cladire(cale):
 	perete(piese, "Vopsea ulei", "x", -XI, XI, YI1 - 0.015, YI1, FL, VU, TEAL, [(3.0, 4.2, FL + 1.0, FL + 2.5)])
 	for semn in (-1, 1):
 		g0, g1 = (-XI, -XI + 0.015) if semn < 0 else (XI - 0.015, XI)
-		perete(piese, "Vopsea ulei", "y", YI0, YI1, g0, g1, FL, VU, TEAL)
-		piese.append(cub("Dunga", (0.02, YI1 - YI0, 0.04), (semn * (XI - 0.018), (YI0 + YI1) / 2, VU), PETROL))
+		gol = [(TAXE[0], TAXE[1], FL, TAXE_SUS)] if semn < 0 else []
+		perete(piese, "Vopsea ulei", "y", YI0, YI1, g0, g1, FL, VU, TEAL, gol)
+		d0, d1 = sorted((semn * (XI - 0.008), semn * (XI - 0.028)))
+		perete(piese, "Dunga", "y", YI0, YI1, d0, d1, VU - 0.02, VU + 0.02, PETROL, gol)
 	perete(piese, "Dunga", "x", -XI, XI, G + 0.008, G + 0.028, VU - 0.02, VU + 0.02, PETROL,
 		[(USA[0], USA[1], FL, FL + 2.45)] + [(a, b, FZ_JOS[0], FZ_JOS[1]) for a, b in FER_JOS])
 	perete(piese, "Dunga", "x", -XI, XI, YI1 - 0.028, YI1 - 0.008, VU - 0.02, VU + 0.02, PETROL, [(3.0, 4.2, FL + 1.0, FL + 2.5)])
 	# ușile birourilor (închise, de lemn vopsit, cu plăcuțe)
-	for (x, y, nume) in ((-XI, 2.6, "CIVIL\nREGISTRY"), (-XI, 5.7, "TAXES"), (XI, 3.2, "ARCHIVE")):
+	# Taxe se deschide (ușa e un nod Usa în scenă, models/usa_taxe.glb): aici doar tocul de pe ambele părți ale golului
+	for semn_t in (-1, 1):
+		xt = -XI + 0.03 if semn_t > 0 else -XC - 0.03  # partea holului / partea biroului
+		for yt in (TAXE[0] - 0.04, TAXE[1] + 0.04):
+			piese.append(cub("Toc usa taxe", (0.06, 0.08, TAXE_SUS - FL + 0.04), (xt, yt, (FL + TAXE_SUS + 0.04) / 2), ALB))
+		piese.append(cub("Toc usa taxe", (0.06, TAXE[1] - TAXE[0], 0.08), (xt, sum(TAXE) / 2, TAXE_SUS + 0.04), ALB))
+	piese.append(cub("Pervaz usa taxe", (G, TAXE[1] - TAXE[0], 0.01), (-(XC + XI) / 2, sum(TAXE) / 2, TAXE_SUS - 0.005), ALB))
+	for (x, y, nume) in ((-XI, 2.6, "CIVIL\nREGISTRY"), (XI, 3.2, "ARCHIVE")):
 		s = 1 if x > 0 else -1
 		piese.append(cub("Toc usa birou", (0.06, 1.15, 2.25), (x - s * 0.03, y, FL + 1.125), ALB))
 		piese.append(cub("Usa birou", (0.05, 0.95, 2.1), (x - s * 0.06, y, FL + 1.05), LEMN))
@@ -589,6 +623,192 @@ def _fotoliu(piese, col, cx, cy, rot, cul=AUR, z0=FL2):
 	_roteste_muta(s, rot, (cx, cy))
 	piese += s
 	_cutie_coliziune(col, (0.8, 0.8, 0.8), (cx, cy, z0 + 0.4))
+
+
+# Biroul Taxe (aripa stângă, owner 11.10): unde stau maimuțele (x, y în Blender; toate privesc spre +Y, spre peretele
+# din spate). Rândul din față le vezi din culoar în față (cu spatele monitoarelor), pe cele din spate din spate, cu
+# spreadsheet-urile pe ecran. Aceleași locuri sunt în primarie.tscn (MaimutaTaxe1..6: Godot (x, FL, -y), rotația π).
+# primele două birouri lipite, apoi un culoar de 0,95 m (-7,45…-6,5) ca să poți trece în spatele rândurilor
+MAIMUTE_LOC = [(-9.1, 2.4), (-8.0, 2.4), (-5.95, 2.4), (-9.1, 8.3), (-8.0, 8.3), (-5.95, 8.3)]
+# monitorul fiecăruia, în coordonatele maimuței (fața spre -Y): ecranul (fața de lângă ea) e la y = -0,6
+MONITOR = (0.0, -0.78, 0.94)
+
+
+def _birou_maimuta(piese, col, mx, my, r, nr):
+	"""Biroul unei maimuțe, făcut în coordonatele ei (fața spre -Y, originea pe podea sub șezut) și întors cu 180°:
+	blatul la 0,75 cu monitorul CRT, tastatura (mâinile ei stau pe ea), mouse-ul, hârtii, cana, bananele; scaunul de
+	birou pe rotile, cu spătarul în spatele ei. Ecranul (spreadsheet-ul) e în joc (maimuta_taxe.gd), nu aici."""
+	s = []
+	z = FL
+	# biroul: blatul, laturile, panoul din față, un corp cu sertare în stânga ei
+	s.append(cub("Blat birou taxe", (1.1, 0.75, 0.04), (0, -0.575, z + 0.73), LEMN_DESCHIS))
+	for k in (-1, 1):
+		s.append(cub("Latura birou taxe", (0.04, 0.7, 0.71), (0.52 * k, -0.575, z + 0.355), LEMN))
+	s.append(cub("Panou birou taxe", (1.0, 0.03, 0.45), (0, -0.91, z + 0.46), LEMN))
+	s.append(cub("Sertare birou taxe", (0.36, 0.6, 0.6), (0.3, -0.6, z + 0.36), LEMN))
+	for k in range(3):
+		s.append(cub("Sertar birou taxe", (0.3, 0.012, 0.16), (0.3, -0.296, z + 0.17 + k * 0.19), LEMN_INCHIS))
+		s.append(cub("Maner sertar", (0.08, 0.012, 0.015), (0.3, -0.288, z + 0.2 + k * 0.19), CROM))
+	# monitorul CRT bej, cu spatele bombat, pe un suport
+	mx_, my_, mz_ = MONITOR
+	s.append(cub("Suport monitor", (0.2, 0.18, 0.03), (mx_, my_, z + 0.765), ALB))
+	s.append(cub("Monitor taxe", (0.4, 0.36, 0.34), (mx_, my_, z + mz_), ALB))
+	s.append(cub("Spate monitor", (0.3, 0.14, 0.26), (mx_, my_ - 0.24, z + mz_ - 0.01), ALB))
+	# rama neagră a ecranului, lipită pe fața monitorului dinspre ea (-0,6; „în față” = spre 0): -0,595…-0,589.
+	# Spreadsheet-ul din joc stă la 4 mm în fața ei (ECRAN în maimuta_taxe.gd, Godot z 0,585). Fără ramă ecranul
+	# deschis la culoare se pierdea pe monitorul bej.
+	s.append(cub("Rama ecran", (0.34, 0.006, 0.27), (0.0, -0.592, z + mz_ + 0.01), GEAM))
+	s.append(cub("Buton monitor", (0.025, 0.006, 0.015), (0.15, -0.598, z + mz_ - 0.14), AUR))
+	# tastatura (mâinile ei la y -0,52), mouse-ul pe un mousepad
+	s.append(cub("Tastatura taxe", (0.42, 0.15, 0.025), (0, -0.5, z + 0.7625), ALB))
+	s.append(cub("Taste", (0.38, 0.11, 0.006), (0, -0.5, z + 0.778), METAL))
+	s.append(cub("Mousepad", (0.2, 0.17, 0.004), (-0.36, -0.48, z + 0.752), PETROL))
+	s.append(cub("Mouse", (0.05, 0.08, 0.025), (-0.36, -0.48, z + 0.766), ALB))
+	# lucrurile de pe birou, altele la fiecare
+	s.append(cub("Hartii", (0.21, 0.29, 0.03), (0.36, -0.75, z + 0.765), ALB, rot=(0, 0, r.uniform(-0.3, 0.3))))
+	s.append(cub("Hartie", (0.21, 0.29, 0.004), (0.36, -0.36, z + 0.752), ALB, rot=(0, 0, r.uniform(-0.5, 0.5))))
+	if nr % 2 == 0:
+		s.append(cilindru("Cana", 0.04, 0.04, 0.1, (-0.4, -0.78, z + 0.8), r.choice((ROSU, PETROL, ALB)), laturi=8))
+		s.append(cilindru("Cafea", 0.034, 0.034, 0.004, (-0.4, -0.78, z + 0.849), LEMN_INCHIS, laturi=8))
+	if nr % 3 != 1:
+		# un ciorchine de banane: trei bucăți curbate din câte două segmente
+		for b in range(3):
+			p0 = (-0.28 + 0.03 * b, -0.88, z + 0.77)
+			p1 = (-0.2 + 0.03 * b, -0.8 - 0.02 * b, z + 0.78)
+			p2 = (-0.16 + 0.03 * b, -0.7 - 0.02 * b, z + 0.8)
+			s.append(os_intre("Banana", p0, p1, 0.017, AUR, laturi=6))
+			s.append(os_intre("Banana", p1, p2, 0.016, AUR, laturi=6))
+	else:
+		s.append(cub("Calculator", (0.12, 0.17, 0.03), (-0.38, -0.8, z + 0.765), METAL_INCHIS))
+		s.append(cub("Rola calculator", (0.1, 0.03, 0.04), (-0.38, -0.89, z + 0.79), ALB))
+		s.append(cub("Hartie calculator", (0.08, 0.004, 0.25), (-0.38, -0.93, z + 0.66), ALB, rot=(0.2, 0, 0)))
+	# scaunul de birou: steaua cu rotile, coloana, șezutul la 0,48, spătarul în spatele ei
+	for k in range(5):
+		a = k * 2 * math.pi / 5
+		s.append(cub("Brat scaun birou", (0.04, 0.3, 0.03), (0.15 * math.cos(a), 0.15 * math.sin(a), z + 0.07), NEGRU,
+			rot=(0, 0, a - math.pi / 2)))
+		s.append(sfera("Rotita", 0.025, (0.29 * math.cos(a), 0.29 * math.sin(a), z + 0.025), NEGRU, segmente=6, inele=4))
+	s.append(cilindru("Coloana scaun", 0.025, 0.025, 0.32, (0, 0, z + 0.24), CROM, laturi=6))
+	s.append(cub("Sezut scaun birou", (0.46, 0.44, 0.07), (0, 0.02, z + 0.445), PETROL_DESCHIS))
+	s.append(cub("Spatar scaun birou", (0.42, 0.05, 0.48), (0, 0.255, z + 0.8), PETROL_DESCHIS))
+	s.append(cub("Bara spatar", (0.04, 0.04, 0.22), (0, 0.255, z + 0.47), NEGRU))
+	_roteste_muta(s, math.pi, (mx, my))
+	piese += s
+	# coliziunea: biroul și scaunul (cu tot cu maimuța), cutii întregi
+	_cutie_coliziune(col, (1.1, 0.75, 0.77), (mx, my + 0.575, z + 0.385))
+	_cutie_coliziune(col, (0.62, 0.62, 1.2), (mx, my, z + 0.6))
+
+
+def _birou_taxe(piese, lumini, col, r):
+	"""Biroul Taxe din aripa stângă: mocheta în pătrate, pereții vopsiți în ulei pe jumătate (ca holul), neoanele, cele 6
+	birouri cu maimuțe (_birou_maimuta, MAIMUTE_LOC), dulapurile cu dosare, copiatorul, răcitorul de apă, tabla cu
+	graficul, afișul „HANG IN THERE” cu o maimuță agățată de o creangă, ceasul, coșul de gunoi cu coji de banane."""
+	z = FL
+	VU = FL + 1.5
+	# mocheta (pătrate, două tonuri de gri-albastru)
+	nx, ny = int((TX1 - TX0) / 0.55 + 0.999), int((TY1 - TY0) / 0.6 + 0.999)
+	for i in range(nx):
+		for j in range(ny):
+			x0, y0 = TX0 + i * 0.55, TY0 + j * 0.6
+			x1, y1 = min(x0 + 0.55, TX1), min(y0 + 0.6, TY1)
+			cul = GRI_ALBASTRU if (i + j) % 2 == 0 else METAL
+			if r.random() < 0.04:
+				cul = MOV  # o placă schimbată
+			piese.append(cub("Mocheta taxe", (x1 - x0, y1 - y0, 0.02), ((x0 + x1) / 2, (y0 + y1) / 2, z - 0.01), cul))
+	# pereții: vopsea în ulei jos (verde-albastru), var alb sus, dunga dintre ele; golul ușii în peretele dinspre hol
+	gol = [(TAXE[0], TAXE[1], FL, TAXE_SUS)]
+	for (x0, x1, g, xd) in ((TX0, TX0 + 0.015, [], TX0 + 0.021), (TX1 - 0.015, TX1, gol, TX1 - 0.021)):
+		perete(piese, "Vopsea taxe", "y", TY0, TY1, x0, x1, FL, VU, TEAL, g)
+		perete(piese, "Var taxe", "y", TY0, TY1, x0, x1, VU, HC1, ALB, g)
+		perete(piese, "Dunga taxe", "y", TY0, TY1, xd - 0.006, xd + 0.006, VU - 0.02, VU + 0.02, PETROL, g)
+	for (y0, y1, yd) in ((TY0, TY0 + 0.015, TY0 + 0.021), (TY1 - 0.015, TY1, TY1 - 0.021)):
+		perete(piese, "Vopsea taxe", "x", TX0 + 0.015, TX1 - 0.015, y0, y1, FL, VU, TEAL)
+		perete(piese, "Var taxe", "x", TX0 + 0.015, TX1 - 0.015, y0, y1, VU, HC1, ALB)
+		piese.append(cub("Dunga taxe", (TX1 - TX0 - 0.054, 0.012, 0.04), ((TX0 + TX1) / 2, yd, VU), PETROL))
+	# plintele
+	piese.append(cub("Plinta taxe", (0.02, TY1 - TY0 - 0.07, 0.08), (TX0 + 0.025, YB / 2, z + 0.04), LEMN_INCHIS))
+	for (a, b) in ((TY0 + 0.035, TAXE[0] - 0.12), (TAXE[1] + 0.12, TY1 - 0.035)):
+		piese.append(cub("Plinta taxe", (0.02, b - a, 0.08), (TX1 - 0.025, (a + b) / 2, z + 0.04), LEMN_INCHIS))
+	for y in (TY0 + 0.025, TY1 - 0.025):
+		piese.append(cub("Plinta taxe", (TX1 - TX0 - 0.07, 0.02, 0.08), ((TX0 + TX1) / 2, y, z + 0.04), LEMN_INCHIS))
+	# neoanele (trei, pe mijlocul camerei)
+	for y in (2.6, 5.7, 8.8):
+		piese.append(cub("Corp neon", (0.3, 1.3, 0.06), (-7.5, y, HC1 - 0.03), METAL))
+		lumini.append(cub("Tub neon", (0.18, 1.2, 0.02), (-7.5, y, HC1 - 0.07), ALB))
+	# birourile cu maimuțe
+	for nr, (mx, my) in enumerate(MAIMUTE_LOC):
+		_birou_maimuta(piese, col, mx, my, r, nr)
+	# în față (în spatele rândului întâi): dulapurile cu dosare lângă peretele din față, răcitorul de apă în colț
+	for x in (-9.35, -8.8, -8.25):
+		piese.append(cub("Dulap dosare", (0.5, 0.6, 1.3), (x, TY0 + 0.32, z + 0.65), METAL))
+		for j in range(3):
+			piese.append(cub("Sertar dosare", (0.4, 0.02, 0.3), (x, TY0 + 0.63, z + 0.25 + j * 0.42), CROM))
+	piese.append(cub("Teanc dosare", (0.32, 0.26, 0.22), (-8.8, TY0 + 0.32, z + 1.41), BRONZ, rot=(0, 0, 0.1)))
+	_cutie_coliziune(col, (1.7, 0.62, 1.3), (-8.8, TY0 + 0.32, z + 0.65))
+	piese.append(cub("Racitor apa", (0.32, 0.32, 0.95), (-5.75, TY0 + 0.35, z + 0.475), ALB))
+	piese.append(cilindru("Bidon apa", 0.13, 0.13, 0.42, (-5.75, TY0 + 0.35, z + 1.16), TEAL_DESCHIS, laturi=10))
+	piese.append(cub("Robinet apa", (0.05, 0.04, 0.05), (-5.75, TY0 + 0.53, z + 0.8), METAL_INCHIS))
+	_cutie_coliziune(col, (0.34, 0.34, 1.4), (-5.75, TY0 + 0.35, z + 0.7))
+	# în spate (după rândul al doilea): copiatorul, rafturile cu bibliorafturi
+	piese.append(cub("Copiator", (0.9, 0.6, 0.9), (-5.95, TY1 - 0.4, z + 0.45), ALB))
+	piese.append(cub("Capac copiator", (0.92, 0.6, 0.06), (-5.95, TY1 - 0.4, z + 0.93), METAL))
+	piese.append(cub("Tava copiator", (0.3, 0.3, 0.02), (-6.55, TY1 - 0.4, z + 0.6), METAL))
+	lumini.append(cub("Bec copiator", (0.05, 0.012, 0.03), (-5.75, TY1 - 0.707, z + 0.82), TEAL_DESCHIS))
+	_cutie_coliziune(col, (1.3, 0.62, 1.0), (-6.05, TY1 - 0.4, z + 0.5))
+	for x0 in (-9.6, -8.2):
+		piese.append(cub("Raft taxe", (1.3, 0.35, 0.03), (x0 + 0.65, TY1 - 0.2, z + 0.035), LEMN))
+		for k in range(4):
+			zr = z + 0.05 + k * 0.42
+			piese.append(cub("Raft taxe", (1.3, 0.35, 0.03), (x0 + 0.65, TY1 - 0.2, zr + 0.4), LEMN))
+			x = x0 + 0.04
+			while x < x0 + 1.18:  # bibliorafturi, de culori diferite, cu eticheta albă pe cotor
+				g = 0.08
+				cul = r.choice((PETROL, ROSU, VERDE_INCHIS, MOV_INCHIS, NEGRU))
+				piese.append(cub("Biblioraft", (g - 0.006, 0.28, 0.32), (x + g / 2, TY1 - 0.21, zr + 0.18), cul))
+				piese.append(cub("Eticheta", (0.04, 0.006, 0.07), (x + g / 2, TY1 - 0.353, zr + 0.24), ALB))
+				x += g + (0.12 if r.random() < 0.08 else 0)
+		for k in (0, 1):
+			piese.append(cub("Montant raft", (0.03, 0.35, 1.75), (x0 - 0.015 + k * 1.33, TY1 - 0.2, z + 0.875), LEMN_INCHIS))
+		_cutie_coliziune(col, (1.36, 0.37, 1.75), (x0 + 0.65, TY1 - 0.2, z + 0.875))
+	# pe peretele dinspre exterior: tabla albă cu graficul care coboară și „TAXES 2026”
+	xp = TX0 + 0.04
+	piese.append(cub("Tabla", (0.02, 1.8, 1.0), (xp, 5.7, z + 1.6), ALB))
+	piese.append(cub("Rama tabla", (0.03, 1.86, 0.04), (xp, 5.7, z + 2.12), METAL))
+	piese.append(cub("Rama tabla", (0.03, 1.86, 0.04), (xp, 5.7, z + 1.08), METAL))
+	piese.append(_text_o_fata("Scris tabla", "TAXES 2026", (xp + 0.012, 5.7, z + 1.95), 0.11, PETROL,
+		rot=(math.pi / 2, 0, math.pi / 2)))
+	for k, h in enumerate((0.42, 0.33, 0.36, 0.22, 0.14, 0.05)):  # graficul cu bare, tot mai mici
+		piese.append(cub("Bara grafic", (0.012, 0.14, h), (xp + 0.012, 5.1 + k * 0.24, z + 1.2 + h / 2), ROSU if k > 2 else VERDE))
+	piese.append(cub("Raft tabla", (0.08, 1.6, 0.02), (xp + 0.05, 5.7, z + 1.05), METAL))
+	# pe peretele dinspre hol: afișul „HANG IN THERE” (maimuța agățată de creangă) și „EMPLOYEE OF THE MONTH”
+	xa = TX1 - 0.03
+	ya = 7.3
+	piese.append(cub("Afis taxe", (0.012, 0.6, 0.8), (xa, ya, z + 1.75), TEAL_DESCHIS))
+	piese.append(cub("Creanga afis", (0.012, 0.5, 0.03), (xa - 0.01, ya, z + 2.0), LEMN_INCHIS))
+	piese.append(cub("Brat maimuta afis", (0.012, 0.03, 0.14), (xa - 0.012, ya + 0.03, z + 1.93), LEMN_INCHIS))
+	piese.append(sfera("Maimuta afis", 0.07, (xa - 0.012, ya + 0.03, z + 1.8), LEMN_INCHIS, scara=(0.12, 1.0, 1.0), segmente=8, inele=5))
+	piese.append(sfera("Fata maimuta afis", 0.035, (xa - 0.016, ya + 0.03, z + 1.8), AUR, scara=(0.15, 1.0, 1.0), segmente=6, inele=4))
+	piese.append(_text_o_fata("Scris afis", "HANG IN THERE", (xa - 0.008, ya, z + 1.47), 0.055, NEGRU,
+		rot=(math.pi / 2, 0, -math.pi / 2)))
+	ye = 4.2
+	piese.append(cub("Rama angajat", (0.02, 0.4, 0.5), (xa, ye, z + 1.85), AUR))
+	piese.append(cub("Poza angajat", (0.012, 0.32, 0.36), (xa - 0.012, ye, z + 1.83), TEAL))
+	piese.append(os_intre("Banana poza", (xa - 0.024, ye - 0.06, z + 1.74), (xa - 0.024, ye + 0.08, z + 1.9), 0.025, AUR, laturi=6))
+	piese.append(_text_o_fata("Scris angajat", "EMPLOYEE\nOF THE MONTH", (xa - 0.012, ye, z + 2.2), 0.035, NEGRU,
+		rot=(math.pi / 2, 0, -math.pi / 2)))
+	# ceasul de perete (peretele din spate) și coșul de gunoi cu coji de banane
+	piese.append(cilindru("Ceas taxe", 0.16, 0.16, 0.04, (-7.5, TY1 - 0.04, z + 2.6), ALB, laturi=16, rot=(math.pi / 2, 0, 0)))
+	piese.append(cub("Limba ceas", (0.012, 0.01, 0.12), (-7.5, TY1 - 0.065, z + 2.64), NEGRU))
+	piese.append(cub("Limba ceas", (0.09, 0.01, 0.012), (-7.46, TY1 - 0.068, z + 2.6), NEGRU))
+	piese.append(cilindru("Cos gunoi", 0.15, 0.18, 0.4, (-9.4, 5.0, z + 0.2), METAL_INCHIS, laturi=8))
+	for k in range(3):
+		a = k * 2.1
+		piese.append(cub("Coaja banana", (0.1, 0.03, 0.01), (-9.4 + 0.05 * math.cos(a), 5.0 + 0.05 * math.sin(a), z + 0.41), AUR,
+			rot=(0.3, 0.4, a)))
+	_cutie_coliziune(col, (0.36, 0.36, 0.4), (-9.4, 5.0, z + 0.2))
+	# o coajă de banană pe jos, în culoar
+	piese.append(cub("Coaja banana", (0.12, 0.05, 0.008), (-7.0, 5.2, z + 0.004), AUR, rot=(0, 0, 0.7)))
+	piese.append(cub("Coaja banana", (0.09, 0.03, 0.006), (-6.95, 5.27, z + 0.008), AUR, rot=(0, 0, -0.4)))
 
 
 def _carti(piese, x0, x1, y, z, r, adanc=0.2, axa="x", spre=1):
@@ -919,13 +1139,18 @@ def interior(cale):
 		lumini.append(cub("Bec aplica", (0.06, 0.06, 0.08), (xa, ya + 0.03, z + 2.47), AUR))
 	strange()
 
+	_birou_taxe(piese, lumini, col, r)
+	strange()
+
 	uneste(piese, "Interior")
 	uneste(geamuri, "Geamuri")
 	uneste(lumini, "Lumini")
 	uneste(col, "Coliziune")
 	# înăuntru te uiți de aproape: ajung 10 mm (ca la recepția motelului)
 	desparte_fete(distanta=0.01, fixe=("Tejghea", "Blat tejghea", "Perete ghiseu", "Covor margine", "Covor",
-		"Baza canapea", "Spatar canapea", "Baza fotoliu", "Semineu", "Corp birou", "Piele blat", "Avizier", "Pluta avizier"))
+		"Baza canapea", "Spatar canapea", "Baza fotoliu", "Semineu", "Corp birou", "Piele blat", "Avizier", "Pluta avizier",
+		"Mocheta taxe", "Vopsea taxe", "Var taxe", "Blat birou taxe", "Monitor taxe", "Rama ecran", "Tabla", "Afis taxe", "Dulap dosare", "Copiator",
+		"Raft taxe"))
 	exporta(os.path.join(cale, "primarie_interior.glb"))
 
 
@@ -1339,6 +1564,28 @@ def usa_birou(cale):
 	exporta(os.path.join(cale, "usa_birou_primar.glb"))
 
 
+def usa_taxe(cale):
+	"""Ușa biroului Taxe: de lemn, ca celelalte uși ale holului (panouri, clanță), cu plăcuța „TAXES” pe fața dinspre
+	hol (-Y aici; în scenă nodul e rotit cu 90°, deci -Y ajunge spre hol, +X). Originea în balama, foaia spre +X."""
+	curata()
+	piese = []
+	L, H = TAXE[1] - TAXE[0] - 0.02, TAXE_SUS - FL - 0.02
+	piese.append(cub("Foaie usa", (L, 0.05, H), (L / 2, 0, H / 2), LEMN))
+	for semn in (-1, 1):
+		for dz in (0.55, 1.45):
+			piese.append(cub("Panou usa", (L - 0.25, 0.012, 0.6), (L / 2, semn * 0.029, dz), LEMN_INCHIS))
+		piese.append(cub("Clanta", (0.12, 0.05, 0.03), (L - 0.12, semn * 0.064, 1.0), CROM))
+		piese.append(cub("Rozeta", (0.05, 0.012, 0.12), (L - 0.1, semn * 0.033, 0.97), CROM))
+	piese.append(cub("Placuta", (0.45, 0.012, 0.2), (L / 2, -0.031, 1.9), ALB))
+	piese.append(_text_o_fata("Scris placuta", "TAXES", (L / 2, -0.039, 1.9), 0.075, NEGRU))
+	# o foaie lipită cu bandă sub plăcuță: „NO BANANAS”
+	# (peste panoul de sus, care iese până la -0,035: foaia stă în fața lui, nu în el)
+	piese.append(cub("Foaie banane", (0.21, 0.006, 0.15), (L / 2, -0.04, 1.6), AUR))
+	piese.append(_text_o_fata("Scris foaie", "NO\nBANANAS", (L / 2, -0.0445, 1.6), 0.035, ROSU))
+	uneste(piese, "Usa")
+	exporta(os.path.join(cale, "usa_taxe.glb"))
+
+
 def scaun_primar(cale):
 	"""Fotoliul de birou al primarului: piele închisă, spătar înalt capitonat, pe rotile. Originea jos, în mijlocul
 	șezutului; fața spre -Y (în Godot +Z)."""
@@ -1398,6 +1645,41 @@ PRIMAR = {
 }
 
 
+# Maimuțele de la Taxe (owner, 11.10: „maimuțe cu ochelari care au spreadsheet-uri deschise la calculator”): așezate
+# pe scaune de birou (șezutul la 0,48), cu mâinile pe tastatură (`masa` = blatul biroului, 0,75). Toate au ochelari;
+# cămăși de birou cu mânecă scurtă, blana pe brațe. Fața (piele) e deschisă, blana închisă, ca să se citească fața.
+_MAIMUTA = {
+	"maimuta": True, "stil_par": "blana", "stil_haina": "camasa_birou", "maneca_scurta": True, "sezut": 0.48,
+	"masa": 0.75, "pantaloni": p("2a3c3d"), "pantofi": p("262d2f"), "spranceana": 0.0, "incruntat": 0.0,
+	"ochelari": "vedere",
+}
+MAIMUTE = [
+	# 1: cimpanzeul șef de birou: cozorocul verde de contabil, cravată roșie
+	dict(_MAIMUTA, piele=p("a18463"), piele_umbra=p("904a40"), blana=p("48313b"), par=p("48313b"), haina=ALB,
+		haina_umbra=p("778c96"), cravata=p("7b383a"), palarie="vizor", rama=NEGRU),
+	# 2: blana neagră, cămașă albastră, rama aurie, creionul după ureche
+	dict(_MAIMUTA, piele=p("a56850"), piele_umbra=p("7b383a"), blana=p("262d2f"), par=p("262d2f"), haina=p("778c96"),
+		haina_umbra=p("6f6d7f"), cravata=p("295555"), rama=AUR, creion=True),
+	# 3: urangutanul: blana roșcată, fața închisă, cămașă galbenă, fără cravată, ochelari „ochi de pisică”
+	dict(_MAIMUTA, piele=p("5e363e"), piele_umbra=p("48313b"), blana=p("904a40"), par=p("904a40"), haina=p("a18463"),
+		haina_umbra=p("7a7b59"), ochelari="pisica", rama=p("262d2f")),
+	# 4: blana maro, cămașă verde-albastră, cravată închisă
+	dict(_MAIMUTA, piele=p("a18463"), piele_umbra=p("904a40"), blana=p("5e363e"), par=p("5e363e"), haina=p("61a19f"),
+		haina_umbra=p("438b88"), cravata=p("32453b"), rama=p("48313b")),
+	# 5: bătrânul: blana cenușie, cozorocul (verde închis), cravată aurie
+	dict(_MAIMUTA, piele=p("a56850"), piele_umbra=p("904a40"), blana=p("5e5356"), par=p("7e8d87"), haina=ALB,
+		haina_umbra=p("7e8d87"), cravata=p("a18463"), palarie="vizor", culoare_palarie=p("5b6d4e"), rama=AUR),
+	# 6: cel tânăr: blana neagră, cămașă mov, creionul după ureche
+	dict(_MAIMUTA, piele=p("a18463"), piele_umbra=p("904a40"), blana=p("262d2f"), par=p("262d2f"), haina=p("655269"),
+		haina_umbra=p("553e4d"), cravata=p("83b3b0"), rama=NEGRU, creion=True),
+]
+
+
+def maimute(cale):
+	for i, s in enumerate(MAIMUTE):
+		casino_oameni.om(cale, "maimuta_taxe_%d" % (i + 1), s, 2100 + i)
+
+
 def angajata(cale):
 	casino_oameni.om(cale, "angajata_primarie", ANGAJATA, 1989)
 
@@ -1412,10 +1694,12 @@ def toate(cale):
 	curte(cale)
 	usa_primarie(cale)
 	usa_birou(cale)
+	usa_taxe(cale)
 	scaun_primar(cale)
 	teanc_bani(cale)
 	angajata(cale)
 	primar(cale)
+	maimute(cale)
 
 
 if __name__ == "__main__":

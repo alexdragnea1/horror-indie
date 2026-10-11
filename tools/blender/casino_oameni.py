@@ -51,6 +51,23 @@ def _norm(v):
 # Capul
 # ---------------------------------------------------------------------------------------------------------------
 
+def _maimuta(piese, P, fy, s):
+	"""Fața de maimuță (cimpanzeu, pentru maimuțele de la Taxe din primarie.py): botul ieșit în față cu nările mari și
+	gura lată, arcada groasă peste ochi, urechile mari și rotunde, în lături. Ochii, ochelarii și blana de pe cap
+	(`stil_par` "blana") le pune _cap, ca la oameni. Botul e jos (sub 0,14), ca ochelarii să nu intre în el."""
+	piele, umbra = s["piele"], s["piele_umbra"]
+	piese.append(sfera("Bot", 0.05, P(0, fy - 0.012, 0.098), piele, scara=(1.25, 0.85, 0.85), segmente=10, inele=6))
+	for k in (-1, 1):
+		piese.append(sfera("Nara", 0.008, P(0.014 * k, fy - 0.051, 0.118), NEGRU, scara=(1.0, 0.6, 0.7), segmente=6, inele=3))
+	piese.append(cub("Gura", (0.08, 0.012, 0.007), P(0, fy - 0.047, 0.083), NEGRU))
+	piese.append(cub("Buza", (0.066, 0.012, 0.012), P(0, fy - 0.044, 0.071), umbra))
+	# arcada: deasupra ramei de sus a ochelarilor (0,185), nu peste ea
+	piese.append(cub("Arcada", (0.115, 0.03, 0.022), P(0, fy - 0.002, 0.2), umbra))
+	for k in (-1, 1):
+		piese.append(sfera("Ureche mare", 0.042, P(0.112 * k, 0.015, 0.165), piele, scara=(0.32, 0.8, 1.0), segmente=8, inele=5))
+		piese.append(sfera("Ureche inauntru", 0.026, P(0.122 * k, 0.012, 0.163), umbra, scara=(0.2, 0.8, 1.0), segmente=6, inele=4))
+
+
 def _cap(piese, gat, s, r):
 	"""Fața trasă prin inele (ca la baba / bețiv), apoi părul, pălăria, ochelarii după stil. `gat` = baza capului."""
 	gx, gy, gz = gat
@@ -62,7 +79,9 @@ def _cap(piese, gat, s, r):
 	def P(x, y, z):
 		return (gx + x, gy + y, gz + z)
 
-	piese.append(os_intre("Gat", P(0, 0.012, -0.03), P(0, -0.005, 0.07), 0.056 + 0.012 * gras - (0.008 if fem else 0), piele, laturi=8))
+	maimuta = s.get("maimuta", False)  # maimuțele de la Taxe (primarie.py): blană, bot, urechi mari, arcadă
+	blana = s.get("blana", piele)
+	piese.append(os_intre("Gat", P(0, 0.012, -0.03), P(0, -0.005, 0.07), 0.056 + 0.012 * gras - (0.008 if fem else 0), blana, laturi=8))
 	l = 1.0 - 0.12 * slab
 	g = 1.0 + 0.16 * gras
 	fata = [  # (z, y centru, rx, ry)
@@ -77,22 +96,25 @@ def _cap(piese, gat, s, r):
 	# urechile
 	for k in (-1, 1):
 		piese.append(sfera("Ureche", 0.026, P(0.083 * k * (0.93 if fem else 1), 0.01, 0.17), piele, scara=(0.45, 0.8, 1.0), segmente=6, inele=4))
-	# nasul
-	n = s.get("nas", 1.0)
-	piese.append(trunchi("Nas", [(P(0, fy + 0.008, 0.19), 0.011, 0.01), (P(0, fy - 0.012 * n, 0.158), 0.018 * n, 0.015),
-		(P(0, fy - 0.022 * n, 0.137), 0.022 * n, 0.018), (P(0, fy - 0.012 * n, 0.126), 0.0, 0.0)], umbra if s.get("nas_rosu") else piele, laturi=6))
-	piese += [
-		cub("Nara", (0.01, 0.01, 0.005), P(0.011, fy - 0.012 * n, 0.128), umbra),
-		cub("Nara", (0.01, 0.01, 0.005), P(-0.011, fy - 0.012 * n, 0.128), umbra),
-	]
-	# gura
-	buze = s.get("buze", umbra)
-	piese += [
-		cub("Gura", (0.042, 0.008, 0.007), P(0, fy + 0.006, 0.106), NEGRU if s.get("gura_deschisa") else s.get("gura", umbra)),
-		cub("Buza", (0.046, 0.012, 0.009 if fem else 0.006), P(0, fy + 0.007, 0.096), buze),
-	]
-	if fem:
-		piese.append(cub("Buza", (0.04, 0.012, 0.007), P(0, fy + 0.007, 0.114), buze))
+	if maimuta:
+		_maimuta(piese, P, fy, s)
+	else:
+		# nasul
+		n = s.get("nas", 1.0)
+		piese.append(trunchi("Nas", [(P(0, fy + 0.008, 0.19), 0.011, 0.01), (P(0, fy - 0.012 * n, 0.158), 0.018 * n, 0.015),
+			(P(0, fy - 0.022 * n, 0.137), 0.022 * n, 0.018), (P(0, fy - 0.012 * n, 0.126), 0.0, 0.0)], umbra if s.get("nas_rosu") else piele, laturi=6))
+		piese += [
+			cub("Nara", (0.01, 0.01, 0.005), P(0.011, fy - 0.012 * n, 0.128), umbra),
+			cub("Nara", (0.01, 0.01, 0.005), P(-0.011, fy - 0.012 * n, 0.128), umbra),
+		]
+		# gura
+		buze = s.get("buze", umbra)
+		piese += [
+			cub("Gura", (0.042, 0.008, 0.007), P(0, fy + 0.006, 0.106), NEGRU if s.get("gura_deschisa") else s.get("gura", umbra)),
+			cub("Buza", (0.046, 0.012, 0.009 if fem else 0.006), P(0, fy + 0.007, 0.096), buze),
+		]
+		if fem:
+			piese.append(cub("Buza", (0.04, 0.012, 0.007), P(0, fy + 0.007, 0.114), buze))
 	# ochii, sprâncenele
 	for k in (-1, 1):
 		x = 0.033 * k
@@ -171,6 +193,16 @@ def _cap(piese, gat, s, r):
 				continue  # fața rămâne liberă
 			piese.append(sfera("Bucla", 0.038 + r.uniform(0, 0.012), c, par if k % 3 else s.get("par_suvita", par), segmente=6, inele=4))
 		piese.append(sfera("Par", 0.094, P(0, 0.025, 0.22), par, scara=(1.05, 1.05, 0.8), segmente=10, inele=6))
+	elif stil == "blana":  # maimuța: blana acoperă creștetul, ceafa și obrajii; fața (pielea) iese în față
+		piese.append(sfera("Par", 0.1, P(0, 0.025, 0.19), par, scara=(1.05, 1.0, 1.0), segmente=10, inele=7))
+		# fruntea: blana coboară până deasupra arcadei (fără ea păreau chele); în dreptul ochilor rămâne în spatele feței
+		piese.append(sfera("Frunte", 0.095, P(0, -0.005, 0.238), par, scara=(1.0, 1.0, 0.62), segmente=10, inele=6))
+		for k in (-1, 1):  # favoriții: blana coboară pe lângă față
+			piese.append(sfera("Favorit", 0.045, P(0.07 * k, -0.035, 0.12), par, scara=(0.6, 0.9, 1.1), segmente=6, inele=4))
+		for k in range(5):  # smocuri zbârlite în creștet
+			u = (k - 2) * 0.35
+			piese.append(cub("Smoc", (0.03, 0.03, 0.04), P(0.045 * math.sin(u), 0.02 + 0.03 * math.cos(u), 0.29), par,
+				rot=(r.uniform(-0.4, 0.4), r.uniform(-0.4, 0.4), u)))
 	elif stil == "voluminos":  # buclat, lung, până pe umeri (femeia)
 		piese.append(sfera("Par", 0.1, P(0, 0.03, 0.215), par, scara=(1.05, 1.0, 0.85), segmente=10, inele=7))
 		for k in range(16):
@@ -207,6 +239,11 @@ def _cap(piese, gat, s, r):
 		piese.append(sfera("Sapca", 0.1, P(0, 0.01, 0.245), cul, scara=(1.0, 1.15, 0.45), segmente=10, inele=6))
 		piese.append(cub("Cozoroc", (0.15, 0.07, 0.012), P(0, -0.1, 0.235), cul, rot=(0.18, 0, 0)))
 		piese.append(cub("Nasture sapca", (0.016, 0.016, 0.01), P(0, -0.02, 0.29), s.get("culoare_palarie_umbra", cul)))
+	elif palarie == "vizor":  # cozorocul verde de contabil, pe o bandă în jurul capului
+		cul = s.get("culoare_palarie", p("438b88"))
+		piese.append(trunchi("Banda vizor", [(P(0, 0.015, 0.236), 0.106, 0.112), (P(0, 0.015, 0.256), 0.104, 0.11)], cul, laturi=12,
+			capete=False))
+		piese.append(cub("Cozoroc vizor", (0.17, 0.1, 0.008), P(0, -0.14, 0.236), cul, rot=(0.35, 0, 0)))
 	elif palarie == "baseball":  # șapcă de camionagiu: calota rotundă, panoul din față cu sigla, cozorocul curbat
 		cul, umbra_p = s["culoare_palarie"], s.get("culoare_palarie_umbra", s["culoare_palarie"])
 		piese.append(trunchi("Calota", [(P(0, 0.008, 0.2), 0.092, 0.104), (P(0, 0.008, 0.25), 0.09, 0.102), (P(0, 0.01, 0.29), 0.072, 0.084),
@@ -242,6 +279,9 @@ def _cap(piese, gat, s, r):
 		if s.get("lantisor_ochelari"):
 			for k in (-1, 1):
 				piese.append(os_intre("Lantisor", P(0.08 * k, 0.0, 0.17), P(0.1 * k, 0.02, 0.02), 0.003, AUR, laturi=4))
+	if s.get("creion"):  # creionul după ureche (contabilul)
+		piese.append(os_intre("Creion", P(0.118, -0.05, 0.215), P(0.112, 0.07, 0.19), 0.005, p("a18463"), laturi=6))
+		piese.append(os_intre("Varf creion", P(0.118, -0.05, 0.215), P(0.119, -0.07, 0.219), 0.003, NEGRU, laturi=4))
 	if s.get("cercei"):
 		for k in (-1, 1):
 			piese.append(sfera("Cercel", 0.012, P(0.085 * k, 0.0, 0.135), s["cercei"], segmente=6, inele=4))
@@ -329,17 +369,17 @@ def _brat(piese_brat, piese_antebrat, umar, cot, incheietura, s, latura):
 	scurta = s.get("maneca_scurta")  # mânecă scurtă: de la jumătatea brațului în jos e pielea
 	piese_brat.append(sfera("Umar", 0.062 * gros, _add(umar, (0, 0, -0.01)), maneca, segmente=8, inele=5))
 	piese_brat.append(trunchi("Brat", [(umar, 0.068 * gros, 0.068 * gros), (_lerp(umar, cot, 0.5), 0.062 * gros, 0.058 * gros),
-		(cot, 0.056 * gros, 0.054 * gros)], maneca if not (s.get("brate_goale") or scurta) else s["piele"], laturi=8, ref=(0, 0, 1)))
+		(cot, 0.056 * gros, 0.054 * gros)], maneca if not (s.get("brate_goale") or scurta) else s.get("blana", s["piele"]), laturi=8, ref=(0, 0, 1)))
 	if scurta:
 		piese_brat.append(trunchi("Maneca scurta", [(umar, 0.078 * gros, 0.078 * gros), (_lerp(umar, cot, 0.55), 0.074 * gros, 0.07 * gros)],
 			maneca, laturi=8, ref=(0, 0, 1)))
 		for t, cul in (((0.2, s["flori"][0]), (0.4, s["flori"][1])) if s.get("flori") else ()):
 			piese_brat.append(sfera("Floare", 0.018, _add(_lerp(umar, cot, t), (0, -0.07 * gros, 0)), cul, scara=(1, 0.4, 1), segmente=6, inele=3))
 	goale = s.get("brate_goale") or scurta
-	piese_antebrat.append(sfera("Cot", 0.056 * gros, cot, maneca if not goale else s["piele"], segmente=8, inele=5))
+	piese_antebrat.append(sfera("Cot", 0.056 * gros, cot, maneca if not goale else s.get("blana", s["piele"]), segmente=8, inele=5))
 	capat = _lerp(cot, incheietura, 0.92)
 	piese_antebrat.append(trunchi("Antebrat", [(cot, 0.054 * gros, 0.052 * gros), (_lerp(cot, incheietura, 0.5), 0.05 * gros, 0.046 * gros),
-		(capat, 0.046 * gros, 0.042 * gros)], maneca if not goale else s["piele"], laturi=8, ref=(0, 0, 1)))
+		(capat, 0.046 * gros, 0.042 * gros)], maneca if not goale else s.get("blana", s["piele"]), laturi=8, ref=(0, 0, 1)))
 	if goale and s.get("tatuaj"):  # tatuaje pe antebraț: câteva pete închise, pe partea de sus
 		for t, dz in ((0.3, 0.0), (0.5, 0.01), (0.68, -0.005)):
 			piese_antebrat.append(sfera("Tatuaj", 0.024, _add(_lerp(cot, incheietura, t), (0, 0, 0.042 * gros + dz)), s["tatuaj"],
@@ -433,6 +473,19 @@ def _tors(piese, z0, s, picioare=None):
 				piese.append(cub("Snur bolo", (0.005, 0.006, 0.17), (0.012 * k, fata(0.4, 0.016), z0 + 0.4 * h), NEGRU))
 			piese.append(sfera("Bolo", 0.024, (0, fata(0.49, 0.02), z0 + 0.49 * h), s["bolo"], scara=(1, 0.4, 1.2), segmente=8, inele=5))
 			piese.append(sfera("Rama bolo", 0.028, (0, fata(0.49, 0.014), z0 + 0.49 * h), AUR, scara=(1, 0.3, 1.2), segmente=8, inele=5))
+	elif stil == "camasa_birou":  # cămașă de birou (maimuțele de la Taxe): guler, cravată, buzunar cu pixuri, nasturi
+		for k in (-1, 1):
+			piese.append(cub("Guler", (0.06, 0.02, 0.035), (0.032 * k, fata(0.53, 0.004), z0 + 0.53 * h), umbra, rot=(0.3, 0, 0.5 * k)))
+		if s.get("cravata"):
+			# cravata slăbită: nodul mai jos și puțin într-o parte
+			piese.append(cub("Nod cravata", (0.026, 0.014, 0.024), (0.006, fata(0.49, 0.013), z0 + 0.49 * h), s["cravata"]))
+			piese.append(cub("Cravata", (0.034, 0.012, 0.19), (0.012, fata(0.39, 0.013), z0 + 0.38 * h), s["cravata"], rot=(0, -0.08, 0)))
+		else:
+			for z in (0.44, 0.34, 0.24, 0.14):
+				piese.append(cilindru("Nasture", 0.009, 0.009, 0.008, (0, fata(z, 0.002), z0 + z * h), umbra, laturi=6, rot=(1.5708, 0, 0)))
+		piese.append(cub("Buzunar", (0.07, 0.01, 0.07), (0.1, fata(0.4, -0.004), z0 + 0.4 * h), umbra))
+		for dx, cul in ((0.085, p("295555")), (0.1, p("7b383a")), (0.112, NEGRU)):
+			piese.append(cub("Pix", (0.008, 0.008, 0.055), (dx, fata(0.43, 0.004), z0 + 0.45 * h), cul))
 	elif stil == "tricou":  # tricou simplu cu guler rotund (barmanul)
 		piese.append(trunchi("Guler tricou", [((0, 0.018, z0 + 0.535 * h), 0.085, 0.07), ((0, 0.018, z0 + 0.555 * h), 0.08, 0.066)], umbra,
 			laturi=10, capete=False))

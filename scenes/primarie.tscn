@@ -57,6 +57,14 @@
 [ext_resource type="AudioStream" path="res://sunete/ceas.ogg" id="55_ce"]
 [ext_resource type="AudioStream" path="res://sunete/muzica_afara.ogg" id="muzica_afara_ogg"]
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
+[ext_resource type="PackedScene" path="res://models/usa_taxe.glb" id="60_ut"]
+[ext_resource type="Script" path="res://scripts/maimuta_taxe.gd" id="61_mt"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_1.glb" id="62_m1"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_2.glb" id="63_m2"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_3.glb" id="64_m3"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_4.glb" id="65_m4"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_5.glb" id="66_m5"]
+[ext_resource type="PackedScene" path="res://models/maimuta_taxe_6.glb" id="67_m6"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -105,6 +113,18 @@ size = Vector3(0.5, 8, 34)
 
 [sub_resource type="BoxShape3D" id="forma_lung"]
 size = Vector3(60, 8, 0.5)
+
+[sub_resource type="BoxShape3D" id="forma_usa_taxe"]
+size = Vector3(0.98, 2.13, 0.06)
+
+[sub_resource type="BoxShape3D" id="forma_maimuta"]
+size = Vector3(0.7, 1.5, 0.7)
+
+[sub_resource type="BoxShape3D" id="forma_interior_taxe"]
+size = Vector3(4.7, 3.4, 11.4)
+
+[sub_resource type="BoxShape3D" id="forma_mocheta_taxe"]
+size = Vector3(4.4, 1.0, 11.4)
 
 [node name="Primarie" type="Node3D"]
 
@@ -312,6 +332,10 @@ mediu = NodePath("../Mediu")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, -6)
 shape = SubResource("forma_interior")
 
+[node name="FormaTaxe" type="CollisionShape3D" parent="CeataInterior"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.35, 2.1, -6)
+shape = SubResource("forma_interior_taxe")
+
 [node name="Parchet" type="Area3D" parent="."]
 script = ExtResource("14_zs")
 suprafata = "lemn"
@@ -476,3 +500,176 @@ intrare = 2.5
 iesire = 1.5
 zona = NodePath("../CeataInterior")
 doar_afara = true
+
+[node name="UsaTaxe" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.15, 0.45, -5.21)
+script = ExtResource("8_us")
+unghi_deschidere = 95.0
+sunet_deschidere = ExtResource("9_sc")
+sunet_inchidere = ExtResource("10_ui")
+indiciu = "[E] Open"
+replici = PackedStringArray()
+
+[node name="Model" type="Node3D" parent="UsaTaxe" instance=ExtResource("60_ut")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="Forma" type="CollisionShape3D" parent="UsaTaxe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.49, 1.065, 0)
+shape = SubResource("forma_usa_taxe")
+
+[node name="LuminiTaxe" type="Node3D" parent="."]
+
+[node name="Neon1" type="OmniLight3D" parent="LuminiTaxe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 3.5, -2.6)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+omni_range = 4.5
+
+[node name="Neon2" type="OmniLight3D" parent="LuminiTaxe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 3.5, -5.7)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+shadow_enabled = true
+omni_range = 4.5
+script = ExtResource("24_lp")
+energie_normala = 0.8
+sansa_stingere = 0.06
+
+[node name="Neon3" type="OmniLight3D" parent="LuminiTaxe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 3.5, -8.8)
+light_color = Color(0.84, 0.93, 0.95, 1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+omni_range = 4.5
+
+[node name="MochetaTaxe" type="Area3D" parent="."]
+script = ExtResource("14_zs")
+suprafata = "covor"
+
+[node name="Forma" type="CollisionShape3D" parent="MochetaTaxe"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0.95, -6)
+shape = SubResource("forma_mocheta_taxe")
+
+[node name="MaimutaTaxe1" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.1, 0.45, -2.4)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: Ook ook. Ook.", "You: ...That explains a lot about my taxes.")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe1"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe1/Om" instance=ExtResource("62_m1")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="MaimutaTaxe2" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.0, 0.45, -2.4)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: Ook?", "You: Nevermind.")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe2"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe2/Om" instance=ExtResource("63_m2")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="MaimutaTaxe3" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.95, 0.45, -2.4)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: *points at the NO BANANAS sign and sighs*")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe3"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe3/Om" instance=ExtResource("64_m3")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="MaimutaTaxe4" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.1, 0.45, -8.3)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: Ooh ooh! Ah ah!", "You: Relax, I\'m not here to audit you.")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe4"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe4/Om" instance=ExtResource("65_m4")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="MaimutaTaxe5" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.0, 0.45, -8.3)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: ...Ook.", "You: He looks like he\'s been here since 1987.")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe5"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe5/Om" instance=ExtResource("66_m5")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="MaimutaTaxe6" type="StaticBody3D" parent="." node_paths=PackedStringArray("om")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.95, 0.45, -8.3)
+script = ExtResource("61_mt")
+om = NodePath("Om")
+replici = PackedStringArray("Monkey: *keeps typing*", "You: Rude.")
+
+[node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("forma_maimuta")
+
+[node name="Om" type="Node3D" parent="MaimutaTaxe6"]
+script = ExtResource("17_om")
+fumeaza = false
+pauza_privire = Vector2(0, 0)
+
+[node name="Model" type="Node3D" parent="MaimutaTaxe6/Om" instance=ExtResource("67_m6")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()

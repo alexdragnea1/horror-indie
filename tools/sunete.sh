@@ -1474,3 +1474,9 @@ ffmpeg -v error -y -i "$PACHET/Human/cough_double.wav" -i "$P2/Liquids/Spray.wav
 unic voma_tuse "$OUT/_voma_tuse.wav"
 rm -f "$OUT/_voma_stomac.wav" "$OUT/_voma_greata.wav" "$OUT/_voma_jet.wav" "$OUT/_voma_tuse.wav"
 TINTA_LUFS=-20
+
+# --- tastatul maimuțelor de la Taxe (maimuta_taxe.gd, owner 11.10): primele 3,25 s din keyboard_typing (tastat des;
+# la sfârșit devine rar), buclă mono (fiecare maimuță are sunetul ei, 3D, pornit doar cât tastează)
+ffmpeg -v error -y -i "$PACHET/Other/keyboard_typing.wav" -af "atrim=end=3.25" -ac 1 "$OUT/_tastatura.wav"
+bucla tastatura "$OUT/_tastatura.wav" 0.25 mono
+rm -f "$OUT/_tastatura.wav"
