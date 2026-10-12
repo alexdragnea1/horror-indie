@@ -127,7 +127,18 @@ def vrajitoare_salon(cale, nume, s, saminta, pahar):
 		incheietura = _lerp(cot, inch, 1.02)
 		_mana(brat, incheietura, d, (-1.0, 0.0, 0.0), s["piele"], NEGRU, r, deschisa=False)
 		palma = tuple(incheietura[i] + d[i] * 0.045 for i in range(3))
-		_pahar(brat, (palma[0], palma[1] - 0.01, palma[2] - 0.05), AUR if saminta % 2 else PIATRA)
+		if pahar == "clesti":
+			# vrăjitoarele din camera de tortură (subsol): un clește lung de fierar, cu fălcile pătate de sânge
+			for k in (-1, 1):
+				a = (palma[0] + k * 0.012, palma[1] + 0.03, palma[2] - 0.13)
+				b = (palma[0] + k * 0.008, palma[1] - 0.06, palma[2] + 0.06)
+				c = (palma[0] - k * 0.004, palma[1] - 0.12, palma[2] + 0.16)
+				brat.append(os_intre("Clesti", a, b, 0.009, NEGRU, laturi=4))
+				brat.append(os_intre("Falca clesti", b, c, 0.011, GRI, laturi=4))
+				brat.append(os_intre("Sange clesti", _lerp(b, c, 0.55), c, 0.013, ROSU, laturi=4))
+			brat.append(sfera("Nit clesti", 0.016, (palma[0], palma[1] - 0.06, palma[2] + 0.06), GRI, segmente=6, inele=4))
+		else:
+			_pahar(brat, (palma[0], palma[1] - 0.01, palma[2] - 0.05), AUR if saminta % 2 else PIATRA)
 		uneste(brat, "BratStang", umar)
 
 	cap, ochi = [], []
@@ -327,8 +338,11 @@ CAM_X1 = 17.0      # camerele de sus: x între ±9,4 și ±17
 CAM_Y0, CAM_Y1 = 8.0, 16.0
 CAM_H = 7.2        # tavanul camerelor
 USA_Y0, USA_Y1, USA_Z1 = 11.2, 12.8, 6.3   # golul ușilor spre camere, în pereții x = ±9
-GROS_TREAPTA = 0.3   # scara din stânga: treptele sunt o placă groasă de 30 cm, dedesubt e debaraua lui Parry
-DEB_Y0, DEB_Y1, DEB_H = 7.0, 7.8, 1.95   # golul ușii debaralei, în vangul scării din stânga (x = -SC_X)
+GROS_TREAPTA = 0.3   # treptele sunt o placă groasă de 30 cm: sub cea din stânga e debaraua lui Parry, sub cea din dreapta
+                     # coboară scara spre subsol
+DEB_X0, DEB_X1, DEB_H = 7.48, 8.22, 1.95   # golul ușilor din capătul scărilor (peretele de sub galerie, y = GAL), la
+                                           # x = ±(DEB_X0…DEB_X1): în stânga debaraua lui Parry, în dreapta scara spre subsol
+SUB_Y0 = 4.35      # scara spre subsol coboară pe sub scara din dreapta, de la GAL până aici: podeaua sălii are gaură deasupra
 STOFE = [ROSU, ROSU_INCHIS, VISINIU, MOV, VERDE, TEAL, LEMN, AUR_INCHIS, p("2a3c3d"), p("904a40")]
 
 
@@ -621,8 +635,9 @@ def ceas_pendul(cale):
 	exporta(os.path.join(cale, "ceas_pendul.glb"))
 
 
-def _scanduri(piese, x0, x1, y0, y1, z, r):
-	"""Podea de scânduri late de 25 cm, pe lungul axei Y, cu îmbinări decalate și rosturi de 1 cm (fața de sus la `z`)."""
+def _scanduri(piese, x0, x1, y0, y1, z, r, gaura=None):
+	"""Podea de scânduri late de 25 cm, pe lungul axei Y, cu îmbinări decalate și rosturi de 1 cm (fața de sus la `z`).
+	`gaura` = (x0, x1, y0, y1): scândurile cu mijlocul între x0 și x1 sunt tăiate între y0 și y1."""
 	n = int(round((x1 - x0) / 0.25))
 	for i in range(n):
 		x = x0 + (i + 0.5) * (x1 - x0) / n
@@ -630,8 +645,12 @@ def _scanduri(piese, x0, x1, y0, y1, z, r):
 		lung = r.uniform(0.6, 3.5)
 		while y < y1 - 0.05:
 			y2 = min(y + lung, y1)
-			piese.append(cub("Scandura", ((x1 - x0) / n - 0.01, y2 - y - 0.01, 0.02), (x, (y + y2) / 2, z - 0.01),
-				r.choice((LEMN, LEMN, LEMN_DESCHIS))))
+			cul = r.choice((LEMN, LEMN, LEMN_DESCHIS))
+			bucati = [(y, y2)]
+			if gaura and gaura[0] <= x <= gaura[1]:
+				bucati = [(a, b) for a, b in ((y, min(y2, gaura[2])), (max(y, gaura[3]), y2)) if b - a > 0.03]
+			for a, b in bucati:
+				piese.append(cub("Scandura", ((x1 - x0) / n - 0.01, b - a - 0.01, 0.02), (x, (a + b) / 2, z - 0.01), cul))
 			y = y2
 			lung = r.uniform(2.0, 4.0)
 
@@ -841,9 +860,12 @@ def conac_interior(cale):
 		col.append(cub("Coliziune", dim, loc, culoare))
 
 	# --- podeaua, pereții, tavanul cu grinzi
-	piese.append(cub("Placa podea", (2 * W + 2 * G, D + 2 * G, 0.3), (0, D / 2, -0.17), NEGRU))
-	col.append(cub("Coliziune", (2 * W + 2 * G, D + 2 * G, 0.3), (0, D / 2, -0.15), NEGRU))
-	_scanduri(piese, -W, W, 0.0, D, 0.0, r)
+	# placa are o gaură sub scara din dreapta, deasupra scării care coboară în subsol (subsol.glb)
+	for xa, xb, ya, yb in ((-W - G, SC_X, -G, D + G), (SC_X, W + G, -G, SUB_Y0), (SC_X, W + G, GAL, D + G)):
+		dim, loc = (xb - xa, yb - ya, 0.3), ((xa + xb) / 2, (ya + yb) / 2)
+		piese.append(cub("Placa podea", dim, (loc[0], loc[1], -0.17), NEGRU))
+		col.append(cub("Coliziune", dim, (loc[0], loc[1], -0.15), NEGRU))
+	_scanduri(piese, -W, W, 0.0, D, 0.0, r, gaura=(SC_X, W, SUB_Y0, GAL))
 	zh, zc = H + 0.3, (H - 0.3) / 2
 	zid((2 * W + 2 * G, G, zh), (0, -G / 2, zc))
 	zid((2 * W + 2 * G, G, zh), (0, D + G / 2, zc))
@@ -984,8 +1006,9 @@ def conac_interior(cale):
 		for k in range(TREPTE):
 			y0 = SC_Y0 + k * PAS
 			sus = (k + 1) * 0.2
-			# scara din stânga e goală pe dedesubt (debaraua lui Parry): treptele sunt doar o placă, în trepte și dedesubt
-			jos = max(0.0, sus - GROS_TREAPTA) if sx < 0 else 0.0
+			# scările sunt goale pe dedesubt (stânga: debaraua lui Parry; dreapta: scara spre subsol): treptele sunt doar o
+			# placă, în trepte și dedesubt
+			jos = max(0.0, sus - GROS_TREAPTA)
 			piese += [
 				cub("Treapta", (lat, PAS, sus - jos), (xc, y0 + PAS / 2, (sus + jos) / 2), LEMN),
 				cub("Traversa", (1.0, PAS, 0.012), (xc, y0 + PAS / 2, sus + 0.006), ROSU),
@@ -1000,16 +1023,7 @@ def conac_interior(cale):
 				_dovleac_aprins(piese, lumini, sx * (W - 0.3), y0 + PAS / 2, sus + 0.012, 0.15, -sx * 0.9, r)
 		piese.append(os_intre("Mana curenta", (xb, SC_Y0, 1.15), (xb, GAL + 0.1, ET + 1.0), 0.045, LEMN_DESCHIS, laturi=6))
 		xs0, xs1 = (SC_X - 0.05, SC_X) if sx > 0 else (-SC_X, -SC_X + 0.05)
-		if sx > 0:
-			piese.append(prisma("Vang", [(SC_Y0 - 0.03, 0.0), (SC_Y0 - 0.03, 0.32), (GAL, ET + 0.12), (GAL, 0.0)], "yz", xs0, xs1, LEMN_DESCHIS))
-		else:
-			# în stânga, vangul are golul ușii debaralei
-			def vang(y):
-				return 0.32 + (y - SC_Y0 + 0.03) / (GAL - SC_Y0 + 0.03) * (ET + 0.12 - 0.32)
-			for contur in ([(SC_Y0 - 0.03, 0.0), (SC_Y0 - 0.03, 0.32), (DEB_Y0, vang(DEB_Y0)), (DEB_Y0, 0.0)],
-					[(DEB_Y0, DEB_H), (DEB_Y0, vang(DEB_Y0)), (DEB_Y1, vang(DEB_Y1)), (DEB_Y1, DEB_H)],
-					[(DEB_Y1, 0.0), (DEB_Y1, vang(DEB_Y1)), (GAL, ET + 0.12), (GAL, 0.0)]):
-				piese.append(prisma("Vang", contur, "yz", xs0, xs1, LEMN_DESCHIS))
+		piese.append(prisma("Vang", [(SC_Y0 - 0.03, 0.0), (SC_Y0 - 0.03, 0.32), (GAL, ET + 0.12), (GAL, 0.0)], "yz", xs0, xs1, LEMN_DESCHIS))
 		# stâlpul de la baza scării, cu un sfeșnic
 		xn, yn = sx * (SC_X + 0.12), SC_Y0 + 0.05
 		piese += [
@@ -1017,19 +1031,13 @@ def conac_interior(cale):
 			cub("Capac stalp", (0.34, 0.34, 0.08), (xn, yn, 1.29), LEMN_DESCHIS),
 		]
 		_sfesnic(piese, lumini, xn, yn, 1.33, brate=3, inalt=0.3)
-		if sx > 0:
-			col.append(prisma("Coliziune", [(SC_Y0, 0.0), (GAL, ET), (GAL, 0.0)], "yz", x0, x1, LEMN))
-		else:
-			# rampa e o placă (dedesubt e debaraua), iar peretele dinspre sală are golul ușii
-			yj = SC_Y0 + GROS_TREAPTA * 1.05 * (GAL - SC_Y0) / ET
-			col.append(prisma("Coliziune", [(SC_Y0, 0.0), (GAL, ET), (GAL, ET - GROS_TREAPTA * 1.05), (yj, 0.0)], "yz", x0, x1, LEMN))
-
-			def rampa(y):
-				return (y - SC_Y0) / (GAL - SC_Y0) * ET
-			for contur in ([(SC_Y0, 0.0), (DEB_Y0, rampa(DEB_Y0)), (DEB_Y0, 0.0)],
-					[(DEB_Y0, DEB_H), (DEB_Y0, rampa(DEB_Y0)), (DEB_Y1, rampa(DEB_Y1)), (DEB_Y1, DEB_H)],
-					[(DEB_Y1, 0.0), (DEB_Y1, rampa(DEB_Y1)), (GAL, ET), (GAL, 0.0)]):
-				col.append(prisma("Coliziune", contur, "yz", -SC_X - 0.02, -SC_X + 0.05, LEMN))
+		# rampa e o placă (dedesubt e debaraua / scara spre subsol), plus peretele plin dinspre sală și cel din capăt, cu ușa
+		yj = SC_Y0 + GROS_TREAPTA * 1.05 * (GAL - SC_Y0) / ET
+		col.append(prisma("Coliziune", [(SC_Y0, 0.0), (GAL, ET), (GAL, ET - GROS_TREAPTA * 1.05), (yj, 0.0)], "yz", x0, x1, LEMN))
+		xc0, xc1 = (SC_X - 0.05, SC_X + 0.02) if sx > 0 else (-SC_X - 0.02, -SC_X + 0.05)
+		col.append(prisma("Coliziune", [(SC_Y0, 0.0), (GAL, ET), (GAL, 0.0)], "yz", xc0, xc1, LEMN))
+		_capat_scara(piese, col, sx)
+		if sx < 0:
 			_debara(piese, lumini, col, r)
 		bx0, bx1 = (SC_X - 0.05, SC_X + 0.14) if sx > 0 else (-SC_X - 0.14, -SC_X + 0.05)
 		col.append(prisma("Coliziune", [(SC_Y0 - 0.05, 0.0), (GAL, ET), (GAL, ET + 1.15), (SC_Y0 - 0.05, 1.3)], "yz", bx0, bx1, LEMN))
@@ -1569,28 +1577,37 @@ def _soldat(piese, x, y, z, culoare, cazut=False):
 	piese += c
 
 
-def _debara(piese, lumini, col, r):
-	"""Debaraua de sub scara din stânga (owner 12.10), camera lui Parry Hotter: x între -W și -SC_X, y între SC_Y0 și GAL,
-	tavanul = dedesubtul treptelor (în trepte). Ușa (`usa_debara.glb`, separată) e în vang, între DEB_Y0 și DEB_Y1.
-	Înăuntru: patul îngust din fund, lada cu lumânarea, rafturile cu jucăriile lui, iar în partea joasă găleata cu
-	mopul, mături vechi, cutii, cizme, pânze de păianjen."""
-	x0, x1 = -W, -SC_X
-	# peretele din fund (spre galerie), cu lambriu pe partea dinspre sală
-	zp = ET - 0.32
-	piese.append(cub("Perete debara", (x1 + 0.05 - x0, 0.1, zp), ((x0 + x1 + 0.05) / 2, GAL + 0.05, zp / 2), VISINIU))
-	col.append(cub("Coliziune", (x1 + 0.05 - x0, 0.1, zp), ((x0 + x1 + 0.05) / 2, GAL + 0.05, zp / 2), VISINIU))
-	_lambriu(piese, x0 + 0.1, x1 + 0.05, GAL + 0.1, 1)
-	# pervazul ușii, pe partea dinspre sală
-	xr = x1 + 0.05
+def _capat_scara(piese, col, sx):
+	"""Peretele din capătul de sus al scării (y = GAL), sub galerie, cu golul unei uși mici lângă vang (ușile sunt
+	separate, usa_debara.glb): în stânga (sx = -1) debaraua lui Parry, în dreapta (sx = 1) scara spre subsol.
+	Pe fața dinspre galerie: lambriul, pervazul ușii, pragul."""
+	xa, xb = (-W, -SC_X + 0.05) if sx < 0 else (SC_X - 0.05, W)
+	ua, ub = sorted((sx * DEB_X0, sx * DEB_X1))
+	zp, y0, y1 = ET - 0.32, GAL, GAL + 0.1
+	for a, b, z0, z1 in ((xa, ua, 0.0, zp), (ub, xb, 0.0, zp), (ua, ub, DEB_H, zp)):
+		dim, loc = (b - a, y1 - y0, z1 - z0), ((a + b) / 2, (y0 + y1) / 2, (z0 + z1) / 2)
+		piese.append(cub("Perete capat scara", dim, loc, VISINIU))
+		col.append(cub("Coliziune", dim, loc, VISINIU))
+	for a, b in ((xa, ua - 0.07), (ub + 0.07, xb)):
+		if b - a > 0.3:
+			_lambriu(piese, a + (0.1 if a == -W else 0.0), b - (0.1 if b == W else 0.0), y1, 1)
 	piese += [
-		cub("Pervaz debara", (0.04, 0.07, DEB_H + 0.07), (xr + 0.02, DEB_Y0 - 0.035, (DEB_H + 0.07) / 2), LEMN),
-		cub("Pervaz debara", (0.04, 0.07, DEB_H + 0.07), (xr + 0.02, DEB_Y1 + 0.035, (DEB_H + 0.07) / 2), LEMN),
-		cub("Pervaz debara", (0.04, DEB_Y1 - DEB_Y0 + 0.14, 0.07), (xr + 0.02, (DEB_Y0 + DEB_Y1) / 2, DEB_H + 0.035), LEMN),
-		cub("Prag debara", (0.12, DEB_Y1 - DEB_Y0, 0.02), (x1 - 0.03, (DEB_Y0 + DEB_Y1) / 2, 0.01), LEMN_DESCHIS),
+		cub("Pervaz usa mica", (0.07, 0.04, DEB_H + 0.07), (ua - 0.035, y1 + 0.02, (DEB_H + 0.07) / 2), LEMN),
+		cub("Pervaz usa mica", (0.07, 0.04, DEB_H + 0.07), (ub + 0.035, y1 + 0.02, (DEB_H + 0.07) / 2), LEMN),
+		cub("Pervaz usa mica", (ub - ua + 0.14, 0.04, 0.07), ((ua + ub) / 2, y1 + 0.02, DEB_H + 0.035), LEMN),
+		cub("Prag usa mica", (ub - ua, 0.12, 0.02), ((ua + ub) / 2, (y0 + y1) / 2, 0.01), LEMN_DESCHIS),
 	]
 
-	# --- patul îngust din fund, lipit de perete, și patura mototolită
-	bx0, bx1, by0, by1 = x0 + 0.02, x0 + 0.82, 8.1, GAL - 0.05
+
+def _debara(piese, lumini, col, r):
+	"""Debaraua de sub scara din stânga (owner 12.10), camera lui Parry Hotter: x între -W și -SC_X, y între SC_Y0 și GAL,
+	tavanul = dedesubtul treptelor (în trepte). Ușa (`usa_debara.glb`, separată) e în peretele din capătul scării, sub
+	galerie (_capat_scara), deci intri cu spatele la galerie. Înăuntru: patul îngust lângă perete, lada cu lumânarea
+	de lângă ușă, rafturile cu jucăriile lui, iar în partea joasă găleata cu mopul, mături vechi, cutii, cizme, pânze."""
+	x0, x1 = -W, -SC_X
+
+	# --- patul îngust, lipit de peretele sălii, și patura mototolită (pe lângă el, culoarul de la ușă)
+	bx0, bx1, by0, by1 = x0 + 0.02, x0 + 0.82, 7.75, 9.5
 	bxm, bym = (bx0 + bx1) / 2, (by0 + by1) / 2
 	piese += [
 		cub("Rama pat debara", (bx1 - bx0, by1 - by0, 0.08), (bxm, bym, 0.27), LEMN),
@@ -1612,8 +1629,8 @@ def _debara(piese, lumini, col, r):
 		cilindru("Sigiliu", 0.014, 0.014, 0.004, (bx0 + 0.22, by1 - 0.55, 0.444), ROSU, laturi=8),
 	]
 
-	# --- lada de lângă pat, cu lumânarea (singura lumină) și un teanc de cărți
-	lx, ly, lz = x1 - 0.33, GAL - 0.28, 0.36
+	# --- lada de la capul patului (lângă ușă), cu lumânarea (singura lumină) și un teanc de cărți
+	lx, ly, lz = x0 + 0.24, GAL - 0.27, 0.36
 	piese.append(cub("Lada debara", (0.4, 0.4, lz), (lx, ly, lz / 2), LEMN_DESCHIS))
 	for z in (0.09, 0.27):
 		piese.append(cub("Sipca lada", (0.41, 0.41, 0.03), (lx, ly, z), LEMN))
@@ -1641,18 +1658,19 @@ def _debara(piese, lumini, col, r):
 		cub("Carpe", (0.15, 0.2, 0.06), (x0 + 0.1, 9.25, 1.8925), p("7a7b59"), rot=(0, 0, 0.2)),
 		cub("Cutie pantofi", (0.18, 0.28, 0.12), (x0 + 0.1, 9.6, 1.9225), AUR),
 	]
-	# hanoracul uriaș (moștenit) atârnat într-un cui pe peretele din fund
+	# hanoracul uriaș (moștenit) atârnat într-un cui pe peretele dinspre sală (vangul), în fața patului
+	hy = 8.45
 	piese += [
-		cilindru("Cui", 0.006, 0.006, 0.06, (x1 - 0.3, GAL - 0.03, 2.05), NEGRU, laturi=4, rot=(math.pi / 2, 0, 0)),
-		cub("Hanorac", (0.55, 0.06, 0.7), (x1 - 0.3, GAL - 0.06, 1.68), p("5e5356")),
-		cub("Maneca hanorac", (0.12, 0.05, 0.6), (x1 - 0.62, GAL - 0.07, 1.6), p("5e5356"), rot=(0, 0.12, 0)),
-		cub("Maneca hanorac", (0.12, 0.05, 0.6), (x1 + 0.02, GAL - 0.07, 1.6), p("5e5356"), rot=(0, -0.12, 0)),
-		cub("Buzunar hanorac", (0.3, 0.01, 0.14), (x1 - 0.3, GAL - 0.095, 1.5), p("48313b")),
-		sfera("Gluga hanorac", 0.16, (x1 - 0.3, GAL - 0.07, 2.0), p("5e5356"), scara=(1.0, 0.3, 0.8), segmente=8, inele=5),
+		cilindru("Cui", 0.006, 0.006, 0.06, (x1 - 0.03, hy, 2.05), NEGRU, laturi=4, rot=(0, math.pi / 2, 0)),
+		cub("Hanorac", (0.06, 0.55, 0.7), (x1 - 0.06, hy, 1.68), p("5e5356")),
+		cub("Maneca hanorac", (0.05, 0.12, 0.6), (x1 - 0.07, hy - 0.32, 1.6), p("5e5356"), rot=(-0.12, 0, 0)),
+		cub("Maneca hanorac", (0.05, 0.12, 0.6), (x1 - 0.07, hy + 0.32, 1.6), p("5e5356"), rot=(0.12, 0, 0)),
+		cub("Buzunar hanorac", (0.01, 0.3, 0.14), (x1 - 0.095, hy, 1.5), p("48313b")),
+		sfera("Gluga hanorac", 0.16, (x1 - 0.07, hy, 2.0), p("5e5356"), scara=(0.3, 1.0, 0.8), segmente=8, inele=5),
 	]
 
 	# --- partea joasă, spre fața scării: găleata cu mopul, mături vechi, cutii, cizme, o cutie de vopsea
-	gx, gy = x1 - 0.32, DEB_Y0 - 0.55
+	gx, gy = x1 - 0.32, 6.45
 	piese += [
 		cilindru("Galeata", 0.13, 0.15, 0.28, (gx, gy, 0.14), GRI, laturi=10),
 		cilindru("Apa galeata", 0.135, 0.135, 0.01, (gx, gy, 0.24), p("5b6d4e"), laturi=10),
@@ -1676,7 +1694,7 @@ def _debara(piese, lumini, col, r):
 		cilindru("Cutie vopsea", 0.09, 0.09, 0.18, (x1 - 0.3, 5.0, 0.09), p("7e8d87"), laturi=10),
 		cilindru("Prelingere vopsea", 0.092, 0.092, 0.05, (x1 - 0.3, 5.0, 0.155), VERDE, laturi=10),
 	]
-	for k, y in enumerate((DEB_Y0 - 0.15, DEB_Y0 - 0.32)):  # cizmele de cauciuc, una culcată
+	for k, y in enumerate((6.85, 6.68)):  # cizmele de cauciuc, una culcată
 		if k == 0:
 			piese += [
 				cilindru("Cizma", 0.05, 0.05, 0.28, (x1 - 0.12, y, 0.14), NEGRU, laturi=8),
@@ -1702,9 +1720,10 @@ def _debara(piese, lumini, col, r):
 
 def usa_debara(cale):
 	"""Ușa debaralei (owner 12.10): scânduri verticale, Z-ul de întăritură pe spate, grilajul de aerisire sus, butonul.
-	Originea = balamaua (jos); ușa merge spre +X, fața spre -Y (în Godot +Z). În conac_interior.tscn e rotită 90°."""
+	Originea = balamaua (jos); ușa merge spre +X, fața spre -Y (în Godot +Z). În conac_interior.tscn sunt două (debaraua
+	și subsolul), rotite 180°: fața spre galerie."""
 	curata()
-	lat, inalt, gros = DEB_Y1 - DEB_Y0 - 0.02, DEB_H - 0.02, 0.035
+	lat, inalt, gros = DEB_X1 - DEB_X0 - 0.02, DEB_H - 0.02, 0.035
 	piese = []
 	n = 5
 	for i in range(n):
@@ -1771,6 +1790,830 @@ def parry(cale):
 	casino_oameni.om(cale, "parry_hotter", s, 77)
 
 
+# ---------------------------------------------------------------------------------------------------------------
+# Subsolul (owner 12.10): ușa din capătul scării din dreapta (lângă pian) → scara coboară pe sub ea, se schimbă încet
+# din conac în catacombe (tapet și lemn → tencuială crăpată și cărămidă → piatră, nișe cu oase și cranii) → coridorul
+# catacombelor → camera de tortură, toate sub podeaua sălii. Separat de conac_interior.glb: subsol.glb.
+# ---------------------------------------------------------------------------------------------------------------
+
+SUB_X0, SUB_X1 = SC_X + 0.1, W            # puțul scării, sub z = 0 (deasupra e între vang și peretele sălii)
+SUB_YT = GAL - 0.45                       # unde începe prima treaptă (până la ușă e un mic palier de lemn)
+SUB_PAS, SUB_TREPTE = 0.4, 13             # 40 cm adâncime, 20 cm înălțime → jos la -2,6, la y = SUB_Y0
+SUB_PODEST = -0.2 * SUB_TREPTE
+COR_Y0, COR_Y1 = 0.8, 2.4                 # coridorul catacombelor, spre -X, de la podest până în camera de tortură
+COR_XT = 6.2                              # de aici coboară 8 trepte de piatră, până la x = 3
+TOR_X0, TOR_X1, TOR_Y0, TOR_Y1 = -4.6, 2.0, -1.6, 5.0   # camera de tortură
+TOR_Z, TOR_TAVAN = -4.2, -1.0
+GRINDA_Y, GRINDA_Z = 3.4, -1.25           # grinda de care atârnă cei trei (fața de jos); cârligele coboară până la -1,32
+SPANZURATI_X = (-2.5, -1.1, 0.3)
+FUNIE_SUS = 2.28                          # în modelul spânzuratului: capătul de sus al frânghiei (deasupra tălpilor)
+PIETRE = (PIATRA, PIATRA_INCHISA, GRI, p("5e5356"))
+
+
+def _z_coridor(x):
+	"""Podeaua coridorului la `x` (fața de sus a treptei de acolo)."""
+	if x >= COR_XT:
+		return SUB_PODEST
+	if x <= COR_XT - 3.2:
+		return TOR_Z
+	return SUB_PODEST - 0.2 * (min(int((COR_XT - x) / 0.4), 7) + 1)
+
+
+def _tavan_coridor(x):
+	return min(-0.4, _z_coridor(x) + 2.35)
+
+
+def _bloc(lista, nume, x0, x1, y0, y1, z0, z1, cul):
+	x0, x1 = sorted((x0, x1))
+	y0, y1 = sorted((y0, y1))
+	z0, z1 = sorted((z0, z1))
+	lista.append(cub(nume, (x1 - x0, y1 - y0, z1 - z0), ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), cul))
+
+
+def _pe_zid(axa, f, o, u, d, z):
+	"""Punctul de pe un zid (vezi _zid) aflat la `u` de-a lungul lui, la `d` în fața lui (spre cameră), la înălțimea `z`."""
+	return (u, f - o * d, z) if axa == "x" else (f - o * d, u, z)
+
+
+def _spre_camera(axa, o):
+	"""Unghiul (pentru _craniu, _muta) cu care un obiect făcut cu fața spre -Y privește dinspre zid spre cameră."""
+	if axa == "x":
+		return math.pi if o < 0 else 0.0
+	return math.pi / 2 if o < 0 else -math.pi / 2
+
+
+def _zid(piese, col, axa, f, o, u0, u1, z0, z1, goluri=(), cul=PIATRA_INCHISA, gros=0.4):
+	"""Zid drept, gros de `gros`: `axa` "x" = de-a lungul lui X, cu fața (spre cameră) la y = `f`; "y" = de-a lungul lui Y,
+	cu fața la x = `f`. `o` = încotro e zidul față de fața lui (camera e în partea cealaltă). `goluri` = [(u0, u1, z0, z1,
+	fund)]: nișe (fund=True: adânci cât zidul minus 8 cm, coliziunea le acoperă) sau treceri (fund=False)."""
+	def bloc(lista, nume, a, b, za, zb, d0, d1, c):
+		fa, fb = f + o * d0, f + o * d1
+		if axa == "x":
+			_bloc(lista, nume, a, b, fa, fb, za, zb, c)
+		else:
+			_bloc(lista, nume, fa, fb, a, b, za, zb, c)
+	taieturi = sorted({u0, u1} | {v for g in goluri for v in g[:2] if u0 < v < u1})
+	for a, b in zip(taieturi, taieturi[1:]):
+		aici = sorted((g for g in goluri if g[0] <= a + 1e-6 and g[1] >= b - 1e-6), key=lambda g: g[2])
+		z = z0
+		for g in aici + [(a, b, z1, z1, False)]:
+			if g[2] - z > 0.005:
+				bloc(piese, "Zid", a, b, z, g[2], 0.0, gros, cul)
+				bloc(col, "Coliziune", a, b, z, g[2], 0.0, gros, cul)
+			if g[4] and g[3] > g[2]:
+				bloc(piese, "Fund nisa", a, b, g[2], g[3], gros - 0.08, gros, NEGRU)
+				bloc(col, "Coliziune", a, b, g[2], g[3], 0.0, gros, cul)
+			z = max(z, g[3])
+
+
+def _pietre(piese, rs, axa, f, o, u0, u1, zjos, zsus, evita=(), culori=PIETRE):
+	"""Pietre neregulate pe fața unui zid (vezi _zid): rânduri de blocuri de 18–30 cm, ieșite puțin spre cameră, doar
+	între podea și tavan (`zjos`, `zsus` = funcții de poziția de-a lungul zidului), ocolind dreptunghiurile `evita`."""
+	mostre = [u0 + (u1 - u0) * i / 8 for i in range(9)]
+	z, zmax = min(zjos(u) for u in mostre) - 0.1, max(zsus(u) for u in mostre)
+	while z < zmax:
+		h = rs.uniform(0.18, 0.3)
+		u = u0 - rs.uniform(0.0, 0.25)
+		while u < u1:
+			w = rs.uniform(0.25, 0.55)
+			a, b, za, zb = max(u, u0) + 0.012, min(u + w, u1) - 0.012, z + 0.012, z + h - 0.012
+			uc = (a + b) / 2
+			if b - a > 0.08 and zb > zjos(uc) - 0.02 and za < zsus(uc) + 0.02 and \
+					not any(a < e[1] and b > e[0] and za < e[3] and zb > e[2] for e in evita):
+				t = rs.uniform(0.015, 0.05)
+				p0, p1 = _pe_zid(axa, f, o, a, 0.0, za), _pe_zid(axa, f, o, b, t, zb)
+				_bloc(piese, "Piatra", p0[0], p1[0], p0[1], p1[1], za, zb, rs.choice(culori))
+			u += w
+		z += h
+
+
+def _os_lung(piese, a, b, raza=0.017):
+	"""Un os lung (femur): tija și capetele noduroase."""
+	piese.append(os_intre("Os", a, b, raza, OS, laturi=5))
+	for c in (a, b):
+		piese.append(sfera("Capat os", raza * 1.8, c, OS, segmente=6, inele=4))
+
+
+def _nisa_cu_oase(piese, lumini, rs, axa, f, o, g, lumanare=False):
+	"""Ce e într-o nișă `g` (u0, u1, z0, z1): jos, oase lungi stivuite de-a lungul ei și un craniu sau două deasupra;
+	sus, cranii și uneori o lumânare. Întoarce flacăra lumânării (sau None)."""
+	u0, u1, z0, z1 = g[:4]
+	unghi = _spre_camera(axa, o)
+	if z1 - z0 > 0.4 and rs.random() < 0.6:
+		for strat in range(3):
+			for d in (0.1, 0.2, 0.28):
+				z = z0 + 0.02 + strat * 0.035
+				_os_lung(piese, _pe_zid(axa, f, o, u0 + 0.05, -d, z), _pe_zid(axa, f, o, u1 - 0.05, -d - rs.uniform(-0.03, 0.03), z))
+		zc = z0 + 0.13
+	else:
+		zc = z0
+	n = 1 + int(rs.random() < 0.6)
+	for i in range(n):
+		u = u0 + (u1 - u0) * (i + 0.5) / n + rs.uniform(-0.04, 0.04)
+		x, y, z = _pe_zid(axa, f, o, u, -0.16, zc)
+		_craniu(piese, x, y, z, rs.uniform(0.9, 1.1), unghi + rs.uniform(-0.4, 0.4))
+	if lumanare:
+		x, y, z = _pe_zid(axa, f, o, u1 - 0.08, -0.08, zc)
+		inalt = rs.uniform(0.06, 0.14)
+		_lumanare(piese, lumini, x, y, z, inalt=inalt, raza=0.02)
+		piese.append(sfera("Ceara scursa", 0.035, (x, y, z), OS, scara=(1.3, 1.3, 0.2), segmente=6, inele=3))
+		return (x, y, z + inalt + 0.03)
+	return None
+
+
+def _zid_cranii(piese, rs, axa, f, o, u0, u1, z0, z1):
+	"""Zid de osuar: rânduri de cranii zidite cu fața spre cameră, între ele rânduri de capete de femur."""
+	unghi = _spre_camera(axa, o)
+	z, rand = z0, 0
+	while z < z1 - 0.12:
+		if rand % 2 == 0:
+			n = int((u1 - u0) / 0.17)
+			for i in range(n):
+				u = u0 + (u1 - u0) * (i + 0.5) / n
+				x, y, zz = _pe_zid(axa, f, o, u, 0.03, z - 0.01)
+				_craniu(piese, x, y, zz, rs.uniform(0.92, 1.05), unghi + rs.uniform(-0.15, 0.15))
+			z += 0.16
+		else:
+			n = int((u1 - u0) / 0.075)
+			for i in range(n):
+				u = u0 + (u1 - u0) * (i + 0.5) / n
+				for dz in (0.025, 0.07):
+					piese.append(sfera("Capat os", 0.03, _pe_zid(axa, f, o, u, 0.01, z + dz), OS, segmente=6, inele=4))
+			z += 0.1
+		rand += 1
+
+
+def _torta(piese, lumini, axa, f, o, u, z):
+	"""Torță pe perete: placa și inelul de fier, coada de lemn înclinată spre cameră, smoala și flacăra (`z` = baza
+	cozii). Întoarce unde e flacăra (pentru lumina din Godot)."""
+	piese.append(cub("Placa torta", (0.12, 0.12, 0.2), _pe_zid(axa, f, o, u, 0.0, z + 0.05), NEGRU))
+	piese.append(os_intre("Coada torta", _pe_zid(axa, f, o, u, 0.04, z - 0.2), _pe_zid(axa, f, o, u, 0.2, z + 0.25), 0.025, LEMN, laturi=6))
+	piese.append(os_intre("Brat torta", _pe_zid(axa, f, o, u, 0.0, z + 0.06), _pe_zid(axa, f, o, u, 0.13, z + 0.08), 0.012, NEGRU, laturi=4))
+	piese.append(os_intre("Smoala", _pe_zid(axa, f, o, u, 0.19, z + 0.22), _pe_zid(axa, f, o, u, 0.215, z + 0.32), 0.04, NEGRU, laturi=6))
+	fl = _pe_zid(axa, f, o, u, 0.225, z + 0.42)
+	lumini.append(sfera("Flacara torta", 0.07, fl, FLACARA_PORTOCALIE, scara=(1, 1, 1.7), segmente=6, inele=4))
+	lumini.append(sfera("Flacara torta", 0.045, (fl[0], fl[1], fl[2] - 0.03), FLACARA, scara=(1, 1, 1.5), segmente=6, inele=4))
+	return fl
+
+
+def _balta(piese, rs, x, y, z, raza):
+	"""Baltă de sânge pe jos: câteva pete rotunde suprapuse, închise la margine, cu stropi în jur."""
+	for k in range(5):
+		u, d = rs.uniform(0, math.tau), rs.uniform(0, raza * 0.5)
+		rr = raza * rs.uniform(0.45, 0.8)
+		piese.append(cilindru("Balta sange", rr, rr, 0.004 + 0.001 * k, (x + math.cos(u) * d, y + math.sin(u) * d, z + 0.002 + 0.0005 * k),
+			ROSU_INCHIS if k < 3 else ROSU, laturi=10))
+	for k in range(6):
+		u, d = rs.uniform(0, math.tau), raza * rs.uniform(1.0, 1.6)
+		piese.append(cilindru("Strop sange", 0.025, 0.025, 0.004, (x + math.cos(u) * d, y + math.sin(u) * d, z + 0.002), ROSU_INCHIS, laturi=6))
+
+
+def _lant(piese, a, b):
+	"""Lanț de fier de la `a` la `b`: zale de 6 cm, una în planul drumului, următoarea întoarsă."""
+	a, b = Vector(a), Vector(b)
+	n = max(int((b - a).length / 0.05), 1)
+	d = (b - a).normalized()
+	for i in range(n):
+		c = a + (b - a) * (i + 0.5) / n
+		za = _inel_vertical("Za", 0.03, 0.007, (0, 0, 0), NEGRU)
+		rot = d.to_track_quat('Z', 'Y').to_matrix().to_4x4()
+		if i % 2:
+			rot = rot @ Matrix.Rotation(math.pi / 2, 4, 'Z')
+		za.data.transform(Matrix.Translation(c) @ rot)
+		piese.append(za)
+
+
+def _scara_subsol(piese, lumini, col, rs):
+	"""Puțul de sub scara din dreapta: palierul de lângă ușă, 13 trepte care coboară spre fața conacului (sus lemn cu
+	covorul tocit, la mijloc lemn rupt peste piatră, jos piatră), pereții (tapet → tencuială crăpată și cărămidă →
+	piatră), podestul de jos cu grinzile podelei sălii deasupra și prima nișă cu un craniu. Întoarce flăcările."""
+	x0, x1 = SC_X, SUB_X1
+	flacari = {}
+	# palierul de la ușă și treptele (blocuri pline până jos, să nu se vadă pe sub ele)
+	_bloc(piese, "Palier", x0, x1, SUB_YT, GAL + 0.05, -3.0, 0.0, LEMN)
+	for k in range(SUB_TREPTE):
+		ya, yb = SUB_YT - (k + 1) * SUB_PAS, SUB_YT - k * SUB_PAS
+		sus = -0.2 * (k + 1)
+		if k < 5:
+			_bloc(piese, "Treapta", x0, x1, ya, yb, -3.0, sus, LEMN)
+			_bloc(piese, "Bot treapta", x0, x1, ya - 0.02, ya + 0.03, sus - 0.03, sus + 0.005, LEMN_DESCHIS)
+			if k < 4:  # covorul roșu de pe scara sălii, tocit, se termină în franjuri
+				_bloc(piese, "Covor scara", (x0 + x1) / 2 - 0.45, (x0 + x1) / 2 + 0.45, ya, yb, sus, sus + 0.012, ROSU if k < 3 else ROSU_INCHIS)
+				_bloc(piese, "Covor scara", (x0 + x1) / 2 - 0.45, (x0 + x1) / 2 + 0.45, yb - 0.012, yb, sus, sus + 0.2, ROSU)
+			if k == 3:
+				for i in range(9):
+					xf = (x0 + x1) / 2 - 0.4 + i * 0.1
+					_bloc(piese, "Franjuri", xf - 0.006, xf + 0.006, ya - 0.06, ya, sus, sus + 0.006, ROSU_INCHIS)
+		else:
+			_bloc(piese, "Treapta", x0, x1, ya, yb, -3.0, sus, PIATRA if k % 2 else PIATRA_INCHISA)
+			if k < 8:  # scânduri rupte rămase peste piatră
+				lung = rs.uniform(0.5, 1.0)
+				xs = rs.uniform(x0, x1 - lung)
+				_bloc(piese, "Scandura rupta", xs, xs + lung, ya + 0.02, yb - 0.02, sus, sus + 0.025, LEMN)
+	col.append(prisma("Coliziune", [(GAL + 0.1, 0.0), (SUB_YT + 0.2, 0.0), (SUB_Y0 + 0.2, SUB_PODEST), (SUB_Y0 + 0.2, -3.0),
+		(GAL + 0.1, -3.0)], "yz", x0, x1, LEMN))
+
+	def podea(y):
+		return 0.0 if y >= SUB_YT else -0.2 * (min(int((SUB_YT - y) / SUB_PAS), SUB_TREPTE - 1) + 1)
+
+	# podestul de jos: lespezi, deasupra lui grinzile podelei sălii
+	_bloc(piese, "Podest", x0, x1, 0.4, SUB_Y0, -3.0, SUB_PODEST - 0.01, PIATRA_INCHISA)
+	_bloc(col, "Coliziune", x0, x1, 0.4, SUB_Y0 + 0.2, -3.0, SUB_PODEST, PIATRA)
+	for i in range(4):
+		for j in range(3):
+			ya = 0.8 + i * 0.9 + (0.45 if j % 2 else 0.0)
+			_bloc(piese, "Lespede", x0 + 0.1 + j * 0.5, x0 + 0.58 + j * 0.5, ya, min(ya + 0.86, SUB_Y0 - 0.02), SUB_PODEST - 0.01,
+				SUB_PODEST + 0.004, rs.choice((PIATRA, GRI, PIATRA_INCHISA)))
+	for y in (1.0, 1.9, 2.8, 3.7):
+		_bloc(piese, "Grinda podea", x0, x1, y - 0.1, y + 0.1, -0.55, -0.32, LEMN)
+
+	# pereții: estul (peretele sălii, x = 9) cu nișa de pe podest; vestul (x = SUB_X0) cu trecerea spre coridor
+	nisa_podest = (2.7, 3.25, SUB_PODEST + 0.75, SUB_PODEST + 1.2, True)
+	for y0, y1, cul in ((SUB_Y0 + 2.85, GAL + 0.1, VISINIU), (SUB_Y0 + 1.25, SUB_Y0 + 2.85, GRI), (0.4, SUB_Y0 + 1.25, PIATRA_INCHISA)):
+		_zid(piese, col, "y", SUB_X1, 1, y0, y1, -3.0, 0.0, [nisa_podest] if y0 < 1 else [], cul=cul, gros=0.3)
+		_zid(piese, col, "y", SUB_X0, -1, y0, y1, -3.0, 0.0, [(COR_Y0, COR_Y1, SUB_PODEST, -0.4, False)] if y0 < 1 else [], cul=cul,
+			gros=0.3)
+	_zid(piese, col, "x", 0.8, -1, SUB_X0, x1 + 0.3, -3.0, -0.32, cul=PIATRA_INCHISA, gros=0.4)
+	# sus: tapetul conacului, cu brâul de lemn care coboară odată cu scara și un portret strâmb
+	for xf, o in ((SUB_X1, 1), (SUB_X0, -1)):
+		y_a, y_b = GAL, SUB_Y0 + 2.85
+		piese.append(os_intre("Brau scara", (xf - o * 0.03, y_a, 0.9), (xf - o * 0.03, y_b, podea(y_b) + 0.9), 0.03, LEMN_DESCHIS, laturi=4))
+		piese.append(os_intre("Plinta scara", (xf - o * 0.02, y_a, 0.06), (xf - o * 0.02, y_b, podea(y_b) + 0.06), 0.04, NEGRU, laturi=4))
+	c, l = _tablou(rs, 0.5, 0.65, stil=1)
+	_muta(c + l, (0, 0.14, -math.pi / 2), (SUB_X1 - 0.01, 7.95, 0.25))
+	piese += c
+	lumini += l
+	# la mijloc: tencuiala crăpată, pe alocuri căzută, cu cărămida dedesubt
+	for xf, o in ((SUB_X1, 1), (SUB_X0, -1)):
+		for _ in range(5):
+			yc = rs.uniform(SUB_Y0 + 1.35, SUB_Y0 + 2.75)
+			zc = podea(yc) + rs.uniform(0.3, 1.6)
+			for i in range(rs.randint(3, 6)):
+				for j in range(rs.randint(2, 4)):
+					yb_ = yc + (j - 1.5) * 0.23 + (0.11 if i % 2 else 0.0)
+					p0 = (xf - o * 0.005, yb_ - 0.105, zc + i * 0.075)
+					_bloc(piese, "Caramida", xf, xf - o * 0.025, p0[1], p0[1] + 0.21, p0[2], p0[2] + 0.065, rs.choice((ROSU_INCHIS, p("904a40"), VISINIU)))
+		for _ in range(4):
+			a = (xf - o * 0.004, rs.uniform(SUB_Y0 + 1.3, SUB_Y0 + 2.8), 0.0)
+			a = (a[0], a[1], podea(a[1]) + rs.uniform(0.4, 1.8))
+			for _ in range(3):
+				b = (a[0], a[1] + rs.uniform(-0.25, 0.25), a[2] - rs.uniform(0.1, 0.3))
+				piese.append(os_intre("Crapatura", a, b, 0.005, NEGRU, laturi=3))
+				a = b
+	# jos: piatra goală
+	for xf, o in ((SUB_X1, 1), (SUB_X0, -1)):
+		evita = [(COR_Y0, COR_Y1, SUB_PODEST - 0.1, -0.3)] if o < 0 else [(nisa_podest[0] - 0.03, nisa_podest[1] + 0.03, nisa_podest[2] - 0.03,
+			nisa_podest[3] + 0.03)]
+		_pietre(piese, rs, "y", xf, o, 0.8, SUB_Y0 + 1.25, podea, lambda y: -0.32 if y < SUB_Y0 else min(-0.02, podea(y) + 3.2), evita)
+	_pietre(piese, rs, "x", 0.8, -1, SUB_X0, x1, lambda x: SUB_PODEST, lambda x: -0.32)
+	flacari["SubsolPodest"] = _nisa_cu_oase(piese, lumini, rs, "y", SUB_X1, 1, nisa_podest, lumanare=True)
+	# aplica cu lumânare pe peretele sălii, sus
+	yl = 9.0
+	zl = podea(yl) + 1.45
+	piese += [
+		cub("Placa aplica", (0.03, 0.1, 0.16), (SUB_X1 - 0.015, yl, zl - 0.05), NEGRU),
+		os_intre("Brat aplica", (SUB_X1 - 0.02, yl, zl - 0.06), (SUB_X1 - 0.15, yl, zl - 0.02), 0.01, NEGRU, laturi=4),
+		cilindru("Cupa aplica", 0.04, 0.03, 0.03, (SUB_X1 - 0.15, yl, zl), NEGRU, laturi=8),
+	]
+	_lumanare(piese, lumini, SUB_X1 - 0.15, yl, zl + 0.015, inalt=0.12)
+	flacari["SubsolScara"] = (SUB_X1 - 0.15, yl, zl + 0.16)
+	# pânzele de păianjen se înmulțesc spre jos
+	_panza(piese, (SUB_X1 - 0.01, 0.81, -0.56), (0, 1, 0), (-1, 0, 0), raza=0.4)
+	_panza(piese, (SUB_X0 + 0.01, SUB_Y0 - 0.1, -0.56), (0, -1, 0), (1, 0, 0), raza=0.3)
+	_panza(piese, (SUB_X1 - 0.01, SUB_Y0 + 1.0, _plafon_dreapta(SUB_Y0 + 1.0) - 0.02), (0, -1, 0), (0, 0, -1), raza=0.35)
+	return flacari
+
+
+def _plafon_dreapta(y):
+	"""Dedesubtul treptelor scării din dreapta la `y` (ca _plafon_debara)."""
+	return _plafon_debara(y)
+
+
+def _coridor(piese, lumini, col, rs):
+	"""Coridorul catacombelor, de la podest spre -X până în camera de tortură: coboară 8 trepte de piatră, tavanul
+	boltit în trepte, arcuri de piatră, nișe cu oase și cranii în ambii pereți (unele cu lumânări), iar la capăt pereții
+	sunt zidiți din cranii. Întoarce flăcările."""
+	flacari = {}
+	xa, xb = TOR_X1, SUB_X0
+	# podeaua: treptele și lespezile
+	_bloc(piese, "Podea coridor", COR_XT, xb, COR_Y0, COR_Y1, -3.0, SUB_PODEST - 0.01, PIATRA_INCHISA)
+	for k in range(8):
+		xk0, xk1 = COR_XT - (k + 1) * 0.4, COR_XT - k * 0.4
+		sus = SUB_PODEST - 0.2 * (k + 1)
+		_bloc(piese, "Treapta piatra", xk0, xk1, COR_Y0, COR_Y1, -4.6, sus, PIATRA if k % 2 else PIATRA_INCHISA)
+		_bloc(piese, "Bot treapta", xk0 - 0.015, xk0 + 0.04, COR_Y0 + 0.05, COR_Y1 - 0.05, sus - 0.03, sus + 0.004, GRI)
+	_bloc(piese, "Podea coridor", xa, COR_XT - 3.2, COR_Y0, COR_Y1, -4.6, TOR_Z - 0.01, PIATRA_INCHISA)
+	for x in (6.4, 6.9, 7.3):
+		_bloc(piese, "Lespede", x - 0.24, x + 0.22, COR_Y0 + 0.05, COR_Y1 - 0.05, SUB_PODEST - 0.01, SUB_PODEST + 0.004, rs.choice((PIATRA, GRI)))
+	col.append(prisma("Coliziune", [(xb, SUB_PODEST), (COR_XT + 0.2, SUB_PODEST), (COR_XT - 3.0, TOR_Z), (COR_XT - 3.0, -4.6), (xb, -4.6)],
+		"xz", COR_Y0, COR_Y1, PIATRA))
+	_bloc(col, "Coliziune", xa - 0.5, COR_XT - 3.0, COR_Y0, COR_Y1, -4.6, TOR_Z, PIATRA)
+	# tavanul în trepte, boltit pe margini
+	x = xb
+	while x > xa + 0.01:
+		x2 = max(x - 0.4, xa)
+		zt = _tavan_coridor((x + x2) / 2)
+		_bloc(piese, "Tavan coridor", x2, x, COR_Y0 - 0.1, COR_Y1 + 0.1, zt, zt + 0.25, PIATRA_INCHISA)
+		for yb_, s in ((COR_Y0, 1), (COR_Y1, -1)):
+			piese.append(cub("Bolta", (x - x2, 0.32, 0.32), ((x + x2) / 2, yb_, zt), PIATRA_INCHISA, rot=(math.pi / 4, 0, 0)))
+		x = x2
+	# arcurile de piatră (pilaștri și arc pe tavan)
+	for xr in (7.35, 5.95, 4.55, 3.3, 2.15):
+		zf, zt = _z_coridor(xr - 0.13), _tavan_coridor(xr)
+		for yb_, s in ((COR_Y0, 1), (COR_Y1, -1)):
+			_bloc(piese, "Pilastru", xr - 0.13, xr + 0.13, yb_, yb_ + s * 0.09, zf, zt, PIATRA)
+		_bloc(piese, "Arc", xr - 0.13, xr + 0.13, COR_Y0, COR_Y1, zt - 0.14, zt, PIATRA)
+	# pereții: nișe între arcuri (jos și sus); ultima porțiune, zid de cranii
+	nise = []
+	for u0, u1 in ((6.3, 7.0), (4.95, 5.6), (3.55, 4.2)):
+		zf = _z_coridor((u0 + u1) / 2)
+		nise.append((u0, u1, zf + 0.3, zf + 0.78, True))
+		nise.append((u0, u1, zf + 1.02, zf + 1.45, True))
+	for f, o in ((COR_Y0, -1), (COR_Y1, 1)):
+		_zid(piese, col, "x", f, o, xa, xb, -4.6, -0.3, nise)
+		evita = [(g[0] - 0.03, g[1] + 0.03, g[2] - 0.03, g[3] + 0.03) for g in nise] + [(xa, 3.15, -5, 0)]
+		_pietre(piese, rs, "x", f, o, xa, xb, _z_coridor, _tavan_coridor, evita)
+		_zid_cranii(piese, rs, "x", f, o, xa + 0.3, 3.15, TOR_Z + 0.15, _tavan_coridor(2.5) - 0.05)
+		for i, g in enumerate(nise):
+			fl = _nisa_cu_oase(piese, lumini, rs, "x", f, o, g, lumanare=(f, i) in ((COR_Y0, 1), (COR_Y1, 4)))
+			if fl:
+				flacari["CoridorLumanare%d" % (1 if f == COR_Y0 else 2)] = fl
+	# torța, pe pilastrul din mijloc (peretele din nord)
+	flacari["CoridorTorta"] = _torta(piese, lumini, "x", COR_Y1 - 0.09, 1, 4.55, _z_coridor(4.55) + 1.35)
+	# oase și cranii căzute pe jos, pânze de păianjen
+	for _ in range(6):
+		x = rs.uniform(xa + 0.4, xb - 0.3)
+		y = rs.choice((COR_Y0 + 0.15, COR_Y1 - 0.15))
+		z = _z_coridor(x)
+		u = rs.uniform(0, math.pi)
+		_os_lung(piese, (x - math.cos(u) * 0.2, y - math.sin(u) * 0.06, z + 0.02), (x + math.cos(u) * 0.2, y + math.sin(u) * 0.06, z + 0.02), 0.015)
+	_craniu(piese, 6.65, COR_Y1 - 0.2, SUB_PODEST, 1.0, 2.4)
+	_craniu(piese, 2.7, COR_Y0 + 0.25, TOR_Z, 0.95, -0.7)
+	for x in (6.0, 4.0):
+		zt = _tavan_coridor(x)
+		_panza(piese, (x, COR_Y0 + 0.01, zt - 0.05), (1, 0, 0), (0, 1, -0.6), raza=0.32)
+		_panza(piese, (x - 0.6, COR_Y1 - 0.01, zt - 0.05), (-1, 0, 0), (0, -1, -0.6), raza=0.28)
+	return flacari
+
+
+def _masa_tortura(piese, lumini, rs, x0, x1, y0, y1):
+	"""Masa de lucru de lângă peretele din vest: blatul gros pătat de sânge, raftul de jos cu o găleată, iar pe blat
+	uneltele (fierăstrău, clește, ciocan, cuțite, satâr, menghina de degete, burghiul, dalta), o cârpă, un castron cu
+	dinți, un craniu și o lumânare. Întoarce flacăra."""
+	z = TOR_Z + 0.88
+	_bloc(piese, "Blat", x0, x1, y0, y1, z - 0.08, z, LEMN)
+	for x in (x0 + 0.06, x1 - 0.06):
+		for y in (y0 + 0.06, y1 - 0.06):
+			_bloc(piese, "Picior masa", x - 0.05, x + 0.05, y - 0.05, y + 0.05, TOR_Z, z - 0.08, LEMN)
+	_bloc(piese, "Raft masa", x0 + 0.02, x1 - 0.02, y0 + 0.02, y1 - 0.02, TOR_Z + 0.2, TOR_Z + 0.24, LEMN_DESCHIS)
+	xm = (x0 + x1) / 2
+	piese += [
+		cilindru("Galeata", 0.13, 0.15, 0.26, (xm, y0 + 0.35, TOR_Z + 0.37), GRI, laturi=10),
+		cilindru("Sange galeata", 0.135, 0.135, 0.01, (xm, y0 + 0.35, TOR_Z + 0.46), ROSU_INCHIS, laturi=10),
+	]
+	for k in range(3):  # pete de sânge pe blat
+		piese.append(cilindru("Pata blat", rs.uniform(0.06, 0.12), rs.uniform(0.06, 0.12), 0.003,
+			(rs.uniform(x0 + 0.15, x1 - 0.15), rs.uniform(y0 + 0.2, y1 - 0.2), z + 0.0015), ROSU_INCHIS, laturi=8))
+	# fierăstrăul
+	ys = y0 + 0.28
+	piese += [
+		cub("Panza ferastrau", (0.05, 0.38, 0.004), (xm + 0.05, ys + 0.05, z + 0.004), GRI, rot=(0, 0, 0.15)),
+		cub("Maner ferastrau", (0.06, 0.12, 0.025), (xm + 0.07, ys - 0.17, z + 0.013), LEMN_DESCHIS, rot=(0, 0, 0.15)),
+	]
+	# cleștele
+	for s in (-1, 1):
+		piese.append(os_intre("Clesti", (xm - 0.16, y0 + 0.55 + s * 0.03, z + 0.01), (xm - 0.02, y0 + 0.62, z + 0.012), 0.008, NEGRU, laturi=4))
+		piese.append(os_intre("Clesti", (xm - 0.02, y0 + 0.62, z + 0.012), (xm + 0.05, y0 + 0.64 + s * 0.008, z + 0.012), 0.01, GRI, laturi=4))
+	# ciocanul
+	piese += [
+		os_intre("Coada ciocan", (xm + 0.12, y0 + 0.7, z + 0.015), (xm - 0.1, y0 + 0.82, z + 0.015), 0.013, LEMN_DESCHIS, laturi=5),
+		cub("Cap ciocan", (0.05, 0.12, 0.045), (xm + 0.13, y0 + 0.69, z + 0.023), NEGRU, rot=(0, 0, -0.5)),
+	]
+	# cuțitele și satârul
+	for k, yy in enumerate((y0 + 0.95, y0 + 1.05)):
+		piese += [
+			cub("Lama cutit", (0.2, 0.025, 0.004), (xm + 0.04, yy, z + 0.004), GRI, rot=(0, 0, 0.1 * k)),
+			cub("Maner cutit", (0.1, 0.022, 0.018), (xm - 0.11, yy - 0.01 * k, z + 0.01), NEGRU, rot=(0, 0, 0.1 * k)),
+		]
+	piese += [
+		cub("Satar", (0.12, 0.2, 0.006), (xm - 0.02, y0 + 1.25, z + 0.004), GRI, rot=(0, 0, 0.3)),
+		cub("Sange satar", (0.05, 0.12, 0.007), (xm + 0.02, y0 + 1.27, z + 0.004), ROSU, rot=(0, 0, 0.3)),
+		cub("Maner satar", (0.03, 0.13, 0.025), (xm - 0.08, y0 + 1.09, z + 0.013), LEMN, rot=(0, 0, 0.3)),
+	]
+	# menghina de degete
+	mx, my = xm + 0.15, y0 + 1.3
+	piese += [
+		cub("Menghina", (0.1, 0.03, 0.025), (mx, my, z + 0.0125), NEGRU),
+		cub("Menghina", (0.1, 0.03, 0.025), (mx, my, z + 0.06), NEGRU),
+		cilindru("Surub menghina", 0.008, 0.008, 0.09, (mx, my, z + 0.06), GRI, laturi=5),
+		cub("Fluture menghina", (0.07, 0.012, 0.012), (mx, my, z + 0.105), GRI),
+	]
+	# castronul cu dinți, craniul, cârpa, lumânarea
+	piese.append(cilindru("Castron", 0.08, 0.05, 0.05, (xm - 0.15, y1 - 0.25, z + 0.025), LEMN_DESCHIS, laturi=10))
+	for k in range(7):
+		u = k * 0.9
+		piese.append(cub("Dinte", (0.012, 0.012, 0.018), (xm - 0.15 + math.cos(u) * 0.035, y1 - 0.25 + math.sin(u) * 0.035, z + 0.05), OS,
+			rot=(0.4, 0.3 * k, 0)))
+	_craniu(piese, xm - 0.12, y1 - 0.5, z, 1.0, -math.pi / 2 + 0.4)
+	piese.append(cub("Carpa", (0.18, 0.22, 0.02), (xm + 0.12, y1 - 0.45, z + 0.01), ROSU_INCHIS, rot=(0, 0, 0.6)))
+	piese.append(cilindru("Talpa lumanare", 0.045, 0.04, 0.02, (xm + 0.18, y1 - 0.15, z + 0.01), NEGRU, laturi=8))
+	_lumanare(piese, lumini, xm + 0.18, y1 - 0.15, z + 0.02, inalt=0.09)
+	piese.append(sfera("Ceara scursa", 0.04, (xm + 0.18, y1 - 0.15, z + 0.02), OS, scara=(1.3, 1.3, 0.2), segmente=6, inele=3))
+	return (xm + 0.18, y1 - 0.15, z + 0.13)
+
+
+def _panou_unelte(piese, rs, f, y0, y1):
+	"""Panoul de lemn de pe peretele din vest (x = `f`), deasupra mesei: unelte atârnate în cuie (satâr, fierăstrău,
+	topor, cârlige, fierul de înfierat, biciul, cătușe, un lanț)."""
+	zb, zs = TOR_Z + 1.2, TOR_Z + 2.4
+	_bloc(piese, "Panou unelte", f, f + 0.04, y0, y1, zb, zs, LEMN)
+	_bloc(piese, "Sipca panou", f + 0.04, f + 0.065, y0, y1, zs - 0.08, zs - 0.03, LEMN_DESCHIS)
+	x = f + 0.05
+	n = 8
+	for i in range(n):
+		y = y0 + (y1 - y0) * (i + 0.5) / n
+		zc = zs - 0.12
+		piese.append(os_intre("Cui panou", (f + 0.04, y, zc), (f + 0.1, y, zc), 0.007, NEGRU, laturi=4))
+		tip = i % 8
+		if tip == 0:  # satâr
+			piese += [cub("Maner satar", (0.025, 0.03, 0.14), (x + 0.02, y, zc - 0.08), LEMN),
+				cub("Satar", (0.006, 0.13, 0.12), (x + 0.02, y + 0.04, zc - 0.21), GRI),
+				cub("Sange satar", (0.007, 0.06, 0.05), (x + 0.02, y + 0.07, zc - 0.25), ROSU)]
+		elif tip == 1:  # fierăstrău
+			piese += [cub("Maner ferastrau", (0.025, 0.1, 0.06), (x + 0.02, y, zc - 0.04), LEMN_DESCHIS),
+				cub("Panza ferastrau", (0.004, 0.08, 0.4), (x + 0.02, y, zc - 0.27), GRI)]
+		elif tip == 2:  # topor
+			piese += [os_intre("Coada topor", (x + 0.02, y, zc), (x + 0.02, y, zc - 0.55), 0.016, LEMN_DESCHIS, laturi=5),
+				cub("Cap topor", (0.03, 0.16, 0.12), (x + 0.02, y + 0.06, zc - 0.5), NEGRU)]
+		elif tip == 3:  # cârlige de carne
+			for s in (-1, 1):
+				piese.append(os_intre("Carlig", (x + 0.02, y, zc), (x + 0.02, y + s * 0.04, zc - 0.2), 0.008, NEGRU, laturi=4))
+				piese.append(os_intre("Carlig", (x + 0.02, y + s * 0.04, zc - 0.2), (x + 0.02, y + s * 0.07, zc - 0.13), 0.008, NEGRU, laturi=4))
+		elif tip == 4:  # fierul de înfierat
+			piese += [os_intre("Fier infierat", (x + 0.02, y, zc), (x + 0.02, y, zc - 0.6), 0.01, NEGRU, laturi=4),
+				cub("Semn fier", (0.01, 0.08, 0.08), (x + 0.02, y, zc - 0.64), NEGRU),
+				cub("Maner fier", (0.03, 0.03, 0.12), (x + 0.02, y, zc - 0.04), LEMN)]
+		elif tip == 5:  # biciul: coada și șfichiul atârnând
+			a = (x + 0.02, y, zc)
+			piese.append(os_intre("Coada bici", a, (x + 0.02, y, zc - 0.25), 0.015, p("48313b"), laturi=5))
+			b = (x + 0.02, y, zc - 0.25)
+			for k in range(5):
+				c = (x + 0.02 + 0.01 * k, y + 0.03 * math.sin(k * 1.3), b[2] - 0.13)
+				piese.append(os_intre("Bici", b, c, 0.006, p("48313b"), laturi=3))
+				b = c
+		elif tip == 6:  # cătușele
+			for dz in (0.0, -0.13):
+				piese.append(_inel_vertical("Catusa", 0.05, 0.01, (0, 0, 0), NEGRU))
+				piese[-1].data.transform(Matrix.Translation((x + 0.02, y, zc - 0.08 + dz)) @ Matrix.Rotation(math.pi / 2, 4, 'Z'))
+		else:  # un lanț
+			_lant(piese, (x + 0.02, y, zc), (x + 0.03, y + 0.02, zc - 0.6))
+
+
+def _mangal(piese, lumini, x, y):
+	"""Mangalul cu jar: trei picioare de fier, vasul, cărbunii aprinși și flăcărui, fiarele de înfierat băgate în jar.
+	Întoarce de unde vine lumina."""
+	z = TOR_Z
+	zv = z + 0.72
+	for k in range(3):
+		u = k * math.tau / 3
+		piese.append(os_intre("Picior mangal", (x + math.cos(u) * 0.34, y + math.sin(u) * 0.34, z), (x + math.cos(u) * 0.2, y + math.sin(u) * 0.2, zv),
+			0.018, NEGRU, laturi=4))
+	piese.append(cilindru("Vas mangal", 0.18, 0.33, 0.2, (x, y, zv + 0.06), NEGRU, laturi=10))
+	piese.append(inel("Buza mangal", 0.33, 0.02, (x, y, zv + 0.16), NEGRU, segmente=12))
+	r = random.Random(13)
+	for k in range(14):
+		u, d = r.uniform(0, math.tau), r.uniform(0, 0.26)
+		lumini.append(sfera("Jar", r.uniform(0.04, 0.07), (x + math.cos(u) * d, y + math.sin(u) * d, zv + 0.15), r.choice((p("904a40"), ROSU,
+			FLACARA_PORTOCALIE)), scara=(1, 1, 0.6), segmente=6, inele=4))
+	for k in range(5):
+		u, d = r.uniform(0, math.tau), r.uniform(0, 0.18)
+		h = r.uniform(0.12, 0.25)
+		lumini.append(cilindru("Flacara mangal", 0.05, 0.0, h, (x + math.cos(u) * d, y + math.sin(u) * d, zv + 0.17 + h / 2),
+			FLACARA_PORTOCALIE if k % 2 else FLACARA, laturi=5))
+	for k, u in enumerate((0.4, 2.3, 4.4)):
+		a = (x + math.cos(u) * 0.1, y + math.sin(u) * 0.1, zv + 0.14)
+		b = (x + math.cos(u) * 0.75, y + math.sin(u) * 0.75, zv + 0.42)
+		piese.append(os_intre("Fier infierat", a, b, 0.011, NEGRU, laturi=4))
+		piese.append(os_intre("Maner fier", _lerp(a, b, 0.82), b, 0.02, LEMN, laturi=5))
+		lumini.append(cub("Semn incins", (0.07, 0.07, 0.015), a, ROSU, rot=(0, 0, u)))
+	return (x, y, zv + 0.45)
+
+
+def _banc_de_intins(piese, rs, x0, x1, y0, y1):
+	"""Bancul de întins („rack”-ul): cadrul de lemn pe patru picioare, șipcile, sulurile de la capete cu mânerele în
+	cruce, frânghiile, inelele pentru încheieturi și glezne, sânge pe șipci."""
+	z = TOR_Z + 0.72
+	ym = (y0 + y1) / 2
+	for y in (y0 + 0.05, y1 - 0.05):
+		_bloc(piese, "Lonjeron", x0, x1, y - 0.05, y + 0.05, z - 0.14, z, LEMN)
+	for x in (x0 + 0.08, x1 - 0.08):
+		for y in (y0 + 0.05, y1 - 0.05):
+			_bloc(piese, "Picior banc", x - 0.06, x + 0.06, y - 0.06, y + 0.06, TOR_Z, z - 0.14, LEMN)
+	for i in range(9):
+		x = x0 + 0.35 + i * (x1 - x0 - 0.7) / 8
+		_bloc(piese, "Sipca banc", x - 0.05, x + 0.05, y0 + 0.1, y1 - 0.1, z - 0.04, z - 0.01, LEMN_DESCHIS)
+	for x, s in ((x0 + 0.15, 1), (x1 - 0.15, -1)):
+		piese.append(cilindru("Sul", 0.07, 0.07, y1 - y0 + 0.12, (x, ym, z + 0.04), LEMN_DESCHIS, laturi=8, rot=(math.pi / 2, 0, 0)))
+		for k in range(4):
+			u = k * math.pi / 2 + 0.3
+			piese.append(os_intre("Maner sul", (x, y1 + 0.06, z + 0.04), (x + math.cos(u) * 0.28, y1 + 0.08, z + 0.04 + math.sin(u) * 0.28), 0.022,
+				LEMN, laturi=5))
+		for yy in (ym - 0.12, ym + 0.12):
+			piese.append(os_intre("Franghie banc", (x, yy, z + 0.1), (x + s * 0.35, yy, z + 0.02), 0.012, PANZA, laturi=4))
+			piese.append(inel("Inel banc", 0.04, 0.01, (x + s * 0.37, yy, z + 0.015), NEGRU, segmente=8))
+	for k in range(4):
+		piese.append(cilindru("Sange banc", rs.uniform(0.05, 0.12), rs.uniform(0.05, 0.12), 0.003,
+			(rs.uniform(x0 + 0.4, x1 - 0.4), ym + rs.uniform(-0.15, 0.15), z - 0.008), ROSU_INCHIS, laturi=8))
+	_balta(piese, rs, (x0 + x1) / 2 + 0.2, ym, TOR_Z, 0.25)
+
+
+def _fecioara_de_fier(piese, x, y, unghi):
+	"""Fecioara de fier: sarcofagul în picioare cu fața de femeie sus, ușa din față deschisă, cu țepi pe dinăuntru
+	(și pe trupul din spatele ei). Făcută cu fața spre -Y, apoi rotită cu `unghi` și mutată."""
+	c = []
+	c.append(trunchi("Fecioara", [((0, 0, 0.0), 0.32, 0.25), ((0, 0, 0.12), 0.36, 0.28), ((0, 0, 1.25), 0.37, 0.28), ((0, 0, 1.45), 0.3, 0.23),
+		((0, 0, 1.56), 0.18, 0.16), ((0, 0, 1.88), 0.17, 0.15), ((0, 0, 1.98), 0.1, 0.08)], NEGRU, laturi=10))
+	c.append(cub("Interior fecioara", (0.5, 0.01, 1.2), (0, -0.276, 0.75), p("2a3c3d")))
+	for i in range(4):
+		for j in range(7):
+			c.append(cilindru("Tep", 0.014, 0.0, 0.08, (-0.18 + i * 0.12, -0.32, 0.25 + j * 0.16), GRI, laturi=4, rot=(math.pi / 2, 0, 0)))
+	# fața de sus
+	c += [
+		sfera("Fata fecioara", 0.12, (0, -0.135, 1.72), GRI, scara=(0.85, 0.35, 1.05), segmente=8, inele=6),
+		cub("Ochi fecioara", (0.035, 0.012, 0.014), (-0.04, -0.178, 1.75), NEGRU),
+		cub("Ochi fecioara", (0.035, 0.012, 0.014), (0.04, -0.178, 1.75), NEGRU),
+		cub("Gura fecioara", (0.05, 0.012, 0.01), (0, -0.178, 1.66), NEGRU),
+		cub("Lacrima rugina", (0.008, 0.01, 0.06), (0.04, -0.18, 1.71), p("904a40")),
+	]
+	for z in (0.3, 0.8, 1.3):
+		c.append(cub("Banda fecioara", (0.68, 0.02, 0.04), (0, -0.285, z), GRI))
+	# ușa: la închis ar sta pe față; deschisă larg în jurul balamalei din dreapta
+	usa = [cub("Usa fecioara", (0.6, 0.05, 1.3), (-0.3, -0.03, 0.75), NEGRU)]
+	for i in range(4):
+		for j in range(7):
+			usa.append(cilindru("Tep", 0.014, 0.0, 0.08, (-0.48 + i * 0.12, 0.03, 0.25 + j * 0.16), GRI, laturi=4, rot=(-math.pi / 2, 0, 0)))
+	for z in (0.3, 0.8, 1.3):
+		usa.append(cub("Balama fecioara", (0.08, 0.06, 0.05), (0.0, -0.03, z), GRI))
+	_muta(usa, (0, 0, 1.9), (0.3, -0.3, 0.0))
+	c += usa
+	piese += _muta(c, (0, 0, unghi), (x, y, TOR_Z))
+
+
+def _scaun_cu_tepi(piese, x, y, unghi):
+	"""Scaunul cu țepi: șezut, spătar și brațe pline de țepi, curelele de piele pe brațe și la picioare.
+	Făcut cu fața spre -Y, apoi rotit cu `unghi` și mutat."""
+	c = []
+	for sx in (-0.24, 0.24):
+		for sy in (-0.22, 0.22):
+			c.append(cub("Picior scaun", (0.06, 0.06, 0.48), (sx, sy, 0.24), LEMN))
+		c.append(cub("Brat scaun", (0.07, 0.5, 0.05), (sx, 0.0, 0.75), LEMN))
+		c.append(cub("Stalp brat", (0.05, 0.05, 0.27), (sx, -0.22, 0.61), LEMN))
+		c.append(cub("Curea", (0.09, 0.06, 0.07), (sx, -0.05, 0.76), p("48313b")))
+		c.append(cub("Curea picior", (0.08, 0.08, 0.05), (sx * 0.6, -0.26, 0.2), p("48313b")))
+	c.append(cub("Sezut scaun", (0.54, 0.5, 0.05), (0, 0, 0.5), LEMN))
+	c.append(cub("Spatar scaun", (0.54, 0.06, 0.8), (0, 0.24, 0.92), LEMN))
+	c.append(cub("Spatar scaun", (0.6, 0.08, 0.06), (0, 0.24, 1.33), LEMN_DESCHIS))
+	for i in range(5):
+		for j in range(4):
+			c.append(cilindru("Tep", 0.01, 0.0, 0.05, (-0.2 + i * 0.1, -0.17 + j * 0.11, 0.55), GRI, laturi=4))
+		for j in range(6):
+			c.append(cilindru("Tep", 0.01, 0.0, 0.05, (-0.2 + i * 0.1, 0.2, 0.62 + j * 0.11), GRI, laturi=4, rot=(math.pi / 2, 0, 0)))
+	for sx in (-0.24, 0.24):
+		for j in range(4):
+			c.append(cilindru("Tep", 0.008, 0.0, 0.04, (sx, -0.19 + j * 0.12, 0.795), GRI, laturi=4))
+	c.append(cub("Sange scaun", (0.3, 0.25, 0.004), (0.02, -0.04, 0.527), ROSU_INCHIS, rot=(0, 0, 0.3)))
+	piese += _muta(c, (0, 0, unghi), (x, y, TOR_Z))
+
+
+def _camera_tortura(piese, lumini, col, rs):
+	"""Camera de tortură de la capătul catacombelor: pereți de piatră cu pilaștri, arcuri și lanțuri, tavanul cu grinda
+	groasă de care atârnă cei trei (spânzurații sunt modele separate), bălți de sânge sub ei, rigola din mijloc, masa cu
+	unelte și panoul de pe peretele din vest (lângă ele stau cele două vrăjitoare), mangalul, bancul de întins, fecioara
+	de fier, scaunul cu țepi, un butoi, o grămadă de oase. Întoarce flăcările."""
+	flacari = {}
+	x0, x1, y0, y1 = TOR_X0, TOR_X1, TOR_Y0, TOR_Y1
+	jos = lambda u: TOR_Z
+	sus = lambda u: TOR_TAVAN
+	# podeaua (lespezi), tavanul, pereții
+	_bloc(piese, "Podea tortura", x0, x1, y0, y1, -4.6, TOR_Z - 0.01, PIATRA_INCHISA)
+	_bloc(col, "Coliziune", x0, x1 + 0.05, y0, y1, -4.6, TOR_Z, PIATRA)
+	y = y0
+	while y < y1 - 0.05:
+		h = rs.uniform(0.45, 0.7)
+		x = x0 - rs.uniform(0, 0.3)
+		while x < x1:
+			w = rs.uniform(0.5, 0.9)
+			a, b = max(x, x0) + 0.015, min(x + w, x1) - 0.015
+			if b - a > 0.1:
+				_bloc(piese, "Lespede", a, b, y + 0.015, min(y + h, y1) - 0.015, TOR_Z - 0.01, TOR_Z + rs.uniform(0.0, 0.008), rs.choice(PIETRE))
+			x += w
+		y += h
+	_bloc(piese, "Tavan tortura", x0 - 0.1, x1 + 0.1, y0 - 0.1, y1 + 0.1, TOR_TAVAN, TOR_TAVAN + 0.3, PIATRA_INCHISA)
+	trecere = (COR_Y0, COR_Y1, TOR_Z, _tavan_coridor(2.5), False)
+	_zid(piese, col, "y", x0, -1, y0 - 0.4, y1 + 0.4, -4.6, -0.3)
+	_zid(piese, col, "y", x1, 1, y0 - 0.4, y1 + 0.4, -4.6, -0.3, [trecere])
+	_zid(piese, col, "x", y0, -1, x0, x1, -4.6, -0.3)
+	_zid(piese, col, "x", y1, 1, x0, x1, -4.6, -0.3)
+	_pietre(piese, rs, "y", x0, -1, y0, y1, jos, sus, [(0.75, 2.65, TOR_Z + 1.15, TOR_Z + 2.45)])
+	_pietre(piese, rs, "y", x1, 1, y0, y1, jos, sus, [(COR_Y0 - 0.15, COR_Y1 + 0.15, TOR_Z - 0.2, _tavan_coridor(2.5) + 0.12)])
+	_pietre(piese, rs, "x", y0, -1, x0, x1, jos, sus)
+	_pietre(piese, rs, "x", y1, 1, x0, x1, jos, sus)
+	# arcul trecerii dinspre coridor
+	zt = _tavan_coridor(2.5)
+	_bloc(piese, "Arc trecere", x1 - 0.06, x1 + 0.1, COR_Y0 - 0.2, COR_Y1 + 0.2, zt, zt + 0.2, PIATRA)
+	for yb_ in (COR_Y0 - 0.1, COR_Y1 + 0.1):
+		_bloc(piese, "Pilastru", x1 - 0.06, x1 + 0.1, yb_ - 0.1, yb_ + 0.1, TOR_Z, zt, PIATRA)
+	# arcurile de pe tavan, cu pilaștrii lor pe pereții din nord și sud
+	for x in (-3.3, -1.8, -0.4, 1.0):
+		_bloc(piese, "Arc tavan", x - 0.15, x + 0.15, y0, y1, TOR_TAVAN - 0.2, TOR_TAVAN, PIATRA)
+		for yb_, s in ((y0, 1), (y1, -1)):
+			_bloc(piese, "Pilastru", x - 0.15, x + 0.15, yb_, yb_ + s * 0.1, TOR_Z, TOR_TAVAN - 0.2, PIATRA)
+			piese.append(cub("Bolta", (0.3, 0.3, 0.3), (x, yb_, TOR_TAVAN - 0.2), PIATRA, rot=(math.pi / 4, 0, 0)))
+	# grinda de care atârnă cei trei, cu cârligele, plus două lanțuri goale
+	_bloc(piese, "Grinda spanzurati", x0, x1, GRINDA_Y - 0.13, GRINDA_Y + 0.13, GRINDA_Z, TOR_TAVAN - 0.2, LEMN)
+	for x in (-3.4, 1.3):
+		_bloc(piese, "Banda grinda", x - 0.04, x + 0.04, GRINDA_Y - 0.14, GRINDA_Y + 0.14, GRINDA_Z - 0.01, GRINDA_Z + 0.27, NEGRU)
+	for x in SPANZURATI_X:
+		piese.append(cub("Placa carlig", (0.1, 0.1, 0.02), (x, GRINDA_Y, GRINDA_Z - 0.01), NEGRU))
+		piese.append(inel("Inel carlig", 0.035, 0.008, (x, GRINDA_Y, GRINDA_Z - 0.03), NEGRU, segmente=8))
+		piese.append(os_intre("Carlig", (x, GRINDA_Y, GRINDA_Z - 0.02), (x, GRINDA_Y, GRINDA_Z - 0.07), 0.01, NEGRU, laturi=4))
+		_balta(piese, rs, x + rs.uniform(-0.05, 0.05), GRINDA_Y - 0.05, TOR_Z, rs.uniform(0.3, 0.42))
+		for k in range(4):  # stropi pe peretele din spate
+			piese.append(sfera("Strop perete", rs.uniform(0.03, 0.07), (x + rs.uniform(-0.4, 0.4), y1 - 0.045, TOR_Z + rs.uniform(0.4, 1.8)), ROSU_INCHIS,
+				scara=(1.0, 0.2, 1.3), segmente=6, inele=4))
+	for x in (-3.6, 1.45):
+		_lant(piese, (x, GRINDA_Y, GRINDA_Z), (x + 0.02, GRINDA_Y, GRINDA_Z - 1.1))
+		piese.append(os_intre("Carlig", (x + 0.02, GRINDA_Y, GRINDA_Z - 1.1), (x + 0.02, GRINDA_Y - 0.06, GRINDA_Z - 1.25), 0.012, NEGRU, laturi=4))
+	# rigola din mijloc, cu sângele care curge spre ea
+	gx, gy = -1.1, 1.7
+	_bloc(piese, "Rigola", gx - 0.2, gx + 0.2, gy - 0.2, gy + 0.2, TOR_Z - 0.005, TOR_Z + 0.006, NEGRU)
+	for k in range(5):
+		_bloc(piese, "Gratar", gx - 0.18 + k * 0.09, gx - 0.15 + k * 0.09, gy - 0.18, gy + 0.18, TOR_Z, TOR_Z + 0.012, GRI)
+	for x in SPANZURATI_X:
+		a = Vector((x, GRINDA_Y - 0.3, TOR_Z + 0.004))
+		b = Vector((gx + (x - gx) * 0.15, gy + 0.2, TOR_Z + 0.004))
+		piese.append(cub("Dara sange", ((b - a).length, 0.05, 0.003), tuple((a + b) / 2), ROSU_INCHIS, rot=(0, 0, math.atan2(b.y - a.y, b.x - a.x))))
+	# lanțuri cu cătușe pe pereți
+	for x in (-3.9, -0.4, 1.5):
+		for s in (-1, 1):
+			a = (x + s * 0.25, y1 - 0.05, TOR_Z + 2.0)
+			piese.append(cub("Inel zid", (0.06, 0.04, 0.06), a, NEGRU))
+			_lant(piese, a, (x + s * 0.18, y1 - 0.07, TOR_Z + 1.45))
+			piese.append(inel("Catusa", 0.05, 0.012, (x + s * 0.18, y1 - 0.08, TOR_Z + 1.4), NEGRU, segmente=8))
+	# mobilierul durerii
+	flacari["TorturaMasa"] = _masa_tortura(piese, lumini, rs, x0 + 0.1, x0 + 0.8, 0.85, 2.55)
+	_bloc(col, "Coliziune", x0, x0 + 0.8, 0.85, 2.55, TOR_Z, TOR_Z + 0.9, LEMN)
+	_panou_unelte(piese, rs, x0, 0.8, 2.6)
+	flacari["TorturaMangal"] = _mangal(piese, lumini, -2.7, -0.35)
+	_banc_de_intins(piese, rs, -1.7, 0.5, y0 + 0.25, y0 + 0.95)
+	_fecioara_de_fier(piese, x0 + 0.55, y0 + 0.6, math.pi - 0.75)
+	_scaun_cu_tepi(piese, 1.3, -0.95, math.pi + 0.5)
+	# un butoi, o găleată, un taburet, grămada de oase și cranii din colț
+	piese += [
+		cilindru("Butoi", 0.3, 0.3, 0.8, (1.55, 4.55, TOR_Z + 0.4), LEMN, laturi=10),
+		inel("Cerc butoi", 0.3, 0.015, (1.55, 4.55, TOR_Z + 0.15), NEGRU, segmente=10),
+		inel("Cerc butoi", 0.3, 0.015, (1.55, 4.55, TOR_Z + 0.65), NEGRU, segmente=10),
+		cilindru("Taburet", 0.18, 0.18, 0.04, (-0.2, 0.3, TOR_Z + 0.45), LEMN_DESCHIS, laturi=8),
+		cilindru("Galeata", 0.13, 0.15, 0.26, (0.9, 3.0, TOR_Z + 0.13), GRI, laturi=10),
+		cilindru("Sange galeata", 0.135, 0.135, 0.01, (0.9, 3.0, TOR_Z + 0.23), ROSU_INCHIS, laturi=10),
+	]
+	for k in range(3):
+		u = k * math.tau / 3
+		piese.append(os_intre("Picior taburet", (-0.2 + math.cos(u) * 0.12, 0.3 + math.sin(u) * 0.12, TOR_Z + 0.44),
+			(-0.2 + math.cos(u) * 0.17, 0.3 + math.sin(u) * 0.17, TOR_Z), 0.02, LEMN, laturi=4))
+	_bloc(col, "Coliziune", 1.25, 1.85, 4.25, 4.85, TOR_Z, TOR_Z + 0.8, LEMN)
+	for k in range(12):
+		u, d = rs.uniform(0, math.tau), rs.uniform(0, 0.45)
+		cx, cy = -3.9 + math.cos(u) * d, 4.4 + math.sin(u) * d * 0.7
+		a = rs.uniform(0, math.pi)
+		_os_lung(piese, (cx - math.cos(a) * 0.2, cy - math.sin(a) * 0.2, TOR_Z + 0.02 + (k % 3) * 0.03),
+			(cx + math.cos(a) * 0.2, cy + math.sin(a) * 0.2, TOR_Z + 0.03 + (k % 3) * 0.03), 0.016)
+	for k, (cx, cy, cz) in enumerate(((-3.95, 4.45, 0.08), (-3.7, 4.6, 0.02), (-4.15, 4.2, 0.02), (-3.85, 4.15, 0.05))):
+		_craniu(piese, cx, cy, TOR_Z + cz, 1.0, -0.6 + k)
+	# torțele
+	flacari["TorturaTortaEst1"] = _torta(piese, lumini, "y", x1, 1, 0.25, TOR_Z + 1.75)
+	flacari["TorturaTortaEst2"] = _torta(piese, lumini, "y", x1, 1, 2.95, TOR_Z + 1.75)
+	flacari["TorturaTortaNord"] = _torta(piese, lumini, "x", y1, 1, -2.6 + 0.7, TOR_Z + 1.75)
+	flacari["TorturaTortaSud"] = _torta(piese, lumini, "x", y0, -1, -2.35, TOR_Z + 1.75)
+	# pânze în colțurile de sus
+	for cx, cy, sa, sb in ((x0 + 0.01, y0 + 0.01, (1, 0, 0), (0, 1, 0)), (x1 - 0.01, y1 - 0.01, (-1, 0, 0), (0, -1, 0)),
+			(x0 + 0.01, y1 - 0.01, (1, 0, 0), (0, -1, 0))):
+		_panza(piese, (cx, cy, TOR_TAVAN - 0.02), sa, (sb[0], sb[1], -0.7), raza=0.5)
+	return flacari
+
+
+def subsol(cale):
+	"""Subsolul conacului (owner 12.10), sub sală: puțul cu scara de sub scara din dreapta, coridorul catacombelor și
+	camera de tortură. Piese: `Subsol`, `Lumini` (flăcările, jarul), `Coliziune`. Scrie la sfârșit unde sunt flăcările
+	în coordonate Godot (pentru luminile din conac_interior.tscn)."""
+	curata()
+	rs = random.Random(1210)
+	piese, lumini, col = [], [], []
+
+	def strange():
+		piese[:] = [uneste(piese, "Subsol")]
+
+	flacari = _scara_subsol(piese, lumini, col, rs)
+	strange()
+	flacari.update(_coridor(piese, lumini, col, rs))
+	strange()
+	flacari.update(_camera_tortura(piese, lumini, col, rs))
+	uneste(col, "Coliziune")
+	uneste(lumini, "Lumini")
+	uneste(piese, "Subsol")
+	exporta(os.path.join(cale, "subsol.glb"))
+	for nume, (x, y, z) in sorted(flacari.items()):
+		print("FLACARA %s Godot (%.2f, %.2f, %.2f)" % (nume, x, z, -y))
+
+
+def _sange_spanzurat(z0, saminta, burta=0.0):
+	"""Pentru casino_oameni.om (`extra`): tăieturile de bici cu sângele prelins pe piept, pe burtă și pe spate, pete pe
+	brațe și pe pantaloni, frânghia care îi leagă încheieturile și urcă până la cârlig (FUNIE_SUS)."""
+	b = burta  # inelele trunchiului, ca în casino_oameni._tors (bărbat)
+	inele = [(0.02, 0.03, 0.17, 0.13), (0.13, 0.02 - 0.05 * b, 0.175 + 0.05 * b, 0.135 + 0.07 * b),
+		(0.25, 0.01 - 0.05 * b, 0.18 + 0.05 * b, 0.135 + 0.065 * b), (0.36, -0.02 * b, 0.195, 0.13 + 0.03 * b),
+		(0.46, 0.01, 0.205, 0.12), (0.52, 0.02, 0.16, 0.095)]
+
+	def pe_tors(z, x, spate=False):
+		_, y, rx, ry = min(inele, key=lambda t: abs(t[0] - z))
+		x = max(-rx * 0.85, min(rx * 0.85, x))
+		dy = ry * math.sqrt(max(0.0, 1.0 - (x / rx) ** 2)) * 0.97
+		return (x, y + dy if spate else y - dy, z0 + z * 1.18)
+
+	def extra(corp):
+		rs = random.Random(saminta)
+		c = []
+		for spate in (False, True):
+			for _ in range(5 if not spate else 4):
+				z, x = rs.uniform(0.12, 0.47), rs.uniform(-0.13, 0.08)
+				a, b = pe_tors(z + 0.035, x - 0.07, spate), pe_tors(z - 0.035, x + 0.07, spate)
+				c.append(os_intre("Taietura", a, b, 0.007, ROSU, laturi=4))
+				for _ in range(rs.randint(1, 2)):
+					xx = x + rs.uniform(-0.05, 0.05)
+					zz = z + (xx - x) * -0.5
+					top, jos = pe_tors(zz, xx, spate), pe_tors(zz - rs.uniform(0.08, 0.2), xx + rs.uniform(-0.01, 0.01), spate)
+					c.append(os_intre("Prelingere", top, jos, 0.005, ROSU_INCHIS, laturi=4))
+			for _ in range(4):
+				pt = pe_tors(rs.uniform(0.05, 0.5), rs.uniform(-0.15, 0.15), spate)
+				c.append(sfera("Pata sange", rs.uniform(0.02, 0.035), pt, ROSU_INCHIS, scara=(1, 0.4, 1.2), segmente=6, inele=4))
+		for k in (-1, 1):  # pe brațe și pe coapse
+			umar, cot = (0.19 * k, 0.01, z0 + 0.555), (0.2 * k, 0.05, 1.7)
+			for t in (0.3, 0.7):
+				pt = _lerp(umar, cot, t)
+				c.append(sfera("Pata sange", 0.025, (pt[0], pt[1] - 0.048, pt[2]), ROSU_INCHIS, scara=(1, 0.4, 1.4), segmente=6, inele=4))
+			for t in (0.35, 0.75):
+				pt = _lerp((0.1 * k, 0.03, z0 + 0.047), (0.105 * k, 0.0, 0.5), t)
+				c.append(sfera("Pata pantaloni", rs.uniform(0.03, 0.045), (pt[0], pt[1] - 0.07, pt[2]), ROSU_INCHIS, scara=(1, 0.4, 1.3),
+					segmente=6, inele=4))
+		ob = uneste(c, "Sange")
+		_parinte(ob, corp)
+		f = [
+			os_intre("Funie", (0, 0.04, 1.97), (0, 0.04, FUNIE_SUS), 0.016, PANZA, laturi=5),
+			os_intre("Legatura", (-0.1, 0.04, 1.93), (0.1, 0.04, 1.93), 0.03, PANZA, laturi=6),
+			os_intre("Legatura", (-0.09, 0.04, 1.99), (0.09, 0.04, 1.99), 0.026, PANZA, laturi=6),
+			os_intre("Nod funie", (0, 0.04, 1.96), (0, 0.04, 2.05), 0.035, PANZA, laturi=6),
+		]
+		ob_f = uneste(f, "Funie")
+		_parinte(ob_f, corp)
+	return extra
+
+
+SPANZURATI = [
+	# slăbănogul chel, nebărbierit, cu gura deschisă
+	dict(par=p("48313b"), stil_par="chel", tepi=p("48313b"), slab=0.8, pantaloni=p("5e5356"), gura_deschisa=True, incruntat=0.25),
+	# cel cu burtă, păr scurt și mustață
+	dict(par=p("262d2f"), stil_par="scurt", mustata=p("262d2f"), burta=0.45, gras=0.3, pantaloni=p("48313b"), incruntat=0.3),
+	# tânărul cu părul pe spate, nebărbierit
+	dict(par=p("5e363e"), stil_par="spate", tepi=p("5e363e"), slab=0.5, pantaloni=p("2a3c3d"), gura_deschisa=True, spranceana=0.012),
+]
+
+
+def spanzurati(cale):
+	"""Cei trei oameni spânzurați de mâini în camera de tortură (owner 12.10): fără tricou, plini de sânge, desculți,
+	cu mâinile legate deasupra capului și frânghia până la cârlig. Prin casino_oameni.om (în picioare, `stil_haina`
+	"gol", `descult`); originea = sub tălpi, frânghia se termină la FUNIE_SUS. În joc: spanzurat.gd (se leagănă)."""
+	import casino_oameni
+	for i, st in enumerate(SPANZURATI):
+		s = dict(st, piele=p("a56850"), piele_umbra=p("904a40"), haina=p("a56850"), haina_umbra=p("904a40"), camasa=p("a56850"),
+			stil_haina="gol", brate_goale=True, in_picioare=True, descult=True, sezut=0.86, gros_brat=0.9,
+			poza_D=((-0.2, 0.05, 1.7), (-0.055, 0.04, 1.98)), poza_S=((0.2, 0.05, 1.7), (0.055, 0.04, 1.98)))
+		s["extra"] = _sange_spanzurat(0.86, 500 + i, st.get("burta", 0.0))
+		casino_oameni.om(cale, "spanzurat_%d" % (i + 1), s, 500 + i)
+
+
+TORTURA = [
+	(dict(CERC[0], roba=p("5e363e"), roba_umbra=p("48313b"), pelerina=p("262d2f"), banda=p("904a40"), cocoasa=0.08), False),
+	(dict(CERC[2], roba=p("2a3c3d"), roba_umbra=p("262d2f"), pelerina=p("5e363e"), par=p("7e8d87"), par_suvita=p("83b3b0"), cocoasa=0.03), "clesti"),
+]
+
+
+def vrajitoare_tortura(cale):
+	"""Cele două vrăjitoare din camera de tortură (owner 12.10), care stau la povești lângă masa cu unelte: ca cele din
+	salon (vrajitoare_salon), una cu mâna în șold, alta cu un clește însângerat în loc de pocal."""
+	for i, (s, unealta) in enumerate(TORTURA):
+		vrajitoare_salon(cale, "vrajitoare_tortura_%d" % (i + 1), s, 300 + i, unealta)
+
+
 def salon(cale):
 	for i, (s, pahar) in enumerate(SALON):
 		vrajitoare_salon(cale, "vrajitoare_salon_%d" % (i + 1), s, 200 + i, pahar)
@@ -1784,7 +2627,10 @@ def toate(cale):
 	pisica(cale)
 	usa_debara(cale)
 	parry(cale)
+	spanzurati(cale)
+	vrajitoare_tortura(cale)
 	ceas_pendul(cale)
+	subsol(cale)
 	conac_interior(cale)
 
 

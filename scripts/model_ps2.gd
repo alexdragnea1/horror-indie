@@ -15,6 +15,9 @@ extends Node3D
 ## Bucățile de sticlă: cele al căror nume începe cu asta (ex. "Geam") devin transparente.
 ## Gol = nicio bucată de sticlă.
 @export var sticla := ""
+## Pe ce straturi de randare stau bucățile (luminile aleg ce straturi luminează). Subsolul conacului e pe stratul 2,
+## ca torțele de acolo (care luminează doar stratul 2) să nu treacă prin podea în sală.
+@export_flags_3d_render var straturi := 1
 ## Coliziune făcută din mărimea modelului (pentru modele puse fără StaticBody): Cilindru = pietre,
 ## Cutie = bușteni, cruci, lăzi; Plasa = exact forma lui (casa lui Lexy, mobila: pereți, trepte, verandă).
 ## Vezi ColiziuneModel.
@@ -29,6 +32,8 @@ func _ready() -> void:
 		if mesh.name == &"Coliziune":
 			mesh.visible = false  # forma simplă pentru coliziune (din Blender), nu se vede niciodată
 			continue
+		if straturi != 1:
+			mesh.layers = straturi
 		if material:
 			mesh.material_override = material
 		if not umbre:

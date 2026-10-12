@@ -515,6 +515,14 @@ def _tors(piese, z0, s, picioare=None):
 		piese.append(cub("Buzunar", (0.07, 0.01, 0.07), (0.1, fata(0.4, -0.004), z0 + 0.4 * h), umbra))
 		for dx, cul in ((0.085, p("295555")), (0.1, p("7b383a")), (0.112, NEGRU)):
 			piese.append(cub("Pix", (0.008, 0.008, 0.055), (dx, fata(0.43, 0.004), z0 + 0.45 * h), cul))
+	elif stil == "gol":  # fără tricou (spânzurații din subsolul conacului): sfârcurile, buricul, coastele dacă e slab
+		for k in (-1, 1):
+			piese.append(sfera("Sfarc", 0.011, (0.085 * k, fata(0.42, -0.008), z0 + 0.42 * h), umbra, scara=(1, 0.4, 1), segmente=6, inele=4))
+		piese.append(sfera("Buric", 0.01, (0, fata(0.13, -0.006), z0 + 0.13 * h), umbra, scara=(1, 0.4, 1.3), segmente=6, inele=4))
+		if s.get("slab", 0.0) > 0.3:
+			for z in (0.33, 0.29, 0.25):
+				for k in (-1, 1):
+					piese.append(cub("Coasta", (0.07, 0.008, 0.007), (0.1 * k, fata(z, -0.01), z0 + z * h), umbra, rot=(0, 0.35 * k, 0)))
 	elif stil == "tricou":  # tricou simplu cu guler rotund (barmanul)
 		piese.append(trunchi("Guler tricou", [((0, 0.018, z0 + 0.535 * h), 0.085, 0.07), ((0, 0.018, z0 + 0.555 * h), 0.08, 0.066)], umbra,
 			laturi=10, capete=False))
@@ -580,6 +588,18 @@ def _tors(piese, z0, s, picioare=None):
 			pp.append(sfera("Genunchi", 0.067, genunchi, pant, segmente=8, inele=5))
 			pp.append(trunchi("Gamba", [(genunchi, 0.064, 0.064), ((0.107 * k, 0.03, 0.33), 0.062, 0.066), (glezna, 0.05, 0.05)], pant,
 				laturi=8, ref=(1, 0, 0)))
+			if s.get("descult"):
+				# desculț, cu tălpile atârnând (spânzurații din subsolul conacului): glezna goală, laba întinsă în jos
+				piele = s["piele"]
+				pp.append(trunchi("Glezna", [((0.11 * k, 0.02, 0.16), 0.042, 0.042), ((0.11 * k, 0.02, 0.07), 0.036, 0.036)], piele,
+					laturi=8, ref=(1, 0, 0)))
+				pp.append(sfera("Calcai", 0.038, (0.11 * k, 0.035, 0.06), piele, segmente=8, inele=5))
+				pp.append(trunchi("Laba", [((0.11 * k, 0.02, 0.07), 0.035, 0.03), ((0.11 * k, -0.06, 0.0), 0.04, 0.022),
+					((0.11 * k, -0.1, -0.035), 0.0, 0.0)], piele, laturi=8, ref=(1, 0, 0)))
+				for d in range(4):
+					pp.append(sfera("Deget picior", 0.011, (0.11 * k + (d - 1.5) * 0.017 * k, -0.095, -0.03), s["piele_umbra"],
+						segmente=6, inele=4))
+				continue
 			# cizma: carâmbul până la jumătatea gambei, laba lungă și ascuțită, tocul
 			pp.append(trunchi("Caramb", [((0.11 * k, 0.025, 0.06), 0.058, 0.064), ((0.109 * k, 0.03, 0.3), 0.068, 0.072)], pantofi,
 				laturi=8, ref=(1, 0, 0), capete=False))
