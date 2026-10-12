@@ -214,6 +214,19 @@ def _cap(piese, gat, s, r):
 				par if k % 3 else s.get("par_suvita", par), laturi=6, ref=(math.cos(u), math.sin(u), 0)))
 		piese.append(trunchi("Breton", [(P(-0.07, -0.06, 0.26), 0.02, 0.012), (P(0, -0.095, 0.25), 0.03, 0.015),
 			(P(0.07, -0.06, 0.26), 0.02, 0.012)], par, laturi=5, ref=(0, 0, 1)))
+	elif stil == "ciufulit":  # negru, ciufulit, cu șuvițe ridicate în toate părțile și bretonul în ace (Parry Hotter)
+		piese.append(sfera("Par", 0.098, P(0, 0.012, 0.222), par, scara=(1.04, 1.04, 0.86), segmente=10, inele=7))
+		piese.append(sfera("Ceafa", 0.082, P(0, 0.05, 0.15), par, scara=(1.0, 0.75, 0.9), segmente=8, inele=5))
+		for k in range(18):
+			u = r.uniform(0, math.tau)
+			v = r.uniform(0.15, 1.25)
+			c = P(math.cos(u) * 0.088 * math.cos(v), 0.02 + math.sin(u) * 0.088 * math.cos(v), 0.205 + math.sin(v) * 0.075)
+			if c[1] - gy < -0.055 and c[2] - gz < 0.235:
+				continue  # fața și fruntea rămân libere
+			piese.append(cub("Suvita", (0.028, 0.028, 0.055), c, par, rot=(r.uniform(-0.8, 0.8), r.uniform(-0.8, 0.8), u)))
+		# bretonul: țepi peste frunte, cu un gol în dreptul cicatricei
+		for x in (-0.068, 0.012, 0.04, 0.066):
+			piese.append(cub("Breton", (0.026, 0.02, 0.04), P(x, -0.084, 0.247), par, rot=(0.4, r.uniform(-0.5, 0.5), 0)))
 	# pălăria
 	palarie = s.get("palarie")
 	if palarie == "fedora":
@@ -279,6 +292,22 @@ def _cap(piese, gat, s, r):
 		if s.get("lantisor_ochelari"):
 			for k in (-1, 1):
 				piese.append(os_intre("Lantisor", P(0.08 * k, 0.0, 0.17), P(0.1 * k, 0.02, 0.02), 0.003, AUR, laturi=4))
+	elif och == "rotunzi":  # rame rotunde subțiri (Parry Hotter): cercul din 10 bucăți tangente
+		rama = s.get("rama", NEGRU)
+		for k in (-1, 1):
+			x = 0.034 * k
+			for i in range(10):
+				u = i * math.tau / 10
+				piese.append(cub("Rama", (0.014, 0.006, 0.006), P(x + math.cos(u) * 0.021, fy - 0.009, 0.168 + math.sin(u) * 0.021), rama,
+					rot=(0, -u - math.pi / 2, 0)))
+			piese.append(cub("Brat ochelari", (0.005, 0.1, 0.005), P(0.08 * k, -0.04, 0.175), rama))
+		piese.append(cub("Punte", (0.028, 0.006, 0.005), P(0, fy - 0.009, 0.174), rama))
+	if s.get("cicatrice"):  # fulgerul de pe frunte, deasupra ochiului drept al lui (spre -X)
+		def frunte(x, z):
+			return P(x, -0.104 + max(0.0, z - 0.2) * 0.4, z)
+		puncte = ((-0.012, 0.224), (-0.026, 0.212), (-0.014, 0.209), (-0.03, 0.195))
+		for a, b in zip(puncte, puncte[1:]):
+			piese.append(os_intre("Cicatrice", frunte(*a), frunte(*b), 0.0035, s["cicatrice"], laturi=4))
 	if s.get("creion"):  # creionul după ureche (contabilul)
 		piese.append(os_intre("Creion", P(0.118, -0.05, 0.215), P(0.112, 0.07, 0.19), 0.005, p("a18463"), laturi=6))
 		piese.append(os_intre("Varf creion", P(0.118, -0.05, 0.215), P(0.119, -0.07, 0.219), 0.003, NEGRU, laturi=4))
@@ -641,6 +670,8 @@ def om(cale, nume, s, saminta):
 			ob_jar = uneste([os_intre("Jar", b, _add(b, tuple((bb - aa) * 0.06 for aa, bb in zip(a, b))), raza * 1.02,
 				p("904a40"), laturi=6)], "Jar", b)
 			_parinte(ob_jar, ob_t)
+	if s.get("extra"):  # ce mai ține / poartă, făcut de cine cere omul (ex. cartea lui Parry, debara.py): primește corpul
+		s["extra"](ob_corp)
 	exporta(os.path.join(cale, nume + ".glb"))
 
 
