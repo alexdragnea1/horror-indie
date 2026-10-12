@@ -36,6 +36,7 @@
 [ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 [ext_resource type="Script" path="res://scripts/semineu_conac.gd" id="sd1"]
 [ext_resource type="Script" path="res://scripts/pian_conac.gd" id="pian1"]
+[ext_resource type="Script" path="res://scripts/oglinda_vrajitoare.gd" id="oglinda1"]
 
 [sub_resource type="BoxShape3D" id="forma_semineu_demon"]
 size = Vector3(1.7, 1.2, 0.3)
@@ -81,6 +82,9 @@ size = Vector3(3.2, 1, 3.6)
 
 [sub_resource type="BoxShape3D" id="forma_pian"]
 size = Vector3(0.3, 0.5, 1.55)
+
+[sub_resource type="BoxShape3D" id="forma_oglinda"]
+size = Vector3(0.8, 0.8, 0.12)
 
 [node name="ConacInterior" type="Node3D"]
 
@@ -611,3 +615,12 @@ script = ExtResource("pian1")
 [node name="Forma" type="CollisionShape3D" parent="Pian"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0.85, -12)
 shape = SubResource("forma_pian")
+
+[node name="Oglinda" type="StaticBody3D" parent="." node_paths=PackedStringArray("lumina")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.8, 5.15, -15.845)
+script = ExtResource("oglinda1")
+lumina = NodePath("../Lumini/Toaleta")
+
+[node name="Forma" type="CollisionShape3D" parent="Oglinda"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.04)
+shape = SubResource("forma_oglinda")
