@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" path="res://models/copac_3.glb" id="12"]
 [ext_resource type="PackedScene" path="res://models/stalpisor.glb" id="13"]
 [ext_resource type="PackedScene" path="res://models/stalp_lemn.glb" id="14"]
-[ext_resource type="AudioStream" path="res://sunete/crengi.ogg" id="16"]
 [ext_resource type="AudioStream" path="res://sunete/frana_autobuz.ogg" id="18"]
 [ext_resource type="AudioStream" path="res://sunete/tabla_lovita.ogg" id="19"]
 [ext_resource type="AudioStream" path="res://sunete/drum_rulare.ogg" id="20"]
@@ -115,7 +114,6 @@ copaci_padure = Array[PackedScene]([ExtResource("7"), ExtResource("8"), ExtResou
 copaci_camp = Array[PackedScene]([ExtResource("9"), ExtResource("9"), ExtResource("8"), ExtResource("11")])
 stalpisor = ExtResource("13")
 stalp_lemn = ExtResource("14")
-sunet_crengi = ExtResource("16")
 sunete_sosire = Array[AudioStream]([ExtResource("18"), ExtResource("23"), ExtResource("24"), ExtResource("25"), ExtResource("24")])
 scena_urmatoare = "res://scenes/padure.tscn"
 zornaieli = Array[AudioStream]([ExtResource("19"), ExtResource("22")])

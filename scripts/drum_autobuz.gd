@@ -1,8 +1,8 @@
 extends Node3D
 ## Scena din autobuz (cutscene): stai pe scaun lângă geam și autobuzul merge noaptea pe lângă pădure.
-## Când te uiți spre pădure (pe geamul din stânga), ceva aleargă foarte repede pe lângă autobuz,
-## te depășește și dispare printre copaci. Dacă nu te uiți, întâi se aud crengi rupte în pădure,
-## iar până la urmă privirea se întoarce singură. Creatura n-are alt sunet decât pașii.
+## Imediat ce închizi dialogul de la început, privirea se întoarce spre pădure (geamul din stânga) și ceva aleargă
+## foarte repede pe lângă autobuz, te depășește și dispare printre copaci (owner, 15.10: „să înceapă instant”).
+## Creatura n-are alt sunet decât pașii.
 ## Replicile tale pornesc la `intarziere_replici` după ce o vezi; la `dupa_disparitie` secunde după ce
 ## a dispărut, ecran negru și ești la stația din fața pădurii (`scena_urmatoare`).
 ##
@@ -20,14 +20,8 @@ extends Node3D
 @export var viteza := 13.0
 
 @export_group("Creatura")
-## După câte secunde poate apărea (să ai timp să te așezi).
-@export var armare := 9.0
-## Cât te uiți spre pădure până apare (secunde).
-@export var timp_privire := 0.35
-## Dacă nu te-ai uitat: după atâtea secunde se aud crengi rupte în pădure (momeala)...
-@export var momeala := 10.0
-## ...iar după atâtea, privirea se întoarce singură spre geam.
-@export var fortat := 20.0
+## În cât timp se întoarce privirea spre geam după dialog (secunde; creatura pornește în același timp, din spate).
+@export var intoarcere_privire := 0.8
 ## Cât stă lângă geamul tău, ținând pasul cu autobuzul (secunde).
 @export var timp_alaturi := 1.2
 ## Cât de repede te depășește (m/s în plus față de autobuz) și cât de departe de autobuz aleargă.
@@ -58,7 +52,6 @@ extends Node3D
 @export_multiline var titlu_urmator := "Trivale Forest\n12:00 AM"
 
 @export_group("Sunete")
-@export var sunet_crengi: AudioStream
 ## Ce se aude pe negru, între autobuz și pădure (frâna, ușile, cobori).
 @export var sunete_sosire: Array[AudioStream] = []
 @export var zornaieli: Array[AudioStream] = []
@@ -71,11 +64,7 @@ const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 
 var _v := 0.0
 var _timp := 0.0
-var _privit := 0.0
 var _a_aparut := false
-var _momeala_data := false
-## Cât durează, cu click-uri normale, replicile de la început (de aici se numără `momeala` și `fortat`).
-const TIMP_CITIT := 6.0
 var _banda: Array[Dictionary] = []  # {nod, pas (m), x_min, x_max}
 var _rng := RandomNumberGenerator.new()
 var _pana_la_zornait := 3.0
@@ -185,17 +174,6 @@ func _process(delta: float) -> void:
 	_banda_rulanta()
 	_zornaieli(delta)
 	_creatura_pas(delta)
-	if not _a_aparut and _timp >= armare and not Dialog.activ:
-		if _te_uiti_la_padure():
-			_privit += delta
-		else:
-			_privit = 0.0
-		if _privit >= timp_privire:
-			_porneste_creatura()
-
-
-func _te_uiti_la_padure() -> bool:
-	return calator.unghi_orizontal > 50.0 and calator.unghi_orizontal < 135.0 and calator.unghi_vertical > -35.0
 
 
 ## Autobuzul vechi zdrăngăne: geamuri, bare, compostoare.
@@ -294,25 +272,10 @@ func _aprinde(aprins: bool) -> void:
 
 func _scenariu() -> void:
 	await _asteapta(4.5)
-	var inceput_replici := _timp
 	await _spune(replici_inainte)
-	# până apare creatura: momeala, apoi privirea forțată. Se numără de la `TIMP_CITIT` după ce încep replicile, nu de
-	# la închiderea lor: cine citește încet nu mai așteaptă în plus (owner, 08.10: „vine prea greu când nu apeși repede
-	# click pe dialog”). După dialog și după momeală tot trece puțin timp, ca să nu vină una peste alta.
-	var start := minf(_timp, inceput_replici + TIMP_CITIT)
-	var final_dialog := _timp
-	var momeala_la := -1.0
-	while not _a_aparut:
-		await get_tree().process_frame
-		var trecut := _timp - start
-		if trecut > momeala and not _momeala_data and _timp > final_dialog + 1.0:
-			_momeala_data = true
-			momeala_la = _timp
-			Sunet.reda_la(sunet_crengi, autobuz.global_position + Vector3(9.0, 1.0, 14.0), Sunet.VOLUM_EFECTE, 0.05)
-			_clipeste_lumina()
-		if trecut > fortat and _momeala_data and _timp > momeala_la + 3.0 and not Dialog.activ:
-			await calator.priveste_spre(95.0, -4.0, 1.3)
-			_porneste_creatura()
+	# imediat după dialog: creatura pornește din spate (ajunge la geam în ~1,4 s), iar privirea se întoarce spre geam
+	_porneste_creatura()
+	await calator.priveste_spre(95.0, -4.0, intoarcere_privire)
 	# replicile pornesc la `intarziere_replici` după ce creatura intră în cadru
 	# (dacă n-a apucat să intre deloc, când dispare); merg în paralel cu restul
 	_replici_creatura()
