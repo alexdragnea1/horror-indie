@@ -24,6 +24,11 @@ extends Interactabil
 @export_multiline var titlu_dupa := "Home\nNext day, 12:24 PM"
 @export var marcaj_dimineata := "e_dimineata"
 
+@export_group("Începutul jocului")
+## La joc nou te trezești în pat (aceeași trezire ca după somn) și, așezat pe margine, spui replica asta.
+@export var marcaj_prima_trezire := "s_a_trezit_la_inceput"
+@export_multiline var replici_prima_trezire: PackedStringArray = ["You: What time is it?"]
+
 @export_group("A doua noapte")
 ## După atacul de la conac: același somn, cu marcajele astea (după primul somn, `marcaj_dormit`, se folosesc ele).
 @export var marcaj_necesar_2 := "a_venit_acasa_dupa_atac"
@@ -89,10 +94,15 @@ var _cap_poza := Vector2.ZERO:
 func _ready() -> void:
 	indiciu = "[E] Sleep"
 	await get_tree().process_frame
-	if _ultimul_somn() > 0 and not Stare.e_marcat(_trezit()):
-		var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
-		if jucator:
-			_trezeste(jucator)
+	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
+	if jucator == null:
+		return
+	if _ultimul_somn() > 0:
+		if not Stare.e_marcat(_trezit()):
+			_trezeste(jucator, _trezit())
+	elif Stare.marcaje.is_empty() and Stare.nume_jucator == "":
+		# doar la un joc chiar nou: salvările vechi, făcute înainte de trezire, au deja marcaje/nume
+		_trezeste(jucator, marcaj_prima_trezire, replici_prima_trezire)
 
 
 func poate_fi_folosit() -> bool:
@@ -181,8 +191,9 @@ func interactioneaza() -> void:
 		await _de_continuat()
 
 
-## La Continue după somn: ești întins, deschizi ochii greu și te ridici lângă pat.
-func _trezeste(jucator: Node3D) -> void:
+## La Continue după somn (și la joc nou): ești întins, deschizi ochii greu și te ridici lângă pat; dacă sunt
+## `replici`, le spui așezat pe margine. La sfârșit pune `marcaj`.
+func _trezeste(jucator: Node3D, marcaj: String, replici: PackedStringArray = []) -> void:
 	_in_curs = true
 	var cap: Node3D = jucator.get_node("Cap")
 	var inaltime_ochi := cap.position.y
@@ -214,6 +225,12 @@ func _trezeste(jucator: Node3D) -> void:
 	tween.tween_property(self, "_cap_poza", Vector2(-0.2, 0.0), 1.2)
 	await tween.finished
 	Sunet.reda_la(sunet_scartait, to_global(loc_sezut), Sunet.VOLUM_EFECTE, 0.05, 1.1)
+	if not replici.is_empty():
+		await get_tree().create_timer(0.6).timeout
+		Dialog.spune(replici)
+		if Dialog.activ:
+			await Dialog.terminat
+		await get_tree().create_timer(0.3).timeout
 	tween = _tween()
 	tween.tween_property(jucator, "global_position", to_global(loc_langa), 0.9)
 	tween.tween_property(cap, "position:y", inaltime_ochi, 0.9)
@@ -223,7 +240,7 @@ func _trezeste(jucator: Node3D) -> void:
 	_pleoape.clear()
 	jucator.seteaza_purtat(false)
 	Stare.meniu_deschis = false
-	Stare.marcheaza(_trezit())
+	Stare.marcheaza(marcaj)
 	_in_curs = false
 
 
