@@ -43,6 +43,8 @@ var raft: Dictionary = {}
 var aruncate: Dictionary = {}
 ## Lanterna aprinsă sau stinsă; rămâne așa și în scena următoare, și în salvare.
 var lanterna := true
+## Desenul de pe peretele cu graffiti de la bloc (Graffiti): PNG în base64, gol = perete curat.
+var graffiti := ""
 
 var _mesaj: Label
 var _sarcina_sus: Label
@@ -96,6 +98,7 @@ func reseteaza() -> void:
 	raft = {}
 	aruncate = {}
 	lanterna = true
+	graffiti = ""
 	meniu_deschis = false
 	_inventar.hide()
 	_panou_raft.hide()
@@ -114,7 +117,7 @@ func ascunde_mesaje() -> void:
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
 	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana,
-		"raft": raft, "aruncate": aruncate, "lanterna": lanterna}
+		"raft": raft, "aruncate": aruncate, "lanterna": lanterna, "graffiti": graffiti}
 
 
 func importa(date: Dictionary) -> void:
@@ -125,6 +128,7 @@ func importa(date: Dictionary) -> void:
 	raft = date.get("raft", {})
 	aruncate = date.get("aruncate", {})
 	lanterna = date.get("lanterna", true)
+	graffiti = date.get("graffiti", "")
 	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
 	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
 	# salvările de dinainte ca bancnota de 5 dolari să intre în cash: o adunăm acum

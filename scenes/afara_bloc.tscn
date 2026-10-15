@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
 [ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/graffiti.gd" id="gf1"]
+[ext_resource type="PackedScene" path="res://models/spray_jos.glb" id="gf2"]
 [ext_resource type="PackedScene" path="res://models/bloc.glb" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/copac_1.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/copac_2.tscn" id="7"]
@@ -200,6 +202,9 @@ size = Vector2(0.12, 0.09)
 
 [sub_resource type="BoxShape3D" id="forma_orar"]
 size = Vector3(0.1, 0.45, 0.6)
+
+[sub_resource type="BoxShape3D" id="forma_graffiti"]
+size = Vector3(3.6, 2, 0.1)
 
 [node name="AfaraBloc" type="Node3D"]
 
@@ -502,6 +507,19 @@ material = ExtResource("4")
 [node name="Coliziune" type="CollisionShape3D" parent="Tomberon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.65, 0)
 shape = SubResource("forma_tomberon")
+
+[node name="Graffiti" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 12.04, 1.62, -2.4)
+script = ExtResource("gf1")
+
+[node name="Coliziune" type="CollisionShape3D" parent="Graffiti"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.09)
+shape = SubResource("forma_graffiti")
+
+[node name="SprayJos" parent="." instance=ExtResource("gf2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.8, 0, -0.9)
+script = ExtResource("3")
+material = ExtResource("4")
 
 [node name="Batator" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0, 4.3)

@@ -1480,3 +1480,23 @@ TINTA_LUFS=-20
 ffmpeg -v error -y -i "$PACHET/Other/keyboard_typing.wav" -af "atrim=end=3.25" -ac 1 "$OUT/_tastatura.wav"
 bucla tastatura "$OUT/_tastatura.wav" 0.25 mono
 rm -f "$OUT/_tastatura.wav"
+
+# --- graffiti pe peretele lateral al blocului (graffiti.gd, owner 15.10); toate mono, 3D
+# 1. șuieratul spray-ului, buclă de 2 s: zgomot alb tăiat între ~1,8 și 9 kHz, cu vârful pe 5 kHz, și o fluturare
+#    slabă a supapei; dedesubt puțin din „Spray” (Soundpack 2), cât să aibă textură de aerosol
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=0.6:d=2.6:r=44100" -f lavfi -i "aevalsrc=0.9+0.1*sin(2*PI*13*t)+0.04*sin(2*PI*31*t):s=44100:d=2.6" \
+	-i "Sound/Soundpack 2/Liquids/Spray.wav" -filter_complex \
+	"[0][1]amultiply,highpass=f=1800,highpass=f=1800,lowpass=f=9000,equalizer=f=5000:t=q:w=1.2:g=5[h];[2]aformat=channel_layouts=mono,aresample=44100,atrim=start=0.03:end=0.25,aloop=loop=12:size=9702,volume=0.25[s];[h][s]amix=inputs=2:normalize=0:duration=first" \
+	-ac 1 "$OUT/_spray.wav"
+bucla spray_bucla "$OUT/_spray.wav" 0.4 mono
+# 2. agitatul cutiei (~0,9 s): bila de metal care clămpăne de 6 ori (clicuri pe 3,1 și 4,6 kHz care se sting repede),
+#    peste vopseaua care plescăie (Liquid_Shake_2, înfundat)
+CLIC=""
+for a in 0.02 0.17 0.31 0.46 0.60 0.75; do
+	CLIC="$CLIC+between(t\,$a\,$a+0.04)*(0.5*sin(2*PI*3100*t)+0.3*sin(2*PI*4600*t)+0.2*sin(2*PI*1700*t))*exp(-(t-$a)*110)"
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0${CLIC}:s=44100:d=0.95" -i "Sound/Soundpack 2/Liquids/Liquid_Shake_2.wav" -filter_complex \
+	"[1]aformat=channel_layouts=mono,aresample=44100,atrim=start=0.2:end=1.15,asetpts=PTS-STARTPTS,lowpass=f=1300,volume=0.35[l];[0][l]amix=inputs=2:normalize=0:duration=first,afade=t=out:st=0.8:d=0.15" \
+	-ac 1 "$OUT/_spray_agitat.wav"
+unic spray_agitat "$OUT/_spray_agitat.wav"
+rm -f "$OUT/_spray.wav" "$OUT/_spray_agitat.wav"

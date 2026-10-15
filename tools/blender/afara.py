@@ -7,6 +7,8 @@ import os
 import random
 import sys
 
+import bpy
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from unelte import p, curata, cub, cilindru, sfera, os_intre, text, uneste, exporta, trunchi, inel, desparte_fete  # noqa: E402
 
@@ -746,6 +748,116 @@ def pereche(cale):
 	}, 302)
 
 
+
+# --- graffiti pe peretele lateral al blocului (owner 15.10): cutiile de spray de pe jos și cea din mână
+# Culorile, în ordinea tastelor 1..9 din joc (graffiti.gd: CULORI, aceeași ordine):
+# negru, „alb” (cel mai deschis din paletă), roșu, portocaliu, galben, verde, turcoaz, albastru, mov.
+CULORI_SPRAY = ["262d2f", "83b3b0", "904a40", "a56850", "a18463", "5b6d4e", "438b88", "778c96", "655269"]
+METAL = p("7e8d87")
+
+
+def _aseaza(ob, rot, loc):
+	"""O piesă făcută în origine: o rotește (euler), apoi o mută la `loc` și aplică."""
+	ob.rotation_euler = rot
+	ob.location = loc
+	bpy.ops.object.select_all(action="DESELECT")
+	bpy.context.view_layer.objects.active = ob
+	ob.select_set(True)
+	bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+	ob.select_set(False)
+
+
+def _cutie_spray(culoare, capac=True, eticheta=NEGRU):
+	"""O cutie de spray în picioare, cu fundul în (0, 0, 0): 6,5 cm diametru, ~20 cm înaltă. Corpul e în culoarea
+	vopselei (de departe se vede doar ea), cu o bandă de etichetă, umărul de tablă și capacul (sau duza, fără capac:
+	gaura duzei e spre +Y, adică înainte în Godot)."""
+	c = p(culoare)
+	piese = [
+		cilindru("Fund", 0.031, 0.033, 0.012, (0, 0, 0.006), METAL, laturi=10),
+		cilindru("Corp", 0.032, 0.032, 0.148, (0, 0, 0.086), c, laturi=10),
+		cilindru("Eticheta", 0.0336, 0.0336, 0.05, (0, 0, 0.095), eticheta, laturi=10),
+		cilindru("Dunga", 0.0342, 0.0342, 0.012, (0, 0, 0.095), c, laturi=10),
+		cilindru("Umar", 0.032, 0.019, 0.022, (0, 0, 0.171), METAL, laturi=10),
+	]
+	if capac:
+		piese.append(cilindru("Capac", 0.0325, 0.03, 0.045, (0, 0, 0.1825), c, laturi=10))
+		piese.append(cilindru("Capac sus", 0.03, 0.03, 0.004, (0, 0, 0.207), p("262d2f") if culoare != "262d2f" else METAL, laturi=10))
+	else:
+		piese.append(cilindru("Gat", 0.008, 0.008, 0.012, (0, 0, 0.188), METAL, laturi=6))
+		piese.append(cilindru("Duza", 0.011, 0.011, 0.016, (0, 0, 0.202), ALB, laturi=8))
+		piese.append(cub("Gaura duza", (0.005, 0.004, 0.005), (0, 0.0115, 0.203), NEGRU))
+	return piese
+
+
+def _pune(piese, rot, loc):
+	for ob in piese:
+		_aseaza(ob, rot, loc)
+	return piese
+
+
+def spray_jos(cale):
+	"""Cutiile de spray lăsate pe jos lângă peretele lateral din dreapta al blocului, lângă colțul din față.
+	Originea = mijlocul grămezii, la sol. În Godot: Blender (x, y) → Godot (x, -y); peretele e la x = -0,75.
+	O cutie de carton ruptă cu trei cutii înăuntru, restul în picioare sau culcate, două capace căzute,
+	pete de vopsea pe jos (de la cineva care a probat culorile) și o mănușă de unică folosință."""
+	curata()
+	r = random.Random(1508)
+	piese = []
+	carton, carton_inchis = p("a18463"), p("7a7b59")
+	# cutia de carton, lipită de perete, cu clapele desfăcute
+	bx, by = -0.5, 0.1
+	L, W, H, g = 0.24, 0.32, 0.17, 0.008
+	piese += [
+		cub("Carton fund", (L - 2 * g, W - 2 * g, g), (bx, by, g / 2 + 0.003), carton_inchis),
+		cub("Carton", (g, W, H), (bx - L / 2 + g / 2, by, H / 2), carton),
+		cub("Carton", (g, W, H), (bx + L / 2 - g / 2, by, H / 2), carton),
+		cub("Carton", (L - 2 * g, g, H), (bx, by - W / 2 + g / 2, H / 2), carton),
+		cub("Carton", (L - 2 * g, g, H * 0.7), (bx, by + W / 2 - g / 2, H * 0.35), carton),  # rupt sus
+		cub("Clapa", (0.1, W, g), (bx - L / 2 - 0.045, by, H + 0.02), carton, rot=(0, 0.5, 0)),
+		cub("Clapa", (0.1, W * 0.9, g), (bx + L / 2 + 0.03, by, H - 0.025), carton, rot=(0, 1.15, 0)),
+		cub("Banda", (0.05, W + 0.004, 0.012), (bx - L / 2 - 0.02, by, H + 0.004), p("7e8d87"), rot=(0, 0.5, 0)),
+	]
+	for i, (dx, dy) in enumerate(((-0.055, -0.08), (0.055, -0.03), (-0.04, 0.07))):
+		piese += _pune(_cutie_spray(CULORI_SPRAY[(i * 4) % 9]), (0, 0, r.uniform(0, 6.28)), (bx + dx, by + dy, g))
+	# în picioare, lângă cutie
+	piese += _pune(_cutie_spray(CULORI_SPRAY[2]), (0, 0, 0.4), (-0.25, -0.15, 0))
+	piese += _pune(_cutie_spray(CULORI_SPRAY[6], capac=False), (0, 0, 2.1), (-0.12, 0.28, 0))
+	piese += _pune(_cutie_spray(CULORI_SPRAY[8]), (0, 0, 4.0), (0.05, -0.32, 0))
+	# culcate (raza 3,3 cm: centrul la înălțimea razei), rostogolite care încotro
+	for culoare, u, x, y, capac in (("a56850", 0.3, 0.0, 0.05, False), ("5b6d4e", 2.0, 0.2, -0.1, True),
+			("778c96", 4.4, 0.3, 0.3, True), ("a18463", 1.1, -0.3, 0.45, False)):
+		piese += _pune(_cutie_spray(culoare, capac), (math.pi / 2, 0, u), (x, y, 0.034))
+	# capacele căzute
+	for culoare, x, y in (("a56850", 0.12, 0.22), ("a18463", -0.2, 0.62)):
+		piese.append(cilindru("Capac", 0.0325, 0.03, 0.045, (x, y, 0.0325), p(culoare), laturi=10, rot=(math.pi / 2, 0, r.uniform(0, 3))))
+	# pete de vopsea pe jos, fiecare din câteva discuri turtite (nu se suprapun: înălțimi diferite)
+	for i, (culoare, x, y, raza) in enumerate((("904a40", 0.35, -0.35, 0.09), ("438b88", 0.05, 0.45, 0.07),
+			("655269", -0.3, -0.45, 0.06), ("262d2f", 0.45, 0.1, 0.05))):
+		for j in range(4):
+			a = r.uniform(0, 6.28)
+			d = r.uniform(0, raza * 0.8) if j else 0
+			rr = raza * (1.0 if j == 0 else r.uniform(0.3, 0.6))
+			piese.append(cilindru("Pata", rr, rr, 0.002, (x + math.cos(a) * d, y + math.sin(a) * d, 0.006 + i * 0.003 + j * 0.0008),
+				p(culoare), laturi=7, scara=(1, r.uniform(0.6, 1.0), 1)))
+	# mănușa de unică folosință, mototolită, pătată de negru
+	piese.append(sfera("Manusa", 0.04, (0.32, 0.5, 0.02), p("6f6d7f"), segmente=6, inele=4, scara=(1.6, 1, 0.5)))
+	piese.append(sfera("Pata manusa", 0.022, (0.35, 0.49, 0.032), NEGRU, segmente=6, inele=4, scara=(1.3, 1, 0.5)))
+	uneste(piese, "SprayJos")
+	exporta(os.path.join(cale, "spray_jos.glb"))
+
+
+def spray_mana(cale):
+	"""Cutia de spray din mână (graffiti.gd), câte una pentru fiecare culoare: `Spray1` … `Spray9`, toate în picioare,
+	fără capac, cu originea în mijlocul cutiei. Duza e spre +Y (în Godot: înainte, spre perete)."""
+	curata()
+	for i, culoare in enumerate(CULORI_SPRAY):
+		# la cutia neagră, eticheta trebuie să se vadă: bandă deschisă
+		eticheta = p("6f6d7f") if culoare == "262d2f" else NEGRU
+		piese = _cutie_spray(culoare, capac=False, eticheta=eticheta)
+		uneste(piese, "Spray%d" % (i + 1), origine=(0, 0, 0.1))
+	exporta(os.path.join(cale, "spray_mana.glb"))
+
+
 def toate(cale):
 	bloc(cale)
 	copac(cale, "copac_1", 21, 6.5, [p("904a40"), p("a56850"), p("7b383a")])
@@ -765,7 +877,16 @@ def toate(cale):
 	bomboana(cale)
 	garaje(cale)
 	pereche(cale)
+	spray_jos(cale)
+	spray_mana(cale)
 
 
 if __name__ == "__main__":
-	toate(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models"))
+	_cale = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
+	# doar unele: blender ... --python tools/blender/afara.py -- spray_jos spray_mana
+	_alese = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+	if _alese:
+		for _nume in _alese:
+			globals()[_nume](_cale)
+	else:
+		toate(_cale)
