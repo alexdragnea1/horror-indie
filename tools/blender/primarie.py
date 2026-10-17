@@ -21,7 +21,7 @@ import bpy
 import bmesh
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from unelte import p, curata, cub, cilindru, sfera, os_intre, uneste, exporta, _coloreaza, desparte_fete  # noqa: E402
+from unelte import p, curata, cub, cilindru, sfera, os_intre, trunchi, uneste, exporta, _coloreaza, desparte_fete  # noqa: E402
 from lexy import perete, prisma  # noqa: E402
 from casino import _text, _text_o_fata, _tor, _cutie_coliziune  # noqa: E402
 from coven import _parinte  # noqa: E402
@@ -1688,6 +1688,88 @@ def primar(cale):
 	casino_oameni.om(cale, "primar_smegma", PRIMAR, 1990)
 
 
+def maimuta_caca(cale):
+	"""Maimuța care se ușurează în spatele primăriei (owner, 17.10; maimuta_caca.gd): un cimpanzeu fără haine (doar
+	cravata de la Taxe, slăbită pe gâtul gol), modelat în picioare, cu fața spre -Y, originea la sol. Capul e cel al
+	maimuțelor de la Taxe (casino_oameni._cap, fără ochelari). Piese separate, ca să se ghemuiască, să sară gardul și
+	să fugă: `Corp` (originea în bazin), `Cap` (copil al lui Corp, originea în gât), `BratS`/`BratD` (copii ai lui
+	Corp, în umăr; brațele lungi, până la genunchi), `CoapsaS`/`CoapsaD` (în șold) cu `GambaS`/`GambaD` copii (în
+	genunchi). S = stânga ei = +X."""
+	curata()
+	r = random.Random(1717)
+	s = dict(_MAIMUTA, piele=p("a18463"), piele_umbra=p("904a40"), blana=p("48313b"), par=p("48313b"), ochelari=None)
+	blana, blana_umbra, piele, umbra = s["blana"], p("262d2f"), s["piele"], s["piele_umbra"]
+	bazin_z = 0.6
+	# trunchiul: butoi păros, mai lat la umeri, puțin aplecat în față; burta golașă (pielea), cravata slăbită
+	corp = [
+		trunchi("Trunchi", [((0, 0.0, 0.52), 0.0, 0.0), ((0, 0.0, 0.55), 0.13, 0.11), ((0, -0.01, 0.72), 0.16, 0.13),
+			((0, -0.02, 0.9), 0.18, 0.13), ((0, -0.01, 1.0), 0.15, 0.11), ((0, 0.0, 1.06), 0.07, 0.06)], blana,
+			laturi=10, ref=(1, 0, 0)),
+		sfera("Burta", 0.11, (0, -0.075, 0.74), piele, scara=(1.0, 0.55, 1.3), segmente=8, inele=6),
+		cub("Cravata nod", (0.035, 0.025, 0.03), (0, -0.105, 1.0), ROSU),
+		trunchi("Cravata", [((0.01, -0.13, 0.99), 0.022, 0.006), ((0.04, -0.15, 0.86), 0.035, 0.006),
+			((0.05, -0.15, 0.8), 0.0, 0.0)], ROSU, laturi=4, ref=(1, 0, 0)),
+	]
+	for k in range(14):  # smocuri de blană pe spate și pe umeri (silueta nu mai e netedă)
+		a = r.uniform(-1.2, 1.2)
+		z = r.uniform(0.65, 1.0)
+		corp.append(sfera("Smoc", 0.035, (0.15 * math.sin(a), 0.1 * math.cos(a) + 0.02, z), blana_umbra if k % 3 == 0 else blana,
+			segmente=5, inele=3))
+	ob_corp = uneste(corp, "Corp", (0, 0, bazin_z))
+
+	gat = (0, -0.005, 1.04)
+	cap = []
+	casino_oameni._cap(cap, gat, s, r)
+	ob_cap = uneste(cap, "Cap", gat)
+	ob_cap.scale = (1.12, 1.12, 1.12)
+	bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+	_parinte(ob_cap, ob_corp)
+
+	# brațele lungi: umărul păros, antebrațul, palma mare cu degetele strânse (până pe la genunchi)
+	for nume, k in (("BratS", 1), ("BratD", -1)):
+		umar = (0.19 * k, 0.0, 0.97)
+		cot = (0.23 * k, 0.02, 0.68)
+		pumn = (0.24 * k, -0.01, 0.42)
+		brat = [
+			sfera("Umar", 0.065, umar, blana, segmente=8, inele=5),
+			trunchi("Brat", [(umar, 0.06, 0.06), (cot, 0.045, 0.045)], blana, laturi=8, ref=(1, 0, 0)),
+			sfera("Cot", 0.045, cot, blana, segmente=6, inele=4),
+			trunchi("Antebrat", [(cot, 0.047, 0.047), ((0.24 * k, 0.0, 0.52), 0.05, 0.05), (pumn, 0.036, 0.034)], blana,
+				laturi=8, ref=(1, 0, 0)),
+			sfera("Palma", 0.045, (pumn[0], pumn[1] - 0.005, pumn[2] - 0.05), piele, scara=(0.6, 0.9, 1.2), segmente=6, inele=4),
+		]
+		for d in range(4):
+			y = pumn[1] - 0.035 + d * 0.022
+			brat.append(os_intre("Deget", (pumn[0], y, pumn[2] - 0.08), (pumn[0] - 0.01 * k, y - 0.01, pumn[2] - 0.13), 0.011,
+				umbra, laturi=4))
+		ob_brat = uneste(brat, nume, umar)
+		_parinte(ob_brat, ob_corp)
+
+	# picioarele scurte și crăcănate, labele lungi cu degetul mare depărtat (ca o mână)
+	for k, l in ((1, "S"), (-1, "D")):
+		sold, genunchi, glezna = (0.1 * k, 0.0, 0.58), (0.13 * k, -0.03, 0.31), (0.12 * k, 0.01, 0.07)
+		coapsa = [
+			sfera("Sold", 0.075, sold, blana, segmente=8, inele=5),
+			trunchi("Coapsa", [(sold, 0.075, 0.072), (genunchi, 0.055, 0.055)], blana, laturi=8, ref=(1, 0, 0)),
+			sfera("Genunchi", 0.055, genunchi, blana, segmente=6, inele=4),
+		]
+		gamba = [
+			trunchi("Gamba", [(genunchi, 0.054, 0.054), (glezna, 0.038, 0.038)], blana, laturi=8, ref=(1, 0, 0)),
+			sfera("Calcai", 0.04, (glezna[0], glezna[1] + 0.02, 0.04), piele, segmente=6, inele=4),
+			trunchi("Laba", [((glezna[0], 0.03, 0.04), 0.045, 0.03), ((glezna[0], -0.1, 0.025), 0.055, 0.02),
+				((glezna[0], -0.17, 0.015), 0.0, 0.0)], piele, laturi=8, ref=(1, 0, 0)),
+			os_intre("Deget mare", (glezna[0] - 0.03 * k, -0.04, 0.025), (glezna[0] - 0.07 * k, -0.1, 0.015), 0.014, umbra,
+				laturi=4),
+		]
+		for d in range(3):
+			x = glezna[0] + (d - 0.5) * 0.02 * k
+			gamba.append(os_intre("Deget picior", (x, -0.14, 0.02), (x, -0.19, 0.008), 0.009, umbra, laturi=4))
+		ob_coapsa = uneste(coapsa, "Coapsa" + l, sold)
+		ob_gamba = uneste(gamba, "Gamba" + l, genunchi)
+		_parinte(ob_gamba, ob_coapsa)
+	exporta(os.path.join(cale, "maimuta_caca.glb"))
+
+
 def toate(cale):
 	cladire(cale)
 	interior(cale)
@@ -1700,6 +1782,7 @@ def toate(cale):
 	angajata(cale)
 	primar(cale)
 	maimute(cale)
+	maimuta_caca(cale)
 
 
 if __name__ == "__main__":

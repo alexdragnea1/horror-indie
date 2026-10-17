@@ -7,7 +7,8 @@ extends Interactabil
 ##    aproape (`raza_privire`);
 ##  - pe monitor: spreadsheet-ul (ImageTexture făcută din cod, cu culorile paletei: bara verde de sus, capul de tabel,
 ##    liniile grilei, „textul” din celule, celula selectată); când se umple foaia, o ia de la capăt.
-## E → `replici` (ale lui Claude); cât vorbiți se oprește din tastat și se uită la tine.
+## Fără E (owner, 17.10: „la camera de taxe nu vreau nicio interacțiune”): `activ` e pus pe false, doar corpul
+## (coliziunea) a rămas de la Interactabil.
 ## Monitorul din model e în `primarie.py` (MONITOR; fața lui dinspre ea e la 0,6 m, rama neagră a ecranului la 0,589):
 ## ecranul de aici stă la 4 mm în fața ramei, spre ea (z mai mic = mai aproape de ea).
 
@@ -40,12 +41,11 @@ var _tex: ImageTexture
 var _cursor := Vector2i.ZERO
 var _sunet: AudioStreamPlayer3D
 var _baza := {}
-var _vorbeste := false
 var _jucator: Node3D
 
 
 func _ready() -> void:
-	indiciu = "[E] Talk to the monkey"
+	activ = false
 	_ecran()
 	_sunet = AudioStreamPlayer3D.new()
 	_sunet.stream = SUNET_TASTATURA
@@ -63,27 +63,10 @@ func _ready() -> void:
 	_lucreaza()
 
 
-func interactioneaza() -> void:
-	if not poate_fi_folosit() or _vorbeste:
-		return
-	_vorbeste = true
-	folosit.emit()
-	if _jucator:
-		om.privire = _jucator.get_node("Cap")
-	Dialog.spune(replici)
-	if Dialog.activ:
-		await Dialog.terminat
-	om.privire = null
-	_vorbeste = false
-
-
 # ------------------------------------------------------------------ munca
 
 func _lucreaza() -> void:
 	while is_inside_tree():
-		if _vorbeste:
-			await get_tree().create_timer(0.3).timeout
-			continue
 		await _rafala()
 		# pauza dintre rafale: se uită la ecran, la tine sau dă click
 		var r := randf()
@@ -92,8 +75,7 @@ func _lucreaza() -> void:
 		elif r < 0.55 and _aproape():
 			om.privire = _jucator.get_node("Cap")
 			await get_tree().create_timer(randf_range(1.2, 2.5)).timeout
-			if not _vorbeste:
-				om.privire = null
+			om.privire = null
 		else:
 			await get_tree().create_timer(randf_range(0.6, 2.2)).timeout
 
@@ -102,7 +84,7 @@ func _rafala() -> void:
 	_sunet.play(randf_range(0.0, 2.5))
 	var n := randi_range(6, 18)
 	for i in n:
-		if _vorbeste or not is_inside_tree():
+		if not is_inside_tree():
 			break
 		var l := "D" if i % 2 == 0 else "S"
 		# o tastă: deasupra ei, apoi jos (dreapta = -X la om, în față = +Z)

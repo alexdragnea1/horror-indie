@@ -65,6 +65,7 @@
 [ext_resource type="PackedScene" path="res://models/maimuta_taxe_4.glb" id="65_m4"]
 [ext_resource type="PackedScene" path="res://models/maimuta_taxe_5.glb" id="66_m5"]
 [ext_resource type="PackedScene" path="res://models/maimuta_taxe_6.glb" id="67_m6"]
+[ext_resource type="PackedScene" path="res://scenes/maimuta_caca.tscn" id="68_mc"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -558,7 +559,6 @@ shape = SubResource("forma_mocheta_taxe")
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.1, 0.45, -2.4)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: Ook ook. Ook.", "You: ...That explains a lot about my taxes.")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -578,7 +578,6 @@ stralucitoare = PackedStringArray()
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.0, 0.45, -2.4)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: Ook?", "You: Nevermind.")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -598,7 +597,6 @@ stralucitoare = PackedStringArray()
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.95, 0.45, -2.4)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: *points at the NO BANANAS sign and sighs*")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -618,7 +616,6 @@ stralucitoare = PackedStringArray()
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.1, 0.45, -8.3)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: Ooh ooh! Ah ah!", "You: Relax, I\'m not here to audit you.")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -638,7 +635,6 @@ stralucitoare = PackedStringArray()
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.0, 0.45, -8.3)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: ...Ook.", "You: He looks like he\'s been here since 1987.")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -658,7 +654,6 @@ stralucitoare = PackedStringArray()
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -5.95, 0.45, -8.3)
 script = ExtResource("61_mt")
 om = NodePath("Om")
-replici = PackedStringArray("Monkey: *keeps typing*", "You: Rude.")
 
 [node name="Forma" type="CollisionShape3D" parent="MaimutaTaxe6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
@@ -673,3 +668,6 @@ pauza_privire = Vector2(0, 0)
 script = ExtResource("3_mp")
 material = ExtResource("4_mt")
 stralucitoare = PackedStringArray()
+
+[node name="MaimutaCaca" parent="." instance=ExtResource("68_mc")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -7.5, 0, -13)

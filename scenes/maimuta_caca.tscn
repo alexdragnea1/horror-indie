@@ -1,0 +1,39 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/maimuta_caca.gd" id="1"]
+[ext_resource type="PackedScene" path="res://models/maimuta_caca.glb" id="2"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="4"]
+[ext_resource type="PackedScene" path="res://models/caca.glb" id="5"]
+[ext_resource type="AudioStream" path="res://sunete/maimuta_icnit_1.ogg" id="6"]
+[ext_resource type="AudioStream" path="res://sunete/maimuta_icnit_2.ogg" id="7"]
+[ext_resource type="AudioStream" path="res://sunete/om_part_1.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://sunete/om_part_2.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://sunete/om_plop.ogg" id="10"]
+[ext_resource type="AudioStream" path="res://sunete/maimuta_tipat.ogg" id="11"]
+[ext_resource type="AudioStream" path="res://sunete/gard_zanganit.ogg" id="12"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_1.ogg" id="13"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_2.ogg" id="14"]
+[ext_resource type="AudioStream" path="res://sunete/pas_frunze_3.ogg" id="15"]
+
+[node name="MaimutaCaca" type="Node3D" node_paths=PackedStringArray("aterizare")]
+script = ExtResource("1")
+aterizare = NodePath("Aterizare")
+icnit = Array[AudioStream]([ExtResource("6"), ExtResource("7")])
+part = Array[AudioStream]([ExtResource("8"), ExtResource("9")])
+plop = ExtResource("10")
+tipat = ExtResource("11")
+gard = ExtResource("12")
+pasi = Array[AudioStream]([ExtResource("13"), ExtResource("14"), ExtResource("15")])
+
+[node name="Model" parent="." instance=ExtResource("2")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Caca" parent="." instance=ExtResource("5")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, -0.3)
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Aterizare" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.6)

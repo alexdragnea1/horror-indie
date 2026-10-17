@@ -1500,3 +1500,25 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc=0${CLIC}:s=44100:d=0.95" -i "Sound/Soun
 	-ac 1 "$OUT/_spray_agitat.wav"
 unic spray_agitat "$OUT/_spray_agitat.wav"
 rm -f "$OUT/_spray.wav" "$OUT/_spray_agitat.wav"
+
+# --- maimuța care se ușurează în spatele primăriei (maimuta_caca.gd, owner 17.10). Pachetele n-au maimuțe:
+# 1. țipătul când te vede (~1,6 s): „uh-uh-uh” scurte care urcă (450 → 700 Hz), apoi două „AAH” lungi și ascuțite
+#    (1050 → 1350 Hz), sintetizate: un ton cu armonice care alunecă (faza = integrala frecvenței), vibrato, foarte puțin
+#    zgomot în „AAH” (răgușeala), și totul ușor saturat
+MAI=""
+seg() {  # seg START DURATA F0 F1 ZGOMOT
+	MAI="$MAI+between(t\,$1\,$1+$2)*pow(max(sin(PI*(t-$1)/$2)\,0)\,0.6)*(0.55*sin(2*PI*($3*(t-$1)+($4-$3)*(t-$1)*(t-$1)/(2*$2))+0.3*sin(2*PI*24*t))+0.3*sin(4*PI*($3*(t-$1)+($4-$3)*(t-$1)*(t-$1)/(2*$2)))+0.15*sin(6*PI*($3*(t-$1)+($4-$3)*(t-$1)*(t-$1)/(2*$2)))+$5*(random(0)-0.5))"
+}
+seg 0.00 0.12 430 520 0.0
+seg 0.17 0.12 480 590 0.0
+seg 0.34 0.12 540 680 0.0
+seg 0.52 0.42 1050 1350 0.05
+seg 1.02 0.5 1150 1300 0.06
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0${MAI}:s=44100:d=1.6" -af "volume=0.8,asoftclip=type=tanh,highpass=f=200,afade=t=out:st=1.4:d=0.2" \
+	-ac 1 "$OUT/_maimuta.wav"
+unic maimuta_tipat "$OUT/_maimuta.wav"
+# 2. se screme: mormăitul omului din pădure, mai sus (maimuță mică) și mai scurt
+for i in 1 2; do
+	unic "maimuta_icnit_$i" "$OUT/om_icnit_$i.ogg" mono "asetrate=44100*1.4,aresample=44100"
+done
+rm -f "$OUT/_maimuta.wav"
