@@ -31,10 +31,12 @@ static func lanseaza(nod: Node, de_la: Vector3, directie_: Vector3, exclude_: Ar
 	var r := Racheta.new()
 	r.directie = directie_.normalized()
 	r.exclude = exclude_
-	nod.get_tree().current_scene.add_child(r)
-	r.global_position = de_la
+	# locul și direcția se pun ÎNAINTE de add_child (ca la Explozie): dâra de fum pornește chiar în `_ready`
+	var scena := nod.get_tree().current_scene
 	var sus := Vector3.UP if absf(r.directie.y) < 0.95 else Vector3.FORWARD
-	r.look_at(de_la + r.directie, sus)
+	var lume := Transform3D(Basis.looking_at(r.directie, sus), de_la)
+	r.transform = (scena as Node3D).global_transform.affine_inverse() * lume if scena is Node3D else lume
+	scena.add_child(r)
 	return r
 
 

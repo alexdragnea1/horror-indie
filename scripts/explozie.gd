@@ -33,8 +33,13 @@ static func creeaza(nod: Node, punct: Vector3, normala_: Vector3, putere_ := 1.0
 	e.normala = normala_.normalized() if normala_.length() > 0.01 else Vector3.UP
 	e.deja = deja_
 	e.raza = 7.0 * putere_
-	nod.get_tree().current_scene.add_child(e)
-	e.global_position = punct + e.normala * 0.15
+	# locul se pune ÎNAINTE de add_child: `_ready` (urma arsă, suflul, distanța până la tine) rulează chiar în
+	# add_child, iar pus după, toate astea se făceau în mijlocul hărții (0, 0, 0) (owner, 17.10: „rămâne explozia
+	# într-un loc random și când tragi explodează în 2 locuri”)
+	var scena := nod.get_tree().current_scene
+	var unde := punct + e.normala * 0.15
+	e.position = (scena as Node3D).to_local(unde) if scena is Node3D else unde
+	scena.add_child(e)
 	return e
 
 
