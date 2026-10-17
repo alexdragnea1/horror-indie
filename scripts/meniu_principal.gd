@@ -1,5 +1,6 @@
 extends Node3D
-## Meniul principal (prima scenă a jocului): Start / Continue, Select Save File, Settings, Quit.
+## Meniul principal (prima scenă a jocului): Start / Continue, Select Save File, Settings, Quit, plus butonul mic
+## „Music” din dreapta jos (cine a făcut muzica, `MUZICA`).
 ## În spate e curtea blocului adevărată (afara_bloc.tscn, fără jucător), văzută de o cameră care
 ## plutește încet. Toată interfața e făcută din cod, cu TemaMeniu.
 ## Esc = înapoi. Setările le ține Setari, fișierele de salvare Salvare.
@@ -10,6 +11,14 @@ const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
 ## Numele jocului din meniu. Nu e `application/config/name` („Horror Indie”): pe ăla îl folosește Godot și pentru
 ## folderul salvărilor (app_userdata\Horror Indie), deci dacă l-am schimba s-ar pierde salvările.
 const TITLU := "Unlucky Spells"
+## Ecranul „Music” (butonul mic din dreapta jos, owner 17.10): cine a făcut muzica, fără locul din joc.
+## [artist, [piese], notă mică (licența) sau ""]. Luate din etichetele fișierelor din Sound/Music.
+const MUZICA := [
+	["Human Gazpacho (CW Lomneth)", ["Ranger's Lament", "Necromancy in the Underdark", "Antechamber of Madness",
+		"That Slowmotion Montage Where We Fall in Love", "Cryptic Chamber"], ""],
+	["Ion (Romania) feat. Herodot", ["I.E"], "CC BY-NC-SA 3.0 - freemusicarchive.org"],
+	["Made with Udio", ["Whispers of the Void"], ""],
+]
 
 ## De unde se uită camera și spre ce (în coordonatele scenei de afară).
 @export var pozitie_camera := Vector3(1.2, 1.35, 10.4)
@@ -33,6 +42,7 @@ var _de_sters := 0
 var _setari: PanouSetari
 var _grila_controale: GridContainer
 var _buton_joaca: Button
+var _buton_muzica: Button
 var _timp := 0.0
 var _plecat := false
 
@@ -114,12 +124,21 @@ func _interfata() -> void:
 	_ecrane["confirmare"] = _ecran_confirmare(radacina)
 	_ecrane["setari"] = _ecran_setari(radacina)
 	_ecrane["controale"] = _ecran_controale(radacina)
+	_ecrane["muzica"] = _ecran_muzica(radacina)
+
+	# butonul mic „Music” din dreapta jos (doar pe ecranul principal)
+	_buton_muzica = TemaMeniu.buton(radacina, "Music", func() -> void: _arata("muzica"))
+	_buton_muzica.add_theme_font_size_override("font_size", 9)
+	_buton_muzica.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE, 8)
+	_buton_muzica.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_buton_muzica.grow_vertical = Control.GROW_DIRECTION_BEGIN
 
 
 func _arata(nume: String) -> void:
 	_ecran_curent = nume
 	for cheie in _ecrane:
 		_ecrane[cheie].visible = cheie == nume
+	_buton_muzica.visible = nume == "principal"
 	match nume:
 		"principal":
 			_actualizeaza_principal()
@@ -326,6 +345,36 @@ func _actualizeaza_controale() -> void:
 		ce_face.text = rand[1]
 		ce_face.add_theme_font_size_override("font_size", 10)
 		_grila_controale.add_child(ce_face)
+
+
+# -------- muzica (cine a făcut-o)
+
+func _ecran_muzica(parinte: Control) -> Control:
+	var panou := _panou(parinte, "MUSIC")
+	for intrare in MUZICA:
+		var artist := Label.new()
+		artist.text = intrare[0]
+		artist.add_theme_font_size_override("font_size", 10)
+		artist.add_theme_color_override("font_color", TemaMeniu.ACCENT)
+		panou.add_child(artist)
+		var piese := Label.new()
+		piese.text = "\n".join(PackedStringArray(intrare[1].map(func(p: String) -> String: return "   " + p)))
+		piese.add_theme_font_size_override("font_size", 9)
+		piese.add_theme_constant_override("line_spacing", -2)
+		panou.add_child(piese)
+		if intrare[2] != "":
+			var nota := Label.new()
+			nota.text = "   " + intrare[2]
+			nota.add_theme_font_size_override("font_size", 8)
+			nota.add_theme_color_override("font_color", TemaMeniu.STINS)
+			panou.add_child(nota)
+	panou.add_theme_constant_override("separation", 2)
+	panou.add_child(_spatiu(4))
+	var inapoi := TemaMeniu.buton(panou, "Back", func() -> void: _arata("principal"))
+	panou.visibility_changed.connect(func() -> void:
+		if panou.is_visible_in_tree():
+			inapoi.grab_focus.call_deferred())
+	return panou.get_parent().get_parent()
 
 
 # -------- bucăți comune
