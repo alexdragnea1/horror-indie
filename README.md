@@ -120,8 +120,9 @@ La un **joc nou**, înainte să înceapă, jocul îți arată toate tastele (ecr
 75. **Trezirea de la început** (15.10): jocul nou începe cu tine în pat: pleoapele se deschid greu, te ridici pe marginea patului și zici „You: What time is it?”, apoi te ridici în picioare.
 76. **Creatura din autobuz vine imediat** (15.10): cum închizi dialogul de la început („Why is my mom such a bitch..”), privirea se întoarce singură spre geam și creatura apare alergând pe lângă autobuz (înainte trebuia să te uiți tu spre pădure sau să aștepți până la 20 de secunde).
 77. **Maimuța din spatele primăriei** (17.10): pe culoarul îngust dintre zidul din spate al primăriei și gard (intri pe la colțurile aripilor), o maimuță stă ghemuită și se ușurează: mormăie, se screme, mai scapă câte un pârț. Când te vede (nu și prin zid) îngheață cu capul spre tine, țipă „uh-uh-AAH-AAH”, sare gardul (și scapă un pârț de frică în aer) și o ia la fugă pe câmp până se topește în ceață. Rămâne grămăjoara. Se întâmplă o singură dată. Modelul e făcut din cod (`primarie.py -- maimuta_caca`), țipătul e sintetizat.
-78. **Bazooka: explozia la locul ei** (17.10): urma arsă și suflul nu mai apar în mijlocul hărții (era bug-ul cu „explozia rămasă într-un loc random”).
-77. Urmează: tu hotărăști (playtest, build).
+78. **Omul din pădure se vede de pe potecă** (17.10): cei doi brazi care îl ascundeau sunt scoși (restul pădurii a rămas la fel). Și el, și maimuța își lasă acum grămăjoara pe loc când fug.
+79. **Bazooka: explozia la locul ei** (17.10): urma arsă și suflul nu mai apar în mijlocul hărții (era bug-ul cu „explozia rămasă într-un loc random”).
+80. Urmează: tu hotărăști (playtest, build).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

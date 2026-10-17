@@ -19,6 +19,9 @@ extends Node3D
 @export var saminta := 21
 ## Unde nu crește nimic (x, z, lățime, adâncime): stația, bariera, panoul verde (altfel un brad îl acoperă).
 @export var zone_libere: Array[Rect2] = []
+## Copaci scoși de aici fără să se mute restul pădurii: se trag la sorți la fel, doar nu se mai pun (zone_libere
+## schimbă tot ce urmează). Ex. cei doi brazi care îl ascundeau pe omul din pădure de potecă (owner, 17.10).
+@export var copaci_scosi: Array[Rect2] = []
 
 const MATERIAL := preload("res://shaders/material_model.tres")
 
@@ -75,6 +78,8 @@ func _copac(scena: PackedScene, x: float, z: float, marime: float) -> void:
 	# copacii morți stau puțin strâmbi
 	if scena in copaci_morti:
 		baza = Basis(Vector3(1, 0, 0), _rng.randf_range(-0.08, 0.08)) * baza
+	if copaci_scosi.any(func(r: Rect2) -> bool: return r.has_point(Vector2(x, z))):
+		return
 	_adauga(scena, Transform3D(baza, Vector3(x, y, z)))
 	var forma := CollisionShape3D.new()
 	var cilindru := CylinderShape3D.new()

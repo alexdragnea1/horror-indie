@@ -140,6 +140,10 @@ func _priveste(jucator: Node3D, delta: float) -> void:
 func _fugi() -> void:
 	_stare = PLECAT  # cât sare, nu mai face nimic altceva
 	Stare.marcheaza(marcaj)
+	# grămăjoara rămâne pe loc (owner, 17.10): era copilul nostru și fugea cu noi
+	var caca := get_node_or_null("Caca") as Node3D
+	if caca:
+		caca.reparent(get_parent(), true)
 	if tipat:
 		Sunet.reda_la(tipat, _cap.global_position)
 	var start := global_position
