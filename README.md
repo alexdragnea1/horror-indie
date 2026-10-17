@@ -4,7 +4,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 
 ## Cum îl pornești
 1. Deschide Godot 4.7 → **Import** → alege `project.godot` din folderul ăsta.
-2. Apasă **F5**. Pornește meniul principal: Start / Continue, Select Save File (3 fișiere), Settings (ecran complet, volum Music și Effects — la prima pornire 20% și 10% —, taste), Quit.
+2. Apasă **F5**. Pornește meniul principal: Start / Continue, Select Save File (3 fișiere), Settings (ecran complet, volum Music și Effects — la prima pornire 20% și 10% —, taste), Quit. În colțul din dreapta jos, butonul mic **Music** arată cine a făcut muzica.
 
 ## Controale
 | Tastă | Ce face |
@@ -122,7 +122,12 @@ La un **joc nou**, înainte să înceapă, jocul îți arată toate tastele (ecr
 77. **Maimuța din spatele primăriei** (17.10): pe culoarul îngust dintre zidul din spate al primăriei și gard (intri pe la colțurile aripilor), o maimuță stă ghemuită și se ușurează: mormăie, se screme, mai scapă câte un pârț. Când te vede (nu și prin zid) îngheață cu capul spre tine, țipă „uh-uh-AAH-AAH”, sare gardul (și scapă un pârț de frică în aer) și o ia la fugă pe câmp până se topește în ceață. Rămâne grămăjoara. Se întâmplă o singură dată. Modelul e făcut din cod (`primarie.py -- maimuta_caca`), țipătul e sintetizat.
 78. **Omul din pădure se vede de pe potecă** (17.10): cei doi brazi care îl ascundeau sunt scoși (restul pădurii a rămas la fel). Și el, și maimuța își lasă acum grămăjoara pe loc când fug.
 79. **Bazooka: explozia la locul ei** (17.10): urma arsă și suflul nu mai apar în mijlocul hărții (era bug-ul cu „explozia rămasă într-un loc random”).
-80. Urmează: tu hotărăști (playtest, build).
+80. **Brațele lui Head Witch și ale Warlock-ului** (17.10): în scenele în care se ridică în aer cu brațele desfăcute (finalul cu demonul, începutul transformării, Warlock-ul când Head Witch îi fură puterile), brațele nu se mai încrucișează prin haină: acum sunt larg desfăcute în lături.
+81. **Autobuzul din orar vine mai repede** (17.10): după ce alegi un loc din orar, autobuzul apare după 2 secunde (înainte 4), în toate stațiile.
+82. **Pălăria de la final** (17.10): o pui pe cap cu catarama în față (înainte o puneai invers).
+83. **Free roam după final** (17.10): după generic (sau dacă îl sari) nu mai ajungi în meniu, ci te întorci în joc, în Town Center, unde ninge. De acum orarul din orice stație are doar **Home**, **Sketchy Laundromat**, **Gun Store** și **Bar** (fără locul în care ești deja). Acasă poți **dormi oricând**: te culci și te trezești în pat a doua zi („Home / Next day, 10:15 AM”), de câte ori vrei.
+84. **Butonul „Music” din meniul principal** (17.10): un buton mic în colțul din dreapta jos deschide lista cu cine a făcut muzica din joc (artiștii și piesele, fără locul în care se aud). Lista e în `scripts/meniu_principal.gd`, constanta `MUZICA`.
+85. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
@@ -217,6 +222,7 @@ Motelul (`tools/blender/motel.py`) trece înainte de export prin `desparte_fete`
 
 ## Sunet
 Pachetul tău de sunete stă în `Sound/Soundpack` (Godot și git îl ignoră). Sunetele alese de acolo, curățate și transformate în `.ogg`, sunt în `sunete/`. Le refaci cu:
+**17.10:** din pachetele de sunete (`Sound/Soundpack`, `Soundpack 2`, `3`, `4`) am șters tot ce nu folosește jocul (852 de fișiere, 1,3 GB). Au rămas doar fișierele din care `tools/sunete.sh` face sunetele jocului, plus licențele; lista cu ce s-a șters e în `Sound/sterse_2026-10-17.txt`.
 ```
 bash tools/sunete.sh
 ```
