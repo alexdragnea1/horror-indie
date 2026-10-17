@@ -4,6 +4,7 @@ extends Interactabil
 ## pleoapele se lasă greu de câteva ori și se închid; sunetul se stinge, apoi `marcaj_dormit` + `marcaj_dimineata` și, pe negru,
 ## scena se reîncarcă dimineața (`scena_dupa`, `titlu_dupa`). Cu `marcaj_dormit` fără `marcaj_trezit` (dimineața, sau
 ## Continue de atunci) te trezești în pat: pleoapele se deschid greu și te ridici.
+## După final (`marcaj_liber`, free roam) patul merge oricând și te trezești în pat a doua zi.
 ## Coordonatele sunt în spațiul patului (tăblia spre +X, partea liberă spre +Z).
 
 @export var marcaj_necesar := "a_venit_acasa"
@@ -49,6 +50,16 @@ extends Interactabil
 @export_multiline var titlu_dupa_3 := "Home\nNext day, 10:31 AM"
 ## Replica de pe marginea patului (scrisă de Claude, owner-ul o poate schimba).
 @export_multiline var replici_somn_3: PackedStringArray = ["You: I killed a warlock today and nobody even said thank you..."]
+
+@export_group("După final")
+## După `marcaj_liber` (jocul terminat; owner 17.10: free roam) patul merge mereu: același somn, te trezești în pat
+## a doua zi. `marcaj_zile_liber` = câte nopți ai dormit așa, `marcaj_trezit_liber` = după a câta te-ai ridicat.
+@export var marcaj_liber := "jocul_terminat"
+@export var marcaj_zile_liber := "nopti_dupa_final"
+@export var marcaj_trezit_liber := "trezit_dupa_final"
+## Scrise de Claude; owner-ul le poate schimba.
+@export_multiline var titlu_dupa_liber := "Home\nNext day, 10:15 AM"
+@export_multiline var replici_somn_liber: PackedStringArray = ["You: No witches, no warlocks. Just sleep."]
 
 var _in_curs := false
 
@@ -97,7 +108,10 @@ func _ready() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	if jucator == null:
 		return
-	if _ultimul_somn() > 0:
+	var nopti := int(Stare.valoare_marcaj(marcaj_zile_liber, 0))
+	if nopti > int(Stare.valoare_marcaj(marcaj_trezit_liber, 0)):
+		_trezeste(jucator, marcaj_trezit_liber, [], nopti)
+	elif _ultimul_somn() > 0:
 		if not Stare.e_marcat(_trezit()):
 			_trezeste(jucator, _trezit())
 	elif Stare.marcaje.is_empty() and Stare.nume_jucator == "":
@@ -106,6 +120,8 @@ func _ready() -> void:
 
 
 func poate_fi_folosit() -> bool:
+	if Stare.e_marcat(marcaj_liber):
+		return not _in_curs
 	return not _in_curs and Stare.e_marcat(_necesar()) and not Stare.e_marcat(_dormit())
 
 
@@ -114,6 +130,7 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	var n := _noaptea()
+	var liber := Stare.e_marcat(marcaj_liber)
 	folosit.emit()
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var cap: Node3D = jucator.get_node("Cap")
@@ -137,7 +154,7 @@ func interactioneaza() -> void:
 	Sunet.reda_la(sunet_scartait, to_global(loc_sezut), Sunet.VOLUM_EFECTE, 0.05, 1.25)
 	await tween.finished
 	await get_tree().create_timer(0.5).timeout
-	var replici: PackedStringArray = [replici_somn, replici_somn_2, replici_somn_3][n - 1]
+	var replici: PackedStringArray = replici_somn_liber if liber else [replici_somn, replici_somn_2, replici_somn_3][n - 1]
 	if not replici.is_empty():
 		Dialog.spune(replici)
 		if Dialog.activ:
@@ -183,6 +200,10 @@ func interactioneaza() -> void:
 	cap.rotation = Vector3.ZERO
 	jucator.seteaza_purtat(false)
 	Stare.seteaza_sarcina("")
+	if liber:
+		Stare.marcheaza(marcaj_zile_liber, int(Stare.valoare_marcaj(marcaj_zile_liber, 0)) + 1)
+		Tranzitie.mergi_la(scena_dupa, titlu_dupa_liber)
+		return
 	Stare.marcheaza([marcaj_dimineata, marcaj_dimineata_2, marcaj_dimineata_3][n - 1])
 	Stare.marcheaza([marcaj_dormit, marcaj_dormit_2, marcaj_dormit_3][n - 1])
 	if scena_dupa != "":
@@ -192,8 +213,8 @@ func interactioneaza() -> void:
 
 
 ## La Continue după somn (și la joc nou): ești întins, deschizi ochii greu și te ridici lângă pat; dacă sunt
-## `replici`, le spui așezat pe margine. La sfârșit pune `marcaj`.
-func _trezeste(jucator: Node3D, marcaj: String, replici: PackedStringArray = []) -> void:
+## `replici`, le spui așezat pe margine. La sfârșit pune `marcaj` (cu `valoare`).
+func _trezeste(jucator: Node3D, marcaj: String, replici: PackedStringArray = [], valoare: Variant = true) -> void:
 	_in_curs = true
 	var cap: Node3D = jucator.get_node("Cap")
 	var inaltime_ochi := cap.position.y
@@ -240,7 +261,7 @@ func _trezeste(jucator: Node3D, marcaj: String, replici: PackedStringArray = [])
 	_pleoape.clear()
 	jucator.seteaza_purtat(false)
 	Stare.meniu_deschis = false
-	Stare.marcheaza(marcaj)
+	Stare.marcheaza(marcaj, valoare)
 	_in_curs = false
 
 

@@ -1230,7 +1230,8 @@ func _palaria(de_unde: Vector3) -> void:
 	await apleci.finished
 	Sunet.reda(SUNET_LUAT, Sunet.VOLUM_EFECTE - 3.0, 0.05)
 	# în mâini, în fața ochilor (copilul camerei)
-	var in_mana := Transform3D(Basis(Vector3.RIGHT, 0.5), Vector3(0.0, -0.32, -0.62))
+	# întoarsă cu 180°: fața modelului (catarama) e spre +Z, iar camera privește spre -Z (owner 17.10: o punea invers)
+	var in_mana := Transform3D(Basis(Vector3.RIGHT, 0.5) * Basis(Vector3.UP, PI), Vector3(0.0, -0.32, -0.62))
 	var de_pe_jos := _palarie.global_transform
 	var ridica := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	ridica.tween_method(func(k: float) -> void:
@@ -1249,8 +1250,8 @@ func _palaria(de_unde: Vector3) -> void:
 ## ecranului, până la final), apoi te uiți în sus, la zăpadă. Apoi mesajul și genericul.
 func _pune_palaria_pe_cap(cap: Node3D) -> void:
 	# în sus, în fața ochilor, apoi peste cap
-	var deasupra := Transform3D(Basis(Vector3.RIGHT, -0.25), Vector3(0.0, 0.22, -0.5))
-	var pe_cap := Transform3D(Basis(Vector3.RIGHT, -0.1), Vector3(0.0, 0.13, 0.05))
+	var deasupra := Transform3D(Basis(Vector3.RIGHT, -0.25) * Basis(Vector3.UP, PI), Vector3(0.0, 0.22, -0.5))
+	var pe_cap := Transform3D(Basis(Vector3.RIGHT, -0.1) * Basis(Vector3.UP, PI), Vector3(0.0, 0.13, 0.05))
 	var de_la := _palarie.transform
 	var sus := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	sus.tween_method(func(k: float) -> void: _palarie.transform = de_la.interpolate_with(deasupra, k), 0.0, 1.0, 1.1)

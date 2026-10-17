@@ -54,6 +54,18 @@ static var cu_autobuzul := false
 @export var titluri_noi_de_la := ""
 @export var titluri_noi_pana_la := ""
 @export var titluri_noi: PackedStringArray = []
+@export_group("După final")
+## După `marcaj_liber` (jocul terminat; owner 17.10: free roam) orarul e același peste tot: doar `LIBER`, fără locul
+## în care ești, și nimic nu mai e blocat.
+@export var marcaj_liber := "jocul_terminat"
+
+## Locurile din free roam: [buton, scenă, titlu].
+const LIBER := [
+	["Home", "res://scenes/afara_bloc.tscn", "Block M7, Entrance B"],
+	["Sketchy Laundromat", "res://scenes/casino.tscn", "Sketchy Laundromat"],
+	["Gun Store", "res://scenes/magazin_arme.tscn", "Freedom Gun Store"],
+	["Bar", "res://scenes/bar.tscn", "Urban Bar"],
+]
 
 var _in_curs := false
 
@@ -71,6 +83,10 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
+	if Stare.e_marcat(marcaj_liber):
+		await _orar_liber()
+		_in_curs = false
+		return
 	if blocat_de_la != "" and Stare.e_marcat(blocat_de_la) and (blocat_pana_la == "" or not Stare.e_marcat(blocat_pana_la)):
 		Dialog.spune(replici_blocat)
 		if Dialog.activ:
@@ -123,3 +139,22 @@ func interactioneaza() -> void:
 				Stare.sarcina = ""
 				Stare.schimbat.emit()
 	_in_curs = false
+
+
+## Free roam: butoanele din `LIBER` (fără scena în care ești) + `optiune_anulare`.
+func _orar_liber() -> void:
+	var aici := get_tree().current_scene.scene_file_path
+	var locuri := []
+	var butoane := PackedStringArray()
+	for loc in LIBER:
+		if loc[1] != aici:
+			locuri.append(loc)
+			butoane.append(loc[0])
+	butoane.append(optiune_anulare)
+	var buton := await Dialog.intreaba("", butoane)
+	if buton < 0 or buton >= locuri.size():
+		return
+	sosire.cheama(locuri[buton][1], locuri[buton][2])
+	if Stare.sarcina == sarcina_de_sters:
+		Stare.sarcina = ""
+		Stare.schimbat.emit()

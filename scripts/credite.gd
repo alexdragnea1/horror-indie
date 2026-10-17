@@ -1,7 +1,8 @@
 extends Node
 ## Genericul de final (scenes/credite.tscn), după „Fuck magic” din Town Center (lupta_head_witch.gd): pe negru urcă
 ## încet titlul (`titlu`) și rândurile (`randuri`), cu muzica din meniu. Orice tastă / click / buton de controller
-## (după `blocat_primele` secunde, ca să nu-l sari din greșeală) sau sfârșitul lui te duce în meniul principal.
+## (după `blocat_primele` secunde, ca să nu-l sari din greșeală) sau sfârșitul lui te duce înapoi în joc, în Town
+## Center (free roam, din salvarea făcută înainte de generic); fără salvare, în meniul principal.
 ## Textul e al owner-ului (10.10): se păstrează exact cum l-a scris.
 
 const SCENA_MENIU := "res://scenes/meniu_principal.tscn"
@@ -133,4 +134,8 @@ func _la_meniu() -> void:
 	set_process_input(false)
 	create_tween().tween_property(_muzica, "volume_db", -40.0, 0.9)
 	Stare.meniu_deschis = false
-	Tranzitie.mergi_la(SCENA_MENIU)
+	if Salvare.exista(Setari.slot) and Stare.e_marcat("jocul_terminat"):
+		# free roam (owner 17.10): continui din salvarea de dinainte de generic, în Town Center
+		Salvare.continua()
+	else:
+		Tranzitie.mergi_la(SCENA_MENIU)
