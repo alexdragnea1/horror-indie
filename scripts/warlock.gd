@@ -182,13 +182,14 @@ func prabusire(durata: float) -> Tween:
 
 ## Head Witch îi trage puterile: se ridică în aer, cu brațele desfăcute și capul pe spate, și tremură.
 func smuls(durata: float) -> Tween:
+	# brațul drept e pe -X: în lături înseamnă Z negativ (cu plus își încrucișa brațele pe piept, owner 17.10)
 	_tremura = true
 	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(self, "plutire", 0.7, durata)
 	t.tween_property(self, "_aplecare", -0.25, durata)
-	t.tween_property(_brat_d, "rotation:z", 1.1, durata)
+	t.tween_property(_brat_d, "rotation:z", -1.1, durata)
 	t.tween_property(_brat_d, "rotation:x", -0.4, durata)
-	t.tween_property(_brat_s, "rotation:z", -1.1, durata)
+	t.tween_property(_brat_s, "rotation:z", 1.1, durata)
 	t.tween_property(_brat_s, "rotation:x", -0.4, durata)
 	t.tween_property(_cap, "rotation:x", -0.55, durata)
 	t.tween_property(self, "furie", 1.0, durata * 0.6)
