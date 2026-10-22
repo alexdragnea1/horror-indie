@@ -30,6 +30,8 @@ const SUNET_PASI := [preload("res://sunete/pas_lemn_1.ogg"), preload("res://sune
 ## sticla când merge cu ea (în fața burții, dar cu fundul deasupra blatului: mai jos intra în el la tejghea).
 const SUB_TEJGHEA := Vector3(0.05, 0.85, 0.225)
 const PURTARE := Vector3(-0.12, 1.16, 0.3)
+## Zona de E (în coordonatele scaunului): de deasupra scaunului, peste tejghea, până în spatele barmanului (x -1,33).
+const ZONA_E := AABB(Vector3(-1.65, 0.75, -0.45), Vector3(1.9, 1.3, 0.9))
 
 @export var om: OmLaMasa
 ## Unde stai pe scaun (picioarele jucătorului) și cât de sus îți sunt ochii (față de picioare).
@@ -69,12 +71,30 @@ var _de_strans: Array[Node3D] = []
 
 func _ready() -> void:
 	indiciu = "[E] Sit at the bar"
+	_zona_e()
 	await get_tree().process_frame
 	_jucator = get_tree().get_first_node_in_group("jucator") as CharacterBody3D
 	if _jucator:
 		_cap = _jucator.get_node("Cap")
 		_camera = _cap.get_node("Camera3D")
 		om.privire = _cap
+
+
+## E merge și când te uiți la barman, nu doar la scaun (owner, 22.10): o cutie de la scaun până dincolo de capul
+## lui, pe stratul 4 (o vede doar raza de E a jucătorului; nu te împiedici de ea).
+func _zona_e() -> void:
+	var zona := StaticBody3D.new()
+	zona.name = "ZonaE"
+	zona.collision_layer = 8
+	zona.collision_mask = 0
+	zona.set_meta("interactabil", self)
+	var forma := CollisionShape3D.new()
+	var cutie := BoxShape3D.new()
+	cutie.size = ZONA_E.size
+	forma.shape = cutie
+	forma.position = ZONA_E.get_center()
+	zona.add_child(forma)
+	add_child(zona)
 
 
 func poate_fi_folosit() -> bool:

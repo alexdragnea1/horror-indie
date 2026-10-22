@@ -225,6 +225,9 @@ func _ocupat() -> bool:
 
 func _tinta_privita() -> Interactabil:
 	var obiect := _raza.get_collider()
+	# o zonă de E mai mare decât obiectul (pe stratul 4, ex. barmanul din spatele scaunului): meta „interactabil”
+	if obiect and obiect.has_meta("interactabil"):
+		obiect = obiect.get_meta("interactabil")
 	if obiect is Interactabil and obiect.poate_fi_folosit():
 		return obiect
 	return null
