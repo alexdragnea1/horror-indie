@@ -467,7 +467,7 @@ def motel(cale):
 
 	# --- graffiti pe capătul aripii (peretele dinspre scară)
 	gx = XV0 - 0.01
-	piese.append(_text_o_fata("Graffiti", "TONY + TINA", (gx, 14.5, 1.6), 0.45, MOV, rot=(1.5708, 0, -1.5708)))
+	piese.append(_text_o_fata("Graffiti", "IHATEPINK WAS HERE", (gx, 14.0, 1.6), 0.45, MOV, rot=(1.5708, 0, -1.5708)))
 	piese.append(_text_o_fata("Graffiti", "666", (gx, 12.2, 2.4), 0.6, ROSU, rot=(1.5708, 0, -1.5708)))
 	piese.append(_text_o_fata("Graffiti", "NO SLEEP", (gx, 16.0, 4.4), 0.38, NEGRU, rot=(1.5708, 0, -1.5708)))
 	strange()
