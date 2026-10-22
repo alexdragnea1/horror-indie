@@ -67,6 +67,13 @@ XB = XA + NR * RW   # = 10.0, aici începe recepția
 FL = 0.15       # trotuarul / pragul camerelor
 E2 = 3.15       # podeaua de sus
 HT = 6.0        # acoperișul
+# camera 666 (fosta 221, a cincea de sus; owner 22.10): demonul își face skincare-ul acolo. Ușa e un model separat
+# (`usa_666`, originea în balama), iar în spatele ei corpul motelului e scobit: o cămăruță cu oglindă de machiaj.
+CAMERA_666 = 221
+# grătarul boschetarilor de pe acoperișul recepției (x, y)
+GRATAR = (13.8, 6.95)
+X_USA_666 = XA + 4 * RW + 0.45      # marginea din stânga a golului ușii (balamaua)
+CAMERA_666_INTERIOR = (XA + 4 * RW + 0.15, XA + 4 * RW + 1.75, YF + 0.25, YF + 2.65, E2, E2 + 2.5)  # x0, x1, y0, y1, z0, z1
 # --- recepția (Blender: fațada la y = OY0)
 OX0, OX1 = 10.0, 17.5
 OY0, OY1 = 5.0, 16.0
@@ -96,19 +103,33 @@ def _ramas(piese, nume):
 # Bucăți care se repetă
 # ---------------------------------------------------------------------------------------------------------------
 
-def _usa_camera(piese, lumini, x0, z0, numar, cul, r, nu_deranjati=False, aprins=True):
-	"""Ușa unei camere (metal vopsit, scorojit), cu numărul de alamă, vizorul, clanța, pragul și lampa de lângă ea."""
+def _foaie_usa(piese, x0, y, z0, numar, cul, vopsea):
+	"""Foaia ușii unei camere, cu tot ce e pe ea (numărul, vizorul, clanța); `y` = fața tocului."""
 	x1 = x0 + 0.95
-	y = YF - 0.01
-	piese.append(cub("Toc usa", (1.09, 0.06, 2.17), ((x0 + x1) / 2, y - 0.02, z0 + 1.07), LEMN))
 	piese.append(cub("Usa camera", (0.95, 0.05, 2.08), ((x0 + x1) / 2, y - 0.045, z0 + 1.04), cul))
 	# vopsea sărită jos, la lovituri de picior
-	piese.append(cub("Vopsea sarita", (0.3, 0.052, 0.18), (x0 + 0.3 + r.uniform(0, 0.3), y - 0.056, z0 + 0.2), METAL))
+	piese.append(cub("Vopsea sarita", (0.3, 0.052, 0.18), (x0 + 0.3 + vopsea, y - 0.056, z0 + 0.2), METAL))
 	piese.append(cub("Placa numar", (0.26, 0.01, 0.12), ((x0 + x1) / 2, y - 0.075, z0 + 1.72), LEMN_INCHIS))
 	piese.append(_text("Numar", str(numar), ((x0 + x1) / 2, y - 0.082, z0 + 1.72), 0.09, AUR))
 	piese.append(cilindru("Vizor", 0.012, 0.012, 0.02, ((x0 + x1) / 2, y - 0.075, z0 + 1.55), CROM, laturi=6, rot=(1.5708, 0, 0)))
 	piese.append(cub("Clanta", (0.05, 0.05, 0.12), (x1 - 0.1, y - 0.08, z0 + 1.0), CROM))
 	piese.append(cub("Clanta maner", (0.12, 0.03, 0.025), (x1 - 0.15, y - 0.11, z0 + 0.98), CROM))
+
+
+def _usa_camera(piese, lumini, x0, z0, numar, cul, r, nu_deranjati=False, aprins=True, fara_foaie=False):
+	"""Ușa unei camere (metal vopsit, scorojit), cu numărul de alamă, vizorul, clanța, pragul și lampa de lângă ea.
+	`fara_foaie`: doar tocul și lampa (foaia e un model separat care se deschide, ca la camera 666: `usa_666`)."""
+	x1 = x0 + 0.95
+	y = YF - 0.01
+	vopsea = r.uniform(0, 0.3)  # trasă oricum, ca restul motelului să iasă la fel
+	if fara_foaie:
+		# tocul ca ramă (plin, ar astupa golul ușii deschise)
+		piese.append(cub("Toc usa", (0.07, 0.06, 2.17), (x0 - 0.035, y - 0.02, z0 + 1.07), LEMN))
+		piese.append(cub("Toc usa", (0.07, 0.06, 2.17), (x1 + 0.035, y - 0.02, z0 + 1.07), LEMN))
+		piese.append(cub("Toc usa", (0.95, 0.06, 0.09), ((x0 + x1) / 2, y - 0.02, z0 + 2.125), LEMN))
+	else:
+		piese.append(cub("Toc usa", (1.09, 0.06, 2.17), ((x0 + x1) / 2, y - 0.02, z0 + 1.07), LEMN))
+		_foaie_usa(piese, x0, y, z0, numar, cul, vopsea)
 	if nu_deranjati:
 		piese.append(cub("Agatatoare", (0.09, 0.006, 0.22), (x1 - 0.15, y - 0.13, z0 + 0.85), ROSU))
 		piese.append(_text_o_fata("Do not disturb", "DO NOT\nDISTURB", (x1 - 0.15, y - 0.134, z0 + 0.85), 0.028, ALB))
@@ -118,6 +139,92 @@ def _usa_camera(piese, lumini, x0, z0, numar, cul, r, nu_deranjati=False, aprins
 	(lumini if aprins else piese).append(sfera("Glob lampa", 0.07, (lx, y - 0.1, z0 + 2.35), AUR if aprins else METAL,
 		scara=(1, 0.7, 1.25), segmente=8, inele=5))
 	piese.append(cub("Gratie lampa", (0.012, 0.012, 0.2), (lx, y - 0.17, z0 + 2.35), METAL_INCHIS))
+
+
+def _camera_666(piese, lumini):
+	"""Cămăruța din spatele ușii 666 (se vede doar cât e ușa deschisă): mochetă, pereți închiși, pe peretele din fund
+	oglinda de machiaj cu becuri și raftul cu borcănele de cremă, prosopul agățat în stânga."""
+	x0, x1, y0, y1, z0, z1 = CAMERA_666_INTERIOR
+	e = 0.01  # pereții stau puțin înăuntru, ca fețele lor să nu cadă peste ale corpului
+	piese.append(cub("Camera 666", (x1 - x0 - 2 * e, y1 - y0, 0.02), ((x0 + x1) / 2, (y0 + y1) / 2, z0 + 0.01), LEMN_INCHIS))
+	piese.append(cub("Camera 666", (x1 - x0 - 2 * e, y1 - y0, 0.02), ((x0 + x1) / 2, (y0 + y1) / 2, z1 - 0.01), NEGRU))
+	piese.append(cub("Camera 666", (x1 - x0 - 2 * e, 0.02, z1 - z0), ((x0 + x1) / 2, y1 - 0.01, (z0 + z1) / 2), ROSU))
+	for x in (x0 + 0.01, x1 - 0.01):
+		piese.append(cub("Camera 666", (0.02, y1 - y0, z1 - z0), (x, (y0 + y1) / 2, (z0 + z1) / 2), LEMN))
+	# oglinda cu becuri pe peretele din fund
+	ox, oz = (x0 + x1) / 2, z0 + 1.45
+	piese.append(cub("Rama oglinda", (0.9, 0.03, 0.75), (ox, y1 - 0.035, oz), ALB))
+	piese.append(cub("Oglinda", (0.78, 0.02, 0.63), (ox, y1 - 0.055, oz), GEAM))
+	for k in range(4):
+		for (bx, bz) in ((ox - 0.42, oz - 0.27 + k * 0.18), (ox + 0.42, oz - 0.27 + k * 0.18)):
+			lumini.append(sfera("Bec oglinda", 0.03, (bx, y1 - 0.06, bz), AUR, segmente=6, inele=4))
+	# raftul cu cremele
+	piese.append(cub("Raft creme", (0.9, 0.18, 0.03), (ox, y1 - 0.11, oz - 0.48), ALB))
+	for k, cul in enumerate((VERDE_DESCHIS, ROSU, ALB, TURCOAZ, MOV, AUR)):
+		piese.append(cilindru("Borcan crema", 0.035, 0.035, 0.06 + (k % 3) * 0.03, (ox - 0.36 + k * 0.145, y1 - 0.11,
+			oz - 0.465 + (0.06 + (k % 3) * 0.03) / 2), cul, laturi=8))
+	# prosopul pe cârlig, pe peretele din stânga
+	piese.append(cub("Carlig", (0.04, 0.04, 0.04), (x0 + 0.04, y0 + 0.9, z0 + 1.7), CROM))
+	piese.append(cub("Prosop", (0.03, 0.4, 0.7), (x0 + 0.08, y0 + 0.9, z0 + 1.35), ALB))
+
+
+def _gratar(piese, lumini):
+	"""Grătarul boschetarilor de pe acoperișul recepției (owner 22.10): un butoi de tablă tăiat pe lung, pe picioare de
+	fier, cu jar (`Lumini`) și cârnați pe grilă; lângă el o ladă cu doze, un cărucior de supermarket, un scaun pliant,
+	o saltea. Boschetarii sunt modele separate (`boschetari`), focul și fumul se fac în Godot (`GratarMotel`)."""
+	r = random.Random(13)
+	gx, gy = GRATAR
+	z = OT + 0.2  # fața acoperișului
+	zb = z + 0.78  # axa butoiului
+	for dx in (-0.35, 0.35):
+		for dy in (-0.18, 0.18):
+			piese.append(cub("Picior gratar", (0.04, 0.04, 0.6), (gx + dx, gy + dy, z + 0.3), METAL_INCHIS, rot=(dy * 0.8, 0, 0)))
+	# jumătatea de jos a butoiului (cilindru culcat pe X), deschis sus: o carcasă din plăci în jurul axei
+	for k in range(7):
+		u = math.pi + (k + 0.5) * math.pi / 7  # de la stânga, pe dedesubt, la dreapta
+		piese.append(cub("Butoi", (0.86, 0.04, 0.14), (gx, gy + math.cos(u) * 0.28, zb + math.sin(u) * 0.28), RUGINA if k % 3 else METAL,
+			rot=(u, 0, 0)))
+	for dx in (-0.43, 0.43):
+		piese.append(cub("Capac butoi", (0.02, 0.54, 0.27), (gx + dx, gy, zb - 0.135), METAL_INCHIS))
+	# jarul și grila cu cârnații
+	for k in range(9):
+		lumini.append(cub("Jar", (r.uniform(0.08, 0.14), r.uniform(0.07, 0.12), 0.05), (gx + r.uniform(-0.33, 0.33), gy + r.uniform(-0.13, 0.13),
+			zb - 0.1 + r.uniform(0, 0.04)), r.choice((RUGINA, AUR, BRONZ)), rot=(0, 0, r.uniform(0, 3))))
+	for k in range(6):
+		piese.append(cub("Grila", (0.84, 0.012, 0.012), (gx, gy - 0.22 + k * 0.088, zb + 0.02), CROM))
+	for k in range(5):
+		piese.append(cilindru("Carnat", 0.025, 0.025, 0.2, (gx - 0.25 + k * 0.12, gy + r.uniform(-0.12, 0.12), zb + 0.05),
+			(LEMN_DESCHIS, BRONZ, ROSU)[k % 3], laturi=6, rot=(1.5708, 0, r.uniform(-0.3, 0.3))))
+	# lada cu doze, căruciorul, scaunul pliant, salteaua
+	lx, ly = gx + 1.0, gy + 0.6
+	piese.append(cub("Lada", (0.5, 0.35, 0.3), (lx, ly, z + 0.15), LEMN_DESCHIS))
+	for k in range(4):
+		piese.append(cilindru("Doza", 0.033, 0.033, 0.12, (lx - 0.15 + k * 0.1, ly + r.uniform(-0.08, 0.08), z + 0.36),
+			(ROSU, ALB, TEAL, ROSU)[k], laturi=8))
+	for k in range(5):
+		piese.append(cilindru("Doza turtita", 0.035, 0.035, 0.03, (gx + r.uniform(-1.2, 1.8), gy + r.uniform(0.4, 1.6), z + 0.015),
+			r.choice((ROSU, ALB, TEAL)), laturi=8, rot=(1.5708, 0, r.uniform(0, 3))))
+	piese.append(_obiect(_carucior(r), (gx - 1.6, gy + 1.2, z), (0, 0, 0.5)))
+	scaun = [cub("Sezut pliant", (0.45, 0.42, 0.03), (0, 0, 0.42), VERDE), cub("Spatar pliant", (0.45, 0.03, 0.4), (0, 0.22, 0.66), VERDE,
+		rot=(-0.2, 0, 0))]
+	for dx in (-0.2, 0.2):
+		scaun.append(cub("Picior pliant", (0.025, 0.025, 0.6), (dx, 0, 0.3), CROM, rot=(0.6, 0, 0)))
+		scaun.append(cub("Picior pliant", (0.025, 0.025, 0.6), (dx, 0, 0.3), CROM, rot=(-0.6, 0, 0)))
+	piese.append(_obiect(scaun, (gx + 2.3, gy + 1.5, z), (0, 0, -0.5)))
+	piese.append(cub("Saltea", (0.9, 1.9, 0.14), (gx + 2.6, gy + 4.5, z + 0.07), MASLINIU, rot=(0, 0, 0.3)))
+	piese.append(cub("Pata saltea", (0.4, 0.5, 0.005), (gx + 2.7, gy + 4.3, z + 0.142), BRONZ, rot=(0, 0, 0.5)))
+
+
+def usa_666(cale):
+	"""Foaia ușii 666, singură, cu originea în balama (Godot: `Usa666` din motel.tscn o rotește spre înăuntru)."""
+	curata()
+	piese = []
+	y = YF - 0.01
+	_foaie_usa(piese, 0.0, y, 0.0, 666, ROSU, 0.12)
+	for ob in piese:
+		ob.location.y -= YF - 0.055  # balamaua în origine: pe mijlocul grosimii foii
+	uneste(piese, "Usa666")
+	exporta(os.path.join(cale, "usa_666.glb"))
 
 
 def _fereastra_camera(piese, lumini, geamuri, x0, z0, culoare_perdea, aprinsa, r, scanduri=False, culoare_lumina=AUR):
@@ -296,10 +403,19 @@ def motel(cale):
 			goluri.append((x0 + 0.45, x0 + 1.4, z0, z0 + 2.12))
 			goluri.append((x0 + 1.85, x0 + 3.25, z0 + 0.95, z0 + 2.15))
 	perete(piese, "Fatada", "x", XV0, XB, YF, YF + 0.25, 0.0, HT, TENCUIALA, goluri)
-	piese.append(cub("Corp motel", (XB - XV0, YS - YF - 0.25, HT), ((XV0 + XB) / 2, (YF + 0.25 + YS) / 2, HT / 2), TENCUIALA))
-	# în spatele golurilor: camera întunecată (nu se vede nimic înăuntru, doar perdeaua)
+	# corpul e plin, în afară de camera 666 (`_camera_666`): acolo e scobit cât camera
+	cx0, cx1, cy0, cy1, cz0, cz1 = CAMERA_666_INTERIOR
+	for (a, b) in ((XV0, cx0), (cx1, XB)):
+		piese.append(cub("Corp motel", (b - a, YS - YF - 0.25, HT), ((a + b) / 2, (YF + 0.25 + YS) / 2, HT / 2), TENCUIALA))
+	piese.append(cub("Corp motel", (cx1 - cx0, YS - YF - 0.25, cz0), ((cx0 + cx1) / 2, (YF + 0.25 + YS) / 2, cz0 / 2), TENCUIALA))
+	piese.append(cub("Corp motel", (cx1 - cx0, YS - YF - 0.25, HT - cz1), ((cx0 + cx1) / 2, (YF + 0.25 + YS) / 2, (cz1 + HT) / 2), TENCUIALA))
+	piese.append(cub("Corp motel", (cx1 - cx0, YS - cy1, cz1 - cz0), ((cx0 + cx1) / 2, (cy1 + YS) / 2, (cz0 + cz1) / 2), TENCUIALA))
+	# în spatele golurilor: camera întunecată (nu se vede nimic înăuntru, doar perdeaua); la ușa 666 e camera adevărată
 	for (a, b, za, zb) in goluri:
+		if cx0 < a < cx1 and cz0 <= za < cz1:
+			continue
 		piese.append(cub("Fund gol", (b - a, 0.02, zb - za), ((a + b) / 2, YF + 0.24, (za + zb) / 2), NEGRU))
+	_camera_666(piese, lumini)
 	_cutie_coliziune(col, (XB - XV0, YS - YF, HT), ((XV0 + XB) / 2, (YF + YS) / 2, HT / 2))
 	# soclul (dunga închisă de jos) și brâul dintre etaje
 	piese.append(cub("Soclu", (XB - XV0 + 0.04, 0.27, 0.35), ((XV0 + XB) / 2, YF + 0.12, FL + 0.175), LEMN))
@@ -324,7 +440,7 @@ def motel(cale):
 			numar = 117 + k + 100 * f
 			cul_usa = TEAL if r.random() < 0.8 else (LEMN_DESCHIS if r.random() < 0.5 else MOV)
 			_usa_camera(piese, lumini, x0 + 0.45, z0, numar, cul_usa, r, nu_deranjati=numar in (122, 219),
-				aprins=numar in LAMPI_APRINSE)
+				aprins=numar in LAMPI_APRINSE, fara_foaie=numar == CAMERA_666)
 			if numar == 122:
 				# camera Warlock-ului: perdeaua roșie, aprinsă din spate
 				_fereastra_camera(piese, lumini, geamuri, x0 + 1.85, z0, ROSU, True, r, culoare_lumina=ROSU)
@@ -380,6 +496,22 @@ def motel(cale):
 	piese.append(cub("Mana curenta", (0.06, 0.4, 0.05), (XP0 + 0.03, YF - 0.2, E2 + 1.0), METAL_INCHIS))
 	_cutie_coliziune(col, (0.1, 0.4, 1.2), (XP0 + 0.03, YP + 0.2, E2 + 0.6))
 	_cutie_coliziune(col, (0.1, 0.4, 1.2), (XP0 + 0.03, YF - 0.2, E2 + 0.6))
+	# celălalt capăt (spre recepție): un grilaj până sub streașină, ca să nu mai sari pe acoperișul recepției (owner 22.10)
+	gx = XB - 0.08
+	gz1 = HT - 0.5
+	for (y, z, dy, dz) in ((YP + 0.12, (E2 + gz1) / 2, 0.06, gz1 - E2), (YF - 0.04, (E2 + gz1) / 2, 0.06, gz1 - E2),
+			((YP + YF) / 2 + 0.04, E2 + 0.08, YF - YP - 0.1, 0.06), ((YP + YF) / 2 + 0.04, gz1 - 0.03, YF - YP - 0.1, 0.06),
+			((YP + YF) / 2 + 0.04, E2 + 1.1, YF - YP - 0.1, 0.04)):
+		piese.append(cub("Rama grilaj", (0.06, dy, dz), (gx, y, z), METAL_INCHIS))
+	rg = random.Random(666)  # nu din `r`: restul motelului iese la fel ca înainte
+	y = YP + 0.24
+	while y < YF - 0.1:
+		piese.append(cub("Bara grilaj", (0.025, 0.025, gz1 - E2 - 0.1), (gx, y, (E2 + gz1) / 2), METAL_INCHIS if rg.random() < 0.8 else RUGINA))
+		y += 0.13
+	piese.append(cub("Panou grilaj", (0.02, 0.5, 0.3), (gx - 0.04, (YP + YF) / 2, E2 + 1.45), ALB))
+	piese.append(_text_o_fata("Scris grilaj", "STAFF\nONLY", (gx - 0.052, (YP + YF) / 2, E2 + 1.45), 0.08, ROSU, rot=(1.5708, 0, -1.5708)))
+	piese.append(cub("Lacat grilaj", (0.04, 0.07, 0.09), (gx - 0.05, YF - 0.12, E2 + 1.05), AUR))
+	_cutie_coliziune(col, (0.12, YF - YP, gz1 - E2 + 0.1), (gx, (YP + YF) / 2, (E2 + gz1) / 2))
 	strange()
 
 	# --- scara: de la x XS0 (jos) la XP0 (sus), lată de 1,2 m între y 8,4 și 9,6; treptele, vangurile, balustrada
@@ -584,6 +716,10 @@ def receptie(cale):
 	piese.append(cub("Mustele moarte", (0.3, 0.12, 0.005), (15.0, 7.62, OH - 0.081), NEGRU))
 	piese.append(cub("Acoperis receptie", (OX1 - OX0 + 0.2, OY1 - OY0 + 0.2, 0.2), ((OX0 + OX1) / 2, (OY0 + OY1) / 2, OT + 0.1), METAL_INCHIS))
 	piese.append(cub("Atic", (OX1 - OX0 + 0.24, 0.2, 0.45), ((OX0 + OX1) / 2, OY0 - 0.02, OT + 0.2), LEMN))
+	# acoperișul e plin (înainte nu avea coliziune: cădeai prin el, owner 22.10)
+	_cutie_coliziune(col, (OX1 - OX0 + 0.2, OY1 - OY0 + 0.2, 0.25), ((OX0 + OX1) / 2, (OY0 + OY1) / 2, OT + 0.075))
+	_cutie_coliziune(col, (OX1 - OX0 + 0.24, 0.2, 0.45), ((OX0 + OX1) / 2, OY0 - 0.02, OT + 0.2))
+	_gratar(piese, lumini)
 	strange()
 
 	# --- tejgheaua: lambriu, blatul, geamul antiglonț până în tavan (cu fanta de bani și difuzorul), soneria
@@ -1136,11 +1272,41 @@ def receptionera(cale):
 	casino_oameni.om(cale, "receptionera", RECEPTIONERA, 122)
 
 
+# boschetarii de la grătarul de pe recepție (owner 22.10), în picioare (casino_oameni.om); D = mâna lor dreaptă (-X)
+BOSCHETARI = {
+	# cel cu grătarul: geacă militară ponosită, șapcă murdară, barbă, mâna dreaptă întinsă spre grilă
+	"boschetar_gratar": ({
+		"piele": p("a56850"), "piele_umbra": p("904a40"), "haina": MASLINIU, "haina_umbra": VERDE, "camasa": LEMN_INCHIS,
+		"stil_haina": "geaca", "pantaloni": LEMN, "pantofi": NEGRU, "par": LEMN_INCHIS, "stil_par": "scurt",
+		"palarie": "baseball", "culoare_palarie": ROSU, "culoare_palarie_umbra": LEMN, "panou_sapca": BRONZ, "sigla_sapca": AUR,
+		"barba": LEMN_INCHIS, "mustata": LEMN_INCHIS, "nas_rosu": True, "riduri": True, "slab": 0.4, "in_picioare": True, "sezut": 0.86,
+		"poza_D": ((-0.22, -0.2, 1.08), (-0.12, -0.44, 0.97)),
+		"poza_S": ((0.25, 0.0, 1.1), (0.24, -0.14, 0.88)),
+	}, 666),
+	# cel care fumează lângă el: pulover rupt, chel cu țepi cărunți, barbă albă, nas roșu
+	"boschetar_fumator": ({
+		"piele": p("a56850"), "piele_umbra": p("904a40"), "haina": LEMN, "haina_umbra": LEMN_INCHIS, "camasa": METAL,
+		"stil_haina": "pulover", "nasturi": NEGRU, "pantaloni": METAL_INCHIS, "pantofi": LEMN_INCHIS, "par": CROM, "stil_par": "chel",
+		"tepi": CROM, "barba": CROM, "mustata": CROM, "nas_rosu": True, "riduri": True, "burta": 0.6, "tigara": "tigara",
+		"in_picioare": True, "sezut": 0.86,
+		"poza_D": ((-0.24, -0.05, 1.12), (-0.12, -0.3, 1.2)),
+		"poza_S": ((0.25, 0.0, 1.1), (0.24, -0.14, 0.88)),
+	}, 667),
+}
+
+
+def boschetari(cale):
+	for nume, (s, saminta) in BOSCHETARI.items():
+		casino_oameni.om(cale, nume, s, saminta)
+
+
 def toate(cale):
 	motel(cale)
 	receptie(cale)
 	parcare(cale)
 	receptionera(cale)
+	usa_666(cale)
+	boschetari(cale)
 
 
 if __name__ == "__main__":

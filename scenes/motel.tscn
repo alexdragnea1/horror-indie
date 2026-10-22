@@ -56,6 +56,11 @@
 [ext_resource type="Script" path="res://scripts/orar_autobuz.gd" id="58_or"]
 [ext_resource type="PackedScene" path="res://models/boschetar.glb" id="tb_m"]
 [ext_resource type="Script" path="res://scripts/boschetar.gd" id="tb_s"]
+[ext_resource type="PackedScene" path="res://models/usa_666.glb" id="u666_m"]
+[ext_resource type="Script" path="res://scripts/usa_666.gd" id="u666_s"]
+[ext_resource type="Script" path="res://scripts/gratar_motel.gd" id="gr_s"]
+[ext_resource type="PackedScene" path="res://models/boschetar_gratar.glb" id="bg_m"]
+[ext_resource type="PackedScene" path="res://models/boschetar_fumator.glb" id="bf_m"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("24_ca")
@@ -114,6 +119,12 @@ size = Vector3(0.1, 0.45, 0.6)
 
 [sub_resource type="BoxShape3D" id="forma_boschetar"]
 size = Vector3(1, 1, 1.05)
+
+[sub_resource type="BoxShape3D" id="forma_usa_666"]
+size = Vector3(0.95, 2.08, 0.06)
+
+[sub_resource type="BoxShape3D" id="forma_piscina"]
+size = Vector3(9.6, 1.9, 8.6)
 
 [node name="Motel" type="Node3D"]
 
@@ -516,3 +527,50 @@ material = ExtResource("4_mt")
 [node name="Forma" type="CollisionShape3D" parent="Boschetar"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.32)
 shape = SubResource("forma_boschetar")
+
+[node name="Usa666" type="StaticBody3D" parent="."]
+position = Vector3(-3.15, 3.15, -9.945)
+script = ExtResource("u666_s")
+
+[node name="Model" parent="Usa666" instance=ExtResource("u666_m")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+
+[node name="Forma" type="CollisionShape3D" parent="Usa666"]
+position = Vector3(0.475, 1.04, 0)
+shape = SubResource("forma_usa_666")
+
+[node name="Piscina" type="StaticBody3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("49_in")
+replici = PackedStringArray("You: I never learned how to swim..")
+
+[node name="Forma" type="CollisionShape3D" parent="Piscina"]
+position = Vector3(-12.5, 0.95, 3.5)
+shape = SubResource("forma_piscina")
+
+[node name="GratarMotel" type="Node3D" parent="." node_paths=PackedStringArray("gratar")]
+position = Vector3(13.8, 4.4, -6.95)
+script = ExtResource("gr_s")
+gratar = NodePath("../BoschetarGratar")
+
+[node name="BoschetarGratar" type="Node3D" parent="."]
+position = Vector3(13.8, 3.6, -7.6)
+script = ExtResource("9_om")
+fumeaza = false
+
+[node name="Model" parent="BoschetarGratar" instance=ExtResource("bg_m")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray()
+
+[node name="BoschetarFumator" type="Node3D" parent="."]
+position = Vector3(15.2, 3.6, -7.5)
+rotation = Vector3(0, -0.6, 0)
+script = ExtResource("9_om")
+
+[node name="Model" parent="BoschetarFumator" instance=ExtResource("bf_m")]
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+stralucitoare = PackedStringArray("Jar")
