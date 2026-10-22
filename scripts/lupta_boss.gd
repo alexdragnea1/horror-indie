@@ -27,7 +27,7 @@ extends Node3D
 @export var distanta_shotgun := 5.0
 @export var damage_ak47 := 25
 @export var damage_bazooka := 500
-@export var damage_fireball := 15
+@export var damage_fireball := 50
 ## Viața ta în luptă și cât iei de la fiecare atac al lui.
 @export var viata_jucator := 100.0
 @export var damage_vraja := 15.0
