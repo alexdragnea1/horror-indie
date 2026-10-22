@@ -130,7 +130,7 @@ def bariera(cale):
 	exporta(os.path.join(cale, "bariera.glb"))
 
 
-def panou_ocol(cale):
+def panou_ocol(cale, rand_2="stick my dick in your ass,", fisier="panou_ocol.glb"):
 	"""Panoul de lemn de lângă barieră: două picioare, acoperiș mic, tabla verde, mare (2,2 × 1,3 m),
 	ca textul să se poată citi la rezoluția jocului. Textul l-a scris owner-ul (nu-l corecta)."""
 	curata()
@@ -143,7 +143,7 @@ def panou_ocol(cale):
 		cub("Acoperis panou", (2.5, 0.45, 0.05), (0, 0.05, 2.5), LEMN_VECHI, rot=(0.25, 0, 0)),
 		# rândurile sunt rupte ca să încapă pe tablă
 		text("Text", "If I bite your neck and", (0, -0.04, 2.15), 0.13, ALB),
-		text("Text", "stick my dick in your ass,", (0, -0.04, 1.95), 0.13, ALB),
+		text("Text", rand_2, (0, -0.04, 1.95), 0.13, ALB),
 		text("Text", "how do you get the", (0, -0.04, 1.75), 0.13, ALB),
 		text("Text", "t-shirt out?", (0, -0.04, 1.55), 0.13, ALB),
 		cub("Linie", (1.5, 0.012, 0.02), (0, -0.031, 1.4), ALB),
@@ -151,7 +151,12 @@ def panou_ocol(cale):
 		cub("Rugina", (0.18, 0.012, 0.14), (0.9, -0.031, 1.1), RUGINA),
 	]
 	uneste(piese, "PanouOcol")
-	exporta(os.path.join(cale, "panou_ocol.glb"))
+	exporta(os.path.join(cale, fisier))
+
+
+def panou_ocol_pg(cale):
+	"""Același panou pentru varianta family friendly (Limbaj, ModelPS2.model_pg): fără al doilea rând urât."""
+	panou_ocol(cale, "spill juice on your shirt,", "panou_ocol_pg.glb")
 
 
 def indicator(cale):
@@ -453,6 +458,7 @@ def toate(cale):
 	statie_rurala(cale)
 	bariera(cale)
 	panou_ocol(cale)
+	panou_ocol_pg(cale)
 	indicator(cale)
 	copac_mort(cale, "copac_mort_1", 7, 7.5)
 	copac_mort(cale, "copac_mort_2", 19, 6.0)

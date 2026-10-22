@@ -80,7 +80,7 @@ func _ready() -> void:
 
 func _eticheta(text: String, marime: int, culoare: Color) -> Label:
 	var l := Label.new()
-	l.text = text
+	l.text = Limbaj.curata(text)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	l.custom_minimum_size = Vector2(360, 0)

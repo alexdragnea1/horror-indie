@@ -801,7 +801,7 @@ def pistol_aur(cale):
 	exporta(os.path.join(cale, "pistol_aur.glb"))
 
 
-def masa_pistol(cale):
+def masa_pistol(cale, scris="Free shit", fisier="masa_pistol.glb"):
 	"""Masa din spatele conacului, cu easter egg-ul: o măsuță de grădină din scânduri strâmbe, pe ea un carton îndoit
 	(„Free shit”, scris cu markerul), o pernuță de catifea verde-închis pe care stă pistolul de aur (îl pune jocul, la
 	(0,18, -0,12, 0,77) în Blender), câteva gloanțe și o lumânare într-un borcan (`Lumini` = flacăra).
@@ -829,7 +829,7 @@ def masa_pistol(cale):
 			AUR_INCHIS if s < 0 else p("904a40"), rot=(s * t, 0, 0)))
 	normala = Vector((0, -math.cos(t), math.sin(t)))
 	centru = Vector((-0.24, -inalt / 2 * math.sin(t), h + inalt / 2 * math.cos(t))) + normala * 0.012
-	piese.append(text("Scris", "Free shit", tuple(centru), 0.085, NEGRU, rot=(math.pi / 2 - t, 0, 0)))
+	piese.append(text("Scris", scris, tuple(centru), 0.085, NEGRU, rot=(math.pi / 2 - t, 0, 0)))
 	# pernuța de catifea și gloanțele
 	piese.append(cub("Perna", (0.3, 0.2, 0.03), (0.18, -0.12, h + 0.015), APA, rot=(0, 0, 0.08)))
 	for k, (x, y, u) in enumerate(((0.38, -0.25, 0.3), (0.42, -0.16, 1.2), (0.37, 0.02, 2.4))):
@@ -850,7 +850,12 @@ def masa_pistol(cale):
 	uneste(col, "Coliziune")
 	uneste(piese, "Masa")
 	uneste(lumini, "Lumini")
-	exporta(os.path.join(cale, "masa_pistol.glb"))
+	exporta(os.path.join(cale, fisier))
+
+
+def masa_pistol_pg(cale):
+	"""Aceeași masă pentru varianta family friendly (Limbaj, ModelPS2.model_pg): „Free stuff” pe carton."""
+	masa_pistol(cale, "Free stuff", "masa_pistol_pg.glb")
 
 
 def toate(cale):
@@ -861,6 +866,7 @@ def toate(cale):
 	fantana(cale)
 	pistol_aur(cale)
 	masa_pistol(cale)
+	masa_pistol_pg(cale)
 
 
 if __name__ == "__main__":

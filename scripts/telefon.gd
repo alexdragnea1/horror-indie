@@ -118,7 +118,7 @@ func _cutie(culoare: Color, raza: int, rama := Color.TRANSPARENT, grosime := 0) 
 
 func _text(continut: String, marime: int, culoare: Color) -> Label:
 	var l := Label.new()
-	l.text = continut
+	l.text = Limbaj.curata(continut)
 	l.add_theme_font_size_override("font_size", marime)
 	l.add_theme_color_override("font_color", culoare)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -369,6 +369,7 @@ func _scrie_ea(durata: float) -> void:
 
 ## Scrii mesajul în bara de jos (literă cu literă, cu „tac” la fiecare tastă), apoi îl trimiți.
 func _scrie_tu(continut: String) -> void:
+	continut = Limbaj.curata(continut)
 	_camp.add_theme_color_override("font_color", C_TEXT)
 	_camp.text = ""
 	for i in continut.length():

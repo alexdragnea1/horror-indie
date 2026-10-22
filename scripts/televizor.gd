@@ -238,7 +238,7 @@ func _dreptunghi(parinte: Control, culoare: Color, pozitie: Vector2, marime: Vec
 
 func _text(parinte: Control, continut: String, marime: int, culoare: Color, pozitie: Vector2) -> Label:
 	var l := Label.new()
-	l.text = continut
+	l.text = Limbaj.curata(continut)
 	l.add_theme_font_size_override("font_size", marime)
 	l.add_theme_color_override("font_color", culoare)
 	l.position = pozitie

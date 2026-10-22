@@ -74,7 +74,7 @@ func _pas(parinte: Control, text: String) -> VBoxContainer:
 	var pas := VBoxContainer.new()
 	pas.add_theme_constant_override("separation", 8)
 	var eticheta := Label.new()
-	eticheta.text = text
+	eticheta.text = Limbaj.curata(text)
 	eticheta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	eticheta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	eticheta.custom_minimum_size.x = 200

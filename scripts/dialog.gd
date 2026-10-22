@@ -147,7 +147,7 @@ func _arata_replica() -> void:
 	if gasit:
 		var nume := gasit.get_string(1).strip_edges()
 		replica = gasit.get_string(2)
-		_nume.text = nume
+		_nume.text = Limbaj.curata(nume)
 		var e_jucator := nume in NUME_JUCATOR
 		_nume.add_theme_color_override("font_color", Color("61a19f") if e_jucator else Color("a56850"))
 		_eticheta.show()
@@ -156,7 +156,7 @@ func _arata_replica() -> void:
 		_eticheta.hide()
 		_inaltime_voce = INALTIME_FARA_NUME
 	_litere_auzite = 0
-	_text.text = replica
+	_text.text = Limbaj.curata(replica)
 	_text.visible_ratio = 0.0
 	if _tween:
 		_tween.kill()
@@ -232,7 +232,7 @@ func intreaba(replica: String, optiuni: PackedStringArray, dezactivate: Array = 
 		copil.get_parent().remove_child(copil)
 		copil.queue_free()
 	for i in optiuni.size():
-		var buton := TemaMeniu.buton(_optiuni, optiuni[i], func() -> void: _ales.emit(i))
+		var buton := TemaMeniu.buton(_optiuni, Limbaj.curata(optiuni[i]), func() -> void: _ales.emit(i))
 		buton.add_theme_font_size_override("font_size", 11)
 		buton.disabled = i in dezactivate
 	# prea multe butoane pentru un rând (ex. Johnny de la amanet, cu inventarul plin): prima jumătate urcă pe un rând

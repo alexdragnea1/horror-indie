@@ -42,6 +42,9 @@ var _de_sters := 0
 var _setari: PanouSetari
 var _grila_controale: GridContainer
 var _buton_joaca: Button
+var _buton_familie_nu: Button
+## Ce ai ales la „family friendly” pentru jocul nou (Stare.familie, vezi Limbaj).
+var _familie := false
 var _buton_muzica: Button
 var _timp := 0.0
 var _plecat := false
@@ -123,6 +126,7 @@ func _interfata() -> void:
 	_ecrane["salvari"] = _ecran_salvari(radacina)
 	_ecrane["confirmare"] = _ecran_confirmare(radacina)
 	_ecrane["setari"] = _ecran_setari(radacina)
+	_ecrane["familie"] = _ecran_familie(radacina)
 	_ecrane["controale"] = _ecran_controale(radacina)
 	_ecrane["muzica"] = _ecran_muzica(radacina)
 
@@ -149,6 +153,8 @@ func _arata(nume: String) -> void:
 			_setari.deschide()
 		"confirmare":
 			_confirmare_text.text = "Delete File %d?\nThis can't be undone." % _de_sters
+		"familie":
+			_buton_familie_nu.grab_focus.call_deferred()
 		"controale":
 			_actualizeaza_controale()
 			_buton_joaca.grab_focus.call_deferred()
@@ -196,10 +202,10 @@ func _actualizeaza_principal() -> void:
 
 
 func _start() -> void:
-	# joc nou: întâi ecranul cu toate tastele, abia de acolo pornește jocul
-	if not Salvare.exista(Setari.slot) and _ecran_curent != "controale":
+	# joc nou: întâi întrebarea „family friendly”, apoi ecranul cu toate tastele, abia de acolo pornește jocul
+	if not Salvare.exista(Setari.slot) and _ecran_curent == "principal":
 		Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
-		_arata("controale")
+		_arata("familie")
 		return
 	if _plecat:
 		return
@@ -211,7 +217,7 @@ func _start() -> void:
 	if Salvare.exista(Setari.slot):
 		Salvare.continua()
 	else:
-		Salvare.joc_nou()
+		Salvare.joc_nou(_familie)
 
 
 # -------- fișierele de salvare
@@ -295,6 +301,31 @@ func _ecran_setari(parinte: Control) -> Control:
 	_setari.inapoi.connect(func() -> void: _arata("principal"))
 	parinte.add_child(_setari)
 	return _setari
+
+
+# -------- family friendly (owner 22.10: la un joc nou, înainte de controale)
+
+func _ecran_familie(parinte: Control) -> Control:
+	var panou := _panou(parinte, "Do you want the family friendly version?")
+	var avertisment := Label.new()
+	avertisment.text = "(Warning: Crude Language)"
+	avertisment.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	avertisment.add_theme_font_size_override("font_size", 10)
+	avertisment.add_theme_color_override("font_color", TemaMeniu.STINS)
+	panou.add_child(avertisment)
+	panou.add_child(_spatiu(4))
+	var rand := HBoxContainer.new()
+	rand.alignment = BoxContainer.ALIGNMENT_CENTER
+	rand.add_theme_constant_override("separation", 12)
+	panou.add_child(rand)
+	TemaMeniu.buton(rand, "Yes", _alege_familie.bind(true))
+	_buton_familie_nu = TemaMeniu.buton(rand, "No", _alege_familie.bind(false))
+	return panou.get_parent().get_parent()
+
+
+func _alege_familie(da: bool) -> void:
+	_familie = da
+	_arata("controale")
 
 
 # -------- controalele (apar o dată, la un joc nou)

@@ -27,6 +27,12 @@ const MATERIAL_STICLA := preload("res://shaders/material_sticla.tres")
 
 
 func _ready() -> void:
+	# varianta family friendly (Stare.familie, vezi Limbaj): dacă lângă model e unul cu „_pg” (același model, dar fără
+	# scrisul urât: panou_ocol_pg.glb, masa_pistol_pg.glb), îl punem pe ăla
+	if Stare.familie and scene_file_path.ends_with(".glb"):
+		var cale_pg := scene_file_path.get_basename() + "_pg.glb"
+		if ResourceLoader.exists(cale_pg):
+			_schimba_cu(load(cale_pg))
 	for nod in find_children("*", "MeshInstance3D", true, false):
 		var mesh := nod as MeshInstance3D
 		if mesh.name == &"Coliziune":
@@ -47,6 +53,25 @@ func _ready() -> void:
 		ColiziuneModel.plasa(self)
 	elif coliziune > 0:
 		ColiziuneModel.pentru_nod(self, coliziune == 1)
+
+
+## Bucățile din .glb (al căror owner e modelul) sunt înlocuite cu cele din `scena`; ce s-a pus peste în scenă
+## (ex. lumina lumânării de pe MasaPistol) rămâne.
+func _schimba_cu(scena: PackedScene) -> void:
+	for copil in get_children():
+		if copil.owner == self:
+			remove_child(copil)
+			copil.free()
+	var nou := scena.instantiate()
+	var bucati := nou.find_children("*", "", true, false)
+	for bucata in bucati:
+		bucata.owner = null  # altfel Godot se plânge că owner-ul (modelul _pg, care dispare) nu mai e deasupra lor
+	for copil in nou.get_children():
+		nou.remove_child(copil)
+		add_child(copil)
+	for bucata in bucati:
+		bucata.owner = self
+	nou.free()
 
 
 ## Face să dispară (pe pixeli, vezi `disparitie` în ps2.gdshader) toate bucățile de sub `nod`: 0 = întreg, 1 = dispărut.

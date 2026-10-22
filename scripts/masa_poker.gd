@@ -1098,7 +1098,7 @@ func _fa_hud() -> void:
 
 func _eticheta(parinte: Control, text: String, marime: int, cul: Color) -> Label:
 	var e := Label.new()
-	e.text = text
+	e.text = Limbaj.curata(text)
 	e.add_theme_font_size_override("font_size", marime)
 	e.add_theme_color_override("font_color", cul)
 	e.add_theme_color_override("font_outline_color", Color("262d2f"))
@@ -1164,7 +1164,7 @@ func _process(_delta: float) -> void:
 			text += "\nfolded"
 		elif _texte_mana[i + 1] != "":
 			text += "\n" + _texte_mana[i + 1]
-		e.text = text
+		e.text = Limbaj.curata(text)
 		e.add_theme_color_override("font_color", Color("a18463") if _evidentiat == i + 1 else Color("83b3b0"))
 		e.reset_size()
 		e.position = p - Vector2(e.size.x / 2.0, e.size.y / 2.0)

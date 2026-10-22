@@ -21,7 +21,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | Esc | în joc: **meniul de pauză** (Resume, Go to main menu, Settings, Quit; jocul stă pe loc) / închide inventarul / în meniuri: înapoi |
 | F11 | ecran complet (merge oriunde) |
 
-La un **joc nou**, înainte să înceapă, jocul îți arată toate tastele (ecranul **CONTROLS**, cu tastele tale dacă le-ai schimbat din Settings).
+La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want the family friendly version? (Warning: Crude Language)”**: cu **Yes**, toate cuvintele urâte din joc (în replici, mesaje, pe panoul din pădure și pe cartonul de la conac) sunt schimbate în variante PG (ex. „Nah nigga.” → „Nah man.”); cu **No** jocul rămâne cum e. Alegerea ține de fișierul de salvare. Apoi îți arată toate tastele (ecranul **CONTROLS**, cu tastele tale dacă le-ai schimbat din Settings).
 
 ## Povestea până acum
 1. Te trezești în camera ta de vrăjitoare. Când încerci să ieși, îți alegi numele... și jocul te întreabă dacă nu cumva te cheamă „little bitch” (Yes / No).
@@ -127,7 +127,8 @@ La un **joc nou**, înainte să înceapă, jocul îți arată toate tastele (ecr
 82. **Pălăria de la final** (17.10): o pui pe cap cu catarama în față (înainte o puneai invers).
 83. **Free roam după final** (17.10): după generic (sau dacă îl sari) nu mai ajungi în meniu, ci te întorci în joc, în Town Center, unde ninge. De acum orarul din orice stație are doar **Home**, **Sketchy Laundromat**, **Gun Store** și **Bar** (fără locul în care ești deja). Acasă poți **dormi oricând**: te culci și te trezești în pat a doua zi („Home / Next day, 10:15 AM”), de câte ori vrei.
 84. **Butonul „Music” din meniul principal** (17.10): un buton mic în colțul din dreapta jos deschide lista cu cine a făcut muzica din joc (artiștii și piesele, fără locul în care se aud). Lista e în `scripts/meniu_principal.gd`, constanta `MUZICA`.
-85. Urmează: tu hotărăști (playtest, build, itch.io).
+85. **Varianta family friendly** (22.10): la un joc nou, înainte de controale, întrebarea „Do you want the family friendly version? (Warning: Crude Language)” cu Yes / No. Yes = cuvintele urâte sunt schimbate pe ecran în variante PG (`scripts/limbaj.gd`), inclusiv textul de pe panoul din pădure și cartonul „Free shit” (devine „Free stuff”).
+86. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

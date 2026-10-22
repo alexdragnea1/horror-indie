@@ -5,7 +5,7 @@ extends CanvasLayer
 ##   - când se schimbă ceva în poveste (Stare.schimbat: un marcaj, o sarcină, un obiect),
 ##   - la fiecare minut (doar poziția, fără mesaj) și când închizi fereastra.
 ## Jos în dreapta apare „Saving...” cât se salvează.
-##   Salvare.joc_nou()      -> șterge starea și pornește din camera ta
+##   Salvare.joc_nou()      -> șterge starea și pornește din camera ta (joc_nou(true) = family friendly)
 ##   Salvare.continua()     -> încarcă fișierul ales și te pune unde ai rămas
 ##   Salvare.info(2)        -> ce e în fișierul 2 ({} = gol)
 
@@ -99,8 +99,10 @@ func sterge(loc: int) -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(cale(loc)))
 
 
-func joc_nou() -> void:
+## `familie` = varianta family friendly aleasă în meniu (Stare.familie, vezi Limbaj).
+func joc_nou(familie := false) -> void:
 	Stare.reseteaza()
+	Stare.familie = familie
 	timp_jucat = 0.0
 	_pozitie_de_pus = {}
 	sterge(Setari.slot)

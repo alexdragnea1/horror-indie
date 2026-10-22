@@ -45,6 +45,8 @@ var aruncate: Dictionary = {}
 var lanterna := true
 ## Desenul de pe peretele cu graffiti de la bloc (Graffiti): PNG în base64, gol = perete curat.
 var graffiti := ""
+## Varianta family friendly (aleasă la jocul nou, în meniu): cuvintele urâte se schimbă pe ecran, vezi Limbaj.
+var familie := false
 
 var _mesaj: Label
 var _sarcina_sus: Label
@@ -99,6 +101,7 @@ func reseteaza() -> void:
 	aruncate = {}
 	lanterna = true
 	graffiti = ""
+	familie = false
 	meniu_deschis = false
 	_inventar.hide()
 	_panou_raft.hide()
@@ -117,7 +120,7 @@ func ascunde_mesaje() -> void:
 ## Ce intră în fișierul de salvare (vezi salvare.gd).
 func exporta() -> Dictionary:
 	return {"obiecte": obiecte, "marcaje": marcaje, "sarcina": sarcina, "nume_jucator": nume_jucator, "in_mana": in_mana,
-		"raft": raft, "aruncate": aruncate, "lanterna": lanterna, "graffiti": graffiti}
+		"raft": raft, "aruncate": aruncate, "lanterna": lanterna, "graffiti": graffiti, "familie": familie}
 
 
 func importa(date: Dictionary) -> void:
@@ -129,6 +132,7 @@ func importa(date: Dictionary) -> void:
 	aruncate = date.get("aruncate", {})
 	lanterna = date.get("lanterna", true)
 	graffiti = date.get("graffiti", "")
+	familie = date.get("familie", false)
 	# salvările de dinainte de mână: pistolul era mereu în mână cât îl aveai
 	in_mana = date.get("in_mana", "pistol_roz" if obiecte.has("pistol_roz") else "")
 	# salvările de dinainte ca bancnota de 5 dolari să intre în cash: o adunăm acum
@@ -195,7 +199,7 @@ func seteaza_sarcina(text: String, anunta := true) -> void:
 	schimbat.emit()
 	if text.is_empty() or not anunta:
 		return
-	_sarcina_sus.text = "Task: " + text
+	_sarcina_sus.text = "Task: " + Limbaj.curata(text)
 	if _tween_sarcina:
 		_tween_sarcina.kill()
 	_tween_sarcina = create_tween()
@@ -206,7 +210,7 @@ func seteaza_sarcina(text: String, anunta := true) -> void:
 
 
 func _arata_mesaj(text: String) -> void:
-	_mesaj.text = text
+	_mesaj.text = Limbaj.curata(text)
 	move_child(_mesaj, -1)  # deasupra ferestrelor (raftul, inventarul)
 	_mesaj.show()
 	if _tween_mesaj:

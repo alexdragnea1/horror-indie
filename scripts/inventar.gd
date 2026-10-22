@@ -82,7 +82,7 @@ func actualizeaza(obiecte: Dictionary, sarcina: String, in_mana := "") -> void:
 		_sarcina.text = "Nothing right now."
 		_sarcina.add_theme_color_override("font_color", Color("5e5356"))
 	else:
-		_sarcina.text = sarcina
+		_sarcina.text = Limbaj.curata(sarcina)
 		_sarcina.add_theme_color_override("font_color", Color("a18463"))
 
 

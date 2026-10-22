@@ -1326,7 +1326,7 @@ func _fa_mesajul() -> void:
 	strat.layer = 18
 	add_child(strat)
 	_mesaj = Label.new()
-	_mesaj.text = mesaj_final
+	_mesaj.text = Limbaj.curata(mesaj_final)
 	_mesaj.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_mesaj.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_mesaj.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

@@ -70,7 +70,7 @@ func deschide() -> void:
 	get_tree().paused = true
 	Stare.meniu_deschis = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	_sarcina.text = ("Task: " + Stare.sarcina) if not Stare.sarcina.is_empty() else ""
+	_sarcina.text = ("Task: " + Limbaj.curata(Stare.sarcina)) if not Stare.sarcina.is_empty() else ""
 	_sarcina.visible = not _sarcina.text.is_empty()
 	_radacina.show()
 	_arata_principal()
