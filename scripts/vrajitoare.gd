@@ -4,7 +4,8 @@ extends Node3D
 ## La vrajă (cazan.gd) își ridică brațele și capul spre cer: ridica_bratele(true / false).
 ## Modelul are `Brate` (originea între umeri) și `Cap` (originea în gât), vezi tools/blender/coven.py.
 ## După ce bețivul ți-a cerut asta (`marcaj_omorabila`), le poți împușca (nu și pe Head Witch): cade pe spate ca un
-## ragdoll (doar una, și doar dacă n-ai omorât deja bețivul: vezi Personaj.MARCAJ_CRIMA), apoi o iei în inventar
+## ragdoll (doar una, și doar dacă n-ai omorât deja bețivul: vezi Personaj.MARCAJ_CRIMA; excepție, owner 22.10: bețivul
+## e mort, dar încă pe jos, adică nu l-ai luat în inventar: atunci poți împușca o vrăjitoare), apoi o iei în inventar
 ## cu E (`nume_cadavru`) și o poți arunca în cazan în locul bețivului (cazan.gd).
 ## Marcajele și id-ul din inventar vin din numele nodului (ex. Vrajitoare3: „vrajitoare3_moarta”, „cadavru_vrajitoare3”).
 
@@ -15,6 +16,10 @@ extends Node3D
 
 @export_group("Moarte")
 @export var marcaj_omorabila := "betivul_a_cerut_o_vrajitoare"
+## Bețivul mort, dar neluat de pe jos: o vrăjitoare se poate împușca și așa, până la vrajă (owner 22.10).
+@export var marcaj_betiv_mort := "betivul_e_mort"
+@export var marcaj_betiv_luat := "betivul_luat"
+@export var marcaj_vraja := "vraja_facuta"
 @export var nume_cadavru := "Witch"
 @export var indiciu_cadavru := "[E] Pick up the witch"
 ## Cât de tare o împinge glonțul (N·s).
@@ -83,10 +88,24 @@ func model_cadavru() -> PackedScene:
 	return load(_cale_model) if _cale_model != "" else null
 
 
-## O lovește un glonț (pistol.gd). Moare doar după ce ți-a cerut-o bețivul și dacă n-ai mai omorât pe nimeni.
+## O lovește un glonț (pistol.gd). Moare după ce ți-a cerut-o bețivul, dacă n-ai mai omorât pe nimeni, sau dacă bețivul
+## zace încă mort pe platou (nu l-ai luat) și nu e deja moartă altă vrăjitoare.
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
-	if not mort and Stare.e_marcat(marcaj_omorabila) and not Stare.e_marcat(Personaj.MARCAJ_CRIMA):
+	if not mort and _omorabila():
 		_moare(directie, forta_glont)
+
+
+func _omorabila() -> bool:
+	if Stare.e_marcat(marcaj_vraja):
+		return false
+	if not Stare.e_marcat(Personaj.MARCAJ_CRIMA):
+		return Stare.e_marcat(marcaj_omorabila)
+	if not Stare.e_marcat(marcaj_betiv_mort) or Stare.e_marcat(marcaj_betiv_luat):
+		return false
+	for n in get_tree().get_nodes_in_group("cadavre"):
+		if n != self and n.get_script() == get_script() and n.mort:
+			return false
+	return true
 
 
 ## Cade pe spate (în afara cercului), iar după ce se oprește o poți lua cu E. Ca Personaj.omoara.
