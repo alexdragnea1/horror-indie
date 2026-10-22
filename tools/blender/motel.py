@@ -599,17 +599,27 @@ def motel(cale):
 
 	# --- graffiti pe capătul aripii (peretele dinspre scară)
 	gx = XV0 - 0.01
-	piese.append(_text_o_fata("Graffiti", "IHATEPINK WAS HERE", (gx, 14.0, 1.6), 0.45, MOV, rot=(1.5708, 0, -1.5708)))
+	# „IHATEPINK WAS HERE” în roz, cu contur negru (owner 22.10). În paletă nu e roz: textul e o piesă separată
+	# (`GraffitiRoz`, cea mai deschisă culoare, ca pistolul roz), căreia ModelPS2 îi dă material_roz.tres în joc
+	# (`materiale` pe `Cladire` în motel.tscn). Conturul = 8 copii negre, deplasate ~3 cm (1–2 px de la câțiva metri).
+	text_roz, loc_roz, d = "IHATEPINK WAS HERE", (14.0, 1.6), 0.03
+	for (dy, dz) in ((d, 0), (-d, 0), (0, d), (0, -d), (d, d), (d, -d), (-d, d), (-d, -d)):
+		piese.append(_text_o_fata("Contur graffiti", text_roz, (XV0 - 0.015, loc_roz[0] + dy, loc_roz[1] + dz), 0.45, NEGRU,
+			rot=(1.5708, 0, -1.5708)))
+	graffiti_roz = [_text_o_fata("GraffitiRoz", text_roz, (XV0 - 0.03, loc_roz[0], loc_roz[1]), 0.45, ALB, rot=(1.5708, 0, -1.5708))]
 	piese.append(_text_o_fata("Graffiti", "666", (gx, 12.2, 2.4), 0.6, ROSU, rot=(1.5708, 0, -1.5708)))
 	piese.append(_text_o_fata("Graffiti", "NO SLEEP", (gx, 16.0, 4.4), 0.38, NEGRU, rot=(1.5708, 0, -1.5708)))
 	strange()
 
+	uneste(graffiti_roz, "GraffitiRoz")
 	uneste(piese, "Motel")
 	uneste(lumini, "Lumini")
 	uneste(geamuri, "Geamuri")
 	uneste(col, "Coliziune")
 	# structura nu se mută; petele, plăcuțele, scândurile, literele se desprind de ea
-	desparte_fete(fixe=("Fatada", "Corp motel", "Trotuar motel", "Pasarela", "Acoperis", "Streasina", "Soclu", "Fund gol"))
+	# graffiti-ul roz și conturul lui stau pe loc (altfel conturul iese în fața textului)
+	desparte_fete(fixe=("Fatada", "Corp motel", "Trotuar motel", "Pasarela", "Acoperis", "Streasina", "Soclu", "Fund gol", "GraffitiRoz",
+		"Contur graffiti"))
 	exporta(os.path.join(cale, "motel_cladire.glb"))
 
 

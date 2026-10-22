@@ -12,6 +12,9 @@ extends Node3D
 @export var stralucitoare: PackedStringArray = []
 ## Cât de tare strălucesc bucățile de mai sus.
 @export var stralucire := 1.0
+## Bucăți cu alt material decât `material` (după nume → ShaderMaterial), pentru culori din afara paletei. Ex. pe
+## `Cladire` din motel.tscn: „GraffitiRoz” → material_roz.tres (graffiti-ul roz, owner 22.10).
+@export var materiale: Dictionary = {}
 ## Bucățile de sticlă: cele al căror nume începe cu asta (ex. "Geam") devin transparente.
 ## Gol = nicio bucată de sticlă.
 @export var sticla := ""
@@ -40,7 +43,9 @@ func _ready() -> void:
 			continue
 		if straturi != 1:
 			mesh.layers = straturi
-		if material:
+		if materiale.has(String(mesh.name)):
+			mesh.material_override = materiale[String(mesh.name)]
+		elif material:
 			mesh.material_override = material
 		if not umbre:
 			mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

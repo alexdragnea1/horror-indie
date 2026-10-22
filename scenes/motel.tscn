@@ -59,6 +59,7 @@
 [ext_resource type="PackedScene" path="res://models/usa_666.glb" id="u666_m"]
 [ext_resource type="Script" path="res://scripts/usa_666.gd" id="u666_s"]
 [ext_resource type="Script" path="res://scripts/gratar_motel.gd" id="gr_s"]
+[ext_resource type="Material" path="res://shaders/material_roz.tres" id="roz_mt"]
 [ext_resource type="PackedScene" path="res://models/boschetar_gratar.glb" id="bg_m"]
 [ext_resource type="PackedScene" path="res://models/boschetar_fumator.glb" id="bf_m"]
 
@@ -161,6 +162,9 @@ bus = &"Ambianta"
 script = ExtResource("3_mp")
 material = ExtResource("4_mt")
 stralucitoare = PackedStringArray("Lumini")
+materiale = {
+"GraffitiRoz": ExtResource("roz_mt")
+}
 sticla = "Geam"
 coliziune = 3
 
