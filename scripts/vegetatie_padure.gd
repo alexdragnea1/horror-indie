@@ -38,6 +38,7 @@ func _ready() -> void:
 	add_child(_corp)
 	_padure()
 	_margini_poteca()
+	_vizavi()
 	_construieste_multimesh()
 
 
@@ -69,6 +70,26 @@ func _padure() -> void:
 			else:
 				scena = copaci_vii.pick_random()
 			_copac(scena, px, pz, _rng.randf_range(0.8, 1.3))
+		z += distanta_copaci
+
+
+## Pădurea de vizavi, dincolo de șosea (owner, 22.10): doar decor, zidul de la z = 6 nu te lasă acolo, deci
+## fără coliziune. Are generatorul ei, ca pădurea de dincoace să nu se mute.
+func _vizavi() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = saminta + 1
+	var z := 9.0
+	while z < teren.pana_la.y - 2.0:
+		var x := teren.de_la.x + 2.0
+		while x < teren.pana_la.x - 2.0:
+			var px := x + rng.randf_range(-0.45, 0.45) * distanta_copaci
+			var pz := z + rng.randf_range(-0.45, 0.45) * distanta_copaci
+			x += distanta_copaci
+			if rng.randf() > densitate:
+				continue
+			var scena: PackedScene = copaci_goi.pick_random() if rng.randf() < 0.12 else copaci_vii.pick_random()
+			var baza := Basis(Vector3.UP, rng.randf_range(0.0, TAU)).scaled(Vector3.ONE * rng.randf_range(0.8, 1.3))
+			_adauga(scena, Transform3D(baza, Vector3(px, teren.inaltime(px, pz) - 0.15, pz)))
 		z += distanta_copaci
 
 

@@ -10,8 +10,9 @@ extends StaticBody3D
 ## Coordonate: șoseaua e pe X la z = 0, pădurea spre -Z.
 
 ## Cât de mare e terenul (metri) și unde e colțul lui de jos (cel mai apropiat de șosea).
+## Dincolo de șosea (z > 6) e doar decor: pădurea de vizavi, după zidul de la z = 6.
 @export var de_la := Vector2(-90, -170)
-@export var pana_la := Vector2(90, 12)
+@export var pana_la := Vector2(90, 46)
 ## Distanța dintre vârfurile rețelei (metri). Mai mic = mai fin, dar mai greu.
 @export var pas := 1.5
 
@@ -74,7 +75,9 @@ func inaltime(x: float, z: float) -> float:
 	# poteca: netedă pe lățimea ei și se topește în teren pe margini
 	var p := _cel_mai_apropiat(Vector2(x, z))
 	var w := 1.0 - smoothstep(latime_poteca * 0.5, latime_poteca * 0.5 + 3.0, p.z)
-	return lerpf(h, _baza(p.x, p.y), w)
+	h = lerpf(h, _baza(p.x, p.y), w)
+	# vizavi de șosea: pădurea urcă ușor, cu denivelări
+	return h + (_zgomot.get_noise_2d(x, z) * denivelari + clampf(z - 8.0, 0.0, 40.0) * 0.12) * smoothstep(5.0, 12.0, z)
 
 
 ## Cât de departe e punctul de cea mai apropiată potecă (metri).
@@ -151,7 +154,7 @@ func _culoare(x: float, z: float, h: float) -> Color:
 	elif dp < latime_poteca * 0.5 + 1.0 and n2 > 0.0:
 		c = Color("553e4d")
 	# lângă șosea: pietriș
-	if z > -7.0:
+	if z > -7.0 and z < 6.5:
 		c = Color("70706e") if n > 0.0 else Color("5e5356")
 	return c
 
