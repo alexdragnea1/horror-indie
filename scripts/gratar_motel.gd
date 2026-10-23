@@ -3,18 +3,29 @@ extends Node3D
 ## butoiului (`_gratar` din tools/blender/motel.py, modelul e în `motel_receptie.glb`); de aici vin lumina jarului
 ## care pâlpâie, flăcăruile, fumul care urcă și trosnetul. `gratar` (OmLaMasa, cel cu mâna spre grilă) întoarce din
 ## când în când cârnații: își duce mâna pe grilă și înapoi. Pe acoperiș nu se poate ajunge (grilajul de pe pasarelă).
+## Amândoi boschetarii (`gratar` și `fumator`) se pot omorî (OmOmorabil, owner 23.10); mort, `gratar` nu mai întoarce
+## cârnații.
 
 const SCRIPT_FLACARA := preload("res://scripts/flacara.gd")
 const SUNET_FOC := preload("res://sunete/foc_trosnet.ogg")
 
 @export var gratar: OmLaMasa
+## Celălalt boschetar, cu țigara (dacă nu e pus, îl caută lângă grătar: `BoschetarFumator`).
+@export var fumator: OmLaMasa
 ## Cât de des întoarce cârnații (secunde).
 @export var pauza_intors := Vector2(3.0, 6.0)
 
 var _pana_la_intors := 2.0
+var _omorabil_gratar: OmOmorabil
 
 
 func _ready() -> void:
+	if fumator == null:
+		fumator = get_parent().get_node_or_null("BoschetarFumator") as OmLaMasa
+	if gratar:
+		_omorabil_gratar = OmOmorabil.adauga(gratar, "boschetarul_de_la_gratar_a_murit")
+	if fumator:
+		OmOmorabil.adauga(fumator, "fumatorul_de_la_gratar_a_murit")
 	var lumina := OmniLight3D.new()
 	lumina.set_script(SCRIPT_FLACARA)
 	lumina.set("energie", 1.6)
@@ -61,7 +72,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if gratar == null:
+	if gratar == null or (_omorabil_gratar and _omorabil_gratar.mort):
 		return
 	_pana_la_intors -= delta
 	if _pana_la_intors <= 0.0:
