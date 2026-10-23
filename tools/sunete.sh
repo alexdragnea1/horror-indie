@@ -1501,6 +1501,55 @@ ffmpeg -v error -y -f lavfi -i "aevalsrc=0${CLIC}:s=44100:d=0.95" -i "Sound/Soun
 unic spray_agitat "$OUT/_spray_agitat.wav"
 rm -f "$OUT/_spray.wav" "$OUT/_spray_agitat.wav"
 
+# --- sicriul din spatele casei lui Lexy și scheletul care fuge în cimitir (sicriu_lexy.gd, owner 15.10)
+P2="Sound/Soundpack 2"
+# 1. două bătăi înfundate din sicriu (Door_knocking_quiet: primele două ciocănituri, mai jos și prin lemnul gros)
+ffmpeg -v error -y -i "$P2/House & Office/Door_knocking_quiet.wav" -af \
+	"aformat=channel_layouts=mono,atrim=end=0.55,asetrate=44100*0.78,aresample=44100,lowpass=f=900,lowpass=f=900,equalizer=f=160:t=q:w=1:g=6,afade=t=out:st=0.55:d=0.15" \
+	-ac 1 "$OUT/_bataie.wav"
+unic sicriu_bataie "$OUT/_bataie.wav"
+# 2. capacul care sare: lemnul care crapă (pocnetul din „Bend and snap”), bufnitura grea și scândura care zdrăngăne
+ffmpeg -v error -y -i "$P2/Character/Bend and snap_2.wav" -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Materials/wood_small_drop.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100,atrim=start=1.15:end=1.5,asetpts=PTS-STARTPTS,asetrate=44100*0.8,aresample=44100,volume=1.4[c];[1]aformat=channel_layouts=mono,asetrate=44100*0.75,aresample=44100,lowpass=f=1500[t];[2]aformat=channel_layouts=mono,asetrate=44100*0.7,aresample=44100,adelay=90,volume=0.8[l];[c][t][l]amix=inputs=3:normalize=0:duration=longest,atrim=end=0.9,afade=t=out:st=0.6:d=0.3" \
+	-ac 1 "$OUT/_capac.wav"
+unic sicriu_capac "$OUT/_capac.wav"
+# 3. țipătul din fața ta (jumpscare, ~1,8 s, mai tare decât efectele, ca la păpușa din pădure): fantoma care urlă,
+#    „sting”-ul, bufnitura de jos și dinții care clănțăne repede (clicuri pe 2,2 kHz, de 22 de ori pe secundă)
+CLANT=""
+for k in $(seq 0 15); do
+	a=$(awk -v k="$k" 'BEGIN { printf "%.3f", 0.05 + k * 0.045 + (k % 3) * 0.006 }')
+	CLANT="$CLANT+between(t\,$a\,$a+0.03)*(0.6*sin(2*PI*2200*t)+0.4*sin(2*PI*3400*t))*exp(-(t-$a)*180)"
+done
+TINTA_NORMALA_SICRIU=$TINTA_LUFS
+TINTA_LUFS=-13
+ffmpeg -v error -y -i "$P2/Monsters & Ghosts/Ghost_scream_3.wav" -i "$P2/Stingers and Spooky Triggers/Stinger.wav" \
+	-i "$PACHET/Weapons/harsh_thud.wav" -f lavfi -i "aevalsrc=0${CLANT}:s=44100:d=1.0" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100,atrim=end=1.9,asetrate=44100*1.08,aresample=44100,volume=1.3[f];[1]aformat=channel_layouts=mono,aresample=44100,volume=0.8[s];[2]aformat=channel_layouts=mono,asetrate=44100*0.6,aresample=44100,lowpass=f=900,volume=1.2[t];[3]volume=0.5[d];[f][s][t][d]amix=inputs=4:normalize=0:duration=longest,$DENS,atrim=end=1.9,afade=t=out:st=1.3:d=0.6,$STEREO" \
+	-ac 2 "$OUT/_tipat_schelet.wav"
+unic schelet_tipat "$OUT/_tipat_schelet.wav" stereo
+TINTA_LUFS=$TINTA_NORMALA_SICRIU
+# 4. oasele care clănțăne când sare din sicriu / peste garduri (~0,6 s): clicuri de lemn uscat, la întâmplare
+OASE=""
+for a in 0.00 0.04 0.07 0.12 0.15 0.21 0.24 0.3 0.36 0.41 0.47; do
+	f=$(awk -v a="$a" 'BEGIN { srand(a * 1000); printf "%d", 1300 + rand() * 1500 }')
+	OASE="$OASE+between(t\,$a\,$a+0.035)*(0.7*sin(2*PI*$f*t)+0.3*sin(2*PI*$((f * 2 + 170))*t))*exp(-(t-$a)*140)"
+done
+ffmpeg -v error -y -f lavfi -i "aevalsrc=0${OASE}:s=44100:d=0.65" -af "highpass=f=500,afade=t=out:st=0.5:d=0.15" -ac 1 "$OUT/_oase.wav"
+unic schelet_oase "$OUT/_oase.wav"
+# 5. pașii scheletului (alergând prin iarbă): pasul pe iarbă și un clic de os peste el
+for i in 1 2 3; do
+	ffmpeg -v error -y -i "$PACHET/Footsteps/digital/digital_footstep_grass_$i.wav" \
+		-f lavfi -i "aevalsrc=between(t\,0.01\,0.05)*(0.6*sin(2*PI*$((1500 + i * 350))*t)+0.4*sin(2*PI*$((2600 + i * 300))*t))*exp(-(t-0.01)*160):s=44100:d=0.3" \
+		-filter_complex "[0]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-50dB,asetpts=PTS-STARTPTS[g];[1]volume=0.6[c];[g][c]amix=inputs=2:normalize=0:duration=longest" \
+		-ac 1 "$OUT/_pas_schelet.wav"
+	unic "schelet_pas_$i" "$OUT/_pas_schelet.wav"
+done
+# 6. râsul lui când dispare printre morminte (Laugh_spooky_4, ~2 s, puțin mai sus și cu ecou de cimitir)
+unic schelet_ras "$P2/Monsters & Ghosts/Laugh_spooky_4.wav" mono "atrim=end=2.3,asetrate=44100*1.06,aresample=44100,aecho=0.7:0.5:140|310:0.3|0.18,afade=t=out:st=1.8:d=0.5"
+# 7. tu, după sperietură: un icnet scurt (Gasp, 2D)
+unic jucator_icnet "$P2/Character/Gasp.wav" mono "atrim=start=0.05:end=0.6,afade=t=out:st=0.4:d=0.2"
+rm -f "$OUT/_bataie.wav" "$OUT/_capac.wav" "$OUT/_tipat_schelet.wav" "$OUT/_oase.wav" "$OUT/_pas_schelet.wav"
+
 # --- maimuța care se ușurează în spatele primăriei (maimuta_caca.gd, owner 17.10). Pachetele n-au maimuțe:
 # 1. țipătul când te vede (~1,6 s): „uh-uh-uh” scurte care urcă (450 → 700 Hz), apoi două „AAH” lungi și ascuțite
 #    (1050 → 1350 Hz), sintetizate: un ton cu armonice care alunecă (faza = integrala frecvenței), vibrato, foarte puțin

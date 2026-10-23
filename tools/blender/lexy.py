@@ -82,9 +82,12 @@ def perete(piese, nume, axa, a0, a1, g0, g1, z0, z1, culoare, goluri=()):
 
 def prisma(nume, puncte, plan, a0, a1, culoare):
 	"""Poligon (convex, în ordine) extrudat: plan "yz" = punctele sunt (y, z), extrudat pe X de la a0 la a1;
-	plan "xz" = (x, z), extrudat pe Y. Frontoane, acoperișuri în pantă, arcade."""
+	plan "xz" = (x, z), extrudat pe Y; plan "xy" = (x, y), extrudat pe Z (sicriul văzut de sus).
+	Frontoane, acoperișuri în pantă, arcade."""
 	bm = bmesh.new()
 	def v3(pt, a):
+		if plan == "xy":
+			return (pt[0], pt[1], a)
 		return (a, pt[0], pt[1]) if plan == "yz" else (pt[0], a, pt[1])
 	jos = [bm.verts.new(v3(pt, a0)) for pt in puncte]
 	sus = [bm.verts.new(v3(pt, a1)) for pt in puncte]
@@ -1380,6 +1383,213 @@ def lexy(cale):
 	exporta(os.path.join(cale, "lexy.glb"))
 
 
+def _hexagon_sicriu(lat=0.0):
+	"""Conturul sicriului văzut de sus (x, y): capul la -X, umerii (cel mai lat loc) la -0,55, picioarele la +X.
+	`lat` îl lărgește în toate părțile (capacul iese puțin peste pereți)."""
+	return [(-1.0 - lat, -0.23 - lat), (-0.55, -0.34 - lat), (1.0 + lat, -0.2 - lat),
+		(1.0 + lat, 0.2 + lat), (-0.55, 0.34 + lat), (-1.0 - lat, 0.23 + lat)]
+
+
+def _perete_intre(nume, a, b, z0, z1, grosime, culoare, inauntru):
+	"""Scândură verticală pe muchia a -> b (x, y) a conturului, dată spre `inauntru` (centrul) cu jumătate de grosime."""
+	dx, dy = b[0] - a[0], b[1] - a[1]
+	lung = math.hypot(dx, dy)
+	nx, ny = -dy / lung, dx / lung
+	mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
+	if (inauntru[0] - mx) * nx + (inauntru[1] - my) * ny < 0:
+		nx, ny = -nx, -ny
+	return cub(nume, (lung + grosime, grosime, z1 - z0), (mx + nx * grosime / 2, my + ny * grosime / 2, (z0 + z1) / 2),
+		culoare, rot=(0, 0, math.atan2(dy, dx)))
+
+
+def sicriu(cale):
+	"""Sicriul din spatele casei lui Lexy (owner, 15.10): lemn vechi, hexagonal (cel clasic, lat la umeri), căptușit
+	cu satin roșu înăuntru, mânere de fier, o grămadă de pământ săpat și o lopată înfiptă în ea (cineva l-a scos
+	din cimitir). Piese: `Sicriu` (corpul gol, deschis sus; originea = solul, la mijloc), `Capac` (separat, ca să
+	sară; originea în mijlocul lui), `Pamant` (grămada și lopata, pe latura dinspre +Y; în Godot spre -Z)."""
+	curata()
+	contur = _hexagon_sicriu()
+	h = 0.46
+	g = 0.045
+	piese = [prisma("Fund", contur, "xy", 0.0, 0.05, LEMN_INCHIS)]
+	for i in range(6):
+		piese.append(_perete_intre("Perete sicriu", contur[i], contur[(i + 1) % 6], 0.0, h, g, LEMN, (0.0, 0.0)))
+	# căptușeala: satin roșu pe fund și o pernă la cap
+	interior = _hexagon_sicriu(-g - 0.012)
+	piese.append(prisma("Satin", interior, "xy", 0.05, 0.08, p("7b383a")))
+	piese.append(sfera("Perna", 0.13, (-0.8, 0, 0.12), p("904a40"), scara=(0.9, 1.4, 0.35), segmente=8, inele=5))
+	# brâul de jos și mânerele de fier, câte trei pe fiecare lat
+	brau = _hexagon_sicriu(0.02)
+	for i in range(6):
+		piese.append(_perete_intre("Brau", brau[i], brau[(i + 1) % 6], 0.0, 0.07, 0.026, LEMN_INCHIS, (0.0, 0.0)))
+	for x in (-0.5, 0.1, 0.65):
+		for s in (-1, 1):
+			# fața laterală a conturului la x (între umeri și picioare): y-ul exterior
+			y = 0.34 - (x + 0.55) / 1.55 * 0.14 if x > -0.55 else 0.34
+			piese.append(cub("Maner", (0.22, 0.03, 0.03), (x, s * (y + 0.04), 0.27), p("70706e")))
+			piese.append(cub("Maner prindere", (0.03, 0.04, 0.05), (x - 0.1, s * (y + 0.02), 0.27), p("70706e")))
+			piese.append(cub("Maner prindere", (0.03, 0.04, 0.05), (x + 0.1, s * (y + 0.02), 0.27), p("70706e")))
+	uneste(piese, "Sicriu")
+
+	# capacul: puțin mai lat decât pereții, cu bordura ridicată și crucea de alamă
+	capac = [
+		prisma("Capac", _hexagon_sicriu(0.02), "xy", h, h + 0.05, LEMN),
+		prisma("Capac sus", _hexagon_sicriu(-0.05), "xy", h + 0.05, h + 0.08, LEMN_INCHIS),
+		cub("Cruce capac", (0.62, 0.06, 0.012), (-0.1, 0, h + 0.086), p("a18463")),
+		cub("Cruce capac", (0.06, 0.32, 0.024), (-0.27, 0, h + 0.09), p("a18463")),
+	]
+	for x, y in ((-0.85, 0.15), (-0.85, -0.15), (0.85, 0.13), (0.85, -0.13), (-0.5, 0.27), (-0.5, -0.27)):
+		capac.append(cilindru("Cui", 0.014, 0.014, 0.012, (x, y, h + 0.056), p("70706e"), laturi=6))
+	uneste(capac, "Capac", (0, 0, h + 0.04))
+
+	# pământul săpat și lopata
+	r = random.Random(7)
+	pamant = [
+		sfera("Gramada", 0.6, (0.2, 0.95, 0.0), PAMANT, scara=(1.5, 0.75, 0.32), segmente=9, inele=6),
+		sfera("Gramada", 0.4, (-0.6, 0.85, 0.0), PAMANT, scara=(1.0, 0.9, 0.36), segmente=8, inele=5),
+	]
+	for _ in range(7):
+		pamant.append(sfera("Bulgare", r.uniform(0.05, 0.09), (r.uniform(-1.0, 1.0), r.uniform(0.45, 1.4), 0.02), PAMANT,
+			segmente=5, inele=3))
+	# lopata înfiptă în grămadă, puțin înclinată
+	coada_jos, coada_sus = (0.55, 1.0, 0.15), (0.75, 1.15, 1.25)
+	pamant += [
+		os_intre("Coada lopata", coada_jos, coada_sus, 0.018, p("a18463"), laturi=6),
+		cub("Maner lopata", (0.14, 0.03, 0.03), (0.76, 1.152, 1.27), NEGRU),
+		cub("Lama lopata", (0.22, 0.02, 0.28), (0.53, 0.985, 0.05), p("70706e"), rot=(0.14, -0.18, 0)),
+	]
+	uneste(pamant, "Pamant")
+	exporta(os.path.join(cale, "sicriu.glb"))
+
+
+def schelet(cale):
+	"""Scheletul din sicriu (owner, 15.10): înalt de 1,8 m, os îngălbenit, orbitele negre cu câte un punct roșu
+	care strălucește (`Ochi`), dinți, coaste pe care le vezi prin el. Stă drept, cu fața spre -Y; originea la sol.
+	Piese separate, ca să se ridice, să țipe și să fugă în joc (ca `creatura` din autobuz.py):
+	`Corp` (originea în bazin), `Cap` (copil al lui Corp, originea în vârful gâtului), `Falca` (copil al lui Cap,
+	originea în balama), `Ochi` (copil al lui Cap), `BratS`/`BratD` (copii ai lui Corp, în umăr),
+	`PiciorS`/`PiciorD` (în șold)."""
+	curata()
+	os_ = p("7e8d87")       # osul vechi, cenușiu (83b3b0 ieșea turcoaz ca o jucărie)
+	os_umbra = p("70706e")  # oasele mici și ce e în spate
+	dinte = p("83b3b0")     # dinții, mai albi decât osul (a18463 ieșea o bară portocalie)
+	gol = NEGRU             # orbitele, nasul, golurile dintre dinți
+	bazin_z = 0.98
+	corp = [
+		# bazinul: două aripi subțiri (ilionul) deschise în afară ca un bol, sacrul la spate, arcul pubisului în față
+		cub("Ilion", (0.1, 0.025, 0.11), (-0.085, 0.01, 1.02), os_, rot=(0.2, 0.55, 0.5)),
+		cub("Ilion", (0.1, 0.025, 0.11), (0.085, 0.01, 1.02), os_, rot=(0.2, -0.55, -0.5)),
+		cub("Sacru", (0.06, 0.035, 0.11), (0, 0.055, 0.98), os_umbra, rot=(0.3, 0, 0)),
+		os_intre("Pubis", (-0.07, -0.02, 0.96), (0, -0.055, 0.915), 0.013, os_, laturi=4),
+		os_intre("Pubis", (0.07, -0.02, 0.96), (0, -0.055, 0.915), 0.013, os_, laturi=4),
+		sfera("Sold", 0.03, (-0.09, 0.0, 0.95), os_umbra, segmente=6, inele=4),
+		sfera("Sold", 0.03, (0.09, 0.0, 0.95), os_umbra, segmente=6, inele=4),
+	]
+	# șira spinării: vertebre de la bazin la gât, puțin curbată
+	for i in range(13):
+		z = 1.04 + i * 0.04
+		y = 0.06 + 0.02 * math.sin(i / 12 * math.pi)
+		corp.append(cub("Vertebra", (0.035, 0.035, 0.026), (0, y, z), os_umbra))
+		corp.append(cub("Spin", (0.012, 0.03, 0.012), (0, y + 0.03, z), os_umbra))
+	# sternul și coastele: arce de la spate până aproape de stern, coborând spre față
+	corp.append(cub("Stern", (0.035, 0.02, 0.2), (0, -0.095, 1.33), os_, rot=(-0.1, 0, 0)))
+	for k in range(6):
+		z = 1.42 - k * 0.055
+		rx = 0.1 + 0.025 * math.sin((k + 1) / 7 * math.pi)
+		ry = 0.085 + 0.012 * math.sin((k + 1) / 7 * math.pi)
+		for s in (-1, 1):
+			puncte = []
+			for j in range(6):
+				u = 0.25 + j / 5 * (math.pi - 0.65)
+				puncte.append((s * rx * math.sin(u), 0.0 + ry * math.cos(u), z - 0.06 * j / 5))
+			for a, b in zip(puncte, puncte[1:]):
+				corp.append(os_intre("Coasta", a, b, 0.011, os_, laturi=4))
+	# claviculele și omoplații
+	for s in (-1, 1):
+		corp.append(os_intre("Clavicula", (s * 0.03, -0.07, 1.5), (s * 0.18, 0.0, 1.49), 0.012, os_, laturi=4))
+		corp.append(cub("Omoplat", (0.09, 0.02, 0.12), (s * 0.11, 0.1, 1.4), os_umbra, rot=(0.15, 0, -s * 0.2)))
+	trup = uneste(corp, "Corp", (0, 0, bazin_z))
+
+	# craniul: cutia lunguiață, arcadele groase peste orbite (fac umbră, privirea iese rea), pomeții ascuțiți,
+	# orbitele adânci și colțuroase, nasul ca o gaură în formă de inimă întoarsă, dinții de sus; gâtul sub el
+	gat_z = 1.56
+	cap = [
+		sfera("Craniu", 0.092, (0, 0.015, 1.715), os_, scara=(0.8, 1.05, 0.92), segmente=10, inele=8),
+		sfera("Fata", 0.06, (0, -0.04, 1.655), os_, scara=(0.95, 0.85, 1.0), segmente=8, inele=6),
+		cub("Arcada", (0.105, 0.02, 0.016), (0, -0.079, 1.71), os_, rot=(0.4, 0, 0)),
+		cub("Pomet", (0.03, 0.035, 0.022), (-0.052, -0.068, 1.655), os_, rot=(0, 0.3, 0.2)),
+		cub("Pomet", (0.03, 0.035, 0.022), (0.052, -0.068, 1.655), os_, rot=(0, -0.3, -0.2)),
+		sfera("Orbita", 0.019, (-0.03, -0.086, 1.685), gol, scara=(1.05, 0.55, 0.95), segmente=6, inele=4),
+		sfera("Orbita", 0.019, (0.03, -0.086, 1.685), gol, scara=(1.05, 0.55, 0.95), segmente=6, inele=4),
+		cilindru("Nas", 0.014, 0.0, 0.03, (0, -0.093, 1.645), gol, laturi=3, rot=(math.pi / 2, 0, 0), scara=(1.0, 1.0, 0.6)),
+		cub("Dinti sus", (0.06, 0.02, 0.018), (0, -0.084, 1.614), dinte),
+	]
+	for k in range(5):
+		cap.append(cub("Gol dinti", (0.0025, 0.012, 0.026), (-0.022 + k * 0.011, -0.096, 1.614), gol))
+	for i in range(3):
+		cap.append(cub("Vertebra gat", (0.03, 0.03, 0.025), (0, 0.035, gat_z + 0.01 - i * 0.035), os_umbra))
+	ob_cap = uneste(cap, "Cap", (0, 0.03, gat_z))
+	_parinte_obiect(ob_cap, trup)
+	# falca de jos: arcul cu dinții de jos; balamaua sub urechi
+	falca = [
+		cub("Falca", (0.07, 0.06, 0.02), (0, -0.062, 1.58), os_),
+		cub("Barbie", (0.046, 0.02, 0.024), (0, -0.097, 1.575), os_),
+		cub("Ram falca", (0.016, 0.05, 0.05), (-0.04, -0.03, 1.605), os_, rot=(0.5, 0, 0)),
+		cub("Ram falca", (0.016, 0.05, 0.05), (0.04, -0.03, 1.605), os_, rot=(0.5, 0, 0)),
+		cub("Dinti jos", (0.06, 0.016, 0.02), (0, -0.078, 1.6), dinte),
+	]
+	ob_falca = uneste(falca, "Falca", (0, -0.01, 1.63))
+	_parinte_obiect(ob_falca, ob_cap)
+	# punctele roșii din fundul orbitelor (strălucesc în joc: ModelPS2.stralucitoare = "Ochi"), puțin în fața golului
+	ochi = [sfera("Ochi", 0.0075, (s * 0.03, -0.098, 1.684), p("7b383a"), segmente=6, inele=4) for s in (-1, 1)]
+	ob_ochi = uneste(ochi, "Ochi", (0, 0, 1.69))
+	_parinte_obiect(ob_ochi, ob_cap)
+
+	# brațele: humerusul, cotul, cele două oase ale antebrațului, palma și degetele (puțin îndoite)
+	for nume, s in (("BratS", -1), ("BratD", 1)):
+		umar = (s * 0.19, 0.0, 1.47)
+		cot = (s * 0.21, 0.0, 1.18)
+		pumn = (s * 0.22, -0.02, 0.93)
+		brat = [
+			sfera("Umar", 0.03, umar, os_, segmente=6, inele=4),
+			os_intre("Humerus", umar, cot, 0.017, os_, laturi=5),
+			sfera("Cot", 0.024, cot, os_umbra, segmente=6, inele=4),
+			os_intre("Radius", (cot[0] - s * 0.012, cot[1], cot[2]), pumn, 0.011, os_, laturi=4),
+			os_intre("Ulna", (cot[0] + s * 0.012, cot[1] + 0.01, cot[2]), (pumn[0] + s * 0.015, pumn[1] + 0.01, pumn[2]),
+				0.01, os_umbra, laturi=4),
+			cub("Palma", (0.025, 0.06, 0.07), (pumn[0], pumn[1] - 0.005, pumn[2] - 0.045), os_),
+		]
+		for k in range(4):
+			y = pumn[1] - 0.03 + k * 0.018
+			brat.append(os_intre("Deget", (pumn[0], y, pumn[2] - 0.08), (pumn[0] - s * 0.005, y - 0.02, pumn[2] - 0.15),
+				0.006, os_, laturi=4))
+		brat.append(os_intre("Deget mare", (pumn[0] - s * 0.01, pumn[1] - 0.035, pumn[2] - 0.04),
+			(pumn[0] - s * 0.015, pumn[1] - 0.06, pumn[2] - 0.09), 0.007, os_, laturi=4))
+		ob_brat = uneste(brat, nume, umar)
+		_parinte_obiect(ob_brat, trup)
+
+	# picioarele: femurul, rotula, tibia cu peroneul, laba (oscioarele de la degete)
+	for nume, s in (("PiciorS", -1), ("PiciorD", 1)):
+		sold = (s * 0.09, 0.0, 0.95)
+		genunchi = (s * 0.1, -0.01, 0.5)
+		glezna = (s * 0.1, 0.02, 0.08)
+		picior = [
+			os_intre("Femur", sold, genunchi, 0.022, os_, laturi=5),
+			sfera("Rotula", 0.03, (genunchi[0], genunchi[1] - 0.02, genunchi[2]), os_, segmente=6, inele=4),
+			os_intre("Tibia", genunchi, glezna, 0.017, os_, laturi=5),
+			os_intre("Peroneu", (genunchi[0] + s * 0.025, genunchi[1] + 0.01, genunchi[2] - 0.03),
+				(glezna[0] + s * 0.025, glezna[1], glezna[2] + 0.02), 0.008, os_umbra, laturi=4),
+			cub("Calcai", (0.05, 0.06, 0.05), (glezna[0], glezna[1] + 0.02, 0.035), os_),
+			cub("Laba", (0.07, 0.1, 0.025), (glezna[0], glezna[1] - 0.07, 0.025), os_umbra, rot=(-0.15, 0, 0)),
+		]
+		for k in range(4):
+			x = glezna[0] - 0.025 + k * 0.017
+			picior.append(os_intre("Deget picior", (x, glezna[1] - 0.12, 0.018), (x, glezna[1] - 0.17, 0.008), 0.006, os_,
+				laturi=4))
+		uneste(picior, nume, sold)
+	exporta(os.path.join(cale, "schelet.glb"))
+
+
 def _parinte_obiect(copil, parinte):
 	copil.parent = parinte
 	copil.matrix_parent_inverse = parinte.matrix_world.inverted()
@@ -1406,6 +1616,8 @@ def toate(cale):
 	cutie_posta(cale)
 	strada_lexy(cale)
 	lexy(cale)
+	sicriu(cale)
+	schelet(cale)
 
 
 if __name__ == "__main__":

@@ -55,9 +55,15 @@
 [ext_resource type="AudioStream" path="res://sunete/tv_spart.ogg" id="tv_spart"]
 [ext_resource type="AudioStream" path="res://sunete/tv_scantei.ogg" id="tv_scantei"]
 [ext_resource type="Script" path="res://scripts/interactabil.gd" id="bib1"]
+[ext_resource type="Script" path="res://scripts/sicriu_lexy.gd" id="sicriu_gd"]
+[ext_resource type="PackedScene" path="res://models/sicriu.glb" id="sicriu_glb"]
+[ext_resource type="PackedScene" path="res://models/schelet.glb" id="schelet_glb"]
 
 [sub_resource type="BoxShape3D" id="forma_biblioteca"]
 size = Vector3(1.48, 1.96, 0.4)
+
+[sub_resource type="BoxShape3D" id="forma_sicriu"]
+size = Vector3(2.05, 0.55, 0.72)
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -571,3 +577,69 @@ replici = PackedStringArray("You: This bitch can't even read..")
 [node name="Forma" type="CollisionShape3D" parent="Biblioteca"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1.41, -7.22)
 shape = SubResource("forma_biblioteca")
+
+[node name="Sicriu" type="StaticBody3D" parent="." node_paths=PackedStringArray("loc_jucator", "drum", "camera_film", "camera_film_final")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -9.2)
+script = ExtResource("sicriu_gd")
+loc_jucator = NodePath("../LocSicriu")
+drum = NodePath("../DrumSchelet")
+camera_film = NodePath("../CameraSchelet")
+camera_film_final = NodePath("../CameraSchelet2")
+
+[node name="Model" parent="Sicriu" instance=ExtResource("sicriu_glb")]
+script = ExtResource("3")
+material = ExtResource("4")
+
+[node name="Forma" type="CollisionShape3D" parent="Sicriu"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.275, 0)
+shape = SubResource("forma_sicriu")
+
+[node name="Schelet" type="Node3D" parent="Sicriu"]
+
+[node name="Model" parent="Sicriu/Schelet" instance=ExtResource("schelet_glb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.98, 0)
+script = ExtResource("3")
+material = ExtResource("4")
+stralucitoare = PackedStringArray("Ochi")
+stralucire = 3.0
+
+[node name="LocSicriu" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0, -8.15)
+
+[node name="DrumSchelet" type="Node3D" parent="."]
+
+[node name="P0" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 0, -9.0)
+
+[node name="P1" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 0, -9.0)
+
+[node name="P2" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 0, -7.3)
+
+[node name="P3" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.8, 0, -3.0)
+
+[node name="P4" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 0, 6.0)
+
+[node name="SaltGardCurte" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.0, 0, 8.6)
+
+[node name="P5" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.3, 0, 18.5)
+
+[node name="SaltGardCimitir" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.2, 0, 21.0)
+
+[node name="P6" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.2, 0, 24.5)
+
+[node name="P7" type="Marker3D" parent="DrumSchelet"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.8, 0, 28.5)
+
+[node name="CameraSchelet" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.3, 1.5, 1.5)
+
+[node name="CameraSchelet2" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.0, 1.75, 16.3)
