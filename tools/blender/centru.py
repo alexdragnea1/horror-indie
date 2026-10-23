@@ -294,12 +294,16 @@ def centru_oras(cale):
 
 	# --- podeaua: pasajul și piața, dintr-o bucată (fără fețe lipite)
 	a0 = math.asin(LAT_PASAJ / R_PIATA)  # unde intră pasajul în cerc
+	# podeaua trece pe sub fațade: clădirile sunt cutii drepte, tangente la cerc doar la mijloc, deci la colțurile dintre
+	# ele rămânea ~1 m fără podea între cerc și fațadă (owner 23.10: „goluri în hartă, poți să cazi prin hartă”)
+	r_podea = R_PIATA / math.cos((math.tau - 2 * a0) / 16) + 0.4
+	a0p = math.asin(LAT_PASAJ / r_podea)
 	contur = [(LAT_PASAJ, 0.0)]
 	n = 72
-	start = -math.pi / 2 + a0
+	start = -math.pi / 2 + a0p
 	for i in range(n + 1):
-		u = start + (math.tau - 2 * a0) * i / n
-		contur.append((CX + math.cos(u) * R_PIATA, CY + math.sin(u) * R_PIATA))
+		u = start + (math.tau - 2 * a0p) * i / n
+		contur.append((CX + math.cos(u) * r_podea, CY + math.sin(u) * r_podea))
 	contur.append((-LAT_PASAJ, 0.0))
 	piese.append(_placa("Pavaj", contur, -0.05, FL, BETON))
 	col.append(_placa("Coliziune", contur, -0.05, FL, NEGRU))

@@ -537,9 +537,6 @@ def motel(cale):
 	piese.append(cub("Stalp scara", (0.16, 0.16, E2), (XS0 + 2.2, ys1 + 0.15, E2 / 2 - 0.4), METAL_INCHIS))
 	# coliziunea scării: o rampă, ca la verandele din joc (treptele te-ar opri)
 	col.append(prisma("Coliziune", [(XS0 - 0.25, 0.0), (XP0, E2), (XP0, 0.0)], "xz", ys0, ys1, NEGRU))
-	# un panou sub scară: „NO LOITERING” (nimeni nu-l bagă în seamă)
-	piese.append(cub("Panou", (0.6, 0.02, 0.4), (XS0 + 3.5, ys1 + 0.3, 1.2), ALB))
-	piese.append(_text("Scris panou", "NO\nLOITERING", (XS0 + 3.5, ys1 + 0.29, 1.2), 0.1, ROSU))
 	strange()
 
 	# --- streașina de șindrilă deasupra pasarelei de sus și acoperișul
