@@ -48,18 +48,31 @@ var _familie := false
 var _buton_muzica: Button
 var _timp := 0.0
 var _plecat := false
+## Loading screen-ul apare doar la prima deschidere a meniului de la pornirea jocului, nu și când revii din joc.
+static var _a_pornit := false
 
 
 func _ready() -> void:
 	Salvare.in_joc = false
 	Stare.meniu_deschis = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	set_process(false)
+	# prima dată de la pornirea jocului: loading screen cât se încarcă curtea din fundal (owner 23.10)
+	var ecran: EcranIncarcare = null
+	if not _a_pornit:
+		_a_pornit = true
+		ecran = EcranIncarcare.new()
+		add_child(ecran)
+		await ecran.incarca([SCENA_FUNDAL])
 	_fundal()
 	_interfata()
 	_arata("principal")
 	_muzica.volume_db = -40.0
 	_muzica.play()
 	create_tween().tween_property(_muzica, "volume_db", volum_muzica_db, 3.0)
+	set_process(true)
+	if ecran:
+		ecran.dispare()
 
 
 func _process(delta: float) -> void:
@@ -75,7 +88,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and _ecran_curent != "principal" and not _plecat:
+	if event.is_action_pressed("ui_cancel") and _ecran_curent not in ["principal", ""] and not _plecat:
 		get_viewport().set_input_as_handled()
 		Sunet.reda(SUNET_CLIC, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
 		_arata("salvari" if _ecran_curent == "confirmare" else "principal")

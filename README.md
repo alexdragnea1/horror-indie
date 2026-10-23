@@ -130,7 +130,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 84. **Butonul „Music” din meniul principal** (17.10): un buton mic în colțul din dreapta jos deschide lista cu cine a făcut muzica din joc (artiștii și piesele, fără locul în care se aud). Lista e în `scripts/meniu_principal.gd`, constanta `MUZICA`.
 85. **Varianta family friendly** (22.10): la un joc nou, înainte de controale, întrebarea „Do you want the family friendly version? (Warning: Crude Language)” cu Yes / No. Yes = cuvintele urâte sunt schimbate pe ecran în variante PG (`scripts/limbaj.gd`), inclusiv textul de pe panoul din pădure și cartonul „Free shit” (devine „Free stuff”).
 86. **Sicriul din spatele casei lui Lexy** (15.10, testat 23.10): în curtea din spate e un sicriu pe o grămadă de pământ. E pe el („Open the coffin”): lumea tace, dinăuntru se aude ciocănit de două ori, apoi capacul sare în aer și un **schelet cu ochi roșii** îți sare drept în față urlând (camera se zguduie). Sare din sicriu, fuge pe după colțul casei, iar camera trece pe un plan larg din stradă: aleargă prin curte, sare gardul, traversează strada, sare gardul cimitirului și dispare printre morminte, râzând. Apoi „You: Nope.” / „You: I didn't see shit.”. Se întâmplă o singură dată: după aceea sicriul rămâne deschis și gol.
-87. Urmează: tu hotărăști (playtest, build, itch.io).
+87. **Loading screen la pornire** (23.10): când pornești jocul, înainte de meniul principal, ecranul e negru și jos în dreapta zboară o mătură pixelată (saltă și lasă scântei în urmă), lângă „Loading...”. Stă cât se încarcă curtea blocului din fundalul meniului (cam 2–3 secunde), apoi se stinge și apare meniul. Când revii în meniu din joc nu mai apare.
+88. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
