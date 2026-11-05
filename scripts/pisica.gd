@@ -273,6 +273,7 @@ func _particule(corp: Node3D, cate: int, viata: float, marime: float, culori: Pa
 
 
 func _mangaie() -> void:
+	Realizari.deblocheaza(Realizari.PISICA)
 	_ocupata = true
 	_mangaiere += 1
 	var a_mea := _mangaiere

@@ -76,6 +76,8 @@ func _ready() -> void:
 	_panou_raft.inventar_apasat.connect(_pune_pe_raft)
 	add_child(_panou_raft)
 	_panou_raft.hide()
+	Realizari.porneste()
+	schimbat.connect(Realizari.verifica)
 
 
 func _eticheta() -> Label:
@@ -105,6 +107,8 @@ func reseteaza() -> void:
 	meniu_deschis = false
 	_inventar.hide()
 	_panou_raft.hide()
+	Realizari.porneste()
+	schimbat.connect(Realizari.verifica)
 	_mesaj.show()
 
 
@@ -146,6 +150,7 @@ func importa(date: Dictionary) -> void:
 			in_mana = Bani.ID
 	if not obiecte.has(in_mana):
 		in_mana = ""
+	Realizari.verifica()  # achievement-urile făcute deja în salvarea asta (vezi Realizari)
 
 
 func adauga_obiect(id: String, nume: String) -> bool:
@@ -365,6 +370,8 @@ func deschide_raft() -> void:
 
 func inchide_raft() -> void:
 	_panou_raft.hide()
+	Realizari.porneste()
+	schimbat.connect(Realizari.verifica)
 	meniu_deschis = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Sunet.reda(SUNET_INCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata", 1.2)

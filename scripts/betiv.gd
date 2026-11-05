@@ -147,6 +147,7 @@ func _da_bere() -> void:
 	Sunet.reda(sunet_ragait, Sunet.VOLUM_EFECTE, 0.03)
 	Stare.meniu_deschis = false
 	EfectBeat.porneste(jucator, durata_beat)
+	Realizari.deblocheaza(Realizari.BETIV)
 	# el își ia altă bere de pe jos
 	await get_tree().create_timer(1.5).timeout
 	if sticle_pline:

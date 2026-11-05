@@ -337,6 +337,7 @@ func _misca_cutia(mouse: Vector2, delta: float) -> void:
 ## Jetul de la `a` la `b` (pixeli de desen) în `delta` secunde: ștampile la fiecare jumătate de rază; dacă muți repede,
 ## fiecare primește mai puțin timp, deci linia iese mai subțire și mai pătată, ca la un spray adevărat.
 func _jet(a: Vector2, b: Vector2, raza: float, delta: float) -> void:
+	Realizari.deblocheaza(Realizari.SPRAY)  # primul jet pe perete
 	var pasi := maxi(1, ceili(a.distance_to(b) / maxf(raza * 0.5, 0.75)))
 	for i in pasi:
 		_stampila(a.lerp(b, float(i + 1) / pasi), raza, maxf(delta / pasi, JET_MINIM))

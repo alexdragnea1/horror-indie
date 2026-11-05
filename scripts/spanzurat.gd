@@ -14,6 +14,18 @@ var _timp := 0.0
 var _faza := 0.0
 var _pana_la_geamat := 0.0
 var _ridicat := 0.0
+var _pana_la_verificare := 0.0
+
+
+## Achievement-ul „Find the coven's secret.” (Realizari.TORTURA): ești în camera de tortură, adică aproape de
+## spânzurat pe orizontală și cu tălpile sub cârlig (în sala de deasupra ești peste el).
+func _verifica_gasit() -> void:
+	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
+	if jucator == null:
+		return
+	var d := jucator.global_position - global_position
+	if Vector2(d.x, d.z).length() < 5.0 and d.y < -1.0:
+		Realizari.deblocheaza(Realizari.TORTURA)
 
 
 func _ready() -> void:
@@ -32,6 +44,10 @@ func _process(delta: float) -> void:
 	if _cap:
 		_cap.rotation.x = lerpf(0.5, 0.08, ease(_ridicat, 0.5)) + sin(t * 1.3) * 0.02
 	_pana_la_geamat -= delta
+	_pana_la_verificare -= delta
+	if _pana_la_verificare <= 0.0:
+		_pana_la_verificare = 0.5
+		_verifica_gasit()
 	if _pana_la_geamat <= 0.0:
 		var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 		var aproape := jucator != null and jucator.global_position.distance_to(global_position) < 5.0

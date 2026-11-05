@@ -143,6 +143,7 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 - `shaders/ps2.gdshader` – materialul 3D de PS2 (tremurul vârfurilor, texturi pixelate). Pune-l pe orice obiect nou. Pentru pereți și podele bifează `uv_din_lume`.
 - `shaders/ps2_ecran.gdshader` + `scenes/efect_ps2.tscn` – filtrul de peste tot ecranul (puține culori, dithering, vignetă, grăunte). Pornește automat.
 - Rezoluția jocului e 480×270, mărită pixelat la fereastră (Project Settings → Display → Window).
+- `scripts/realizari.gd` – **achievement-urile de pe Steam** (12, cu iconițele din `Desktop\Unlucky Spells - Achievements`; API Name = numele iconiței, ex. `13_pisica`). Se deblochează singure când faci lucrul respectiv (și din salvările vechi, la încărcare). Merg prin pluginul GodotSteam (`addons/godotsteam`) și doar când jocul e pornit din Steam; altfel apar doar în consolă.
 - `scripts/jucator.gd` + `scenes/jucator.tscn` – jucătorul la persoana întâi.
 - `scripts/interactabil.gd` – pune-l pe un StaticBody3D, completezi `indiciu` și `replici` în Inspector și obiectul se poate examina.
 - `scripts/dialog.gd` – caseta de text de jos: `Dialog.spune(["replica 1", "replica 2"])`.
