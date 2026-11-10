@@ -355,7 +355,7 @@ func _copie(schimbari: Dictionary) -> ShaderMaterial:
 
 ## Locurile din scenă (în coordonatele lumii) unde terenul trebuie să rămână plat și fără copaci: curtea cu gardul și
 ## copacii ei, strada cu trotuarele (merge autobuzul pe ea, de la un capăt la altul), blocul de vizavi, cel lateral.
-const LOCURI_PLATE := [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -7, 18, 30)]
+const LOCURI_PLATE := [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
 const MARGINE_PLAT := 3.0
 
 ## 1 = liber (pot fi dealuri și copaci), 0 = în curte / pe stradă / lângă un bloc, cu o pantă de `MARGINE_PLAT` m.
