@@ -2,7 +2,7 @@ extends Node3D
 ## Decorul de afară de la Lexy, pus din cod (aceeași așezare la fiecare pornire, `saminta`):
 ##  - cimitirul de peste drum (în spatele stației): morminte pe rânduri strâmbe, cruci, copaci morți, cripta în fund;
 ##  - gardurile de fier: al cimitirului (cu poarta la `x_poarta`) și cel din fața curții lui Lexy (cu golul aleii);
-##  - casele vecinilor, în ceață (același model ca a ei, fără coliziune).
+##  - casele vecinilor, în ceață (același model ca a ei, cu o cutie de coliziune pe toată casa).
 ## Ca să muți ceva: schimbă numerele de mai jos (z-ul gardurilor, unde e cripta) sau `saminta` (alt cimitir).
 
 @export var saminta := 13
@@ -57,8 +57,9 @@ func _ready() -> void:
 		var copac := _pune(COPACI[i % 2], p, r.randf_range(0.0, TAU))
 		copac.scale = Vector3.ONE * r.randf_range(0.8, 1.25)
 	# --- casele vecinilor, în ceață
-	_pune(CASA, Vector3(-21.0, 0.0, 0.5), 0.08, "Geam")
-	_pune(CASA, Vector3(22.5, 0.0, -0.5), -0.06, "Geam")
+	# cu coliziune (cutia care cuprinde casa): ies peste `Limite` și treceai prin ele (owner 10.11)
+	for loc in [[Vector3(-21.0, 0.0, 0.5), 0.08], [Vector3(22.5, 0.0, -0.5), -0.06]]:
+		ColiziuneModel.pentru_nod(_pune(CASA, loc[0], loc[1], "Geam"), false)
 
 
 func _pune(scena: PackedScene, pozitie: Vector3, unghi: float, sticla := "") -> Node3D:
