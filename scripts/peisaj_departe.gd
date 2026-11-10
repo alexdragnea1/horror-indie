@@ -39,14 +39,14 @@ extends Node3D
 
 const SHADER := preload("res://shaders/peisaj_departe.gdshader")
 ## Ceața scenei (fog_light_color, „r,g,b”) -> [culoarea ierbii pierdute în ceață, culoarea cerului de deasupra
-## dealurilor], ca uniform: măsurate pe ecran (Claude, 10.11: un teren roșu ca să găsești unde e, apoi culoarea
+## dealurilor, cum iese pe ecran iarba din ceață], ca uniform: măsurate pe ecran (Claude, 10.11: un teren roșu ca să găsești unde e, apoi culoarea
 ## ajustată până iese ca pixelii scenei). Dacă schimbi ceața dintr-un moment, refă măsurătoarea; altfel se folosește
 ## direct culoarea ceții (se vede o dungă mai rece la orizont).
 const PALETE := {
-	"0.20,0.22,0.26": [Color(0.252, 0.204, 0.193), Color(0.277, 0.207, 0.191)],  # noaptea (și meniul principal)
-	"0.64,0.66,0.69": [Color(0.514, 0.535, 0.537), Color(0.520, 0.534, 0.555)],  # ziua (ZiBloc)
-	"0.66,0.44,0.46": [Color(0.494, 0.292, 0.283), Color(0.637, 0.378, 0.470)],  # apusul (ApusBloc)
-	"0.15,0.22,0.46": [Color(0.187, 0.186, 0.310), Color(0.207, 0.190, 0.365)],  # seara (SearaBloc)
+	"0.20,0.22,0.26": [Color(0.252, 0.204, 0.193), Color(0.277, 0.207, 0.191), Color(0.206, 0.168, 0.160)],  # noaptea (și meniul principal)
+	"0.64,0.66,0.69": [Color(0.514, 0.535, 0.537), Color(0.520, 0.534, 0.555), Color(0.421, 0.439, 0.444)],  # ziua (ZiBloc)
+	"0.66,0.44,0.46": [Color(0.494, 0.292, 0.283), Color(0.637, 0.378, 0.470), Color(0.404, 0.239, 0.230)],  # apusul (ApusBloc)
+	"0.15,0.22,0.46": [Color(0.187, 0.186, 0.310), Color(0.207, 0.190, 0.365), Color(0.179, 0.182, 0.301)],  # seara (SearaBloc)
 }
 
 var _zgomot := FastNoiseLite.new()
@@ -55,6 +55,20 @@ var _sa := Vector2.ZERO  # direcția (pe orizontală) în care se lasă dealuril
 var _material := ShaderMaterial.new()
 var _becuri: Array[MeshInstance3D] = []
 var _ceas := 0.0
+## Culoarea ceții potrivită din mers (vezi `_masoara`): cea de acum și spre ce merge.
+var _ceata_acum := Color(0.25, 0.2, 0.19)
+var _ceata_tinta := Color(0.25, 0.2, 0.19)
+var _ceas_masura := 0.0
+var _materiale: Array[ShaderMaterial] = []
+## Cât de mult trebuie înmulțită o culoare de pe ecran ca să iasă la fel din shader (tonemap + efectul PS2).
+var _pe_ecran := Color(1.22, 1.21, 1.21)
+var _imprastiere := 0.0
+var _culoare_lumina := Color(1, 1, 1)
+var _spre_lumina := Vector3.UP
+## Siluetele se pierd spre o culoare cu atât mai închisă decât ceața (ca să nu iasă dealuri mai luminoase ca cerul).
+const INCHIS := 0.8
+## Cât de departe în fața ta e locul de iarbă din ceață după care se potrivesc culorile (m).
+const DEPARTE_MASURA := 120.0
 
 
 func _ready() -> void:
@@ -79,11 +93,22 @@ func _process(delta: float) -> void:
 	# luminile turnului: clipesc încet, pe rând
 	for i in _becuri.size():
 		_becuri[i].visible = fmod(_ceas + i * 0.5, 2.4) < 1.1
+	_ceas_masura += delta
+	if _ceas_masura > 0.3:
+		_ceas_masura = 0.0
+		_masoara()
+	# lin, ca să nu pâlpâie
+	if _ceata_acum != _ceata_tinta:
+		_ceata_acum = _ceata_acum.lerp(_ceata_tinta, minf(delta * 2.5, 1.0))
+		for m in _materiale:
+			m.set_shader_parameter("culoare_ceata", _ceata_acum)
+			m.set_shader_parameter("culoare_cer", _ceata_acum * INCHIS)
 
 
 ## Ia culorile din mediul scenei (cum l-au lăsat ZiBloc / ApusBloc / SearaBloc) și din lumină.
 func _culori() -> void:
 	_material.shader = SHADER
+	_materiale.append(_material)
 	var env := mediu.environment if mediu else null
 	var ceata := Color(0.2, 0.22, 0.26)
 	var cer := ceata
@@ -98,6 +123,9 @@ func _culori() -> void:
 	var cheie := "%.2f,%.2f,%.2f" % [ceata.r, ceata.g, ceata.b]
 	if PALETE.has(cheie):
 		cer = PALETE[cheie][1]
+		var iesit: Color = PALETE[cheie][2]
+		var u: Color = PALETE[cheie][0]
+		_pe_ecran = Color(u.r / iesit.r, u.g / iesit.g, u.b / iesit.b)
 		ceata = PALETE[cheie][0]
 	var directie := Vector3(0.3, 0.7, 0.6)
 	var culoare_lumina := Color(0.6, 0.7, 0.95)
@@ -113,11 +141,18 @@ func _culori() -> void:
 	var baza := cer.darkened(0.55).lerp(Color(0.16, 0.13, 0.24), 0.25)
 	_material.set_shader_parameter("culoare_baza", baza)
 	_material.set_shader_parameter("culoare_ceata", ceata)
-	_material.set_shader_parameter("culoare_cer", cer)
+	_material.set_shader_parameter("culoare_cer", cer * INCHIS)
+	_ceata_acum = ceata
+	_ceata_tinta = ceata
 	_material.set_shader_parameter("culoare_lumina", culoare_lumina)
 	_material.set_shader_parameter("directie_lumina", directie)
 	# noaptea luna (albastră) ar vopsi dealurile: abia le atinge; zăpada doar se ghicește
 	_material.set_shader_parameter("putere_lumina", putere * (0.35 if luminos < 0.3 else 1.0))
+	# ceața scenei se aprinde spre soare (`fog_sun_scatter`, la apus): și cea a dealurilor
+	_imprastiere = (env.fog_sun_scatter * (lumina.light_energy if lumina else 1.0)) if env else 0.0
+	_material.set_shader_parameter("imprastiere_soare", _imprastiere)
+	_culoare_lumina = culoare_lumina
+	_spre_lumina = directie.normalized()
 	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.4, 0.22, 1.0) if not jos else 1.0)
 	_material.set_shader_parameter("densitate_aproape", densitate)
 	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55)
@@ -125,7 +160,10 @@ func _culori() -> void:
 	_material.set_shader_parameter("culoare_iarba", Color(0.17, 0.18, 0.1) * clampf(luminos * 2.0, 0.4, 1.2))
 	# ziua ceața e albă și deasă: dealurile abia se ghicesc; noaptea și la apus se văd mai bine
 	_material.set_shader_parameter("ceata_max", 0.86 if luminos > 0.5 else (0.62 if jos else 0.7))
-	_material.set_shader_parameter("ceata_vale", 0.92)
+	_material.set_shader_parameter("ceata_vale", 1.0)
+	# poalele dealurilor intră complet în ceața de pe iarbă și ies din ea treptat (owner 10.11: „nu vreau să văd cerul
+	# sub dealuri” — dunga de ceață luminată de soare de pe șes părea cer)
+	_material.set_shader_parameter("inaltime_ceata", 34.0)
 
 
 ## Cât de înalt e terenul în punctul (x, z) (față de nod).
@@ -145,7 +183,9 @@ func inaltime(x: float, z: float) -> float:
 	if _sa != Vector2.ZERO:
 		var unghi := absf(Vector2(x, z).normalized().angle_to(_sa))
 		h *= 1.0 - 0.88 * exp(-pow(unghi / 0.2, 2.0))
-	return maxf(h, _munte(x, z)) - 0.15
+	# muntele nu ajunge în curte / pe stradă (poalele lui largi ridicau terenul de acolo peste ochii jucătorului și
+	# se vedea cerul prin podea, de dedesubt)
+	return maxf(h, _munte(x, z) * liber(x, z)) - 0.15
 
 
 ## Masivul (owner 10.11: „muntele nu arată terminat”): vârful mare, doi umeri mai mici într-o parte și alta (puțin
@@ -167,7 +207,9 @@ func _munte(x: float, z: float) -> float:
 	var creasta := _culme.get_noise_2d(x * 2.2, z * 2.2) * 0.5 + 0.5
 	h *= lerpf(0.7, 1.05, creasta)
 	# poalele: dealuri late în jurul masivului
-	var poale := munte_inaltime * 0.26 * exp(-pow(Vector2(u * 0.6, v).length() / (munte_latime * 2.4), 2.0))
+	var dp := Vector2(u * 0.6, v).length()
+	# poalele se termină de tot la ~3 lățimi de munte (altfel ridicau cu câțiva metri tot terenul, până în curte)
+	var poale := munte_inaltime * 0.26 * exp(-pow(dp / (munte_latime * 2.4), 2.0)) * (1.0 - smoothstep(munte_latime * 2.2, munte_latime * 3.2, dp))
 	return maxf(h, poale * (0.75 + 0.35 * creasta))
 
 
@@ -321,6 +363,7 @@ func _padure() -> void:
 ## Materialul dealurilor, dar cu ceața de departe ajunsă (de la câteva sute de metri) la `cat`.
 func _in_ceata(cat: float) -> ShaderMaterial:
 	var m := _material.duplicate() as ShaderMaterial
+	_materiale.append(m)
 	m.set_shader_parameter("ceata_max", cat)
 	m.set_shader_parameter("densitate_departe", 0.012)
 	m.set_shader_parameter("culoare_iarba", m.get_shader_parameter("culoare_baza"))
@@ -331,6 +374,7 @@ func _in_ceata(cat: float) -> ShaderMaterial:
 ## de bază mai închisă pentru brazi, ceață mai deasă pe turn).
 func _copie(schimbari: Dictionary) -> ShaderMaterial:
 	var m := _material.duplicate() as ShaderMaterial
+	_materiale.append(m)
 	for nume: String in schimbari:
 		var vechi = _material.get_shader_parameter(nume)
 		m.set_shader_parameter(nume, vechi * schimbari[nume])
@@ -353,3 +397,55 @@ func liber(x: float, z: float) -> float:
 		var dz := maxf(maxf(loc.position.y - p.y, p.y - loc.end.y), 0.0)
 		rez = minf(rez, smoothstep(0.0, MARGINE_PLAT, Vector2(dx, dz).length()))
 	return rez
+
+
+## Ceața scenei arată altfel în fiecare colț al curții (cea volumetrică e luminată de felinare): o dată la 0,3 s se uită
+## pe ecran la iarba din ceață din fața ta, la `DEPARTE_MASURA` m (podeaua făcută cu iarba scenei, `sol`), și
+## potrivește ceața dealurilor după ea. Dacă ceva stă în cale (un bloc, un copac) sau locul nu e pe ecran, lasă
+## culoarea cum era. Din culoarea de pe ecran în cea din shader: înmulțită cu `_pe_ecran` (măsurat, vezi PALETE).
+func _masoara() -> void:
+	var cam := get_viewport().get_camera_3d()
+	if cam == null or _materiale.is_empty():
+		return
+	var inainte := -cam.global_basis.z
+	inainte.y = 0.0
+	if inainte.length() < 0.1:
+		return
+	var c := cam.global_position
+	var p := c + inainte.normalized() * DEPARTE_MASURA
+	p.y = inaltime(p.x - position.x, p.z - position.z) + position.y + 0.3
+	if cam.is_position_behind(p):
+		return
+	var s := cam.unproject_position(p)
+	var marime := get_viewport().get_visible_rect().size
+	if s.x < 2 or s.y < 2 or s.x > marime.x - 3 or s.y > marime.y - 3:
+		return
+	# ce stă în cale (pereții invizibili ai curții, `Limite`, și jucătorul nu contează: nu se văd)
+	var q := PhysicsRayQueryParameters3D.create(c, p)
+	var ocolite: Array[RID] = []
+	var jucator := get_tree().get_first_node_in_group("jucator") as CollisionObject3D
+	if jucator:
+		ocolite.append(jucator.get_rid())
+	for incercare in 4:
+		q.exclude = ocolite
+		var lovit := get_world_3d().direct_space_state.intersect_ray(q)
+		if lovit.is_empty() or c.distance_to(lovit.position) >= DEPARTE_MASURA - 15.0:
+			break
+		var cine := lovit.collider as Node
+		if cine and (cine.name == "Limite" or String(cine.name).begins_with("Limit")):
+			ocolite.append(lovit.rid)
+			continue
+		return
+	var img := get_viewport().get_texture().get_image()
+	var k := Vector2i(int(s.x * img.get_width() / marime.x), int(s.y * img.get_height() / marime.y))
+	var suma := Color(0, 0, 0)
+	for dx in range(-1, 2):
+		for dy in range(-1, 2):
+			suma += img.get_pixel(clampi(k.x + dx, 0, img.get_width() - 1), clampi(k.y + dy, 0, img.get_height() - 1))
+	var o := suma / 9.0
+	var masurat := Color(o.r * _pe_ecran.r, o.g * _pe_ecran.g, o.b * _pe_ecran.b)
+	# pe ecran ceața din fața ta e deja aprinsă de soare (dacă te uiți spre el): o scoate, shaderul o pune la loc
+	# pentru fiecare direcție
+	var sc := pow(maxf(inainte.normalized().dot(_spre_lumina), 0.0), 8.0) * _imprastiere
+	masurat -= _culoare_lumina * sc
+	_ceata_tinta = Color(clampf(masurat.r, 0, 1), clampf(masurat.g, 0, 1), clampf(masurat.b, 0, 1))

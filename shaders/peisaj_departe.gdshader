@@ -3,10 +3,9 @@
 // unde se termină iarba; mai încolo se văd siluetele, tot mai șterse cu distanța, cu ceață lăsată în văi.
 // Lumina e făcută de mână (un singur soare/lună, fațete plate, ca pe PS2); zăpada stă pe vârful muntelui.
 shader_type spatial;
-// Transparent spre depărtare: ceața lor e cerul adevărat din spatele lor (cu ceața volumetrică a scenei, care
-// arată altfel lângă felinare și altfel în colțurile curții), nu o culoare măsurată. Inelele de teren sunt desenate
-// din afară spre înăuntru (peisaj_departe.gd), ca transparența să iasă corect.
-render_mode unshaded, fog_disabled, cull_back, depth_draw_always, blend_mix;
+// Opac (owner 10.11: „nu vreau să văd cerul sub dealuri”). Culorile ceții le potrivește peisaj_departe.gd din mers,
+// după cum arată pe ecran iarba din ceață din fața ta (ceața volumetrică e altfel lângă felinare și altfel în colțuri).
+render_mode unshaded, fog_disabled, cull_back;
 
 uniform vec3 culoare_baza : source_color = vec3(0.2, 0.18, 0.26);
 uniform vec3 culoare_ceata : source_color = vec3(0.66, 0.44, 0.46);
@@ -30,6 +29,8 @@ uniform float lumina_zapada = 1.0;
 // Imașul de aproape: iarbă (închisă, în ceață) și cât de mult îl acoperă ceața scenei (sub 1, ca să se vadă copacii).
 uniform vec3 culoare_iarba : source_color = vec3(0.17, 0.18, 0.1);
 uniform float ceata_aproape_max = 0.95;
+// Cât se aprinde ceața spre soare (ca `fog_sun_scatter` al scenei, înmulțit cu puterea luminii; 0 = deloc).
+uniform float imprastiere_soare = 0.0;
 
 varying vec3 poz;
 varying vec3 normala;
@@ -55,17 +56,19 @@ void fragment() {
 	c = mix(c, cz, zapada);
 
 	float d = length(poz - CAMERA_POSITION_WORLD);
+	// ceața se aprinde în direcția soarelui, ca ceața scenei (altfel iarba din ceață de sub dealuri părea cer)
+	float spre_soare = pow(max(dot(normalize(poz - CAMERA_POSITION_WORLD), l), 0.0), 8.0) * imprastiere_soare;
+	vec3 ceata_c = culoare_ceata + culoare_lumina * spre_soare;
+	vec3 cer_c = culoare_cer + culoare_lumina * spre_soare * 0.8;
 	float aproape = 1.0 - exp(-d * densitate_aproape);
 	float departe = ceata_max * (1.0 - exp(-d * densitate_departe));
-	float vale = ceata_vale * exp(-max(poz.y, 0.0) / inaltime_ceata) * smoothstep(80.0, 400.0, d);
+	float vale = ceata_vale * exp(-max(poz.y, 0.0) / inaltime_ceata) * smoothstep(60.0, 220.0, d);
 	// ceața din văi e opacă, în culoarea ceții de pe iarbă: poalele dealurilor se topesc în dunga de ceață de pe șes
-	c = mix(c, culoare_ceata, vale);
-	// aproape (șesul) e opac și se pierde în ceața scenei; mai încolo dealurile se lasă văzute prin cerul din spate
+	c = mix(c, ceata_c, vale);
+	// departe: siluetele se șterg spre `culoare_cer` (ținută puțin mai închisă decât cerul, ca să nu iasă niciodată
+	// dealuri mai luminoase decât cerul din spatele lor)
+	c = mix(c, cer_c, departe);
+	// aproape: ca ceața scenei, ca să se lege de iarba din curte
 	float cat_aproape = 1.0 - smoothstep(100.0, 260.0, d);
-	// transparent doar ce stă mai sus de ochi (are cer în spate); mai jos, în spate ar fi cerul de sub orizont (o
-	// dungă luminoasă): acolo ceața e culoarea ei, opacă
-	float pe_cer = smoothstep(CAMERA_POSITION_WORLD.y - 1.0, CAMERA_POSITION_WORLD.y + 8.0, poz.y);
-	c = mix(c, culoare_ceata, departe * (1.0 - pe_cer));
-	ALBEDO = mix(c, culoare_ceata, aproape * cat_aproape * ceata_aproape_max);
-	ALPHA = mix(1.0 - departe * pe_cer, 1.0, cat_aproape);
+	ALBEDO = mix(c, ceata_c, aproape * cat_aproape * ceata_aproape_max);
 }
