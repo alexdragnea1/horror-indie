@@ -18,12 +18,12 @@ extends Node3D
 @export var raza_exterioara := 1700.0
 ## Cât de des e plasa: bucăți pe cerc și inele (fațete mari, PS2).
 @export var segmente := 300
-@export var inele := 54
+@export var inele := 80
 ## Muntele: pe ce direcție (grade, de la +X spre +Z), cât de departe, cât de înalt și cât de lat.
 @export var munte_unghi := 128.0
 @export var munte_distanta := 1150.0
-@export var munte_inaltime := 330.0
-@export var munte_latime := 230.0
+@export var munte_inaltime := 380.0
+@export var munte_latime := 260.0
 ## Turnul de antenă: direcția (grade), distanța și înălțimea lui.
 @export var turn_unghi := 55.0
 @export var turn_distanta := 420.0
@@ -116,9 +116,10 @@ func _culori() -> void:
 	_material.set_shader_parameter("putere_lumina", putere * (0.35 if luminos < 0.3 else 1.0))
 	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.4, 0.22, 1.0) if not jos else 1.0)
 	_material.set_shader_parameter("densitate_aproape", densitate)
+	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55)
 	# ziua ceața e albă și deasă: dealurile abia se ghicesc; noaptea și la apus se văd mai bine
 	_material.set_shader_parameter("ceata_max", 0.86 if luminos > 0.5 else (0.62 if jos else 0.7))
-	_material.set_shader_parameter("ceata_vale", 0.75 if luminos > 0.5 else 0.6)
+	_material.set_shader_parameter("ceata_vale", 0.92)
 
 
 ## Cât de înalt e terenul în punctul (x, z) (față de nod).
@@ -134,13 +135,30 @@ func inaltime(x: float, z: float) -> float:
 	if _sa != Vector2.ZERO:
 		var unghi := absf(Vector2(x, z).normalized().angle_to(_sa))
 		h *= 1.0 - 0.88 * exp(-pow(unghi / 0.2, 2.0))
-	# muntele, cu creste de la zgomot
-	var m := Vector2.from_angle(deg_to_rad(munte_unghi)) * munte_distanta
-	var dm := Vector2(x, z).distance_to(m)
-	var forma := exp(-pow(dm / munte_latime, 2.0))
-	var creasta := 0.8 + 0.35 * _culme.get_noise_2d(x * 2.6, z * 2.6)
-	h = maxf(h, munte_inaltime * forma * creasta)
-	return h - 0.15
+	return maxf(h, _munte(x, z)) - 0.15
+
+
+## Masivul (owner 10.11: „muntele nu arată terminat”): vârful mare, doi umeri mai mici într-o parte și alta (puțin
+## mai în spate), dealuri late la poale, și creste adânci tăiate de zgomot, ca să nu fie o movilă netedă.
+func _munte(x: float, z: float) -> float:
+	var radial := Vector2.from_angle(deg_to_rad(munte_unghi))
+	var lateral := Vector2(-radial.y, radial.x)
+	var m := radial * munte_distanta
+	var q := Vector2(x, z) - m
+	var u := q.dot(lateral)
+	var v := q.dot(radial)
+	var varfuri := [[0.0, 0.0, 1.0, 1.0], [300.0, 140.0, 0.7, 0.85], [-260.0, 210.0, 0.58, 0.8], [520.0, 300.0, 0.42, 0.9]]
+	var h := 0.0
+	for vf in varfuri:
+		var d: float = Vector2(u - vf[0], v - vf[1]).length() / (munte_latime * vf[3])
+		# mai ascuțit decât un clopot: pantele drepte, vârful îngust
+		h = maxf(h, munte_inaltime * vf[2] * exp(-pow(d, 1.5)))
+	# creste: muchii în zgomotul „ridged”, mai adânci spre poale
+	var creasta := _culme.get_noise_2d(x * 2.2, z * 2.2) * 0.5 + 0.5
+	h *= lerpf(0.7, 1.05, creasta)
+	# poalele: dealuri late în jurul masivului
+	var poale := munte_inaltime * 0.26 * exp(-pow(Vector2(u * 0.6, v).length() / (munte_latime * 2.4), 2.0))
+	return maxf(h, poale * (0.75 + 0.35 * creasta))
 
 
 func _construieste() -> void:
@@ -159,7 +177,9 @@ func _construieste() -> void:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	st.set_smooth_group(-1)  # fațete plate
-	for i in raze.size() - 1:
+	# din afară spre înăuntru: dealurile sunt transparente spre depărtare, iar cele din față trebuie desenate peste
+	# cele din spate
+	for i in range(raze.size() - 2, -1, -1):
 		for k in segmente:
 			var k2 := (k + 1) % segmente
 			var a := puncte[i][k]
@@ -206,8 +226,8 @@ func _turn() -> void:
 	for y in [turn_inaltime * 0.5, turn_inaltime * 0.78, turn_inaltime + 0.8]:
 		var bec := MeshInstance3D.new()
 		var sfera := SphereMesh.new()
-		sfera.radius = 3.2  # de la 400 m, la rezoluția PS2, un bec mai mic nici nu se vede
-		sfera.height = 6.4
+		sfera.radius = 1.8  # owner 10.11: mai mici (la 3,2 m erau prea mari)
+		sfera.height = 3.6
 		sfera.radial_segments = 6
 		sfera.rings = 3
 		bec.mesh = sfera
@@ -269,7 +289,7 @@ func _padure() -> void:
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "Padure"
 	mmi.multimesh = mm
-	mmi.material_override = _copie({"culoare_baza": 0.62, "ceata_vale": 0.12, "putere_lumina": 0.5})
+	mmi.material_override = _copie({"culoare_baza": 0.62, "ceata_vale": 1.0, "putere_lumina": 0.5})
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
 
