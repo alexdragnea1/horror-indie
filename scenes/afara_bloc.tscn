@@ -796,8 +796,9 @@ model_matura = ExtResource("zi5")
 distanta_privire = 9.0
 replici = PackedStringArray("Head Witch: You took a while.", "You: Can you pretty please kill yourself?", "Head Witch: I'm here because I know where the warlock is hiding.", "Head Witch: But first I will need to teach you defensive magic.")
 
-[node name="PeisajDeparte" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "lumina")]
+[node name="PeisajDeparte" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "lumina", "sol")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
 script = ExtResource("pd1")
 mediu = NodePath("../Mediu")
 lumina = NodePath("../Luna")
+sol = NodePath("../Teren/Sol")
