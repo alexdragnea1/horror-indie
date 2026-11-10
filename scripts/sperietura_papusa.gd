@@ -4,6 +4,8 @@ extends Node3D
 ## pădurea tace o clipă, sfoara scârțâie și se rupe, păpușa cade pe potecă (bubuitura + „sting”-ul, camera
 ## tresare), iar prin fața ta creatura trece în goană prin pădure, dintr-o parte în alta, cu un țipăt. După ea îți
 ## bate inima. O singură dată (`marcaj`); la Continue păpușa e deja pe jos.
+## Sunt două în padure.tscn (owner 10.11): `SperieturaPapusa` la coborâre (păpușa 2, creatura din stânga) și
+## `SperieturaPapusa2` la urcare, după pistol (`marcaj_necesar`; păpușa 1, de pe partea cealaltă, creatura din dreapta).
 ## Sunetele sunt făcute în tools/sunete.sh (secțiunea „pădurea, poteca spre vale”).
 
 @export var semne: Node
@@ -19,6 +21,10 @@ extends Node3D
 ## Dacă ajungi atât de aproape fără s-o fi privit (ai venit cu spatele), se rupe oricum.
 @export var raza := 2.6
 @export var marcaj := "papusa_a_cazut"
+## Fără marcajul ăsta (gol = oricând) sperietura încă nu pândește. Ex. a doua: după pistol, `a_vorbit_cu_vrajitoarele`.
+@export var marcaj_necesar := ""
+## Din ce parte a ecranului pornește creatura.
+@export_enum("La întâmplare", "Din stânga", "Din dreapta") var parte := 0
 ## Pe unde trece creatura: la câți metri în fața ta, cât de lung e drumul ei și cât de repede aleargă.
 @export var distanta_fata := 6.0
 @export var lungime_goana := 28.0
@@ -63,7 +69,7 @@ func _process(_delta: float) -> void:
 	if _activa:
 		return
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
-	if jucator == null or Stare.meniu_deschis:
+	if jucator == null or Stare.meniu_deschis or (marcaj_necesar != "" and not Stare.e_marcat(marcaj_necesar)):
 		return
 	var d := Vector2(jucator.global_position.x - _papusa.global_position.x, jucator.global_position.z - _papusa.global_position.z)
 	if d.length() < raza or (d.length() < raza_vedere and _in_fata(d)):
@@ -142,7 +148,9 @@ func _goana(jucator: Node3D) -> void:
 	var inainte := -(camera.global_basis.z if camera else jucator.global_basis.z)
 	inainte.y = 0.0
 	inainte = inainte.normalized()
-	var dreapta := inainte.cross(Vector3.UP).normalized() * (1.0 if randf() < 0.5 else -1.0)
+	# +1 = pornește din stânga ecranului și fuge spre dreapta
+	var sens := (1.0 if randf() < 0.5 else -1.0) if parte == 0 else (1.0 if parte == 1 else -1.0)
+	var dreapta := inainte.cross(Vector3.UP).normalized() * sens
 	var centru := jucator.global_position + inainte * distanta_fata
 	var start := centru - dreapta * lungime_goana * 0.5
 	var c := creatura.instantiate() as Node3D

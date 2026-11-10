@@ -193,7 +193,7 @@ copaci_morti = Array[PackedScene]([ExtResource("22"), ExtResource("23")])
 pietre = Array[PackedScene]([ExtResource("24"), ExtResource("24"), ExtResource("25")])
 bustean = ExtResource("26")
 zone_libere = Array[Rect2]([Rect2(-12, -11, 24, 11), Rect2(-4, -18, 14, 8), Rect2(4, -17, 11, 9)])
-copaci_scosi = Array[Rect2]([Rect2(10.4, -67.8, 1.2, 1.2), Rect2(13.4, -67, 1.2, 1.2)])
+copaci_scosi = Array[Rect2]([Rect2(10.4, -67.8, 1.2, 1.2), Rect2(13.4, -67, 1.2, 1.2), Rect2(-26.8, -68.3, 1.2, 1.2), Rect2(-20.6, -71.6, 1.2, 1.2), Rect2(-23.2, -64.9, 1.2, 1.2), Rect2(-26.7, -66.9, 1.2, 1.2)])
 
 [node name="SemneVale" type="Node3D" parent="." node_paths=PackedStringArray("teren")]
 script = ExtResource("5")
@@ -398,6 +398,24 @@ script = ExtResource("sperietura_gd")
 semne = NodePath("../SemneVale")
 teren = NodePath("../Teren")
 creatura = ExtResource("creatura_tscn")
+parte = 1
+sunet_sfoara = ExtResource("s_sfoara")
+sunet_cade = ExtResource("s_cade")
+sunet_sting = ExtResource("s_sting")
+sunet_goana = ExtResource("s_goana")
+sunet_tipat = ExtResource("s_tipat")
+sunet_crengi = ExtResource("41")
+sunet_inima = ExtResource("s_inima")
+
+[node name="SperieturaPapusa2" type="Node3D" parent="." node_paths=PackedStringArray("semne", "teren")]
+script = ExtResource("sperietura_gd")
+semne = NodePath("../SemneVale")
+teren = NodePath("../Teren")
+creatura = ExtResource("creatura_tscn")
+papusa = 1
+marcaj = "papusa_2_a_cazut"
+marcaj_necesar = "a_vorbit_cu_vrajitoarele"
+parte = 2
 sunet_sfoara = ExtResource("s_sfoara")
 sunet_cade = ExtResource("s_cade")
 sunet_sting = ExtResource("s_sting")
