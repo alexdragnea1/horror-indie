@@ -38,17 +38,6 @@ extends Node3D
 @export_range(0.0, 1.0) var becuri_ceata := 0.5
 
 const SHADER := preload("res://shaders/peisaj_departe.gdshader")
-## Ceața scenei (fog_light_color, „r,g,b”) -> culoarea ceții dealurilor (ca uniform), **fixă** (owner 10.11: „nu vreau să
-## pâlpâie ceața”; înainte se potrivea din mers după ecran și își schimba culoarea când te întorceai). E media culorii
-## ierbii din ceață măsurată pe ecran din 6 locuri ale curții × 8 direcții (Claude, 10.11), ca să meargă și lângă
-## felinare, și în colțuri. Dacă schimbi ceața dintr-un moment, refă măsurătoarea; altfel se folosește direct culoarea
-## ceții.
-const PALETE := {
-	"0.20,0.22,0.26": Color(0.179, 0.168, 0.183),  # noaptea (și meniul principal)
-	"0.64,0.66,0.69": Color(0.544, 0.563, 0.567),  # ziua (ZiBloc)
-	"0.66,0.44,0.46": Color(0.542, 0.316, 0.298),  # apusul (ApusBloc)
-	"0.15,0.22,0.46": Color(0.106, 0.143, 0.288),  # seara (SearaBloc)
-}
 
 var _zgomot := FastNoiseLite.new()
 var _culme := FastNoiseLite.new()
@@ -56,9 +45,6 @@ var _sa := Vector2.ZERO  # direcția (pe orizontală) în care se lasă dealuril
 var _material := ShaderMaterial.new()
 var _becuri: Array[MeshInstance3D] = []
 var _ceas := 0.0
-var _imprastiere := 0.0
-## Siluetele se pierd spre o culoare cu atât mai închisă decât ceața (ca să nu iasă dealuri mai luminoase ca cerul).
-const INCHIS := 0.8
 
 
 func _ready() -> void:
@@ -89,20 +75,11 @@ func _process(delta: float) -> void:
 func _culori() -> void:
 	_material.shader = SHADER
 	var env := mediu.environment if mediu else null
-	var ceata := Color(0.2, 0.22, 0.26)
-	var cer := ceata
-	var densitate := 0.03
+	# culoarea „obiectului” înainte de ceață: ce ar avea un perete cenușiu în lumina ambientală a momentului (ca blocurile);
+	# ceața o pune scena peste el (vezi shaderul)
+	var ambient := Color(0.36, 0.4, 0.52) * 0.55
 	if env:
-		ceata = env.fog_light_color
-		densitate = env.fog_density
-		cer = ceata
-	var luminos := ceata.get_luminance()
-	# ceața volumetrică a scenei (luminată de felinare, de ambient) acoperă și iarba, și cerul, iar dealurile nu o
-	# primesc: culorile care ies pe ecran la fel ca ele sunt măsurate pentru fiecare moment (vezi PALETE)
-	var cheie := "%.2f,%.2f,%.2f" % [ceata.r, ceata.g, ceata.b]
-	if PALETE.has(cheie):
-		ceata = PALETE[cheie]
-		cer = ceata
+		ambient = env.ambient_light_color * env.ambient_light_energy
 	var directie := Vector3(0.3, 0.7, 0.6)
 	var culoare_lumina := Color(0.6, 0.7, 0.95)
 	var putere := 0.2
@@ -113,29 +90,18 @@ func _culori() -> void:
 	var jos := directie.y < 0.2  # soarele la apus
 	if jos:
 		_sa = Vector2(directie.x, directie.z).normalized()
-	# silueta: ceața, mai închisă și puțin spre mov (noaptea aproape neagră, la apus mov închis)
-	var baza := cer.darkened(0.55).lerp(Color(0.16, 0.13, 0.24), 0.25)
-	_material.set_shader_parameter("culoare_baza", baza)
-	_material.set_shader_parameter("culoare_ceata", ceata)
-	_material.set_shader_parameter("culoare_cer", cer * INCHIS)
+	var luminos := ambient.get_luminance()
+	_material.set_shader_parameter("culoare_baza", ambient * 0.75)
 	_material.set_shader_parameter("culoare_lumina", culoare_lumina)
 	_material.set_shader_parameter("directie_lumina", directie)
-	# noaptea luna (albastră) ar vopsi dealurile: abia le atinge; zăpada doar se ghicește
-	_material.set_shader_parameter("putere_lumina", putere * (0.35 if luminos < 0.3 else 1.0))
-	# ceața scenei se aprinde spre soare (`fog_sun_scatter`, la apus): și cea a dealurilor
-	_imprastiere = (env.fog_sun_scatter * (lumina.light_energy if lumina else 1.0)) if env else 0.0
-	_material.set_shader_parameter("imprastiere_soare", _imprastiere)
-	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.4, 0.22, 1.0) if not jos else 1.0)
-	_material.set_shader_parameter("densitate_aproape", densitate)
+	_material.set_shader_parameter("putere_lumina", putere * 0.6)
+	# zăpada: noaptea doar se ghicește
+	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.1, 0.15, 1.0))
 	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55)
-	# iarba imașului: noaptea aproape neagră, ziua verde-măslinie
-	_material.set_shader_parameter("culoare_iarba", Color(0.17, 0.18, 0.1) * clampf(luminos * 2.0, 0.4, 1.2))
-	# ziua ceața e albă și deasă: dealurile abia se ghicesc; noaptea și la apus se văd mai bine
-	_material.set_shader_parameter("ceata_max", 0.86 if luminos > 0.5 else (0.62 if jos else 0.7))
-	_material.set_shader_parameter("ceata_vale", 1.0)
-	# poalele dealurilor intră complet în ceața de pe iarbă și ies din ea treptat (owner 10.11: „nu vreau să văd cerul
-	# sub dealuri” — dunga de ceață luminată de soare de pe șes părea cer)
-	_material.set_shader_parameter("inaltime_ceata", 34.0)
+	# cât de „aproape” stau în ceață (m): cât blocurile din jur, ca să le vezi ca pe ele
+	_material.set_shader_parameter("ceata_aproape", 24.0)
+	_material.set_shader_parameter("ceata_departe", 50.0)
+	_material.set_shader_parameter("ceata_vale", 16.0)
 
 
 ## Cât de înalt e terenul în punctul (x, z) (față de nod).
@@ -326,7 +292,7 @@ func _padure() -> void:
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "Padure"
 	mmi.multimesh = mm
-	mmi.material_override = _copie({"culoare_baza": 0.62, "ceata_vale": 1.0, "putere_lumina": 0.5})
+	mmi.material_override = _copie({"culoare_baza": 0.85, "putere_lumina": 0.5})
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
 
@@ -335,9 +301,8 @@ func _padure() -> void:
 ## Materialul dealurilor, dar cu ceața de departe ajunsă (de la câteva sute de metri) la `cat`.
 func _in_ceata(cat: float) -> ShaderMaterial:
 	var m := _material.duplicate() as ShaderMaterial
-	m.set_shader_parameter("ceata_max", cat)
-	m.set_shader_parameter("densitate_departe", 0.012)
-	m.set_shader_parameter("culoare_iarba", m.get_shader_parameter("culoare_baza"))
+	# cât de pierdut e: metri în plus „în ceață” (1 = cât e nevoie ca să nu se mai vadă nici noaptea, nici ziua)
+	m.set_shader_parameter("ceata_extra", cat * 60.0)
 	return m
 
 
@@ -348,8 +313,6 @@ func _copie(schimbari: Dictionary) -> ShaderMaterial:
 	for nume: String in schimbari:
 		var vechi = _material.get_shader_parameter(nume)
 		m.set_shader_parameter(nume, vechi * schimbari[nume])
-	# copacii (și turnul) n-au iarbă pe creștet
-	m.set_shader_parameter("culoare_iarba", m.get_shader_parameter("culoare_baza"))
 	return m
 
 
