@@ -15,7 +15,7 @@ Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **
 | E / click | interacționezi / treci la replica următoare |
 | Click stânga | tragi / folosești ce ții în mână (pistolul roz, armele, vraja, bomboana) |
 | Click stânga / dreapta în inventar | pui obiectul în mână / îl arunci pe jos |
-| F | lanterna |
+| F | lanterna (la începutul jocului e stinsă) |
 | Ctrl | **scutul** (după ce te învață Head Witch, la apus; prima dată îți iese greu, apoi curat; după ce se stinge, mai poți abia peste 2 secunde) |
 | Tab | deschide / închide inventarul (5 sloturi + sarcina curentă) |
 | Esc | în joc: **meniul de pauză** (Resume, Go to main menu, Settings, Quit; jocul stă pe loc) / închide inventarul / în meniuri: înapoi |

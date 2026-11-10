@@ -42,7 +42,7 @@ var raft: Dictionary = {}
 ## Ce ai aruncat pe jos: id -> {scena, nume, poz: [x, y, z], unghi}.
 var aruncate: Dictionary = {}
 ## Lanterna aprinsă sau stinsă; rămâne așa și în scena următoare, și în salvare.
-var lanterna := true
+var lanterna := false
 ## Desenul de pe peretele cu graffiti de la bloc (Graffiti): PNG în base64, gol = perete curat.
 var graffiti := ""
 ## Varianta family friendly (aleasă la jocul nou, în meniu): cuvintele urâte se schimbă pe ecran, vezi Limbaj.
@@ -101,7 +101,7 @@ func reseteaza() -> void:
 	in_mana = ""
 	raft = {}
 	aruncate = {}
-	lanterna = true
+	lanterna = false  # la început te trezești cu ea stinsă (owner 10.11); o aprinzi cu F
 	graffiti = ""
 	familie = false
 	meniu_deschis = false
