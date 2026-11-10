@@ -3,8 +3,8 @@
 // unde se termină iarba; mai încolo se văd siluetele, tot mai șterse cu distanța, cu ceață lăsată în văi.
 // Lumina e făcută de mână (un singur soare/lună, fațete plate, ca pe PS2); zăpada stă pe vârful muntelui.
 shader_type spatial;
-// Opac (owner 10.11: „nu vreau să văd cerul sub dealuri”). Culorile ceții le potrivește peisaj_departe.gd din mers,
-// după cum arată pe ecran iarba din ceață din fața ta (ceața volumetrică e altfel lângă felinare și altfel în colțuri).
+// Opac (owner 10.11: „nu vreau să văd cerul sub dealuri”). Culorile ceții sunt fixe (peisaj_departe.gd, PALETE: media
+// ierbii din ceață măsurată din mai multe locuri ale curții), ca ceața să nu pâlpâie.
 render_mode unshaded, fog_disabled, cull_back;
 
 uniform vec3 culoare_baza : source_color = vec3(0.2, 0.18, 0.26);
