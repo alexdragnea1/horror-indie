@@ -27,6 +27,9 @@ uniform vec3 culoare_zapada : source_color = vec3(0.86, 0.86, 0.92);
 uniform float inaltime_zapada = 190.0;
 // Cât de luminoasă e zăpada (noaptea doar se ghicește).
 uniform float lumina_zapada = 1.0;
+// Imașul de aproape: iarbă (închisă, în ceață) și cât de mult îl acoperă ceața scenei (sub 1, ca să se vadă copacii).
+uniform vec3 culoare_iarba : source_color = vec3(0.17, 0.18, 0.1);
+uniform float ceata_aproape_max = 0.95;
 
 varying vec3 poz;
 varying vec3 normala;
@@ -41,7 +44,10 @@ void fragment() {
 	vec3 l = normalize(directie_lumina);
 	float lam = max(dot(n, l), 0.0);
 	// fața dinspre lumină se aprinde, cea din spate rămâne în culoarea serii
-	vec3 c = culoare_baza * (0.75 + 0.25 * n.y) + culoare_lumina * lam * putere_lumina;
+	float dist_cam = length(poz - CAMERA_POSITION_WORLD);
+	// aproape e iarbă (imașul), departe culoarea serii; pe pante abrupte tot culoarea serii
+	vec3 baza = mix(culoare_baza, culoare_iarba, (1.0 - smoothstep(140.0, 420.0, dist_cam)) * smoothstep(0.75, 0.92, n.y));
+	vec3 c = baza * (0.75 + 0.25 * n.y) + culoare_lumina * lam * putere_lumina;
 	// zăpada: sus, pe fețele nu prea abrupte; coboară în limbi pe văi (marginea zimțată de fațete)
 	float limbi = sin(poz.x * 0.045 + poz.z * 0.02) * 28.0 + sin(poz.z * 0.11) * 12.0;
 	float zapada = smoothstep(inaltime_zapada, inaltime_zapada + 30.0, poz.y + n.x * 14.0 + limbi) * smoothstep(0.3, 0.55, n.y);
@@ -60,6 +66,6 @@ void fragment() {
 	// dungă luminoasă): acolo ceața e culoarea ei, opacă
 	float pe_cer = smoothstep(CAMERA_POSITION_WORLD.y - 1.0, CAMERA_POSITION_WORLD.y + 8.0, poz.y);
 	c = mix(c, culoare_ceata, departe * (1.0 - pe_cer));
-	ALBEDO = mix(c, culoare_ceata, aproape * cat_aproape);
+	ALBEDO = mix(c, culoare_ceata, aproape * cat_aproape * ceata_aproape_max);
 	ALPHA = mix(1.0 - departe * pe_cer, 1.0, cat_aproape);
 }

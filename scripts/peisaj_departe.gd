@@ -14,7 +14,7 @@ extends Node3D
 @export var lumina: DirectionalLight3D
 @export var saminta := 7
 ## De unde până unde merge terenul (m, de la nod).
-@export var raza_interioara := 55.0
+@export var raza_interioara := 22.0
 @export var raza_exterioara := 1700.0
 ## Cât de des e plasa: bucăți pe cerc și inele (fațete mari, PS2).
 @export var segmente := 300
@@ -67,6 +67,7 @@ func _ready() -> void:
 	_culori()
 	_construieste()
 	_padure()
+	_copaci_imas()
 	_turn()
 
 
@@ -117,6 +118,8 @@ func _culori() -> void:
 	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.4, 0.22, 1.0) if not jos else 1.0)
 	_material.set_shader_parameter("densitate_aproape", densitate)
 	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55)
+	# iarba imașului: noaptea aproape neagră, ziua verde-măslinie
+	_material.set_shader_parameter("culoare_iarba", Color(0.17, 0.18, 0.1) * clampf(luminos * 2.0, 0.4, 1.2))
 	# ziua ceața e albă și deasă: dealurile abia se ghicesc; noaptea și la apus se văd mai bine
 	_material.set_shader_parameter("ceata_max", 0.86 if luminos > 0.5 else (0.62 if jos else 0.7))
 	_material.set_shader_parameter("ceata_vale", 0.92)
@@ -127,10 +130,14 @@ func inaltime(x: float, z: float) -> float:
 	var r := Vector2(x, z).length()
 	# dealurile din față: line, tot mai înalte spre orizont
 	var dealuri := (0.55 + 0.45 * _zgomot.get_noise_2d(x, z)) * lerpf(14.0, 75.0, smoothstep(250.0, 1200.0, r))
-	dealuri *= smoothstep(raza_interioara + 50.0, 380.0, r)
+	dealuri *= smoothstep(105.0, 380.0, r)
 	# culmea din spate: muchii ascuțite
 	var culme := (0.5 + 0.5 * _culme.get_noise_2d(x, z)) * 120.0 * smoothstep(520.0, 1000.0, r)
-	var h := dealuri + culme
+	# imașul de lângă curte (owner 10.11: „pare că e un lac” între curte și dealuri): ușor vălurit chiar de la marginea
+	# ierbii din scenă, ca să nu fie o fâșie plată pierdută în ceață
+	var imas := (3.2 + 3.0 * _zgomot.get_noise_2d(x * 3.0, z * 3.0)) * smoothstep(raza_interioara, raza_interioara + 30.0, r)
+	# curtea, strada (pe unde trece autobuzul) și blocurile din scenă rămân pe teren plat
+	var h := maxf(dealuri, imas) * liber(x, z) + culme
 	# șaua în dreptul soarelui de la apus
 	if _sa != Vector2.ZERO:
 		var unghi := absf(Vector2(x, z).normalized().angle_to(_sa))
@@ -300,6 +307,7 @@ func _in_ceata(cat: float) -> ShaderMaterial:
 	var m := _material.duplicate() as ShaderMaterial
 	m.set_shader_parameter("ceata_max", cat)
 	m.set_shader_parameter("densitate_departe", 0.012)
+	m.set_shader_parameter("culoare_iarba", m.get_shader_parameter("culoare_baza"))
 	return m
 
 
@@ -310,4 +318,113 @@ func _copie(schimbari: Dictionary) -> ShaderMaterial:
 	for nume: String in schimbari:
 		var vechi = _material.get_shader_parameter(nume)
 		m.set_shader_parameter(nume, vechi * schimbari[nume])
+	# copacii (și turnul) n-au iarbă pe creștet
+	m.set_shader_parameter("culoare_iarba", m.get_shader_parameter("culoare_baza"))
 	return m
+
+
+## Copacii de pe imașul dintre curte și dealuri (60…320 m): pâlcuri de copaci de toamnă (coroane rotunde, ruginii)
+## și brazi, ca să nu fie un gol. Se văd ca siluete prin ceață, cu coroanele aprinse dinspre soare la apus.
+func _copaci_imas() -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = saminta + 5
+	var pete := FastNoiseLite.new()
+	pete.seed = saminta + 6
+	pete.frequency = 0.012
+	var coroane: Array[Transform3D] = []
+	var trunchiuri: Array[Transform3D] = []
+	var brazi: Array[Transform3D] = []
+	var pas := 7.5
+	var x := -330.0
+	while x < 330.0:
+		var z := -330.0
+		while z < 330.0:
+			var px := x + r.randf_range(-0.45, 0.45) * pas
+			var pz := z + r.randf_range(-0.45, 0.45) * pas
+			z += pas
+			var d := Vector2(px, pz).length()
+			if d < raza_interioara or d > 320.0 or liber(px, pz) < 0.95:
+				continue
+			# pâlcuri, nu un covor (dar deși chiar după stradă, ca să nu rămână câmpul gol în ceață, ca un lac)
+			var prag := -0.45 if d < 90.0 else lerpf(0.05, -0.15, smoothstep(90.0, 300.0, d))
+			if pete.get_noise_2d(px, pz) < prag or r.randf() < 0.2:
+				continue
+			if _sa != Vector2.ZERO and absf(Vector2(px, pz).normalized().angle_to(_sa)) < 0.12:
+				continue
+			var jos := inaltime(px, pz) - 0.3
+			var s := r.randf_range(0.8, 1.35)
+			var rot := Basis(Vector3.UP, r.randf_range(0.0, TAU))
+			if r.randf() < 0.6:
+				# copac de toamnă: trunchi + coroană rotundă, turtită
+				var inalt := 4.5 * s
+				trunchiuri.append(Transform3D(rot.scaled(Vector3(0.5, inalt, 0.5) * Vector3(s, 1.0, s)), Vector3(px, jos + inalt * 0.5, pz)))
+				var lat := r.randf_range(3.6, 5.0) * s
+				coroane.append(Transform3D(rot.scaled(Vector3(lat, lat * r.randf_range(0.75, 0.95), lat)), Vector3(px, jos + inalt + lat * 0.25, pz)))
+			else:
+				var h := r.randf_range(8.0, 13.0) * s
+				brazi.append(Transform3D(rot.scaled(Vector3(h * 0.33, h, h * 0.33)), Vector3(px, jos + h * 0.5, pz)))
+		x += pas
+	# tufișuri pe câmpul de lângă stradă: rup fâșia plată din ceață
+	var t := -150.0
+	while t < 150.0:
+		var u := -150.0
+		while u < 150.0:
+			var px := t + r.randf_range(-2.0, 2.0)
+			var pz := u + r.randf_range(-2.0, 2.0)
+			u += 4.5
+			var d := Vector2(px, pz).length()
+			if d < raza_interioara or d > 140.0 or liber(px, pz) < 0.9 or r.randf() < 0.5:
+				continue
+			var lat := r.randf_range(1.6, 3.2)
+			var jos := inaltime(px, pz) - 0.2
+			var rot := Basis(Vector3.UP, r.randf_range(0.0, TAU))
+			coroane.append(Transform3D(rot.scaled(Vector3(lat * 1.3, lat, lat * 1.3)), Vector3(px, jos + lat * 0.3, pz)))
+		t += 4.5
+	var sfera := SphereMesh.new()
+	sfera.radius = 0.5
+	sfera.height = 1.0
+	sfera.radial_segments = 7
+	sfera.rings = 4
+	var cutie := BoxMesh.new()
+	var con := CylinderMesh.new()
+	con.top_radius = 0.0
+	con.bottom_radius = 1.0
+	con.height = 1.0
+	con.radial_segments = 5
+	con.rings = 1
+	con.cap_bottom = false
+	# coroanele ruginii (ca în curte), trunchiurile și brazii închiși
+	var mat_coroana := _copie({"culoare_baza": 1.0, "ceata_vale": 0.6, "putere_lumina": 0.45})
+	mat_coroana.set_shader_parameter("culoare_baza", (_material.get_shader_parameter("culoare_baza") as Color).lerp(Color(0.3, 0.12, 0.05), 0.4))
+	mat_coroana.set_shader_parameter("culoare_iarba", mat_coroana.get_shader_parameter("culoare_baza"))
+	var mat_inchis := _copie({"culoare_baza": 0.6, "ceata_vale": 0.6})
+	for lista_mesh in [[coroane, sfera, mat_coroana, "Coroane"], [trunchiuri, cutie, mat_inchis, "Trunchiuri"], [brazi, con, mat_inchis, "Brazi"]]:
+		var lista: Array[Transform3D] = lista_mesh[0]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = lista_mesh[1]
+		mm.instance_count = lista.size()
+		for i in lista.size():
+			mm.set_instance_transform(i, lista[i])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.name = lista_mesh[3]
+		mmi.multimesh = mm
+		mmi.material_override = lista_mesh[2]
+		mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(mmi)
+
+
+## Locurile din scenă (în coordonatele lumii) unde terenul trebuie să rămână plat și fără copaci: curtea cu gardul și
+## copacii ei, strada cu trotuarele (merge autobuzul pe ea, de la un capăt la altul), blocul de vizavi, cel lateral.
+const LOCURI_PLATE := [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -7, 18, 30)]
+const MARGINE_PLAT := 3.0
+
+## 1 = liber (pot fi dealuri și copaci), 0 = în curte / pe stradă / lângă un bloc, cu o pantă de `MARGINE_PLAT` m.
+func liber(x: float, z: float) -> float:
+	var p := Vector2(x, z) + Vector2(position.x, position.z)
+	var rez := 1.0
+	for loc: Rect2 in LOCURI_PLATE:
+		var dx := maxf(maxf(loc.position.x - p.x, p.x - loc.end.x), 0.0)
+		var dz := maxf(maxf(loc.position.y - p.y, p.y - loc.end.y), 0.0)
+		rez = minf(rez, smoothstep(0.0, MARGINE_PLAT, Vector2(dx, dz).length()))
+	return rez
