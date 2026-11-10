@@ -151,7 +151,14 @@ func _goana(jucator: Node3D) -> void:
 	# +1 = pornește din stânga ecranului și fuge spre dreapta
 	var sens := (1.0 if randf() < 0.5 else -1.0) if parte == 0 else (1.0 if parte == 1 else -1.0)
 	var dreapta := inainte.cross(Vector3.UP).normalized() * sens
-	var centru := jucator.global_position + inainte * distanta_fata
+	# trece prin locul unde vei fi TU când ajunge ea la mijloc: dacă alergi (sprint 4,5 m/s, ~1 s până la mijloc),
+	# fără asta îți trecea pe lângă, aproape de umăr, și n-o mai vedeai (owner 10.11)
+	var viteza_ta := Vector3.ZERO
+	if "velocity" in jucator:
+		viteza_ta = jucator.get("velocity")
+	var pana_la_mijloc := lungime_goana * 0.5 / viteza_creatura
+	var avans := maxf(viteza_ta.dot(inainte), 0.0) * pana_la_mijloc
+	var centru := jucator.global_position + inainte * (distanta_fata + avans)
 	var start := centru - dreapta * lungime_goana * 0.5
 	var c := creatura.instantiate() as Node3D
 	add_child(c)
