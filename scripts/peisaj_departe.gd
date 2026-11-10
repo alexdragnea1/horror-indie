@@ -28,6 +28,10 @@ extends Node3D
 @export var turn_unghi := 55.0
 @export var turn_distanta := 420.0
 @export var turn_inaltime := 48.0
+## Cât de pierdut în ceață e turnul și becurile lui (0 = clar, 1 = deloc; owner 10.11: „mai în fog, aceeași culoare
+## ca environmentul”). Becurile puțin mai puțin, ca roșul să se ghicească.
+@export_range(0.0, 1.0) var turn_ceata := 0.78
+@export_range(0.0, 1.0) var becuri_ceata := 0.5
 
 const SHADER := preload("res://shaders/peisaj_departe.gdshader")
 ## Ceața scenei (fog_light_color, „r,g,b”) -> [culoarea ierbii pierdute în ceață, culoarea cerului de deasupra
@@ -47,7 +51,6 @@ var _sa := Vector2.ZERO  # direcția (pe orizontală) în care se lasă dealuril
 var _material := ShaderMaterial.new()
 var _becuri: Array[MeshInstance3D] = []
 var _ceas := 0.0
-var _intuneric := false  # noapte / seară / apus: se aprind geamurile din cartier
 
 
 func _ready() -> void:
@@ -64,7 +67,6 @@ func _ready() -> void:
 	_culori()
 	_construieste()
 	_padure()
-	_cartier()
 	_turn()
 
 
@@ -105,7 +107,6 @@ func _culori() -> void:
 		_sa = Vector2(directie.x, directie.z).normalized()
 	# silueta: ceața, mai închisă și puțin spre mov (noaptea aproape neagră, la apus mov închis)
 	var baza := cer.darkened(0.55).lerp(Color(0.16, 0.13, 0.24), 0.25)
-	_intuneric = luminos < 0.5
 	_material.set_shader_parameter("culoare_baza", baza)
 	_material.set_shader_parameter("culoare_ceata", ceata)
 	_material.set_shader_parameter("culoare_cer", cer)
@@ -186,25 +187,27 @@ func _turn() -> void:
 	turn.name = "Turn"
 	add_child(turn)
 	turn.position = Vector3(loc.x, jos, loc.y)
+	# același shader ca dealurile, dar cu ceață deasă: ia culoarea ceții și a cerului din jur
+	var mat_turn := _in_ceata(turn_ceata)
+	var mat_bec := _in_ceata(becuri_ceata)
+	mat_bec.set_shader_parameter("culoare_baza", Color(1.0, 0.1, 0.06))
+	mat_bec.set_shader_parameter("putere_lumina", 0.0)
+	mat_bec.set_shader_parameter("lumina_zapada", 0.0)
 	for i in 4:
 		var lat := lerpf(3.2, 0.6, float(i) / 4.0)
 		var bucata := MeshInstance3D.new()
 		var cutie := BoxMesh.new()
 		cutie.size = Vector3(lat, turn_inaltime / 4.0, lat)
 		bucata.mesh = cutie
-		bucata.material_override = _material
+		bucata.material_override = mat_turn
 		bucata.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		bucata.position.y = turn_inaltime / 4.0 * (i + 0.5)
 		turn.add_child(bucata)
-	var mat_bec := StandardMaterial3D.new()
-	mat_bec.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat_bec.albedo_color = Color(1.0, 0.12, 0.08)
-	mat_bec.disable_fog = true
 	for y in [turn_inaltime * 0.5, turn_inaltime * 0.78, turn_inaltime + 0.8]:
 		var bec := MeshInstance3D.new()
 		var sfera := SphereMesh.new()
-		sfera.radius = 1.3
-		sfera.height = 2.6
+		sfera.radius = 3.2  # de la 400 m, la rezoluția PS2, un bec mai mic nici nu se vede
+		sfera.height = 6.4
 		sfera.radial_segments = 6
 		sfera.rings = 3
 		bec.mesh = sfera
@@ -271,72 +274,17 @@ func _padure() -> void:
 	add_child(mmi)
 
 
-## Un cartier de blocuri departe, pe șes (`cartier_unghi` de la/până la, `cartier_raza`): cutii cu acoperiș plat, unele
-## mai înalte, și când e întuneric câteva geamuri aprinse, galbene, cum se vede un oraș seara.
-@export var cartier_unghi := Vector2(-55.0, 25.0)
-@export var cartier_raza := Vector2(330.0, 560.0)
-@export var blocuri := 26
 
-func _cartier() -> void:
-	var r := RandomNumberGenerator.new()
-	r.seed = saminta + 4
-	var cutie := BoxMesh.new()
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.mesh = cutie
-	mm.instance_count = blocuri
-	var geamuri: Array[Transform3D] = []
-	for i in blocuri:
-		var unghi := deg_to_rad(r.randf_range(cartier_unghi.x, cartier_unghi.y))
-		var dist := r.randf_range(cartier_raza.x, cartier_raza.y)
-		var p := Vector2.from_angle(unghi) * dist
-		# blocurile stau cu fața spre curte (paralele cu orizontul), puțin rotite
-		var spre := -p.normalized()
-		var rot := atan2(spre.x, spre.y) + r.randf_range(-0.35, 0.35)
-		var lung := r.randf_range(28.0, 60.0)
-		var inalt := 15.0 if r.randf() < 0.6 else r.randf_range(24.0, 32.0)
-		var adanc := r.randf_range(10.0, 13.0)
-		var jos := inaltime(p.x, p.y) - 0.5
-		var baza := Basis(Vector3.UP, rot)
-		mm.set_instance_transform(i, Transform3D(baza.scaled(Vector3(lung, inalt, adanc)), Vector3(p.x, jos + inalt * 0.5, p.y)))
-		# geamuri aprinse pe fața dinspre curte (+Z-ul blocului e spre curte)
-		var etaje := int(inalt / 2.8)
-		var coloane := int(lung / 3.4)
-		for e in etaje:
-			for c in coloane:
-				if r.randf() < 0.14:
-					var loc := Vector3(-lung * 0.5 + 1.7 + c * 3.4, 1.6 + e * 2.8 - inalt * 0.5, adanc * 0.5 + 0.05)
-					geamuri.append(Transform3D(baza, Vector3(p.x, jos + inalt * 0.5, p.y) + baza * loc))
-	var mmi := MultiMeshInstance3D.new()
-	mmi.name = "Cartier"
-	mmi.multimesh = mm
-	mmi.material_override = _copie({"culoare_baza": 0.85, "putere_lumina": 0.35})
-	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(mmi)
-	if not _intuneric or geamuri.is_empty():
-		return
-	var geam := QuadMesh.new()
-	geam.size = Vector2(1.3, 1.5)
-	var mg := MultiMesh.new()
-	mg.transform_format = MultiMesh.TRANSFORM_3D
-	mg.mesh = geam
-	mg.instance_count = geamuri.size()
-	for i in geamuri.size():
-		mg.set_instance_transform(i, geamuri[i])
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(1.0, 0.72, 0.38)
-	mat.disable_fog = true
-	var mgi := MultiMeshInstance3D.new()
-	mgi.name = "Geamuri"
-	mgi.multimesh = mg
-	mgi.material_override = mat
-	mgi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(mgi)
+## Materialul dealurilor, dar cu ceața de departe ajunsă (de la câteva sute de metri) la `cat`.
+func _in_ceata(cat: float) -> ShaderMaterial:
+	var m := _material.duplicate() as ShaderMaterial
+	m.set_shader_parameter("ceata_max", cat)
+	m.set_shader_parameter("densitate_departe", 0.012)
+	return m
 
 
 ## O copie a materialului dealurilor cu câțiva parametri schimbați: numerele sunt înmulțite cu ce era (culoarea
-## de bază mai închisă pentru brazi, lumina mai slabă pe blocuri).
+## de bază mai închisă pentru brazi, ceață mai deasă pe turn).
 func _copie(schimbari: Dictionary) -> ShaderMaterial:
 	var m := _material.duplicate() as ShaderMaterial
 	for nume: String in schimbari:
