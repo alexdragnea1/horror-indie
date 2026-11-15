@@ -386,6 +386,7 @@ shape = SubResource("forma_perete_lat")
 [node name="ZidInvizibil" type="StaticBody3D" parent="." node_paths=PackedStringArray("teren")]
 script = ExtResource("48")
 teren = NodePath("../Teren")
+cercuri_extra = Array[Vector3]([Vector3(10.6, -66, 26)])
 
 [node name="Muzica" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("cedeaza")]
 stream = ExtResource("muzica_loc_ogg")

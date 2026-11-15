@@ -1,6 +1,6 @@
 extends StaticBody3D
 ## Zidul invizibil din pădure: poți ieși de pe potecă și intra printre copaci, dar nu departe.
-## Locul în care poți umbla e reunirea a patru zone:
+## Locul în care poți umbla e reunirea a patru zone (plus `cercuri_extra`):
 ##   - o fâșie de `departe_de_poteca` metri de o parte și de alta a fiecărei poteci,
 ##   - platoul (cerc de `raza_platou` în jurul lui TerenPadure.centru_platou),
 ##   - poiana din fundul văii (cerc de `raza_vale` în jurul lui centru_vale),
@@ -15,6 +15,9 @@ extends StaticBody3D
 @export var raza_vale := 15.0
 ## Dreptunghiul de lângă șosea (x, z, lățime, adâncime).
 @export var zona_start := Rect2(-20, -16, 40, 22)
+## Alte locuri unde poți umbla: cercuri (x, z, rază). Ex. pădurea în care fuge omul care se ușurează, ca să ajungi la
+## cadavrul lui dacă îl împuști din fugă (om_padure.gd).
+@export var cercuri_extra: Array[Vector3] = []
 ## Pasul rețelei (metri): mai mic = zid mai neted, dar mai multe triunghiuri.
 @export var pas := 1.0
 ## Arată zidul (roșu, semi-transparent), ca să vezi pe unde trece. Doar pentru teste.
@@ -67,6 +70,8 @@ func valoare(x: float, z: float) -> float:
 	var d := teren.distanta_poteca(x, z) - departe_de_poteca
 	d = minf(d, q.distance_to(teren.centru_platou) - raza_platou)
 	d = minf(d, q.distance_to(teren.centru_vale) - raza_vale)
+	for c in cercuri_extra:
+		d = minf(d, q.distance_to(Vector2(c.x, c.y)) - c.z)
 	# distanța (cu semn) până la marginea dreptunghiului
 	var centru := zona_start.get_center()
 	var jumatate := zona_start.size * 0.5
