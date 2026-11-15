@@ -3,7 +3,8 @@ extends Node
 ## Curtea blocului dimineața (`marcaj_dimineata`, pus de pat.gd după somn): cer alb de ceață, lumină de zi rece,
 ## felinarele, becul scării și geamurile aprinse se sting, sperieturile de noapte tac, iar ce e în `doar_noaptea`
 ## nu se mai poate examina. Ceața rămâne (owner-ul: „tot mai e ceață”). Dacă ai ieșit pe ușa de la intrare a casei
-## (`din_casa`, pus de acasa_noaptea.gd), te pune în fața scării, cu spatele la bloc. Fără `Jucator` (fundalul din
+## (`din_casa`, pus de acasa_noaptea.gd), te pune lângă ușa blocului, cu fața spre stradă,
+## oricând (și noaptea, și prima dată). Fără `Jucator` (fundalul din
 ## meniul principal) e mereu noapte.
 
 ## Adevărat de la deschiderea ușii de la intrare până te pune curtea la scară.
@@ -50,11 +51,13 @@ func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
 	var zi := Stare.e_marcat(marcaj_zi_oras) or (Stare.e_marcat(marcaj_dimineata) and not Stare.e_marcat(marcaj_seara))
 	var apus := Stare.e_marcat(marcaj_apus) and not Stare.e_marcat(marcaj_zi_primarie)
-	if jucator == null or not zi or apus:
-		if jucator == null or not apus:
-			din_casa = false  # la apus îl folosește ApusBloc
+	if jucator == null:
+		din_casa = false
 		return
-	_fa_zi()
+	if apus:
+		return  # la apus îl folosește ApusBloc
+	if zi:
+		_fa_zi()
 	await get_tree().process_frame
 	if din_casa:
 		din_casa = false

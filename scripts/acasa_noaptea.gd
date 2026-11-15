@@ -51,6 +51,9 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 
 
 func _ready() -> void:
+	# ieși pe ușă (oricând, și prima dată): afară te pune lângă ușa blocului, cu fața spre stradă (vezi zi_bloc.gd)
+	if usa_intrare:
+		usa_intrare.deschisa.connect(func() -> void: ZiBloc.din_casa = true)
 	if not Stare.e_marcat(marcaj_trezit):
 		return
 	if is_instance_valid(mama):
@@ -78,8 +81,6 @@ func _ready() -> void:
 			usa_intrare.marcaj_necesar = marcaj_iesire_dimineata
 			usa_intrare.replici_fara_marcaj = replici_usa_dimineata
 			usa_intrare.titlu_locatie = titlu_afara_dimineata
-		# ieși pe ușă: afară te pune în fața scării (vezi zi_bloc.gd)
-		usa_intrare.deschisa.connect(func() -> void: ZiBloc.din_casa = true)
 	await get_tree().process_frame
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	var pe_usa: bool = USA_BLOC.intrat_pe_usa
