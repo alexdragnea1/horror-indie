@@ -136,7 +136,10 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 90. **Ieșirea din apartament** (15.11): oricând ieși din casă (și prima dată, noaptea) apari lângă ușa blocului, cu fața spre stradă.
 91. **Omul care se cacă în pădure se poate omorî** (15.11): cu pistolul, ghemuit sau din fugă (cade moale, ca bețivul), apoi îl iei cu E („[E] Pick up the guy”) și îl arunci în cazan la sacrificiu („[E] Throw the guy in”), în locul bețivului sau al unei vrăjitoare. Contează ca singurul mort din pădure: după el, bețivul și vrăjitoarele nu mai mor (și invers: dacă ai omorât deja pe cineva, glonțul doar îl sperie și fuge). Dacă fugise înainte să ai pistolul, după ce îl primești se întoarce o dată la locul lui. Pădurea din jurul lui se poate umbla acum (ca să ajungi la cadavru dacă îl împuști din fugă).
 92. **Lexy și televizorul împușcat** (15.11): dacă îi împuști televizorul înainte să fumați, Lexy stinge jointul, se ridică și te așteaptă; când vii la ea: „Lexy: Did you just shoot my fucking TV?!” / „You: My bad, I will pay you for it, don't worry.” / „You: Can we still smoke?” / „Lexy: Nah, I'm mad, get out.”. Apoi se duce la masă (pizza), autobuzul spre casă vine direct, iar la masă ai doar „Rob her at gun point”.
-93. Urmează: tu hotărăști (playtest, build, itch.io).
+93. **Fără pătratul de lângă șofer** (15.11): cutia de bilete care plutea în aer la dreapta șoferului de autobuz e scoasă din model.
+94. **Cartierul din jurul blocului** (15.11): câmpia goală dintre curte și dealuri, care se vedea urât când zbori pe mătură, are acum blocuri (cu geamuri aprinse seara și noaptea) și pâlcuri de copaci, care se pierd în ceață spre dealuri.
+95. **Ușile de sub scările conacului mai late** (15.11): debaraua lui Parry și ușa spre subsol au acum 0,97 m în loc de 0,74 m.
+96. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

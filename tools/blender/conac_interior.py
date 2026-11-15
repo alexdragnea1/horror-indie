@@ -340,7 +340,7 @@ CAM_H = 7.2        # tavanul camerelor
 USA_Y0, USA_Y1, USA_Z1 = 11.2, 12.8, 6.3   # golul ușilor spre camere, în pereții x = ±9
 GROS_TREAPTA = 0.3   # treptele sunt o placă groasă de 30 cm: sub cea din stânga e debaraua lui Parry, sub cea din dreapta
                      # coboară scara spre subsol
-DEB_X0, DEB_X1, DEB_H = 7.48, 8.22, 1.95   # golul ușilor din capătul scărilor (peretele de sub galerie, y = GAL), la
+DEB_X0, DEB_X1, DEB_H = 7.48, 8.45, 1.95   # golul ușilor din capătul scărilor (peretele de sub galerie, y = GAL), la
                                            # x = ±(DEB_X0…DEB_X1): în stânga debaraua lui Parry, în dreapta scara spre subsol
 SUB_Y0 = 4.35      # scara spre subsol coboară pe sub scara din dreapta, de la GAL până aici: podeaua sălii are gaură deasupra
 STOFE = [ROSU, ROSU_INCHIS, VISINIU, MOV, VERDE, TEAL, LEMN, AUR_INCHIS, p("2a3c3d"), p("904a40")]

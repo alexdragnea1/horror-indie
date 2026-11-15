@@ -292,7 +292,6 @@ def autobuz(cale):
 		cub("Perete cabina", (1.0, 0.05, 1.0), (0.72, -3.75, PODEA + 0.5), GRI),
 		cub("Rama cabina", (1.02, 0.08, 0.05), (0.72, -3.75, PODEA + 1.0), NEGRU),
 		cub("Coloana volan", (0.08, 0.08, 0.45), (0.62, -5.1, 1.45), NEGRU, rot=(-0.5, 0, 0)),
-		cub("Cutie bilete", (0.25, 0.2, 0.15), (0.15, -4.7, PODEA + 0.75), METAL_INCHIS),
 		cub("Iconita", (0.07, 0.01, 0.09), (0.25, FY + 0.33, 1.42), p("a18463")),
 		cub("Brad parfumat", (0.05, 0.01, 0.08), (0.9, FY + 0.33, 1.5), p("5b6d4e")),
 		cub("Tablou bord", (0.5, 0.05, 0.18), (0.62, FY + 0.48, 1.38), p("2a3c3d"), rot=(-0.6, 0, 0)),

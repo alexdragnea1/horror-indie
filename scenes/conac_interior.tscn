@@ -102,7 +102,7 @@ size = Vector3(0.3, 0.5, 1.55)
 size = Vector3(0.8, 0.8, 0.12)
 
 [sub_resource type="BoxShape3D" id="forma_usa_debara"]
-size = Vector3(0.72, 1.93, 0.04)
+size = Vector3(0.95, 1.93, 0.04)
 
 [sub_resource type="BoxShape3D" id="podea_subsol"]
 size = Vector3(13.8, 3.6, 11.9)
@@ -681,7 +681,7 @@ script = ExtResource("2")
 material = ExtResource("3")
 
 [node name="Forma" type="CollisionShape3D" parent="UsaDebara"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.965, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 0.965, 0)
 shape = SubResource("forma_usa_debara")
 
 [node name="LumanareDebara" type="OmniLight3D" parent="Lumini"]
@@ -719,7 +719,7 @@ material = ExtResource("3")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.885, 0.345)
 
 [node name="UsaSubsol" type="StaticBody3D" parent="."]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 8.22, 0, -10.05)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 8.45, 0, -10.05)
 script = ExtResource("usa1")
 unghi_deschidere = -95.0
 sunet_deschidere = ExtResource("27")
@@ -730,7 +730,7 @@ script = ExtResource("2")
 material = ExtResource("3")
 
 [node name="Forma" type="CollisionShape3D" parent="UsaSubsol"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.36, 0.965, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.475, 0.965, 0)
 shape = SubResource("forma_usa_debara")
 
 [node name="Subsol" parent="." instance=ExtResource("subsol_glb")]

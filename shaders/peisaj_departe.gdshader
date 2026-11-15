@@ -29,11 +29,24 @@ uniform float inaltime_ceata = 30.0;
 // În plus pentru tot obiectul (turnul de antenă, mai pierdut în ceață).
 uniform float ceata_extra = 0.0;
 
+// Blocurile din cartierul din jur (`_cartier` din peisaj_departe.gd): geamuri pe pereți, din coordonatele lumii (un
+// rând la 2,8 m, o fereastră la 3,2 m). Cele aprinse (`geamuri_aprinse` din ele, alese la întâmplare pe fiecare bloc)
+// au `culoare_geam`; restul sunt sticlă întunecată. 0 = fără geamuri (dealurile, turnul).
+uniform float geamuri = 0.0;
+uniform float geamuri_aprinse = 0.0;
+uniform vec3 culoare_geam : source_color = vec3(0.9, 0.62, 0.36);
+
 varying vec3 poz;
 varying vec3 normala;
 varying vec3 vedere_reala;
+varying flat float saminta;
+
+float _hash(vec3 p) {
+	return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+}
 
 void vertex() {
+	saminta = float(INSTANCE_ID);
 	poz = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	normala = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	vec3 v = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -57,6 +70,15 @@ void fragment() {
 	float zapada = smoothstep(inaltime_zapada, inaltime_zapada + 30.0, poz.y + n.x * 14.0 + limbi) * smoothstep(0.3, 0.55, n.y);
 	vec3 cz = culoare_zapada * (0.55 + 0.25 * n.y) * lumina_zapada + culoare_lumina * lam * (putere_lumina * 1.6);
 	ALBEDO = mix(c, cz, zapada);
+	if (geamuri > 0.5 && abs(n.y) < 0.5) {
+		vec2 lat = normalize(vec2(-n.z, n.x));
+		vec2 g = vec2(dot(poz.xz, lat) / 3.2, (poz.y - 0.6) / 2.8);
+		vec2 f = fract(g);
+		float in_geam = step(0.28, f.x) * step(f.x, 0.74) * step(0.32, f.y) * step(f.y, 0.78) * step(0.0, g.y);
+		float aprins = step(_hash(vec3(floor(g), saminta + n.x * 3.0 + n.z * 7.0)), geamuri_aprinse);
+		vec3 sticla = mix(ALBEDO * 0.55, culoare_geam, aprins);
+		ALBEDO = mix(ALBEDO, sticla, in_geam);
+	}
 	// adâncimea adevărată (nu cea „din ceață”), ca să stea în spatele a tot ce e mai aproape
 	vec4 clip = PROJECTION_MATRIX * vec4(vedere_reala, 1.0);
 	DEPTH = clip.z / clip.w;
