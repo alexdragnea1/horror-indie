@@ -139,7 +139,9 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 93. **Fără pătratul de lângă șofer** (15.11): cutia de bilete care plutea în aer la dreapta șoferului de autobuz e scoasă din model.
 94. **Cartierul din jurul blocului** (15.11): câmpia goală dintre curte și dealuri, care se vedea urât când zbori pe mătură, are acum blocuri (cu geamuri aprinse seara și noaptea) și pâlcuri de copaci, care se pierd în ceață spre dealuri.
 95. **Ușile de sub scările conacului mai late** (15.11): debaraua lui Parry și ușa spre subsol au acum 0,97 m în loc de 0,74 m.
-96. Urmează: tu hotărăști (playtest, build, itch.io).
+96. **Amanetul lui Johnny reparat** (15.11): drujba nu mai intră în sacul de golf, chitarele și amplificatorul de lângă intrare au fața spre magazin (erau întoarse spre perete), la fel aparatele de pe raftul din stânga, iar lampa de pe tejghea e acum o lampă de bancher normală (abajur verde culcat, cu becul dedesubt).
+97. **Poker: Press E to leave** (15.11): la masă scrie sus „Press E to leave”; între mâini pleci imediat, în timpul unei mâini te ridici după ce se termină („Leaving after this hand...”).
+98. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

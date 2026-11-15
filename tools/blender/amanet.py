@@ -558,9 +558,14 @@ def amanet(cale):
 	piese += [
 		cilindru("Baza lampa", 0.07, 0.08, 0.025, (lx, ly, TZ + 0.0325), AUR, laturi=10),
 		os_intre("Tija lampa", (lx, ly, TZ + 0.04), (lx, ly - 0.02, TZ + 0.32), 0.01, AUR, laturi=6),
-		cilindru("Abajur", 0.13, 0.13, 0.08, (lx, ly - 0.04, TZ + 0.34), VERDE, laturi=12, rot=(0, 1.5708, 0), scara=(1, 1, 0.5)),
+		# abajurul: un cilindru culcat (de-a lungul lui X), turtit, cu becul dedesubt (owner 15.11:
+		# înainte era un disc verde în picioare, cu becul ieșind prin el)
+		cilindru("Abajur", 0.075, 0.075, 0.32, (lx, ly - 0.04, TZ + 0.34), VERDE, laturi=12, rot=(0, 1.5708, 0), scara=(0.62, 1, 1)),
+		cub("Lant lampa", (0.004, 0.004, 0.07), (lx + 0.09, ly - 0.08, TZ + 0.27), AUR),
+		sfera("Lant lampa", 0.008, (lx + 0.09, ly - 0.08, TZ + 0.23), AUR, segmente=6, inele=4),
 	]
-	lumini.append(cilindru("Bec lampa", 0.02, 0.02, 0.2, (lx, ly - 0.04, TZ + 0.315), AUR, laturi=6, rot=(0, 1.5708, 0)))
+	# becul: o fâșie care strălucește chiar sub abajur (se vede de jos și din față)
+	lumini.append(cub("Bec lampa", (0.28, 0.07, 0.006), (lx, ly - 0.04, TZ + 0.292), AUR))
 	piese += [
 		cub("Cantar", (0.16, 0.12, 0.03), (-12.9, tm + 0.05, TZ + 0.015), NEGRU),
 		cilindru("Taler cantar", 0.05, 0.05, 0.008, (-12.9, tm + 0.07, TZ + 0.034), CROM, laturi=10),
@@ -675,7 +680,7 @@ def amanet(cale):
 		for xx in (rx - 0.22, rx + 0.22):
 			piese.append(cub("Montant raft", (0.035, 0.035, 2.1), (xx, yy, FL + 1.05), METAL_INCHIS))
 	_cutie_coliziune(col, (0.5, ry1 - ry0, 2.1), (rx, (ry0 + ry1) / 2, FL + 1.05))
-	spre_x = (0, 0, -1.5708)  # obiectele făcute cu fața spre -Y, întoarse cu fața spre +X (spre magazin)
+	spre_x = (0, 0, 1.5708)  # obiectele făcute cu fața spre -Y, întoarse cu fața spre +X (spre magazin; owner 15.11: era -1,5708, cu fața la perete)
 	# jos: două televizoare mari; apoi video-uri și o consolă; apoi aparate foto și un boombox; sus: un televizor mic, cutii
 	piese.append(_obiect(_televizor(0.55), (rx, ry0 + 0.35, nivele[0] + 0.0125), spre_x))
 	piese.append(_obiect(_televizor(0.5), (rx, ry1 - 0.35, nivele[0] + 0.0125), spre_x))
@@ -683,10 +688,10 @@ def amanet(cale):
 		piese.append(_obiect(_video(0.38), (rx, ry0 + 0.3 + k * 0.48, nivele[1] + 0.0125), spre_x))
 		piese.append(_obiect(_video(0.38), (rx, ry0 + 0.3 + k * 0.48, nivele[1] + 0.1025), spre_x))
 	piese.append(_obiect(_consola(), (rx + 0.04, ry0 + 0.4, nivele[2] + 0.0125), spre_x))
-	piese.append(_obiect(_consola(), (rx + 0.04, ry0 + 1.0, nivele[2] + 0.0125), (0, 0, -1.4)))
+	piese.append(_obiect(_consola(), (rx + 0.04, ry0 + 1.0, nivele[2] + 0.0125), (0, 0, 1.4)))
 	piese.append(_obiect(_boombox(), (rx, ry1 - 0.4, nivele[2] + 0.0125), spre_x))
 	for k in range(4):
-		piese.append(_obiect(_aparat_foto(), (rx + 0.05, ry0 + 0.25 + k * 0.38, nivele[3] + 0.0125), (0, 0, -1.5708 + r.uniform(-0.3, 0.3))))
+		piese.append(_obiect(_aparat_foto(), (rx + 0.05, ry0 + 0.25 + k * 0.38, nivele[3] + 0.0125), (0, 0, 1.5708 + r.uniform(-0.3, 0.3))))
 	piese.append(_obiect(_televizor(0.36), (rx, ry0 + 0.4, nivele[4] + 0.0125), spre_x))
 	yy = ry0 + 0.8
 	while yy < ry1 - 0.2:
@@ -707,10 +712,12 @@ def amanet(cale):
 		for dy in (-0.23, 0.23):
 			piese.append(cub("Picior masa", (0.04, 0.04, 0.74), (mx + dx, my + dy, FL + 0.37), LEMN_INCHIS))
 	_cutie_coliziune(col, (0.6, 0.55, 0.78), (mx + 0.1, my, FL + 0.39))
-	piese.append(_obiect(_drujba(), (mx, my + 0.05, FL + 0.78), (0, 0, 0.6)))
+	# drujba aproape paralelă cu marginea mesei, lama spre fața magazinului (owner 15.11: lama intra în sacul de golf,
+	# care acum stă și el mai încolo); vârful lamei iese puțin peste marginea mesei
+	piese.append(_obiect(_drujba(), (mx - 0.05, my + 0.1, FL + 0.78), (0, 0, -0.12)))
 	piese.append(_obiect(_bormasina(), (mx + 0.25, my - 0.12, FL + 0.78), (0, 0, -1.0)))
-	piese.append(_obiect(_sac_golf(), (X0 + 0.95, Y0 + 0.25 + 0.8, FL), (0.12, -0.08, 0)))
-	_cutie_coliziune(col, (0.3, 0.3, 1.0), (X0 + 0.95, Y0 + 1.05, FL + 0.5))
+	piese.append(_obiect(_sac_golf(), (X0 + 1.0, Y0 + 0.25 + 0.95, FL), (0.12, -0.08, 0)))
+	_cutie_coliziune(col, (0.3, 0.3, 1.0), (X0 + 1.0, Y0 + 1.2, FL + 0.5))
 
 	# --- în mijloc: turnul de sticlă (vitrină înaltă, pătrată) cu ceasuri, aparate foto și o coroană de jucărie,
 	# luminat pe dinăuntru, cu soclu de lemn
@@ -746,12 +753,12 @@ def amanet(cale):
 	piese.append(_obiect(_bicicleta(), (wx - 0.12, 2.2, 2.55), (0, 0, 1.5708)))
 	for yy in (1.85, 2.55):
 		piese.append(cub("Carlig bicicleta", (0.14, 0.02, 0.02), (wx - 0.07, yy, 2.85), CROM))
-	piese.append(_obiect(_chitara_electrica(p("a18463"), NEGRU), (wx - 0.05, 1.75, FL + 1.35), (0, 0, 1.5708)))
-	piese.append(_obiect(_chitara_electrica(MOV, ALB), (wx - 0.05, 2.35, FL + 1.37), (0, 0, 1.5708)))
-	piese.append(_obiect(_chitara_acustica(), (wx - 0.06, 2.95, FL + 1.35), (0, 0, 1.5708)))
+	piese.append(_obiect(_chitara_electrica(p("a18463"), NEGRU), (wx - 0.05, 1.75, FL + 1.35), (0, 0, -1.5708)))
+	piese.append(_obiect(_chitara_electrica(MOV, ALB), (wx - 0.05, 2.35, FL + 1.37), (0, 0, -1.5708)))
+	piese.append(_obiect(_chitara_acustica(), (wx - 0.06, 2.95, FL + 1.35), (0, 0, -1.5708)))
 	for yy in (1.75, 2.35, 2.95):
 		piese.append(cub("Suport chitara", (0.08, 0.06, 0.03), (wx - 0.04, yy, FL + 2.17 if yy != 2.95 else FL + 2.25), NEGRU))
-	piese.append(_obiect(_amplificator(), (wx - 0.2, 2.25, FL), (0, 0, 1.5708)))
+	piese.append(_obiect(_amplificator(), (wx - 0.2, 2.25, FL), (0, 0, -1.5708)))
 	_cutie_coliziune(col, (0.34, 0.6, 0.55), (wx - 0.18, 2.25, FL + 0.27))
 	piese.append(cilindru("Toba", 0.17, 0.17, 0.14, (wx - 0.2, 2.25, FL + 0.57), ALB, laturi=12))
 	piese.append(cilindru("Cerc toba", 0.175, 0.175, 0.02, (wx - 0.2, 2.25, FL + 0.64), CROM, laturi=12))

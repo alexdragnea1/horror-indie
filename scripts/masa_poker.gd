@@ -114,6 +114,7 @@ var _b_allin: Button
 var _b_rig: Button
 var _rig_folosit := false
 var _intre_maini: HBoxContainer
+var _eticheta_plecare: Label
 var _etichete_jucatori: Array[Label] = []
 var _suma_marire := 0
 
@@ -183,6 +184,7 @@ func _aseaza_te() -> void:
 func _ridica_te() -> void:
 	_hud.queue_free()
 	_hud = null
+	_eticheta_plecare = null
 	_etichete_jucatori.clear()
 	_carti_hud.clear()
 	_comune_hud.clear()
@@ -209,6 +211,10 @@ func _input(event: InputEvent) -> void:
 	if not _asezat or _hud == null:
 		return
 	if event.is_action_pressed("ui_cancel") and _intre_maini.visible:
+		get_viewport().set_input_as_handled()
+		_pleaca()
+	# E = te ridici (owner 15.11: „press E to leave”): între mâini imediat, în timpul unei mâini după ce se termină
+	elif event.is_action_pressed("interact"):
 		get_viewport().set_input_as_handled()
 		_pleaca()
 
@@ -240,6 +246,8 @@ func _joaca() -> void:
 
 func _pleaca() -> void:
 	_vrea_sa_plece = true
+	if _eticheta_plecare:
+		_eticheta_plecare.text = "Press E to leave" if _intre_maini.visible else "Leaving after this hand..."
 
 
 func _urmatoarea_mana() -> void:
@@ -1080,8 +1088,13 @@ func _fa_hud() -> void:
 	_intre_maini.add_theme_constant_override("separation", 4)
 	radacina.add_child(_intre_maini)
 	TemaMeniu.buton(_intre_maini, "Next hand", _urmatoarea_mana).custom_minimum_size.x = 70
-	TemaMeniu.buton(_intre_maini, "Leave table", _pleaca).custom_minimum_size.x = 76
+	TemaMeniu.buton(_intre_maini, "[E] Leave table", _pleaca).custom_minimum_size.x = 90
 	_intre_maini.hide()
+	# sus în stânga, cât stai la masă: cum te ridici
+	_eticheta_plecare = _eticheta(radacina, "Press E to leave", 10, Color("83b3b0"))
+	_eticheta_plecare.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	_eticheta_plecare.offset_left = 6
+	_eticheta_plecare.offset_top = 4
 	# numele adversarilor, deasupra capului (cu banii și ce au făcut)
 	for i in 5:
 		var e := Label.new()
