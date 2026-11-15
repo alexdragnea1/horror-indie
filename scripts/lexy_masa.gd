@@ -24,6 +24,9 @@ const NUME_CADAVRU := "Lexy"
 @export var marcaj_canapea := "a_fumat_cu_lexy"
 @export var marcaj_jaf := "a_jefuit_lexy"
 @export var marcaj_moarta := "lexy_moarta"
+## Pus de canapea_lexy.gd când i-ai spart televizorul înainte de fumat: la masă ai doar `optiune_jaf` (fără plecare;
+## autobuzul vine oricum), deci fără pistol nu mai ai ce vorbi cu ea.
+@export var marcaj_suparata := "lexy_suparata_tv"
 @export var marcaj_luata := "lexy_luata"
 @export var optiune_jaf := "Rob her at gun point"
 @export var optiune_plecare := "Leave Lexy's House"
@@ -109,7 +112,18 @@ func _seteaza_forma() -> void:
 
 
 func poate_fi_folosit() -> bool:
-	return not _in_curs and not lexy.mort and Stare.e_marcat(marcaj_canapea) and _sta_pe_scaun()
+	return not _in_curs and not lexy.mort and Stare.e_marcat(marcaj_canapea) and _sta_pe_scaun() \
+		and (not _doar_jaf() or _poate_jefui())
+
+
+## În ziua în oraș, după împrumut, n-are ce să-i mai iei („All I had.”).
+func _poate_jefui() -> bool:
+	return Stare.are_obiect(Pistol.ID) and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut)
+
+
+## I-ai spart televizorul: nu te mai lasă decât să o jefuiești (în ziua în oraș merge ca de obicei).
+func _doar_jaf() -> bool:
+	return Stare.e_marcat(marcaj_suparata) and not Stare.e_marcat(marcaj_zi_oras)
 
 
 func _sta_pe_scaun() -> bool:
@@ -134,11 +148,11 @@ func interactioneaza() -> void:
 	_in_curs = true
 	folosit.emit()
 	var optiuni: PackedStringArray = []
-	# în ziua în oraș, după împrumut, n-are ce să-i mai iei („All I had.”)
-	var poate_jefui := Stare.are_obiect(Pistol.ID) and not Stare.e_marcat(marcaj_jaf) and not Stare.e_marcat(marcaj_imprumut)
+	var poate_jefui := _poate_jefui()
 	if poate_jefui:
 		optiuni.append(optiune_jaf)
-	optiuni.append(optiune_plecare)
+	if not _doar_jaf():
+		optiuni.append(optiune_plecare)
 	var ales := await Dialog.intreaba("", optiuni)
 	if poate_jefui and ales == 0:
 		await _jefuieste()

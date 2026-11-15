@@ -26,6 +26,18 @@ extends Interactabil
 @export var sunet_asezat: AudioStream
 @export var sunet_stins: AudioStream
 
+@export_group("Televizorul împușcat")
+## Tragi în televizor (televizor.gd pune `marcaj_tv`) înainte de scena de pe canapea: Lexy stinge jointul, se ridică și
+## te așteaptă în picioare; când vii la ea (`distanta_tv`) pornește `replici_tv`, apoi merge la masă (ca după fumat) și
+## vine direct autobuzul spre casă (`marcaj_plecare`). La masă ai doar „Rob her at gun point” (lexy_masa.gd).
+@export var marcaj_tv := "televizorul_lexy_spart"
+@export var marcaj_suparata := "lexy_suparata_tv"
+@export var marcaj_plecare := "gata_la_lexy"
+@export var sarcina_plecare := "Take the bus home."
+@export var distanta_tv := 2.6
+@export_multiline var replici_tv: PackedStringArray = ["Lexy: Did you just shoot my fucking TV?!",
+	"You: My bad, I will pay you for it, don't worry.", "You: Can we still smoke?", "Lexy: Nah, I'm mad, get out."]
+
 @export_group("Replici")
 @export_multiline var replici_inceput: PackedStringArray = []
 @export_multiline var replici_mijloc: PackedStringArray = []
@@ -38,6 +50,9 @@ const IN_MANA := Vector3(0.11, -0.14, -0.3)
 const LA_GURA := Vector3(0.012, -0.07, -0.085)
 
 var _in_curs := false
+## Televizorul e spart: Lexy s-a ridicat (sau se ridică) și te așteaptă.
+var _suparata := false
+var _asteapta := false
 var _jucator: CharacterBody3D
 var _cap: Node3D
 var _camera: Camera3D
@@ -68,17 +83,73 @@ func _ready() -> void:
 	lexy.sezut = 1.0
 	lexy.da_joint()
 	lexy.fumeaza = true
+	if Stare.e_marcat(marcaj_tv):
+		_supara(false)
+	else:
+		Stare.schimbat.connect(_verifica_tv)
+
+
+func _verifica_tv() -> void:
+	if _suparata or _in_curs or Stare.e_marcat(marcaj_gata) or not Stare.e_marcat(marcaj_tv):
+		return
+	Stare.schimbat.disconnect(_verifica_tv)
+	_supara(true)
+
+
+## Televizorul e spart: stinge jointul în scrumieră, se ridică și se uită la tine (te așteaptă). `animat` = acum;
+## fără = la Continue (e deja în picioare).
+func _supara(animat: bool) -> void:
+	_suparata = true
+	lexy.fumeaza = false
+	lexy.privire = _cap
+	if animat:
+		while lexy.mana_ocupata("D"):
+			await get_tree().process_frame
+		await get_tree().create_timer(0.4).timeout
+		await _stinge(null)
+		await lexy.ridica_te()
+	else:
+		lexy.stinge_jar()
+		_pune_in_scrumiera(lexy.joint, false)
+		await lexy.ridica_te(0.01)
+	lexy.privire = _cap
+	_asteapta = true
+
+
+## Ai venit la ea: replicile, apoi pleacă la masă și vine autobuzul.
+func _cearta() -> void:
+	_in_curs = true
+	var c := Cutscena.porneste(self)
+	_jucator.velocity = Vector3.ZERO
+	_jucator.seteaza_purtat(true)
+	await c.priveste(lexy.gura() + Vector3.UP * 0.04, 0.6)
+	await _spune(replici_tv)
+	Stare.marcheaza(marcaj_suparata)
+	Stare.marcheaza(marcaj_gata)
+	LexyMasa.pleaca(marcaj_plecare, sarcina_plecare)
+	lexy.privire = null
+	var drum: Array[Vector3] = []
+	for punct in drum_bucatarie.get_children():
+		drum.append((punct as Node3D).global_position)
+	_la_bucatarie(drum)
+	await c.priveste(lexy.global_position + Vector3.UP * 1.4, 0.5)
+	_jucator.seteaza_purtat(false)
+	await c.opreste()
 
 
 func _process(_delta: float) -> void:
+	if _asteapta and _cap and not Dialog.activ and not Stare.meniu_deschis \
+			and _cap.global_position.distance_to(lexy.global_position) < distanta_tv:
+		_asteapta = false
+		_cearta()
 	# pe canapea: se uită la televizor, dar când vii aproape se uită la tine
-	if _in_curs or Stare.e_marcat(marcaj_gata) or _cap == null:
+	if _in_curs or _suparata or Stare.e_marcat(marcaj_gata) or _cap == null:
 		return
 	lexy.privire = _cap if _cap.global_position.distance_to(lexy.global_position) < 2.8 else televizor
 
 
 func poate_fi_folosit() -> bool:
-	return not _in_curs and not Stare.e_marcat(marcaj_gata)
+	return not _in_curs and not _suparata and not Stare.e_marcat(marcaj_gata)
 
 
 func interactioneaza() -> void:
@@ -226,7 +297,8 @@ func _paseaza(c: Cutscena) -> void:
 func _stinge(c: Cutscena) -> void:
 	var j := lexy.joint
 	var deasupra := scrumiera.global_position + Vector3.UP * 0.1
-	c.priveste(scrumiera.global_position + Vector3.UP * 0.1, 0.8)
+	if c:
+		c.priveste(scrumiera.global_position + Vector3.UP * 0.1, 0.8)
 	lexy.privire = scrumiera
 	lexy.apleaca(0.5, 0.8)
 	await lexy.du_mana("D", deasupra, 0.9)
