@@ -94,6 +94,18 @@ const MODELE := {
 		"sprijin": Vector3(PI / 2.0 - 0.15, 0.0, 0.0),
 		"sprijin_y": 0.92,
 	},
+	# de la Jean (owner 16.11): gauntlet-ul de la roata din pivniță, pe jos pe o parte; cheia pivniței, culcată
+	"gauntlet": {
+		"scena": "res://models/gauntlet.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.06,
+		"raft": Vector3(-PI / 2.0, 0.0, 0.0),
+		"stralucitoare": ["Runa"],
+		"stralucire": 2.0,
+	},
+	"cheie_pivnita": {
+		"scena": "res://models/cheie_pivnita.glb",
+	},
 	# banii: cash-ul (Bani) e o bancnotă, jetoanele (Jetoane) un teanc făcut din cod; suma rămâne în obiectul de pe jos
 	# (`valoare` din ObiectAruncat); pe raft nu se pun
 	"cash": {

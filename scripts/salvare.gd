@@ -18,6 +18,7 @@ const NUME_LOCURI := {
 	"res://scenes/padure.tscn": "Trivale Forest",
 	"res://scenes/casa_lexy.tscn": "Lexy's place",
 	"res://scenes/casa_jean.tscn": "Jean's house",
+	"res://scenes/pivnita.tscn": "Jean's cellar",
 	"res://scenes/conac.tscn": "Coven Headquarters",
 	"res://scenes/conac_interior.tscn": "Coven Headquarters",
 	"res://scenes/casino.tscn": "Sketchy Laundromat",

@@ -32,6 +32,8 @@
 [ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="usa_inchisa"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="pas1"]
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="pas2"]
+[ext_resource type="PackedScene" path="res://models/usa_pivnita.glb" id="usa_pivnita"]
+[ext_resource type="Script" path="res://scripts/usa_pivnita.gd" id="usa_pivnita_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -62,6 +64,9 @@ size = Vector3(0.8, 1.75, 0.12)
 
 [sub_resource type="BoxShape3D" id="forma_ceas"]
 size = Vector3(0.7, 2.6, 0.46)
+
+[sub_resource type="BoxShape3D" id="forma_usa_pivnita"]
+size = Vector3(1.1, 2.1, 0.1)
 
 [sub_resource type="BoxShape3D" id="forma_covor"]
 size = Vector3(3.6, 0.6, 4.6)
@@ -155,21 +160,22 @@ material = ExtResource("mat")
 coliziune = 2
 
 [node name="Pusca" type="Node3D" parent="."]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.1, 0.57, -0.62)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.09, 0.68, -0.46)
 
 [node name="Model" parent="Pusca" instance=ExtResource("shotgun")]
+transform = Transform3D(0.78, 0, 0, 0, 0.78, 0, 0, 0, 0.78, 0, 0, 0)
 script = ExtResource("model")
 material = ExtResource("mat")
 umbre = false
 
 [node name="Maner" type="Node3D" parent="Pusca"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.13)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.047, 0.101)
 
 [node name="Tub" type="Node3D" parent="Pusca"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.33)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.008, -0.257)
 
 [node name="Gura" type="Node3D" parent="Pusca"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.672)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.524)
 
 [node name="MasaSah" type="StaticBody3D" parent="." node_paths=PackedStringArray("jean", "loc_jucator", "centru_tabla", "pusca")]
 script = ExtResource("masa_sah")
@@ -375,3 +381,25 @@ script = ExtResource("zona")
 [node name="Forma" type="CollisionShape3D" parent="Covor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.3)
 shape = SubResource("forma_covor")
+
+[node name="UsaPivnita" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0, -5.95)
+script = ExtResource("usa_pivnita_gd")
+indiciu = "[E] Open the cellar door"
+scena = "res://scenes/pivnita.tscn"
+titlu = "Jean's cellar"
+sosire = "SosireScara"
+sunet_usa = ExtResource("usa_scartait")
+sunete_tranzitie = Array[AudioStream]([ExtResource("pas1"), ExtResource("pas2"), ExtResource("pas1"), ExtResource("pas2")])
+
+[node name="Model" parent="UsaPivnita" instance=ExtResource("usa_pivnita")]
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="Forma" type="CollisionShape3D" parent="UsaPivnita"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0.06)
+shape = SubResource("forma_usa_pivnita")
+
+[node name="SosirePivnita" type="Marker3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.9, 0.05, -5.1)
+script = ExtResource("sosire")

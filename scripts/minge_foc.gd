@@ -19,6 +19,14 @@ const MIEZ := Color(1.0, 0.92, 0.7)
 const FLACARA := Color(1.0, 0.62, 0.3)
 const MARGINE := Color(0.85, 0.3, 0.16)
 const FUM := Color(0.37, 0.33, 0.34)
+## Energy Ball (roata din pivnița lui Jean, owner 16.11): aceleași părți, în mov.
+const MIEZ_ENERGIE := Color(0.95, 0.86, 1.0)
+const FLACARA_ENERGIE := Color(0.66, 0.34, 1.0)
+const MARGINE_ENERGIE := Color(0.42, 0.16, 0.78)
+const FUM_ENERGIE := Color(0.3, 0.24, 0.38)
+## Id-ul cu care lovește (LuptaBoss._damage_arma): Fireball sau Energy Ball.
+const ID_FOC := "vraja_foc"
+const ID_ENERGIE := "energy_ball"
 
 var marime := 1.0
 var viteza := 14.0
@@ -27,6 +35,8 @@ var bataie := 60.0
 var marime_vizibila := 1.0
 var directie := Vector3.FORWARD
 var exclude: Array[RID] = []
+## 0 = Fireball (portocaliu), 1 = Energy Ball (mov); între ele = în transformare (VrajaFoc.transforma). Vezi `seteaza_energie`.
+var energie := 0.0
 
 var _zboara := false
 var _gata := false
@@ -39,15 +49,17 @@ var _dara: CPUParticles3D
 var _sunet: AudioStreamPlayer3D
 
 
-static func creeaza(parinte: Node, marime_ := 1.0) -> MingeFoc:
+static func creeaza(parinte: Node, marime_ := 1.0, energie_ := 0.0) -> MingeFoc:
 	var m := MingeFoc.new()
 	m.marime = marime_
+	m.energie = energie_
 	parinte.add_child(m)
 	return m
 
 
-static func arunca(nod: Node, de_la: Vector3, directie_: Vector3, marime_ := 1.0, exclude_: Array[RID] = []) -> MingeFoc:
-	var m := creeaza(nod.get_tree().current_scene, marime_)
+static func arunca(nod: Node, de_la: Vector3, directie_: Vector3, marime_ := 1.0, exclude_: Array[RID] = [],
+		energie_ := 0.0) -> MingeFoc:
+	var m := creeaza(nod.get_tree().current_scene, marime_, energie_)
 	m.global_position = de_la
 	m.lanseaza(directie_, exclude_)
 	return m
@@ -77,7 +89,31 @@ func _ready() -> void:
 	_sunet.pitch_scale = 1.25 - marime * 0.25
 	add_child(_sunet)
 	_sunet.play()
+	seteaza_energie(energie)
 	_actualizeaza(0.0)
+
+
+## Culorile după `energie` (0 = foc, 1 = mov): miezul, haloul, lumina, dâra.
+func seteaza_energie(valoare: float) -> void:
+	energie = clampf(valoare, 0.0, 1.0)
+	if _miez == null:
+		return
+	(_miez.material_override as StandardMaterial3D).albedo_color = _c(MIEZ, MIEZ_ENERGIE)
+	(_halou.material_override as StandardMaterial3D).albedo_color = Color(_c(FLACARA, FLACARA_ENERGIE), 0.55)
+	_lumina.light_color = _c(FLACARA, FLACARA_ENERGIE)
+	_dara.color_ramp = _rampa()
+
+
+func _c(foc: Color, mov: Color) -> Color:
+	return foc.lerp(mov, energie)
+
+
+func _rampa() -> Gradient:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.25, 0.6, 1.0])
+	gradient.colors = PackedColorArray([Color(_c(MIEZ, MIEZ_ENERGIE), 0.9), Color(_c(FLACARA, FLACARA_ENERGIE), 0.75),
+		Color(_c(MARGINE, MARGINE_ENERGIE), 0.5), Color(_c(FUM, FUM_ENERGIE), 0.0)])
+	return gradient
 
 
 func _sfera(raza: float, culoare: Color, aditiv: bool) -> MeshInstance3D:
@@ -184,7 +220,7 @@ func _explodeaza(punct: Vector3, normala: Vector3, tinta: Object) -> void:
 	_gata = true
 	global_position = punct + normala * 0.05
 	if tinta and tinta.has_method("lovit_de"):
-		tinta.lovit_de("vraja_foc", directie, punct)
+		tinta.lovit_de(ID_ENERGIE if energie >= 0.5 else ID_FOC, directie, punct)
 	elif tinta and tinta.has_method("lovit_de_foc"):
 		tinta.lovit_de_foc(directie, punct)
 	elif tinta and tinta.has_method("impuscat"):
@@ -201,7 +237,8 @@ func _explodeaza(punct: Vector3, normala: Vector3, tinta: Object) -> void:
 	var foc := _particule(int(34 * marime) + 8, 0.6, 0.11 * marime)
 	var rampa := Gradient.new()
 	rampa.offsets = PackedFloat32Array([0.0, 0.3, 0.7, 1.0])
-	rampa.colors = PackedColorArray([Color(FLACARA, 0.95), Color(MARGINE, 0.8), Color(FUM, 0.5), Color(FUM, 0.0)])
+	rampa.colors = PackedColorArray([Color(_c(FLACARA, FLACARA_ENERGIE), 0.95), Color(_c(MARGINE, MARGINE_ENERGIE), 0.8),
+		Color(_c(FUM, FUM_ENERGIE), 0.5), Color(_c(FUM, FUM_ENERGIE), 0.0)])
 	foc.color_ramp = rampa
 	foc.one_shot = true
 	foc.explosiveness = 1.0
@@ -216,6 +253,7 @@ func _explodeaza(punct: Vector3, normala: Vector3, tinta: Object) -> void:
 	add_child(foc)
 	foc.emitting = true
 	var scantei := _particule(int(20 * marime) + 6, 0.5, 0.025)
+	scantei.color_ramp = _rampa()
 	scantei.one_shot = true
 	scantei.explosiveness = 1.0
 	scantei.spread = 70.0

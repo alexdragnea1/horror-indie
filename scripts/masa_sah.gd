@@ -16,6 +16,11 @@ extends Interactabil
 ## După ce moare (`MARCAJ_MORT`), Jean rămâne căzut lângă tron și masa nu se mai folosește.
 
 const MARCAJ_MORT := "jean_mort"
+## Cheia pivniței (owner 16.11): când îl bați, o scapă pe tabla de șah; cu ea se deschide UsaPivnita.
+const ID_CHEIE := "cheie_pivnita"
+const NUME_CHEIE := "Cellar Key"
+const MARCAJ_CHEIE := "a_luat_cheia_pivnitei"
+const SUNET_CHEIE := preload("res://sunete/tub_cazut.ogg")
 ## Unde apari după Retry (PunctSosire din casa_lexy.tscn, pus de afara_lexy.gd).
 const SOSIRE_RETRY := "SosireJean"
 const SCENA_AFARA := "res://scenes/casa_lexy.tscn"
@@ -91,13 +96,14 @@ func _ready() -> void:
 		_meshuri[String(c.name).get_slice(".", 0)] = (c as MeshInstance3D).mesh
 	sursa.free()
 	_sah = Sah.new()
-	_aseaza_piesele()
 	if pusca:
 		_pusca_acasa = pusca.transform
 	if Stare.e_marcat(MARCAJ_MORT):
 		activ = false
 		_mort_la_incarcare.call_deferred()
-	elif jean:
+		return
+	_aseaza_piesele()
+	if jean:
 		jean.fumeaza = false
 		jean.privire = _cap
 
@@ -560,18 +566,20 @@ func _scoate_pusca() -> void:
 	pusca.show()
 	pusca.transform = _pusca_acasa
 	jean.priveste_punct = Vector3.INF
-	# pușca stă pe genunchii lui, sub marginea mesei dinspre el. Mâinile se ridică întâi de pe masă și vin înapoi,
-	# deasupra marginii (altfel mergeau drept prin blat), apoi coboară la ea.
+	# pușca e prinsă sub marginea blatului dinspre el, deasupra genunchilor (`Pusca`). Mâinile se ridică întâi de pe
+	# masă și vin înapoi, deasupra marginii (în linie dreaptă treceau prin blat), apoi intră pe sub margine la ea:
+	# de acolo până la pușcă drumul trece pe sub blat, nu prin el, și pe deasupra genunchilor.
 	var b := jean.global_basis
 	var j := jean.global_position
-	jean.du_mana("D", j + b * Vector3(-0.22, 0.86, 0.33), 0.3)
-	await jean.du_mana("S", j + b * Vector3(0.22, 0.86, 0.33), 0.3)
+	jean.du_mana("D", j + b * Vector3(-0.22, 0.88, 0.3), 0.3)
+	await jean.du_mana("S", j + b * Vector3(0.22, 0.88, 0.3), 0.3)
 	jean.du_mana("D", pusca.get_node("Maner"), 0.35)
 	await jean.du_mana("S", pusca.get_node("Tub"), 0.35)
 	Sunet.reda_la(SUNET_SCAUN, pusca.global_position, Sunet.VOLUM_EFECTE - 6.0, 0.1)
-	# o ridică drept în sus, prin golul dintre el și masă, până deasupra blatului
+	# o trage întâi spre el, de sub blat (orizontal, pe deasupra genunchilor), apoi o ridică drept în sus
 	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	t.tween_property(pusca, "global_position", pusca.global_position + Vector3.UP * 0.42, 0.35)
+	t.tween_property(pusca, "global_position", pusca.global_position - b.z * 0.12, 0.25)
+	t.tween_property(pusca, "global_position", pusca.global_position - b.z * 0.12 + Vector3.UP * 0.4, 0.3)
 	await t.finished
 
 
@@ -689,25 +697,6 @@ func _sange(punct: Vector3, directie: Vector3) -> void:
 	get_tree().create_timer(1.6).timeout.connect(s.queue_free)
 
 
-## Pata de sânge de pe spătarul tronului (și la Continue, după ce a murit).
-func _pata_pe_tron() -> void:
-	var pata := MeshInstance3D.new()
-	var q := QuadMesh.new()
-	q.size = Vector2(0.55, 0.62)
-	pata.mesh = q
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = Arma.cerc_moale()
-	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.13, 0.01, 0.02, 0.95)
-	pata.material_override = mat
-	pata.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	get_parent().add_child(pata)
-	# spătarul e la 0,24 m în spatele lui Jean, perna lui la 0,2 (tron_jean, jean.py)
-	pata.global_position = jean.global_position + jean.global_basis * Vector3(0.0, 1.32, -0.185)
-	pata.global_basis = jean.global_basis
-
-
 ## Te împușcă (la „No” sau când pierzi pe viață): pușca scoasă și îndreptată spre tine, pompa, focul; cazi pe spate,
 ## YOU DIED, Retry → în fața casei lui.
 func _te_impusca() -> void:
@@ -767,14 +756,17 @@ func _se_impusca() -> void:
 	activ = false
 	var sus := (barbie - de_jos).normalized()
 	_sange(barbie + sus * 0.15, sus)
-	_pata_pe_tron()
 	_lasa_pusca_sa_cada()
 	jean.set_process(false)
 	# brânciul: mai mult înapoi, în spătar, decât în sus (altfel zbura peste tron)
 	_cadavru = Ragdoll.din_model(jean.get_node("Model"), (Vector3.UP * 0.35 - jean.global_basis.z).normalized() * 4.5)
+	# îi sare cheia din buzunarul de la piept și cade pe tablă
+	_pune_cheia(jean.global_position + jean.global_basis * Vector3(0.1, 1.0, 0.15))
 	await get_tree().create_timer(0.5).timeout
 	Sunet.reda_la(SUNET_CADERE, jean.global_position + Vector3.UP * 0.6, Sunet.VOLUM_EFECTE, 0.05)
-	await get_tree().create_timer(2.2).timeout
+	await get_tree().create_timer(1.6).timeout
+	await _dispare_jean(1.5)
+	await get_tree().create_timer(0.4).timeout
 	_ridica_te()
 
 
@@ -796,18 +788,79 @@ func _lasa_pusca_sa_cada() -> void:
 	corp.apply_impulse((jean.global_basis.z + jean.global_basis.x * 0.6) * 1.6, corp.global_basis * Vector3(0, 0, -0.6))
 
 
-## La Continue / când revii după ce a murit: căzut în tron, pușca pe jos, pata pe spătar.
-func _mort_la_incarcare() -> void:
-	if jean == null:
+## Corpul lui, pușca și piesele se destramă pe pixeli (ModelPS2.disparitie) și dispar: pe masă rămâne doar cheia.
+func _dispare_jean(durata: float) -> void:
+	var de_sters: Array[Node] = []
+	if is_instance_valid(_cadavru):
+		de_sters.append(_cadavru)
+	if is_instance_valid(pusca):
+		de_sters.append(pusca.get_parent() if pusca.get_parent() is RigidBody3D else pusca)
+	for n in _piese.values():
+		de_sters.append(n)
+	for n in get_children():
+		if n.has_meta("capturata"):
+			de_sters.append(n)
+	_sterge_marcajele()
+	for m in _ultima:
+		m.queue_free()
+	_ultima.clear()
+	var t := create_tween()
+	t.tween_method(func(v: float) -> void:
+		for n in de_sters:
+			if is_instance_valid(n):
+				ModelPS2.disparitie(n, v), 0.0, 1.0, durata)
+	await t.finished
+	for n in de_sters:
+		if is_instance_valid(n):
+			if n == pusca:
+				pusca.hide()
+			else:
+				n.queue_free()
+	_piese.clear()
+
+
+## Cheia pivniței, culcată pe mijlocul tablei („[E] Take the key”). Cu `din`, zboară acolo în arc și clinchetește.
+func _pune_cheia(din := Vector3.INF) -> void:
+	var cheie := ObiectLuat.new()
+	cheie.name = "CheiePivnita"
+	cheie.id_obiect = ID_CHEIE
+	cheie.nume_obiect = NUME_CHEIE
+	cheie.indiciu = "[E] Take the key"
+	var forma := CollisionShape3D.new()
+	var cutie := BoxShape3D.new()
+	cutie.size = Vector3(0.16, 0.05, 0.09)
+	forma.shape = cutie
+	forma.position.y = 0.02
+	cheie.add_child(forma)
+	cheie.add_child(ObiecteLume.model(ID_CHEIE))
+	cheie.folosit.connect(func() -> void: Stare.marcheaza(MARCAJ_CHEIE))
+	get_parent().add_child(cheie)
+	var tinta := centru_tabla.global_position + centru_tabla.global_basis.x * 0.02
+	cheie.global_basis = centru_tabla.global_basis.rotated(Vector3.UP, 0.5)
+	if din == Vector3.INF:
+		cheie.global_position = tinta
 		return
-	jean.set_process(false)
-	# același brânci ca la împușcătură: altfel rămâne drept în tron, ca viu
-	_cadavru = Ragdoll.din_model(jean.get_node("Model"), (Vector3.UP * 0.35 - jean.global_basis.z).normalized() * 4.5)
-	_pata_pe_tron()
+	cheie.global_position = din
+	var t := create_tween()
+	t.tween_method(func(v: float) -> void:
+		cheie.global_position = din.lerp(tinta, v) + Vector3.UP * sin(v * PI) * 0.22
+		cheie.rotation.z = (1.0 - v) * 5.0, 0.0, 1.0, 0.55)
+	await t.finished
+	Sunet.reda_la(SUNET_CHEIE, tinta, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+	var t2 := create_tween()
+	t2.tween_property(cheie, "global_position", tinta + Vector3.UP * 0.02, 0.07)
+	t2.tween_property(cheie, "global_position", tinta, 0.1)
+
+
+## La Continue / când revii după ce a murit: nu mai e nimeni în tron; pe tablă e cheia, dacă n-ai luat-o.
+func _mort_la_incarcare() -> void:
+	if jean:
+		jean.set_process(false)
+		jean.hide()
 	if pusca:
-		pusca.show()
-		pusca.global_transform = Transform3D(Basis(Vector3.UP, 1.2) * Basis(Vector3.FORWARD, PI / 2),
-			jean.global_position + jean.global_basis * Vector3(0.45, 0.04, 0.35))
+		pusca.hide()
+	if not Stare.e_marcat(MARCAJ_CHEIE):
+		_pune_cheia()
 
 
 # ---------------------------------------------------------------- vederea de sus (owner 16.11)

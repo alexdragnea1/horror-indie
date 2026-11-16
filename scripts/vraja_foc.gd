@@ -9,6 +9,10 @@ extends Node3D
 
 const ID := "vraja_foc"
 const NUME := "Fireball Spell"
+## Energy Ball (felia albastră a roții din pivnița lui Jean, owner 16.11): aceeași vrajă, mov, damage dublu la bossi.
+const MARCAJ_ENERGIE := "are_energy_ball"
+const NUME_ENERGIE := "Energy Ball"
+const SUNET_TRANSFORMARE := preload("res://sunete/vraja_unda.ogg")
 const SUNET_ARUNCA := preload("res://sunete/minge_foc_aruncata.ogg")
 const SUNET_APRINS := preload("res://sunete/minge_foc_aprinsa.ogg")
 ## Cât de mare e mingea ta față de a lui Helga (1).
@@ -44,6 +48,7 @@ var _gata := 0.0
 var _timp := 0.0
 var _aprins := 1.0  # cât de mare e focul din palmă (0..1)
 var _scantei: CPUParticles3D
+var _mat_scantei: StandardMaterial3D
 
 
 func _ready() -> void:
@@ -56,6 +61,7 @@ func _ready() -> void:
 	add_child(_model)
 	_foc = MingeFoc.creeaza(_model, MARIME * 0.45)
 	_foc.position = FOC
+	_foc.seteaza_energie(1.0 if Stare.e_marcat(MARCAJ_ENERGIE) else 0.0)
 	# în palmă focul e la o palmă de ochi: flăcările mai mici și mai puține, rămân lângă mână când te întorci
 	var dara: CPUParticles3D = _foc._dara
 	dara.local_coords = true
@@ -68,7 +74,8 @@ func _ready() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-	mat.albedo_color = MingeFoc.FLACARA
+	mat.albedo_color = MingeFoc.FLACARA.lerp(MingeFoc.FLACARA_ENERGIE, _foc.energie)
+	_mat_scantei = mat
 	mat.disable_fog = true
 	quad.material = mat
 	_scantei.mesh = quad
@@ -88,6 +95,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_timp += delta
+	# Energy Ball: și după Continue, și dacă vraja vine abia după roată (atunci și numele din inventar)
+	if not demonstratie and Stare.e_marcat(MARCAJ_ENERGIE):
+		if _foc.energie < 1.0:
+			_foc.seteaza_energie(1.0)
+			_mat_scantei.albedo_color = MingeFoc.FLACARA_ENERGIE
+		if Stare.are_obiect(ID) and Stare.obiecte[ID] != NUME_ENERGIE:
+			Stare.obiecte[ID] = NUME_ENERGIE
 	var are := Stare.in_mana == ID or demonstratie
 	var jos := not are or (Stare.meniu_deschis and not demonstratie) or Tranzitie.activa
 	_jos = move_toward(_jos, 1.0 if jos else 0.0, delta * 3.2)
@@ -158,9 +172,53 @@ func arunca_acum() -> MingeFoc:
 	var lovit := get_world_3d().direct_space_state.intersect_ray(cerere)
 	if not lovit.is_empty():
 		tinta = lovit.position
-	var minge := MingeFoc.arunca(self, de_la, tinta - de_la, MARIME, [_jucator.get_rid()])
+	var minge := MingeFoc.arunca(self, de_la, tinta - de_la, MARIME, [_jucator.get_rid()], _foc.energie)
 	_aprins = 0.0
 	_cap.rotation.x = clampf(_cap.rotation.x + 0.015, deg_to_rad(-85), deg_to_rad(85))
 	var inapoi := create_tween().set_trans(Tween.TRANS_SINE)
 	inapoi.tween_property(self, "_impins", 0.0, 0.4)
 	return minge
+
+
+## Fireball → Energy Ball (roata din pivniță): bila din mână se strânge, pâlpâie între portocaliu și mov, scânteile
+## se adună în jurul ei și la sfârșit explodează mov, cu un fulger; apoi rămâne mov. Pune marcajul și numele din inventar.
+func transforma() -> void:
+	demonstratie = true
+	_aprins = 1.0
+	await get_tree().create_timer(0.6).timeout
+	Sunet.reda(SUNET_TRANSFORMARE, Sunet.VOLUM_EFECTE - 4.0, 0.0)
+	_scantei.amount = 24
+	_scantei.emitting = true
+	var lumina := OmniLight3D.new()
+	lumina.light_energy = 0.0
+	lumina.omni_range = 2.5
+	_model.add_child(lumina)
+	lumina.position = FOC
+	var t := create_tween()
+	t.tween_method(func(v: float) -> void:
+		# pâlpâie tot mai des între cele două culori, apoi rămâne mov
+		var unda := 0.5 + 0.5 * sin(v * v * 60.0)
+		var e := clampf(v * 1.15 * lerpf(unda, 1.0, v * v), 0.0, 1.0)
+		_foc.seteaza_energie(e)
+		_mat_scantei.albedo_color = MingeFoc.FLACARA.lerp(MingeFoc.FLACARA_ENERGIE, e)
+		_aprins = lerpf(1.0, 0.55, sin(v * PI)) + 0.08 * sin(v * 90.0)
+		lumina.light_color = MingeFoc.FLACARA.lerp(MingeFoc.FLACARA_ENERGIE, e)
+		lumina.light_energy = v * 2.0, 0.0, 1.0, 2.4)
+	await t.finished
+	_foc.seteaza_energie(1.0)
+	_mat_scantei.albedo_color = MingeFoc.FLACARA_ENERGIE
+	Sunet.reda(SUNET_APRINS, Sunet.VOLUM_EFECTE, 0.0)
+	lumina.light_energy = 6.0
+	lumina.omni_range = 5.0
+	var t2 := create_tween().set_parallel()
+	t2.tween_property(lumina, "light_energy", 0.0, 0.7).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	t2.tween_property(self, "_aprins", 1.0, 0.3).from(1.6)
+	await t2.finished
+	lumina.queue_free()
+	_scantei.amount = 10
+	_scantei.emitting = false
+	Stare.marcheaza(MARCAJ_ENERGIE)
+	if Stare.are_obiect(ID):
+		Stare.obiecte[ID] = NUME_ENERGIE
+		Stare.schimbat.emit()
+	demonstratie = false

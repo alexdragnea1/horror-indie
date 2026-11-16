@@ -549,6 +549,284 @@ def draperie(cale):
 	exporta(os.path.join(cale, "draperie.glb"))
 
 
+
+
+def _inel_vertical(nume, raza, gros, loc, culoare, segmente=12):
+	"""Inel stând în picioare (în planul XZ, cu fața spre -Y): belciuge, margini de roată, benzi pe braț."""
+	ob = inel(nume, raza, gros, (0, 0, 0), culoare, segmente=segmente)
+	ob.rotation_euler = (math.pi / 2, 0, 0)
+	bpy.ops.object.select_all(action='DESELECT')
+	ob.select_set(True)
+	bpy.context.view_layer.objects.active = ob
+	bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+	ob.location = loc
+	bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+	return ob
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Pivnița (owner 16.11): cheia lui Jean, ușa din spatele lui, camera de piatră, roata cu armele, gauntlet-ul
+# ---------------------------------------------------------------------------------------------------------------
+
+PIATRA = (p("5e5356"), p("70706e"), p("6f6d7f"), p("553e4d"))
+FIER = p("6f6d7f")
+FIER2 = p("70706e")
+RUGINA = p("a56850")
+
+
+def cheie_pivnita(cale):
+	"""Cheia de fier a pivniței, culcată (originea = mijlocul ei, pe jos); lungă de 0,13 m, pe X."""
+	curata()
+	piese = []
+	piese.append(inel("Ochi", 0.022, 0.0045, (-0.05, 0, 0.0045), FIER, segmente=10))
+	piese.append(sfera("Ochi", 0.006, (-0.05, 0, 0.005), FIER2, scara=(1, 1, 0.6), segmente=6, inele=4))
+	piese.append(os_intre("Tija", (-0.028, 0, 0.004), (0.06, 0, 0.004), 0.0035, FIER, laturi=6))
+	piese.append(cilindru("Guler", 0.0055, 0.0055, 0.008, (-0.022, 0, 0.004), FIER2, laturi=6, rot=(0, math.pi / 2, 0)))
+	piese.append(cub("Dinte", (0.012, 0.018, 0.004), (0.054, 0.011, 0.003), FIER))
+	piese.append(cub("Dinte", (0.005, 0.008, 0.004), (0.044, 0.022, 0.003), FIER))
+	piese.append(cub("Rugina", (0.02, 0.004, 0.0015), (0.01, 0.0, 0.0078), RUGINA))
+	uneste(piese, "Cheie")
+	exporta(os.path.join(cale, "cheie_pivnita.glb"))
+
+
+def usa_pivnita(cale):
+	"""Ușa grea a pivniței, cu arc de piatră, benzi de fier, ținte și belciug; fața spre -Y (Godot +Z).
+	Originea = jos, la mijlocul ușii, pe fața peretelui (ușa iese 0,1 m din perete)."""
+	curata()
+	piese = []
+	lat, inalt = 1.0, 1.95
+	# arcul de piatră (blocuri)
+	for k in (-1, 1):
+		for i in range(5):
+			z = 0.2 + i * 0.4
+			piese.append(cub("Arc", (0.22, 0.12, 0.38), (k * (lat / 2 + 0.11), -0.06, z), PIATRA[(i + (k > 0)) % 3]))
+	for i in range(7):
+		a = math.pi * (i + 0.5) / 7
+		x, z = math.cos(a) * (lat / 2 + 0.11), inalt + math.sin(a) * 0.32
+		piese.append(cub("Arc", (0.2, 0.12, 0.18), (x, -0.06, z), PIATRA[i % 3], rot=(0, -(a - math.pi / 2), 0)))
+	# ușa: scânduri verticale + vârful rotunjit din scânduri scurtate
+	n = 6
+	for i in range(n):
+		x = -lat / 2 + (i + 0.5) * lat / n
+		sus = inalt + math.sqrt(max(0.0, 0.25 - x * x)) * 0.6
+		piese.append(cub("Scandura", (lat / n - 0.008, 0.06, sus), (x, -0.03, sus / 2), LEMN if i % 2 else LEMN2))
+	# benzile de fier cu ținte, balamalele lungi, belciugul, gaura cheii
+	for z in (0.35, 1.0, 1.65):
+		piese.append(cub("Banda", (lat + 0.02, 0.012, 0.06), (0, -0.066, z), NEGRU2))
+		for i in range(6):
+			piese.append(sfera("Tinta", 0.01, (-lat / 2 + 0.08 + i * (lat - 0.16) / 5, -0.075, z), FIER, segmente=6, inele=4))
+	for z in (0.35, 1.65):
+		piese.append(cub("Balama", (0.36, 0.014, 0.05), (-lat / 2 + 0.18, -0.07, z), FIER2))
+	piese.append(_inel_vertical("Belciug", 0.05, 0.007, (0.32, -0.085, 1.0), FIER, segmente=10))
+	piese.append(cub("Broasca", (0.08, 0.014, 0.12), (0.32, -0.068, 0.86), FIER2))
+	piese.append(cub("GauraCheie", (0.012, 0.006, 0.03), (0.32, -0.077, 0.85), NEGRU))
+	uneste(piese, "UsaPivnita")
+	exporta(os.path.join(cale, "usa_pivnita.glb"))
+
+
+# camera pivniței (în Godot: x ±PX, z ±PZ; deschiderea scării în peretele din față, la z = +PZ)
+PX, PZ, PH = 1.9, 2.3, 2.3
+
+
+def pivnita(cale):
+	"""Pivnița: pereți de piatră din blocuri, podea de lespezi și pământ, grinzi, scara de lemn care urcă în întuneric
+	prin deschiderea din peretele din față, butoaie, lăzi, lanțuri, pânze. Originea = mijlocul podelei."""
+	curata()
+	r = random.Random(23)
+	piatra, lemn, decor = [], [], []
+	deschidere = (-0.55, 0.55)  # pe x, în peretele din față (Blender y = -PZ)
+	# podeaua: lespezi neregulate peste pământ
+	piatra.append(cub("Pamant", (2 * PX, 2 * PZ, 0.04), (0, 0, -0.02), LEMN))
+	x = -PX
+	while x < PX - 0.05:
+		w = min(r.uniform(0.4, 0.7), PX - x)
+		y = -PZ
+		while y < PZ - 0.05:
+			h = min(r.uniform(0.35, 0.6), PZ - y)
+			piatra.append(cub("Lespede", (w - 0.03, h - 0.03, 0.02), (x + w / 2, y + h / 2, 0.012 + r.uniform(0, 0.004)),
+				r.choice(PIATRA)))
+			y += h
+		x += w
+	# pereții: blocuri pe rânduri, decalate
+	def zid(axa, lung, fix, semn, gol=None):
+		z = 0.0
+		rand = 0
+		while z < PH - 0.01:
+			hb = min(0.28, PH - z)
+			u = -lung / 2 - (0.2 if rand % 2 else 0.0)
+			while u < lung / 2 - 0.01:
+				wb = r.uniform(0.35, 0.6)
+				a, b = max(u, -lung / 2), min(u + wb, lung / 2)
+				if gol and a < gol[1] and b > gol[0] and z < 2.05:
+					# blocurile tăiate de deschidere
+					for aa, bb in ((a, min(b, gol[0])), (max(a, gol[1]), b)):
+						if bb - aa > 0.02:
+							_bloc(piatra, axa, aa, bb, fix, semn, z, hb, r)
+				elif b - a > 0.02:
+					_bloc(piatra, axa, a, b, fix, semn, z, hb, r)
+				u += wb
+			z += hb
+			rand += 1
+	zid("x", 2 * PX, -PZ, -1, deschidere)
+	zid("x", 2 * PX, PZ, 1)
+	zid("y", 2 * PZ, -PX, -1)
+	zid("y", 2 * PZ, PX, 1)
+	# tavanul: scânduri și grinzi
+	piatra.append(cub("Tavan", (2 * PX + 0.4, 2 * PZ + 0.4, 0.06), (0, 0, PH + 0.03), LEMN))
+	for xb in (-1.2, -0.4, 0.4, 1.2):
+		lemn.append(cub("Grinda", (0.16, 2 * PZ, 0.16), (xb, 0, PH - 0.08), LEMN2))
+	# scara: trepte de lemn care urcă în întuneric dincolo de deschidere (spre -Y), întunericul din spate
+	for i in range(8):
+		lemn.append(cub("Treapta", (1.0, 0.28, 0.05), (0, -PZ - 0.2 - i * 0.26, 0.18 + i * 0.22), LEMN2 if i % 2 else LEMN))
+	for k in (-1, 1):
+		lemn.append(os_intre("Wange", (k * 0.52, -PZ - 0.05, 0.05), (k * 0.52, -PZ - 2.3, 1.85), 0.04, LEMN, laturi=4))
+	decor.append(cub("Intuneric", (1.4, 0.05, 2.6), (0, -PZ - 2.4, 1.3), NEGRU))
+	for k in (-1, 1):
+		decor.append(cub("Intuneric", (0.05, 2.4, 2.6), (k * 0.7, -PZ - 1.2, 1.3), NEGRU))
+	decor.append(cub("Intuneric", (1.4, 2.4, 0.05), (0, -PZ - 1.2, 2.6), NEGRU))
+	lemn.append(cub("Buiandrug", (1.3, 0.3, 0.16), (0, -PZ, 2.13), LEMN))
+	# butoaie, lăzi, un raft gol, lanțuri, pânze
+	for (bx, by, rot) in ((-1.45, 1.6, 0.0), (-1.45, 0.95, 0.4), (1.5, -1.6, 0.2)):
+		decor.append(_strung("Butoi", [(0, 0.24), (0.1, 0.28), (0.35, 0.3), (0.6, 0.28), (0.7, 0.24), (0.7, 0)], LEMN2, laturi=10,
+			centru=(bx, by)))
+		for zz in (0.12, 0.58):
+			decor.append(inel("Cerc", 0.285, 0.012, (bx, by, zz), FIER, segmente=12))
+	for (cx, cy, s) in ((1.45, 1.55, 0.5), (1.45, 1.0, 0.42), (1.5, 1.3, 0.35)):
+		z0 = 0.0 if s > 0.45 else (0.5 if s > 0.38 else 0.92)
+		decor.append(cub("Lada", (s, s, s), (cx, cy, z0 + s / 2), LEMN if s != 0.42 else LEMN2))
+		decor.append(cub("LadaScandura", (s + 0.01, 0.04, s * 0.12), (cx, cy - s / 2, z0 + s * 0.5), LEMN2))
+	for i in range(9):
+		decor.append(inel("Lant", 0.022, 0.005, (-1.88, -0.6, PH - 0.12 - i * 0.065), FIER2, segmente=6))
+	decor.append(cub("Carlig", (0.05, 0.03, 0.08), (-1.88, -0.6, PH - 0.68), FIER))
+	for kx in (-1, 1):
+		for ky in (-1, 1):
+			for i in range(3):
+				decor.append(os_intre("Panza", (kx * (PX - 0.02), ky * (PZ - 0.3 - i * 0.1), PH - 0.05),
+					(kx * (PX - 0.3 - i * 0.1), ky * (PZ - 0.02), PH - 0.05), 0.003, CEARA, laturi=3))
+	uneste(piatra, "Piatra")
+	uneste(lemn, "Lemn")
+	uneste(decor, "Decor")
+	exporta(os.path.join(cale, "pivnita.glb"))
+
+
+def _bloc(piese, axa, a, b, fix, semn, z, hb, r):
+	ad = r.uniform(0.16, 0.2)
+	c = r.choice(PIATRA)
+	if axa == "x":
+		piese.append(cub("Bloc", (b - a - 0.02, ad, hb - 0.02), ((a + b) / 2, fix + semn * ad / 2, z + hb / 2), c))
+	else:
+		piese.append(cub("Bloc", (ad, b - a - 0.02, hb - 0.02), (fix + semn * ad / 2, (a + b) / 2, z + hb / 2), c))
+
+
+# roata: 5 felii egale; felia i are mijlocul la unghiul 90° − i·72° (în planul XZ, de la +X spre +Z), deci la rotația 0
+# felia 0 (Gri) e sus, sub limbă. Ordinea: Gri, Verde, Albastru, Mov, Portocaliu (roata_noroc.gd o știe la fel).
+FELII = ("SegGri", "SegVerde", "SegAlbastru", "SegMov", "SegPortocaliu")
+ROATA_R = 0.62
+ROATA_Z = 1.25  # înălțimea axului
+
+
+def _felie(nume, a0, a1, raza, gros, culoare, n=10):
+	"""O felie de roată (pană), în planul XZ, cu fața spre -Y, groasă `gros`, centrată pe ax (originea roții)."""
+	import bmesh
+	me = bpy.data.meshes.new("Felie")
+	bm = bmesh.new()
+	fata, spate = [], []
+	for y, lista in ((-gros / 2, fata), (gros / 2, spate)):
+		lista.append(bm.verts.new((0, y, 0)))
+		for i in range(n + 1):
+			a = a0 + (a1 - a0) * i / n
+			lista.append(bm.verts.new((math.cos(a) * raza, y, math.sin(a) * raza)))
+	bm.faces.new(fata)
+	bm.faces.new(list(reversed(spate)))
+	for i in range(1, n + 1):
+		bm.faces.new((fata[i], spate[i], spate[i + 1], fata[i + 1]))
+	bm.faces.new((fata[0], spate[0], spate[1], fata[1]))
+	bm.faces.new((fata[n + 1], spate[n + 1], spate[0], fata[0]))
+	bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+	bm.to_mesh(me)
+	bm.free()
+	ob = bpy.data.objects.new("Felie", me)
+	bpy.context.scene.collection.objects.link(ob)
+	bpy.ops.object.select_all(action='DESELECT')
+	ob.select_set(True)
+	bpy.context.view_layer.objects.active = ob
+	from unelte import _termina
+	return _termina(ob, "Felie", culoare)
+
+
+def roata(cale):
+	"""Roata norocului din pivniță: piciorul (A, cu talpă), axul, discul care se învârte (`Disc`, originea în ax,
+	cu feliile `Seg*` ca piese separate: în joc fiecare primește culoarea ei), țintele dintre felii și limba de sus
+	(`Limba`, originea în prindere: tresare la fiecare țintă). Fața spre -Y (Godot +Z). Originea = podeaua."""
+	curata()
+	from coven import _parinte
+	stand = []
+	for k in (-1, 1):
+		stand.append(os_intre("Picior", (k * 0.42, 0.12, 0.0), (k * 0.06, 0.06, ROATA_Z + 0.05), 0.035, LEMN, laturi=6))
+		stand.append(os_intre("Picior", (k * 0.42, 0.12, 0.0), (k * 0.42, -0.25, 0.0), 0.03, LEMN2, laturi=6))
+	stand.append(os_intre("Traversa", (-0.3, 0.1, 0.4), (0.3, 0.1, 0.4), 0.025, LEMN2, laturi=6))
+	stand.append(cilindru("Ax", 0.04, 0.04, 0.16, (0, 0.04, ROATA_Z), FIER, laturi=8, rot=(math.pi / 2, 0, 0)))
+	# limba de sus: suportul fix și limba (piesă separată)
+	stand.append(cub("Suport", (0.08, 0.06, 0.12), (0, 0.0, ROATA_Z + ROATA_R + 0.13), LEMN))
+	uneste(stand, "Stand")
+	limba = uneste([cilindru("Limba", 0.03, 0.0, 0.14, (0, -0.06, ROATA_Z + ROATA_R + 0.02), ROSU, laturi=4,
+		rot=(math.pi, 0, 0), scara=(1.0, 0.35, 1.0))], "Limba", (0, -0.06, ROATA_Z + ROATA_R + 0.1))
+	# discul: spatele de lemn, feliile, inelul, țintele, butucul
+	disc = [cilindru("Spate", ROATA_R + 0.04, ROATA_R + 0.04, 0.04, (0, 0.03, ROATA_Z), LEMN, laturi=20, rot=(math.pi / 2, 0, 0))]
+	disc.append(_inel_vertical("Margine", ROATA_R + 0.02, 0.025, (0, -0.02, ROATA_Z), AUR, segmente=20))
+	for i in range(5):
+		a = math.radians(90 - i * 72)
+		disc.append(sfera("Tinta", 0.018, (math.cos(a + math.radians(36)) * (ROATA_R - 0.03), -0.045,
+			ROATA_Z + math.sin(a + math.radians(36)) * (ROATA_R - 0.03)), AUR, segmente=6, inele=4))
+		disc.append(cub("Spita", (ROATA_R - 0.08, 0.01, 0.012), (math.cos(a + math.radians(36)) * (ROATA_R / 2 + 0.02), -0.032,
+			ROATA_Z + math.sin(a + math.radians(36)) * (ROATA_R / 2 + 0.02)), AUR, rot=(0, -(a + math.radians(36)), 0)))
+	disc.append(cilindru("Butuc", 0.08, 0.06, 0.05, (0, -0.05, ROATA_Z), AUR, laturi=10, rot=(math.pi / 2, 0, 0)))
+	disc.append(sfera("Butuc", 0.035, (0, -0.075, ROATA_Z), BRONZ, segmente=8, inele=5))
+	ob_disc = uneste(disc, "Disc", (0, 0, ROATA_Z))
+	for i, nume in enumerate(FELII):
+		a = math.radians(90 - i * 72)
+		f = _felie(nume, a - math.radians(36), a + math.radians(36), ROATA_R - 0.005, 0.02, ALB)
+		f.location = (0, -0.022, ROATA_Z)
+		bpy.context.view_layer.objects.active = f
+		bpy.ops.object.transform_apply(location=True)
+		ob = uneste([f], nume, (0, -0.022, ROATA_Z))
+		_parinte(ob, ob_disc)
+	exporta(os.path.join(cale, "roata.glb"))
+
+
+def gauntlet(cale):
+	"""Gauntlet-ul (felia portocalie): mănușă de fier pe pumnul strâns, cu țepi pe încheieturi și o rună care
+	arde (`Runa`, strălucește). Originea = mijlocul pumnului; încheieturile spre +Y (Godot -Z, înainte), antebrațul
+	spre -Y (spre cameră)."""
+	curata()
+	piese, runa = [], []
+	# pumnul: dosul palmei, degetele strânse (patru role), degetul mare, plăcile încheieturilor cu țepi
+	piese.append(cub("Pumn", (0.09, 0.08, 0.075), (0, 0.0, 0.0), FIER2))
+	for i in range(4):
+		x = -0.034 + i * 0.0227
+		piese.append(cilindru("Deget", 0.013, 0.013, 0.022, (x, 0.048, -0.012), FIER, laturi=6, rot=(0, math.pi / 2, 0)))
+		piese.append(cub("Placa", (0.021, 0.018, 0.03), (x, 0.052, 0.022), NEGRU2))
+		piese.append(cilindru("Tep", 0.007, 0.0, 0.028, (x, 0.074, 0.024), FIER, laturi=4, rot=(-math.pi / 2, 0, 0)))
+	piese.append(os_intre("DegetMare", (0.045, 0.0, -0.02), (0.03, 0.04, -0.03), 0.012, FIER, laturi=6))
+	piese.append(cub("DosPalma", (0.08, 0.06, 0.012), (0, -0.005, 0.041), NEGRU2))
+	runa.append(cub("Runa", (0.036, 0.006, 0.003), (0, 0.0, 0.048), RUGINA, rot=(0, 0.6, 0)))
+	runa.append(cub("Runa", (0.036, 0.006, 0.003), (0, 0.0, 0.048), RUGINA, rot=(0, -0.6, 0)))
+	runa.append(cub("Runa", (0.004, 0.05, 0.003), (0, -0.005, 0.0485), RUGINA))
+	# încheietura și apărătoarea antebrațului (trunchi conic, cu benzi și nituri)
+	piese.append(cilindru("Mansieta", 0.052, 0.05, 0.035, (0, -0.06, 0.0), FIER, laturi=8, rot=(math.pi / 2, 0, 0)))
+	piese.append(trunchi("Brat", [((0, -0.075, 0), 0.046, 0.042), ((0, -0.18, 0.004), 0.052, 0.048), ((0, -0.28, 0.008), 0.058, 0.052)],
+		FIER2, laturi=8))
+	for y in (-0.11, -0.2):
+		piese.append(_inel_vertical("Banda", 0.053 + (y + 0.11) * -0.06, 0.006, (0, y, 0.003), NEGRU2, segmente=8))
+	for i in range(6):
+		a = i * math.tau / 6
+		piese.append(sfera("Nit", 0.005, (math.cos(a) * 0.058, -0.25, 0.008 + math.sin(a) * 0.052), FIER, segmente=5, inele=3))
+	piese.append(cilindru("Guler", 0.07, 0.06, 0.03, (0, -0.29, 0.008), FIER, laturi=8, rot=(math.pi / 2, 0, 0)))
+	uneste(piese, "Gauntlet")
+	uneste(runa, "Runa")
+	exporta(os.path.join(cale, "gauntlet.glb"))
+
+
 def toate(cale):
 	camera_jean(cale)
 	masa_sah(cale)
@@ -560,6 +838,11 @@ def toate(cale):
 	candelabru_jean(cale)
 	jean(cale)
 	draperie(cale)
+	cheie_pivnita(cale)
+	usa_pivnita(cale)
+	pivnita(cale)
+	roata(cale)
+	gauntlet(cale)
 
 
 if __name__ == "__main__":

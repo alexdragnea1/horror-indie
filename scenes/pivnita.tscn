@@ -1,0 +1,95 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="jucator"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="model"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="mat"]
+[ext_resource type="PackedScene" path="res://models/pivnita.glb" id="pivnita"]
+[ext_resource type="PackedScene" path="res://models/roata.glb" id="roata"]
+[ext_resource type="PackedScene" path="res://models/raft_borcane.glb" id="raft"]
+[ext_resource type="PackedScene" path="res://scenes/bec.tscn" id="bec"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="acustica"]
+[ext_resource type="Script" path="res://scripts/usa_scena.gd" id="usa_scena"]
+[ext_resource type="Script" path="res://scripts/punct_sosire.gd" id="sosire"]
+[ext_resource type="Script" path="res://scripts/roata_noroc.gd" id="roata_gd"]
+[ext_resource type="AudioStream" path="res://sunete/usa_scartait.ogg" id="usa_scartait"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="usa_inchisa"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="pas1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="pas2"]
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 1
+background_color = Color(0, 0, 0, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.28, 0.26, 1)
+ambient_light_energy = 0.18
+reflected_light_source = 1
+fog_enabled = true
+fog_light_color = Color(0.04, 0.035, 0.03, 1)
+fog_density = 0.03
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.02
+volumetric_fog_albedo = Color(0.9, 0.85, 0.75, 1)
+volumetric_fog_length = 12.0
+
+[sub_resource type="BoxShape3D" id="forma_iesire"]
+size = Vector3(1.1, 2.1, 0.2)
+
+[sub_resource type="BoxShape3D" id="forma_roata"]
+size = Vector3(1.4, 2.0, 0.35)
+
+[node name="Pivnita" type="Node3D"]
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("acustica")
+marime_camera = 0.4
+amortizare = 0.4
+ecou = 0.28
+
+[node name="Camera" parent="." instance=ExtResource("pivnita")]
+script = ExtResource("model")
+material = ExtResource("mat")
+coliziune = 3
+
+[node name="Jucator" parent="." instance=ExtResource("jucator")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 1.6)
+suprafata_implicita = "beton"
+
+[node name="SosireScara" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 1.6)
+script = ExtResource("sosire")
+
+[node name="Scara" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.4)
+script = ExtResource("usa_scena")
+indiciu = "[E] Go upstairs"
+scena = "res://scenes/casa_jean.tscn"
+sosire = "SosirePivnita"
+sunet_usa = ExtResource("usa_scartait")
+sunete_tranzitie = Array[AudioStream]([ExtResource("pas1"), ExtResource("pas2"), ExtResource("pas1"), ExtResource("usa_inchisa")])
+
+[node name="Forma" type="CollisionShape3D" parent="Scara"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+shape = SubResource("forma_iesire")
+
+[node name="Roata" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.85)
+script = ExtResource("roata_gd")
+
+[node name="Model" parent="Roata" instance=ExtResource("roata")]
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="Forma" type="CollisionShape3D" parent="Roata"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+shape = SubResource("forma_roata")
+
+[node name="Raft" parent="." instance=ExtResource("raft")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.9, 1.3, -0.4)
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="Bec" parent="." instance=ExtResource("bec")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.1)

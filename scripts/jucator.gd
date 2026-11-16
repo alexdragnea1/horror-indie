@@ -68,6 +68,7 @@ func _ready() -> void:
 	_camera.add_child(Shotgun.new())
 	_camera.add_child(AK47.new())
 	_camera.add_child(Bazooka.new())
+	_camera.add_child(Gauntlet.new())  # (roata din pivnița lui Jean, roata_noroc.gd)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
 	# ce ai aruncat pe jos aici data trecută
