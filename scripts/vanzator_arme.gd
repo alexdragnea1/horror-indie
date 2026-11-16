@@ -12,6 +12,8 @@ extends Interactabil
 ## Fără bani și fără nimic de vândut la Johnny: „Rob him” (vezi grupul Jaful) și îți dă mereu bazooka, cu aceeași scenă.
 ## La perete merge până în dreptul armei (`_loc_la_raft`), ca s-o prindă cu mâinile pe ea.
 
+## Pus la prima vorbă cu el: după asta, când ieși din magazin, vine mesajul lui Head Witch (MesajSefa).
+const MARCAJ_VORBIT := "a_vorbit_cu_gun_clerk"
 const OFERTA := [
 	{"id": "cutit", "nume": "Knife", "pret": 5, "raft": "Cutit"},
 	{"id": "shotgun", "nume": "Shotgun", "pret": 25, "raft": "Shotgun"},
@@ -91,6 +93,8 @@ func interactioneaza() -> void:
 		return
 	_in_curs = true
 	folosit.emit()
+	# după asta, la ieșirea din magazin, vine mesajul lui Head Witch (MesajSefa, owner 16.11)
+	Stare.marcheaza(MARCAJ_VORBIT)
 	var disponibile := OFERTA.filter(func(o: Dictionary) -> bool: return not _o_are(o.id))
 	var butoane := PackedStringArray()
 	for o in disponibile:

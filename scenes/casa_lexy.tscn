@@ -552,8 +552,8 @@ loc_jucator = Vector3(3.6, 0.16, 17.9)
 
 [node name="MesajSefa" type="Node" parent="."]
 script = ExtResource("ms_sefa")
-marcaj_dupa_care = "a_cumparat_arma"
-obiecte_oricare = PackedStringArray("cutit", "shotgun", "ak47", "bazooka")
+marcaj_dupa_care = "a_vorbit_cu_gun_clerk"
+marcaje_oricare = PackedStringArray("a_cumparat_arma")
 marcaj_gata = "a_primit_mesajul_sefei"
 intarziere = 3.0
 contact = "Coven Retard"

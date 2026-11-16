@@ -1,18 +1,22 @@
 extends Node
 ## Un mesaj pe telefon (Telefon, ca într-o aplicație de mesaje): telefonul vibrează și vezi conversația.
-## Vine la `intarziere` secunde după ce e îndeplinită condiția: `marcaj_dupa_care` pus SAU (dacă e completat)
-## ai unul din `obiecte_oricare` (în inventar, aruncat sau pe raft). Cu `doar_afara`, abia când ești în fața
+## Vine la `intarziere` secunde după ce e îndeplinită condiția: `marcaj_dupa_care` pus SAU unul din `marcaje_oricare`
+## SAU (dacă e completat) ai unul din `obiecte_oricare` (în inventar, aruncat sau pe raft). Cu `doar_afara`, abia când ești în fața
 ## clădirii (`global_position.z` > `afara_de_la_z`; fațada e la z = 0, interiorul spre -Z).
 ## După el: `marcaj_gata` și `sarcina_noua`. La Continue, dacă n-ai apucat să vezi mesajul, vine din nou.
 ##  - `MesajLexy` (afara_bloc.tscn): după antrenamentul cu mătura, Lexy („School Whore”).
-##  - `MesajSefa` (magazin_arme.tscn, casino.tscn, casa_lexy.tscn): după ce ai cumpărat o armă de la Gun Store,
-##    Head Witch („Coven Retard”): imediat ce ieși din magazin; după el, „Home” din orar te duce la bloc la apus.
+##  - `MesajSefa` (magazin_arme.tscn, casino.tscn, casa_lexy.tscn): după ce ai vorbit cu Gun Clerk (`a_vorbit_cu_gun_clerk`,
+##    sau `a_cumparat_arma` la salvările mai vechi), Head Witch („Coven Retard”): imediat ce ieși din magazin; după el,
+##    „Home” din orar te duce la bloc la apus. Owner 16.11: NU și când ai o armă de altundeva (roata din pivnița lui
+##    Jean): de aceea fără `obiecte_oricare`.
 ## Replicile sunt ale owner-ului: nu le corecta. Prefixul („Her:” / „You:”) nu apare pe telefon.
 
 @export var marcaj_dupa_care := "antrenament_cu_matura"
 ## Gol = nu contează. Altfel ajunge și unul singur din obiectele astea (ex. armele de la Gun Store, pentru salvările
 ## de dinainte de marcajul `a_cumparat_arma`).
 @export var obiecte_oricare: PackedStringArray = []
+## Alte marcaje care ajung și ele (ex. `a_cumparat_arma`, pentru salvările de dinainte de `a_vorbit_cu_gun_clerk`).
+@export var marcaje_oricare: PackedStringArray = []
 @export var marcaj_gata := "a_primit_mesajul_lexy"
 @export var intarziere := 10.0
 ## Bifat = vine abia când ești afară, în fața clădirii (vezi `afara_de_la_z`).
@@ -57,6 +61,9 @@ func _process(_delta: float) -> void:
 
 func _conditie() -> bool:
 	var are := Stare.e_marcat(marcaj_dupa_care)
+	for m in marcaje_oricare:
+		if Stare.e_marcat(m):
+			are = true
 	for id in obiecte_oricare:
 		if Stare.are_obiect(id) or Stare.e_aruncat(id) or Stare.e_pe_raft(id):
 			are = true
