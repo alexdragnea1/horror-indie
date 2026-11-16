@@ -68,11 +68,11 @@ func _ready() -> void:
 		if i > 0:
 			# cutia care cuprinde casa: ieșea peste `Limite` și treceai prin ea (owner 10.11)
 			ColiziuneModel.pentru_nod(casa, false)
-		var usa := _usa_vecin(casa, i == 0)
+		_usa_vecin(casa, i == 0)
 		if i == 0:
 			_intuneric_jean(casa)
 		_draperii(casa)
-		_draperii(usa)
+		# fără draperie în geamul ușii: triunghiul e prea mic, falduri ieșeau peste el ca niște bare (owner 16.11)
 		_alee(casa)
 	_punct_sosire(_casa_jean())
 
