@@ -1571,3 +1571,32 @@ for i in 1 2; do
 	unic "maimuta_icnit_$i" "$OUT/om_icnit_$i.ogg" mono "asetrate=44100*1.4,aresample=44100"
 done
 rm -f "$OUT/_maimuta.wav"
+
+# --- gauntlet-ul (gauntlet.gd, roata din pivnița lui Jean, owner 16.11: „mai deep, nu așa de magie”); toate mono.
+# Doar lovituri fizice, grave: fier și carne, fără scântei sau sclipiri de vrajă. Dedesubt, la fiecare impact, o bubuitură
+# sinus de ~50 Hz care cade repede (pumnul greu se simte în piept). Rulează și singură (cu funcțiile de sus).
+SUB() { echo "aevalsrc=0.9*sin(2*PI*(${1}*t-8*t*t))*exp(-t*${2}):s=44100:d=0.45"; }
+# 1. aerul: whoosh-ul încetinit și întunecat (fâșâitul cuțitului era prea ascuțit)
+ffmpeg -v error -y -i "$PACHET/Other/whoosh_2.wav" -af \
+	"aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.62,aresample=44100,lowpass=f=1600,lowpass=f=1600,highpass=f=60,atrim=end=0.42,afade=t=out:st=0.25:d=0.17" \
+	-ac 1 "$OUT/_g_aer.wav"
+unic gauntlet_aer "$OUT/_g_aer.wav"
+# 2. în carne: bufnitura grea + haina lovită + un trosnet de os, coborâte, și bubuitura de dedesubt
+ffmpeg -v error -y -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Materials/clothing_thud.wav" \
+	-i "$PACHET/Combat and Gore/crunch_quick.wav" -f lavfi -i "$(SUB 55 9)" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.78,aresample=44100,lowpass=f=3500[a];\
+[1]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.8,aresample=44100,volume=-4dB[b];\
+[2]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.85,aresample=44100,lowpass=f=4000,volume=-8dB[c];\
+[3]aformat=channel_layouts=mono[d];[a][b][c][d]amix=inputs=4:normalize=0:duration=longest,atrim=end=0.6,afade=t=out:st=0.4:d=0.2" \
+	-ac 1 "$OUT/_g_carne.wav"
+unic gauntlet_lovit "$OUT/_g_carne.wav"
+# 3. în perete / în fier: bufnitura + o lovitură de metal mată, coborâtă (mănușa e de fier), un pic de piatră, bubuitura
+ffmpeg -v error -y -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Materials/metal_blunt_tap.wav" \
+	-i "$PACHET/Materials/stone_push_short.wav" -f lavfi -i "$(SUB 48 8)" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.72,aresample=44100,lowpass=f=3000[a];\
+[1]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,asetrate=44100*0.65,aresample=44100,lowpass=f=2500,volume=-6dB[b];\
+[2]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,atrim=end=0.3,lowpass=f=2000,volume=-10dB[c];\
+[3]aformat=channel_layouts=mono[d];[a][b][c][d]amix=inputs=4:normalize=0:duration=longest,atrim=end=0.65,afade=t=out:st=0.4:d=0.25" \
+	-ac 1 "$OUT/_g_perete.wav"
+unic gauntlet_perete "$OUT/_g_perete.wav"
+rm -f "$OUT/_g_aer.wav" "$OUT/_g_carne.wav" "$OUT/_g_perete.wav"

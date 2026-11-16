@@ -103,7 +103,9 @@ func _physics_process(delta: float) -> void:
 	if not _ocupat():
 		intrare = Input.get_vector("stanga", "dreapta", "inainte", "inapoi")
 	var directie := (transform.basis * Vector3(intrare.x, 0, intrare.y)).normalized()
-	var viteza := viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers
+	# Swift Boots (roata din pivnița lui Jean, owner 16.11): cât le ai în inventar, mergi și fugi cu 30% mai repede
+	var bonus := RoataNoroc.BONUS_GHETE if Stare.are_obiect(RoataNoroc.ID_GHETE) else 1.0
+	var viteza := (viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers) * bonus
 	velocity.x = move_toward(velocity.x, directie.x * viteza, viteza * 10.0 * delta)
 	velocity.z = move_toward(velocity.z, directie.z * viteza, viteza * 10.0 * delta)
 	var y_inainte := global_position.y
@@ -145,7 +147,7 @@ func _physics_process(delta: float) -> void:
 	var pas := floori(_distanta_mersa * balans_frecventa / TAU + 0.25)
 	if pas != _numar_pas:
 		_numar_pas = pas
-		_pas(viteza_orizontala > viteza_mers + 0.5)
+		_pas(viteza_orizontala > viteza_mers * bonus + 0.5)
 
 	var tinta := _tinta_privita()
 	_indiciu.text = tinta.indiciu if tinta and not _ocupat() else ""

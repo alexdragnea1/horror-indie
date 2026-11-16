@@ -3,9 +3,9 @@ extends Interactabil
 ## Roata din pivnița lui Jean (pivnita.tscn, owner 16.11). „Press E to spin” → o singură dată (`MARCAJ`, cu felia
 ## ieșită ca valoare): discul se învârte câteva ture și încetinește, limba de sus tresare la fiecare țintă (clic),
 ## se oprește pe una din cele 5 felii, cu șanse egale (`randi() % 5`):
-##   Gri = Knife, Verde = Shotgun, Albastru = Fireball → Energy Ball (VrajaFoc.transforma: bila din mână se face mov;
-##   la bossi 200 în loc de 100), Mov = AK-47, Portocaliu = Gauntlet (Gauntlet, 350 pe lovitură la bossi).
-## Arma intră în inventar și o ții în mână; cu inventarul plin rămâne pe jos în fața roții (de luat cu E).
+##   Gri = Knife, Verde = Shotgun, Albastru = Swift Boots (`ID_GHETE`: cât le ai în inventar mergi și fugi cu
+##   `BONUS_GHETE` = 30% mai repede, vezi jucator.gd), Mov = AK-47, Portocaliu = Gauntlet (350 pe lovitură la bossi).
+## Arma intră în inventar și o ții în mână (ghetele doar în inventar); cu inventarul plin rămâne pe jos în fața roții.
 ## Modelul: roata.glb (`Disc` se rotește pe Z, feliile `Seg*` primesc culorile `CULORI`, `Limba`).
 
 const MARCAJ := "a_invartit_roata"
@@ -13,8 +13,12 @@ const FELII := ["SegGri", "SegVerde", "SegAlbastru", "SegMov", "SegPortocaliu"]
 const CULORI := [Color(0.48, 0.48, 0.5), Color(0.2, 0.62, 0.26), Color(0.2, 0.36, 0.86), Color(0.56, 0.24, 0.78),
 	Color(0.96, 0.5, 0.14)]
 const NUME_CULORI := ["GREY", "GREEN", "BLUE", "PURPLE", "ORANGE"]
-## Ce primești pe fiecare felie: [id din inventar, nume]; "" = Energy Ball.
-const PREMII := [["cutit", "Knife"], ["shotgun", "Shotgun"], ["", ""], ["ak47", "AK-47"], ["gauntlet", "Gauntlet"]]
+## Swift Boots (owner 16.11, în locul Energy Ball-ului): cât le ai în inventar, viteza ta × `BONUS_GHETE`.
+const ID_GHETE := "swift_boots"
+const NUME_GHETE := "Swift Boots"
+const BONUS_GHETE := 1.3
+## Ce primești pe fiecare felie: [id din inventar, nume].
+const PREMII := [["cutit", "Knife"], ["shotgun", "Shotgun"], [ID_GHETE, NUME_GHETE], ["ak47", "AK-47"], ["gauntlet", "Gauntlet"]]
 ## Culoarea vârfurilor feliilor în model (ALB din jean.py): materialul o împarte ca să iasă exact `CULORI`.
 const CULOARE_MODEL := Color("83b3b0")
 const FELIE := TAU / 5.0
@@ -83,10 +87,7 @@ func interactioneaza() -> void:
 	Sunet.reda(SUNET_CASTIG, Sunet.VOLUM_EFECTE - 3.0, 0.0)
 	await _arata_rezultat(rezultat)
 	var premiu: Array = PREMII[rezultat]
-	if premiu[0] == "":
-		await _energy_ball()
-	else:
-		_da_arma(premiu[0], premiu[1])
+	_da_arma(premiu[0], premiu[1])
 	await get_tree().create_timer(0.4).timeout
 	await c.opreste()
 	_in_curs = false
@@ -114,7 +115,7 @@ func _arata_rezultat(i: int) -> void:
 	e.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	e.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var premiu: Array = PREMII[i]
-	e.text = "%s\n%s" % [NUME_CULORI[i], "Energy Ball" if premiu[0] == "" else premiu[1]]
+	e.text = "%s\n%s" % [NUME_CULORI[i], premiu[1]]
 	e.add_theme_font_size_override("font_size", 22)
 	e.add_theme_constant_override("line_spacing", -4)
 	e.add_theme_color_override("font_color", (CULORI[i] as Color).lightened(0.15))
@@ -135,7 +136,8 @@ func _arata_rezultat(i: int) -> void:
 
 func _da_arma(id: String, nume: String) -> void:
 	if Stare.adauga_obiect(id, nume):
-		Stare.tine_in_mana(id)
+		if id != ID_GHETE:  # ghetele nu se țin în mână: merg cât le ai în inventar
+			Stare.tine_in_mana(id)
 		return
 	# inventarul plin: arma rămâne pe jos, în fața roții
 	var obiect := ObiectLuat.new()
@@ -157,13 +159,3 @@ func _da_arma(id: String, nume: String) -> void:
 	obiect.global_position = global_position + global_basis.z * 0.8
 	obiect.global_rotation.y = global_rotation.y + 0.4
 
-
-func _energy_ball() -> void:
-	var jucator := get_tree().get_first_node_in_group("jucator")
-	var vraja := jucator.find_child("VrajaFoc", true, false) as VrajaFoc if jucator else null
-	if vraja == null or not Stare.are_obiect(VrajaFoc.ID):
-		# n-ai încă Fireball-ul: când îl înveți, vine direct mov (VrajaFoc ține minte marcajul)
-		Stare.marcheaza(VrajaFoc.MARCAJ_ENERGIE)
-		return
-	Stare.tine_in_mana(VrajaFoc.ID)
-	await vraja.transforma()

@@ -94,7 +94,7 @@ const MODELE := {
 		"sprijin": Vector3(PI / 2.0 - 0.15, 0.0, 0.0),
 		"sprijin_y": 0.92,
 	},
-	# de la Jean (owner 16.11): gauntlet-ul de la roata din pivniță, pe jos pe o parte; cheia pivniței, culcată
+	# de la Jean (owner 16.11): gauntlet-ul de la roata din pivniță, pe jos pe o parte; ghetele; cheia pivniței, culcată
 	"gauntlet": {
 		"scena": "res://models/gauntlet.glb",
 		"jos": Vector3(0.0, 0.0, PI / 2.0),
@@ -102,6 +102,9 @@ const MODELE := {
 		"raft": Vector3(-PI / 2.0, 0.0, 0.0),
 		"stralucitoare": ["Runa"],
 		"stralucire": 2.0,
+	},
+	"swift_boots": {  # felia albastră a roții: stau în picioare, pe jos și pe raft
+		"scena": "res://models/swift_boots.glb",
 	},
 	"cheie_pivnita": {
 		"scena": "res://models/cheie_pivnita.glb",

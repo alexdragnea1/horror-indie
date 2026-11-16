@@ -827,6 +827,34 @@ def gauntlet(cale):
 	exporta(os.path.join(cale, "gauntlet.glb"))
 
 
+
+
+def swift_boots(cale):
+	"""Swift Boots (felia albastră a roții din pivniță, owner 16.11): o pereche de cizme de piele cu dungă albastră și
+	aripioare argintii la călcâi. Stau în picioare, una lângă alta; vârfurile spre -Y (Godot +Z). Originea = podeaua."""
+	curata()
+	piese = []
+	PIELE, PIELE2, ALBASTRU, ARGINT = LEMN, LEMN2, p("30716f"), ALB
+	for k in (-1, 1):
+		x = k * 0.075
+		piese.append(cub("Talpa", (0.085, 0.25, 0.022), (x, -0.02, 0.011), NEGRU))
+		piese.append(cub("Toc", (0.075, 0.06, 0.03), (x, 0.08, 0.037), NEGRU))
+		piese.append(cub("Laba", (0.08, 0.2, 0.06), (x, -0.03, 0.052), PIELE))
+		piese.append(sfera("Varf", 0.042, (x, -0.125, 0.045), PIELE, scara=(0.95, 1.2, 0.75), segmente=8, inele=5))
+		piese.append(cilindru("Caramb", 0.046, 0.05, 0.2, (x, 0.055, 0.17), PIELE, laturi=10))
+		piese.append(cilindru("Mansieta", 0.054, 0.054, 0.035, (x, 0.055, 0.28), PIELE2, laturi=10))
+		piese.append(cilindru("Dunga", 0.0505, 0.0505, 0.016, (x, 0.055, 0.12), ALBASTRU, laturi=10))
+		for i in range(4):
+			piese.append(cub("Siret", (0.045, 0.008, 0.006), (x, 0.004, 0.1 + i * 0.035), ARGINT, rot=(0.0, 0.0, 0.25 * (-1) ** i)))
+		# aripioarele: trei pene plate pe partea din afară a călcâiului, în evantai spre spate și în sus
+		for i in range(3):
+			a = 0.5 + i * 0.35
+			piese.append(cub("Aripa", (0.006, 0.07 - i * 0.012, 0.022), (x + k * 0.055, 0.09 + 0.02 * i, 0.16 + 0.03 * i), ARGINT,
+				rot=(a, 0.0, k * 0.2)))
+	uneste(piese, "Ghete")
+	exporta(os.path.join(cale, "swift_boots.glb"))
+
+
 def toate(cale):
 	camera_jean(cale)
 	masa_sah(cale)
@@ -843,6 +871,7 @@ def toate(cale):
 	pivnita(cale)
 	roata(cale)
 	gauntlet(cale)
+	swift_boots(cale)
 
 
 if __name__ == "__main__":

@@ -8,9 +8,10 @@ extends Arma
 
 const ID := "gauntlet"
 const NUME := "Gauntlet"
-const SUNET_FASAIT := preload("res://sunete/cutit_fasait.ogg")
-const SUNET_CARNE := preload("res://sunete/boss_lovit.ogg")
-const SUNET_PERETE := preload("res://sunete/atac_impact.ogg")
+## Sunete grave, doar fizice (owner 16.11: „mai deep, nu așa de magie”): rețetele în tools/sunete.sh, secțiunea gauntlet.
+const SUNET_FASAIT := preload("res://sunete/gauntlet_aer.ogg")
+const SUNET_CARNE := preload("res://sunete/gauntlet_lovit.ogg")
+const SUNET_PERETE := preload("res://sunete/gauntlet_perete.ogg")
 
 ## Până unde ajunge (metri, din ochi).
 @export var bataie := 1.8
