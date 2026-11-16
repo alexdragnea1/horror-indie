@@ -11,15 +11,15 @@ config_version=5
 [application]
 
 config/name="Unlucky Spells"
+run/main_scene="res://scenes/meniu_principal.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Godot/app_userdata/Horror Indie"
-config/custom_user_dir_name.linuxbsd="godot/app_userdata/Horror Indie"
-run/main_scene="res://scenes/meniu_principal.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/show_image=false
 config/icon="res://textures/tablou_biserica.png"
 config/windows_native_icon="res://icon.ico"
+config/custom_user_dir_name.linuxbsd="godot/app_userdata/Horror Indie"
 
 [audio]
 

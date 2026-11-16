@@ -1,0 +1,377 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="jucator"]
+[ext_resource type="Script" path="res://scripts/model_ps2.gd" id="model"]
+[ext_resource type="Material" path="res://shaders/material_model.tres" id="mat"]
+[ext_resource type="Material" path="res://shaders/material_negru.tres" id="mat_negru"]
+[ext_resource type="Material" path="res://shaders/material_roz.tres" id="mat_roz"]
+[ext_resource type="PackedScene" path="res://models/camera_jean.glb" id="camera"]
+[ext_resource type="PackedScene" path="res://models/masa_sah.glb" id="masa"]
+[ext_resource type="PackedScene" path="res://models/tron_jean.glb" id="tron"]
+[ext_resource type="PackedScene" path="res://models/scaun_sah.glb" id="scaun"]
+[ext_resource type="PackedScene" path="res://models/jean.glb" id="jean"]
+[ext_resource type="PackedScene" path="res://models/sfesnic_inalt.glb" id="sfesnic"]
+[ext_resource type="PackedScene" path="res://models/sfesnic_masa.glb" id="sfesnic_masa"]
+[ext_resource type="PackedScene" path="res://models/candelabru_jean.glb" id="candelabru"]
+[ext_resource type="PackedScene" path="res://models/shotgun.glb" id="shotgun"]
+[ext_resource type="PackedScene" path="res://models/usa_lexy.glb" id="usa"]
+[ext_resource type="PackedScene" path="res://models/ceas_pendul.glb" id="ceas"]
+[ext_resource type="PackedScene" path="res://models/rama_aurie.glb" id="rama"]
+[ext_resource type="Texture2D" path="res://textures/tablou_biserica.png" id="tablou_img"]
+[ext_resource type="Script" path="res://scripts/acustica.gd" id="acustica"]
+[ext_resource type="Script" path="res://scripts/usa_scena.gd" id="usa_scena"]
+[ext_resource type="Script" path="res://scripts/punct_sosire.gd" id="sosire"]
+[ext_resource type="Script" path="res://scripts/masa_sah.gd" id="masa_sah"]
+[ext_resource type="Script" path="res://scripts/om_la_masa.gd" id="om"]
+[ext_resource type="Script" path="res://scripts/flacara.gd" id="flacara"]
+[ext_resource type="Script" path="res://scripts/ceas_pendul.gd" id="ceas_gd"]
+[ext_resource type="Script" path="res://scripts/tablou.gd" id="tablou"]
+[ext_resource type="Script" path="res://scripts/zona_suprafata.gd" id="zona"]
+[ext_resource type="AudioStream" path="res://sunete/ceas.ogg" id="tictac"]
+[ext_resource type="AudioStream" path="res://sunete/usa_scartait.ogg" id="usa_scartait"]
+[ext_resource type="AudioStream" path="res://sunete/usa_inchisa.ogg" id="usa_inchisa"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_1.ogg" id="pas1"]
+[ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="pas2"]
+
+[sub_resource type="Environment" id="mediu"]
+background_mode = 1
+background_color = Color(0, 0, 0, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.38, 0.26, 0.24, 1)
+ambient_light_energy = 0.22
+reflected_light_source = 1
+fog_enabled = true
+fog_light_color = Color(0.05, 0.035, 0.035, 1)
+fog_density = 0.02
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.012
+volumetric_fog_albedo = Color(0.95, 0.8, 0.7, 1)
+volumetric_fog_length = 20.0
+
+[sub_resource type="BoxShape3D" id="forma_usa"]
+size = Vector3(1, 2.18, 0.05)
+
+[sub_resource type="BoxShape3D" id="forma_masa"]
+size = Vector3(0.96, 0.065, 0.96)
+
+[sub_resource type="BoxShape3D" id="forma_sezut"]
+size = Vector3(0.7, 0.38, 0.52)
+
+[sub_resource type="BoxShape3D" id="forma_spatar"]
+size = Vector3(0.8, 1.75, 0.12)
+
+[sub_resource type="BoxShape3D" id="forma_ceas"]
+size = Vector3(0.7, 2.6, 0.46)
+
+[sub_resource type="BoxShape3D" id="forma_covor"]
+size = Vector3(3.6, 0.6, 4.6)
+
+[node name="CasaJean" type="Node3D"]
+
+[node name="Mediu" type="WorldEnvironment" parent="."]
+environment = SubResource("mediu")
+
+[node name="Acustica" type="Node" parent="."]
+script = ExtResource("acustica")
+marime_camera = 0.55
+amortizare = 0.55
+ecou = 0.18
+
+[node name="Camera" parent="." instance=ExtResource("camera")]
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.2
+materiale = {
+"PereteNegru": ExtResource("mat_negru")
+}
+coliziune = 3
+
+[node name="Jucator" parent="." instance=ExtResource("jucator")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 4.9)
+suprafata_implicita = "lemn"
+
+[node name="SosireUsa" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 4.9)
+script = ExtResource("sosire")
+
+[node name="UsaIesire" type="StaticBody3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.5, 0, 6.02)
+script = ExtResource("usa_scena")
+indiciu = "[E] Go outside"
+scena = "res://scenes/casa_lexy.tscn"
+titlu = ""
+sosire = "SosireJean"
+sunet_usa = ExtResource("usa_scartait")
+sunete_tranzitie = Array[AudioStream]([ExtResource("pas1"), ExtResource("pas2"), ExtResource("usa_inchisa")])
+
+[node name="Model" parent="UsaIesire" instance=ExtResource("usa")]
+script = ExtResource("model")
+material = ExtResource("mat")
+sticla = "Geam"
+
+[node name="Coliziune" type="CollisionShape3D" parent="UsaIesire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.09, 0)
+shape = SubResource("forma_usa")
+
+[node name="Masa" parent="." instance=ExtResource("masa")]
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="Tron" parent="." instance=ExtResource("tron")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.82)
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="TronCorp" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.82)
+
+[node name="Sezut" type="CollisionShape3D" parent="TronCorp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+shape = SubResource("forma_sezut")
+
+[node name="Spatar" type="CollisionShape3D" parent="TronCorp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, -0.27)
+shape = SubResource("forma_spatar")
+
+[node name="Jean" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, -0.8)
+script = ExtResource("om")
+fumeaza = false
+viteza_cap = 2.2
+pauza_privire = Vector2(5, 10)
+
+[node name="Model" parent="Jean" instance=ExtResource("jean")]
+script = ExtResource("model")
+material = ExtResource("mat")
+materiale = {
+"CravataRoz": ExtResource("mat_roz")
+}
+
+[node name="Scaun" parent="." instance=ExtResource("scaun")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.86)
+script = ExtResource("model")
+material = ExtResource("mat")
+coliziune = 2
+
+[node name="Pusca" type="Node3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.1, 0.6, -0.3)
+
+[node name="Model" parent="Pusca" instance=ExtResource("shotgun")]
+script = ExtResource("model")
+material = ExtResource("mat")
+umbre = false
+
+[node name="Maner" type="Node3D" parent="Pusca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0.13)
+
+[node name="Tub" type="Node3D" parent="Pusca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, -0.33)
+
+[node name="Gura" type="Node3D" parent="Pusca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.672)
+
+[node name="MasaSah" type="StaticBody3D" parent="." node_paths=PackedStringArray("jean", "loc_jucator", "centru_tabla", "pusca")]
+script = ExtResource("masa_sah")
+jean = NodePath("../Jean")
+loc_jucator = NodePath("LocJucator")
+centru_tabla = NodePath("CentruTabla")
+pusca = NodePath("../Pusca")
+
+[node name="Forma" type="CollisionShape3D" parent="MasaSah"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7425, 0)
+shape = SubResource("forma_masa")
+
+[node name="CentruTabla" type="Marker3D" parent="MasaSah"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.786, 0)
+
+[node name="LocJucator" type="Marker3D" parent="MasaSah"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.64)
+
+[node name="SfesnicMasa" parent="." instance=ExtResource("sfesnic_masa")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 0.78, -0.3)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+umbre = false
+
+[node name="LuminaMasa" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.36, 1.25, -0.3)
+light_color = Color(1, 0.62, 0.32, 1)
+light_energy = 1.1
+shadow_enabled = true
+omni_range = 3.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+energie = 1.1
+tremur = 0.08
+
+[node name="Candelabru" parent="." instance=ExtResource("candelabru")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.2, 0)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+umbre = false
+
+[node name="LuminaCandelabru" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9, 0)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 8.0
+omni_attenuation = 1.3
+script = ExtResource("flacara")
+energie = 1.5
+tremur = 0.06
+
+[node name="Sfesnic1" parent="." instance=ExtResource("sfesnic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 0, -1.9)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+coliziune = 1
+
+[node name="Lumina1" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.8, -1.9)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.0
+shadow_enabled = true
+omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+tremur = 0.09
+
+[node name="Sfesnic2" parent="." instance=ExtResource("sfesnic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -1.9)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+coliziune = 1
+
+[node name="Lumina2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.8, -1.9)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.0
+shadow_enabled = true
+omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+tremur = 0.09
+
+[node name="Sfesnic3" parent="." instance=ExtResource("sfesnic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.3, 0, 5.2)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+coliziune = 1
+
+[node name="Lumina3" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.3, 1.8, 5.2)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 0.9
+omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+energie = 0.9
+tremur = 0.1
+
+[node name="Sfesnic4" parent="." instance=ExtResource("sfesnic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 0, 5.2)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+coliziune = 1
+
+[node name="Lumina4" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 1.8, 5.2)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 0.9
+omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+energie = 0.9
+tremur = 0.1
+
+[node name="Sfesnic5" parent="." instance=ExtResource("sfesnic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 0, -5.3)
+script = ExtResource("model")
+material = ExtResource("mat")
+stralucitoare = PackedStringArray("Flacara")
+stralucire = 2.4
+coliziune = 1
+
+[node name="Lumina5" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 1.8, -5.3)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 0.9
+omni_range = 4.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+energie = 0.9
+tremur = 0.1
+
+[node name="LuminaSemineu" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, -5.75)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 0.9
+omni_range = 3.5
+omni_attenuation = 1.4
+script = ExtResource("flacara")
+energie = 0.9
+tremur = 0.1
+
+[node name="LuminaPodeaUsa" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 5.4)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 0.5
+omni_range = 2.5
+omni_attenuation = 1.6
+script = ExtResource("flacara")
+energie = 0.5
+tremur = 0.12
+
+[node name="Tablou" type="StaticBody3D" parent="."]
+transform = Transform3D(2.2, 0, 0, 0, 2.2, 0, 0, 0, 2.2, 0, 2.55, -5.99)
+script = ExtResource("tablou")
+indiciu = "[E] Look at the painting"
+imagine = ExtResource("tablou_img")
+
+[node name="Model" parent="Tablou" instance=ExtResource("rama")]
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="Ceas" type="Node3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.65, 0, -4.9)
+script = ExtResource("ceas_gd")
+
+[node name="Model" parent="Ceas" instance=ExtResource("ceas")]
+script = ExtResource("model")
+material = ExtResource("mat")
+
+[node name="TicTac" type="AudioStreamPlayer3D" parent="Ceas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+stream = ExtResource("tictac")
+volume_db = -10.0
+unit_size = 2.0
+max_distance = 14.0
+autoplay = true
+bus = &"Efecte"
+
+[node name="Corp" type="StaticBody3D" parent="Ceas"]
+
+[node name="Forma" type="CollisionShape3D" parent="Ceas/Corp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+shape = SubResource("forma_ceas")
+
+[node name="Covor" type="Area3D" parent="."]
+script = ExtResource("zona")
+
+[node name="Forma" type="CollisionShape3D" parent="Covor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.3)
+shape = SubResource("forma_covor")
