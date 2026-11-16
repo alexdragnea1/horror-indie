@@ -342,15 +342,23 @@ func _alege_familie(da: bool) -> void:
 
 
 # -------- controalele (apar o dată, la un joc nou)
+# Owner 16.11: doar W A S D, Shift, E, Left Click, Right Click, desenate ca taste.
 
 func _ecran_controale(parinte: Control) -> Control:
 	var panou := _panou(parinte, "CONTROLS")
+	panou.add_theme_constant_override("separation", 8)
+	var linie := ColorRect.new()  # dunga subțire de sub titlu
+	linie.color = Color(TemaMeniu.ACCENT, 0.45)
+	linie.custom_minimum_size = Vector2(170, 1)
+	linie.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panou.add_child(linie)
 	_grila_controale = GridContainer.new()
-	_grila_controale.columns = 4  # două perechi tastă / ce face pe fiecare rând, ca să încapă pe înălțime
-	_grila_controale.add_theme_constant_override("h_separation", 10)
-	_grila_controale.add_theme_constant_override("v_separation", 3)
+	_grila_controale.columns = 2  # tastele (aliniate la dreapta) | ce fac
+	_grila_controale.add_theme_constant_override("h_separation", 12)
+	_grila_controale.add_theme_constant_override("v_separation", 5)
+	_grila_controale.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	panou.add_child(_grila_controale)
-	panou.add_child(_spatiu(4))
+	panou.add_child(_spatiu(2))
 	var rand := HBoxContainer.new()
 	rand.alignment = BoxContainer.ALIGNMENT_CENTER
 	rand.add_theme_constant_override("separation", 12)
@@ -364,31 +372,51 @@ func _ecran_controale(parinte: Control) -> Control:
 func _actualizeaza_controale() -> void:
 	for copil in _grila_controale.get_children():
 		copil.queue_free()
-	var randuri := []
-	for pereche in Setari.ACTIUNI:
-		# scutul îl înveți abia mai târziu (Head Witch, la apus): nu-l spunem de la început
-		if pereche[0] == "scut":
-			continue
-		randuri.append([Setari.nume_tasta(pereche[0]), pereche[1]])
-	randuri.append_array([
-		["Mouse", "Look around"],
-		["Left Click", "Shoot / use what you hold"],
-		["Left Click", "Inventory: hold in hand"],
-		["Right Click", "Inventory: drop"],
-		["Esc", "Pause"],
-		["F11", "Fullscreen"],
-	])
+	var randuri := [
+		[[Setari.nume_tasta("inainte"), Setari.nume_tasta("stanga"), Setari.nume_tasta("inapoi"), Setari.nume_tasta("dreapta")], "Move"],
+		[[Setari.nume_tasta("alearga")], "Run"],
+		[[Setari.nume_tasta("interact")], "Interact"],
+		[["Left Click"], "Use what you hold"],
+		[["Right Click"], "Drop (in inventory)"],
+	]
 	for rand in randuri:
-		var tasta := Label.new()
-		tasta.text = rand[0]
-		tasta.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		tasta.add_theme_font_size_override("font_size", 10)
-		tasta.add_theme_color_override("font_color", TemaMeniu.ACCENT)
-		_grila_controale.add_child(tasta)
+		var taste := HBoxContainer.new()
+		taste.alignment = BoxContainer.ALIGNMENT_END
+		taste.add_theme_constant_override("separation", 2)
+		for nume in rand[0]:
+			taste.add_child(_tasta(nume))
+		_grila_controale.add_child(taste)
 		var ce_face := Label.new()
 		ce_face.text = rand[1]
+		ce_face.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		ce_face.size_flags_vertical = Control.SIZE_FILL
 		ce_face.add_theme_font_size_override("font_size", 10)
 		_grila_controale.add_child(ce_face)
+
+
+## O tastă desenată: cutie cu marginea de jos mai groasă, ca o tastă adevărată.
+func _tasta(nume: String) -> PanelContainer:
+	var cutie := StyleBoxFlat.new()
+	cutie.bg_color = Color("3a2a33")
+	cutie.border_color = TemaMeniu.ACCENT
+	cutie.set_border_width_all(1)
+	cutie.border_width_bottom = 3
+	cutie.set_corner_radius_all(2)
+	cutie.content_margin_left = 5
+	cutie.content_margin_right = 5
+	cutie.content_margin_top = 1
+	cutie.content_margin_bottom = 1
+	var tasta := PanelContainer.new()
+	tasta.add_theme_stylebox_override("panel", cutie)
+	tasta.custom_minimum_size = Vector2(17, 17)
+	var eticheta := Label.new()
+	eticheta.text = nume
+	eticheta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	eticheta.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	eticheta.add_theme_font_size_override("font_size", 9)
+	eticheta.add_theme_color_override("font_color", Color("e0cdb0"))
+	tasta.add_child(eticheta)
+	return tasta
 
 
 # -------- muzica (cine a făcut-o)
