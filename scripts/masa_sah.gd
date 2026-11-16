@@ -11,7 +11,7 @@ extends Interactabil
 ##    împușcă el; câștigi: se împușcă el.
 ## Meciul (reguli în Sah): tu ești albul și începi. Click pe o piesă de-a ta = o ridici și apar pătratele în care poate
 ## merge; click pe unul = mutarea (pe altă piesă de-a ta = o alegi pe aia; în altă parte = o lași jos). E = resign
-## (pierzi pe loc). Jean gândește pe alt fir (WorkerThreadPool), cel puțin `gandire_minima` secunde, și mută cu mâna.
+## (pierzi pe loc). Jean gândește pe alt fir (WorkerThreadPool), cel puțin `gandire_minima` secunde; piesa lui se mută singură (fără mână: owner 16.11).
 ## Remiză (pat, material insuficient, 50 de mutări, repetiție) = „Jean: A draw. Again.” și o luați de la capăt.
 ## După ce moare (`MARCAJ_MORT`), Jean rămâne căzut lângă tron și masa nu se mai folosește.
 
@@ -367,7 +367,7 @@ func _meci() -> void:
 		await _te_impusca()
 
 
-## Jean se gândește (pe alt fir, ca jocul să nu înghețe), apoi întinde mâna și ia piesa.
+## Jean se gândește (pe alt fir, ca jocul să nu înghețe), apoi se uită la piesa pe care o mută.
 func _gandeste() -> int:
 	var copie := _sah.copie()
 	var rezultat := [-1]
@@ -379,22 +379,17 @@ func _gandeste() -> int:
 		await get_tree().process_frame
 	WorkerThreadPool.wait_for_task_completion(sarcina)
 	var m: int = rezultat[0]
-	# mâna lui (dreapta lui e spre -X) până la piesă, apoi o duce; restul îl face _anima_mutarea
+	# fără mână pe piese (owner 16.11): se uită la piesă, apoi la pătratul în care o mută; restul îl face _anima_mutarea
 	var a := Sah.de_la(m)
-	var l := "D" if _poz(a).x < centru_tabla.global_position.x else "S"
 	jean.priveste_punct = _poz(a)
-	jean.aplecare = 0.25
-	await jean.du_mana(l, _poz(a) + Vector3.UP * 0.07, 0.45)
-	jean.du_mana(l, _poz(Sah.la(m)) + Vector3.UP * 0.07, 0.6)
-	await get_tree().create_timer(0.1).timeout
-	_lasa_mana_dupa(l)
+	await get_tree().create_timer(0.35).timeout
+	jean.priveste_punct = _poz(Sah.la(m))
+	_priveste_tabla_dupa()
 	return m
 
 
-func _lasa_mana_dupa(l: String) -> void:
-	await get_tree().create_timer(0.65).timeout
-	jean.lasa_mana(l, 0.5)
-	jean.aplecare = 0.0
+func _priveste_tabla_dupa() -> void:
+	await get_tree().create_timer(0.9).timeout
 	jean.priveste_punct = centru_tabla.global_position
 
 
