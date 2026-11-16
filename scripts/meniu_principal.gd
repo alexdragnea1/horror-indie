@@ -9,7 +9,7 @@ const SCENA_FUNDAL := "res://scenes/afara_bloc.tscn"
 const SUNET_STING := preload("res://sunete/ui_sting.ogg")
 const SUNET_CLIC := preload("res://sunete/ui_clic.ogg")
 ## Numele jocului din meniu (cu majuscule). `application/config/name` e tot „Unlucky Spells” (din 16.11), dar salvările
-## stau mai departe în app_userdataHorror Indie, prin `config/custom_user_dir_name` din project.godot.
+## stau mai departe în app_userdata\Horror Indie, prin `config/custom_user_dir_name` din project.godot.
 const TITLU := "Unlucky Spells"
 ## Ecranul „Music” (butonul mic din dreapta jos, owner 17.10): cine a făcut muzica, fără locul din joc.
 ## [artist, [piese], notă mică (licența) sau ""]. Luate din etichetele fișierelor din Sound/Music.
