@@ -307,7 +307,7 @@ func _intuneric_jean(casa: Node3D) -> void:
 	var cutie := MeshInstance3D.new()
 	cutie.name = "IntunericUsa"
 	var forma := BoxMesh.new()
-	forma.size = Vector3(1.5, 2.4, 1.3)
+	forma.size = Vector3(1.5, 2.38, 1.3)
 	cutie.mesh = forma
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.018, 0.014, 0.014)
@@ -317,7 +317,8 @@ func _intuneric_jean(casa: Node3D) -> void:
 	cutie.material_override = mat
 	cutie.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	casa.add_child(cutie)
-	cutie.position = Vector3(0.0, BALAMA.y + 1.2, BALAMA.z - 0.08 - 0.65)
+	# fundul cutiei la 1 cm deasupra podelei casei (0,45): la aceeași înălțime se băteau texturile una prin alta
+	cutie.position = Vector3(0.0, BALAMA.y + 0.01 + 1.19, BALAMA.z - 0.08 - 0.65)
 	for loc in [Vector3(-0.42, 0.0, -1.18), Vector3(0.36, 0.0, -1.1), Vector3(0.08, 0.0, -1.32), Vector3(-0.15, 0.0, -0.95)]:
 		var l := LUMANARE.instantiate() as Node3D
 		l.set_script(SCRIPT_MODEL)
@@ -325,7 +326,7 @@ func _intuneric_jean(casa: Node3D) -> void:
 		l.set("stralucitoare", PackedStringArray(["Flacara"]))
 		l.set("stralucire", 2.4)
 		casa.add_child(l)
-		l.position = Vector3(loc.x, BALAMA.y, loc.z)
+		l.position = Vector3(loc.x, BALAMA.y + 0.01, loc.z)
 		l.scale = Vector3.ONE * (0.8 + absf(loc.x) * 0.6)
 	var lumina := OmniLight3D.new()
 	lumina.light_color = Color(1.0, 0.6, 0.3)
