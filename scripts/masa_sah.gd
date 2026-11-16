@@ -112,6 +112,18 @@ func poate_fi_folosit() -> bool:
 	return activ and not _in_curs and _jucator != null
 
 
+## DOAR PENTRU TESTE (owner 16.11, butonul `ButonTest` din casa_jean.tscn): te așezi și sari direct la finalul în
+## care câștigi pe viață (Jean se împușcă, cheia pe tablă, dispare). Scoate-l înainte de build-ul final.
+func debug_castiga() -> void:
+	if not poate_fi_folosit():
+		return
+	_in_curs = true
+	await _aseaza_te()
+	_miza = "viata"
+	jean.privire = _cap
+	await _se_impusca()
+
+
 func interactioneaza() -> void:
 	if not poate_fi_folosit():
 		return

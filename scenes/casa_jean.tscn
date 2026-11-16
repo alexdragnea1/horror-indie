@@ -34,6 +34,7 @@
 [ext_resource type="AudioStream" path="res://sunete/pas_lemn_2.ogg" id="pas2"]
 [ext_resource type="PackedScene" path="res://models/usa_pivnita.glb" id="usa_pivnita"]
 [ext_resource type="Script" path="res://scripts/usa_pivnita.gd" id="usa_pivnita_gd"]
+[ext_resource type="Script" path="res://scripts/buton_test_jean.gd" id="buton_test"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -403,3 +404,8 @@ shape = SubResource("forma_usa_pivnita")
 [node name="SosirePivnita" type="Marker3D" parent="."]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.9, 0.05, -5.1)
 script = ExtResource("sosire")
+
+[node name="ButonTest" type="StaticBody3D" parent="." node_paths=PackedStringArray("masa")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0, 4.9)
+script = ExtResource("buton_test")
+masa = NodePath("../MasaSah")
