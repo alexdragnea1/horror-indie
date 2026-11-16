@@ -74,6 +74,7 @@ var _capturate := [0, 0]  # câte piese a luat fiecare (pentru locul de lângă 
 var _hud: CanvasLayer
 var _stare: Label
 var _resign: Label
+var _vedere_text: Label
 var _pusca_acasa := Transform3D.IDENTITY
 var _cadavru: Ragdoll
 
@@ -310,7 +311,7 @@ func _meci() -> void:
 	_fa_hud()
 	jean.privire = null
 	jean.priveste_punct = centru_tabla.global_position
-	await _c.priveste(_privire_masa(), 0.7)
+	await _vedere(true, 0.8)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var castigator := -1  # Sah.ALB = tu, Sah.NEGRU = Jean
 	while true:
@@ -349,6 +350,7 @@ func _meci() -> void:
 	if not _abandon:
 		_scrie("Checkmate")
 		await get_tree().create_timer(1.4).timeout
+	await _vedere(false, 0.6)
 	_sterge_hud()
 	jean.priveste_punct = Vector3.INF
 	jean.privire = _cap
@@ -397,6 +399,13 @@ func _lasa_mana_dupa(l: String) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# clic dreapta, oricând în meci (și cât gândește sau mută Jean): de sus pe tablă ↔ pe scaun, cu privirea la Jean
+	if is_instance_valid(_hud) and event is InputEventMouseButton and event.pressed \
+			and event.button_index == MOUSE_BUTTON_RIGHT:
+		get_viewport().set_input_as_handled()
+		if not _vedere_in_miscare:
+			_vedere(not _vedere_sus, 0.5)
+		return
 	if _faza != "tu":
 		return
 	if event.is_action_pressed("interact"):
@@ -486,6 +495,8 @@ func _fa_hud() -> void:
 	add_child(_hud)
 	_resign = _eticheta("Press %s to resign" % Setari.nume_tasta("interact"), 9, C_TEXT)
 	_resign.position = Vector2(10, 34)
+	_vedere_text = _eticheta("Right Click: look at Jean", 9, C_TEXT)
+	_vedere_text.position = Vector2(10, 46)
 	_stare = _eticheta("", 14, C_ROSU)
 	_stare.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_stare.position.y = 34
@@ -549,14 +560,24 @@ func _platesti() -> void:
 
 # ---------------------------------------------------------------- pușca
 
-## Pușca de sub masă în mâinile lui (mâinile urmăresc `Maner` și `Tub`), adusă în fața pieptului.
+## Pușca de sub masă în mâinile lui (mâinile urmăresc `Maner` și `Tub`), ridicată deasupra blatului.
 func _scoate_pusca() -> void:
 	pusca.show()
 	pusca.transform = _pusca_acasa
 	jean.priveste_punct = Vector3.INF
-	jean.du_mana("D", pusca.get_node("Maner"), 0.45)
-	await jean.du_mana("S", pusca.get_node("Tub"), 0.45)
+	# pușca stă pe genunchii lui, sub marginea mesei dinspre el. Mâinile se ridică întâi de pe masă și vin înapoi,
+	# deasupra marginii (altfel mergeau drept prin blat), apoi coboară la ea.
+	var b := jean.global_basis
+	var j := jean.global_position
+	jean.du_mana("D", j + b * Vector3(-0.22, 0.86, 0.33), 0.3)
+	await jean.du_mana("S", j + b * Vector3(0.22, 0.86, 0.33), 0.3)
+	jean.du_mana("D", pusca.get_node("Maner"), 0.35)
+	await jean.du_mana("S", pusca.get_node("Tub"), 0.35)
 	Sunet.reda_la(SUNET_SCAUN, pusca.global_position, Sunet.VOLUM_EFECTE - 6.0, 0.1)
+	# o ridică drept în sus, prin golul dintre el și masă, până deasupra blatului
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(pusca, "global_position", pusca.global_position + Vector3.UP * 0.42, 0.35)
+	await t.finished
 
 
 func _tine_pusca(spre: Vector3, gura_la: Vector3, durata: float) -> void:
@@ -698,10 +719,10 @@ func _te_impusca() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	jean.privire = _cap
 	await _scoate_pusca()
-	# întâi de-a curmezișul pieptului, cu gura în sus spre stânga lui (se vede toată pușca și pompa), apoi spre tine
+	# întâi în diagonală pe piept (gura sus în stânga lui, mânerul la șoldul drept: se vede toată pușca și pompa), apoi spre tine
 	var b := jean.global_basis
-	var gura_sus := jean.global_position + b * Vector3(0.32, 1.42, 0.3)
-	await _tine_pusca(gura_sus + b * Vector3(0.25, 0.35, 0.05), gura_sus, 0.55)
+	var gura_sus := jean.global_position + b * Vector3(0.38, 1.3, 0.28)
+	await _tine_pusca(gura_sus + b * Vector3(0.8, 0.6, 0.0), gura_sus, 0.55)
 	await _c.priveste(jean.global_position + Vector3.UP * 1.15, 0.2)
 	await _pompeaza()
 	await get_tree().create_timer(0.45).timeout
@@ -792,3 +813,37 @@ func _mort_la_incarcare() -> void:
 		pusca.show()
 		pusca.global_transform = Transform3D(Basis(Vector3.UP, 1.2) * Basis(Vector3.FORWARD, PI / 2),
 			jean.global_position + jean.global_basis * Vector3(0.45, 0.04, 0.35))
+
+
+# ---------------------------------------------------------------- vederea de sus (owner 16.11)
+
+## Cât de sus deasupra tablei îți sunt ochii în vederea de sus și cât de în fața mijlocului ei (spre tine).
+const INALTIME_SUS := 0.5
+const DEPARTARE_SUS := 0.1
+
+var _vedere_sus := false
+var _vedere_in_miscare := false
+
+
+## În meci te apleci deasupra tablei și te uiți aproape drept în jos (`sus`), ca să vezi bine toate pătratele;
+## clic dreapta te ridică înapoi pe scaun, cu privirea spre Jean (și invers).
+func _vedere(sus: bool, durata := 0.6) -> void:
+	_vedere_in_miscare = true
+	_vedere_sus = sus
+	var corp := loc_jucator.global_position
+	var ochi := ochi_sezut
+	var spre := _privire_masa()
+	if sus:
+		corp = centru_tabla.global_position + centru_tabla.global_basis.z * DEPARTARE_SUS
+		corp.y = loc_jucator.global_position.y
+		ochi = centru_tabla.global_position.y + INALTIME_SUS - corp.y
+		spre = centru_tabla.global_position
+	var d := spre - (corp + Vector3.UP * ochi)
+	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(_jucator, "global_position", corp, durata)
+	t.tween_property(_cap, "position:y", ochi, durata)
+	_c.roteste(atan2(-d.x, -d.z), atan2(d.y, Vector2(d.x, d.z).length()), durata)
+	await t.finished
+	_vedere_in_miscare = false
+	if is_instance_valid(_vedere_text):
+		_vedere_text.text = "Right Click: look at Jean" if sus else "Right Click: look at the board"

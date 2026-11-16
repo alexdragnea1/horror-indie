@@ -69,6 +69,8 @@ func _ready() -> void:
 			# cutia care cuprinde casa: ieșea peste `Limite` și treceai prin ea (owner 10.11)
 			ColiziuneModel.pentru_nod(casa, false)
 		var usa := _usa_vecin(casa, i == 0)
+		if i == 0:
+			_intuneric_jean(casa)
 		_draperii(casa)
 		_draperii(usa)
 		_alee(casa)
@@ -294,3 +296,42 @@ func _gard(z: float, a: float, b: float, gol_a: float, gol_b: float, inalt: bool
 		forma.shape = cutie
 		corp.add_child(forma)
 		forma.position = Vector3((capete.x + capete.y) * 0.5, cutie.size.y * 0.5, z)
+
+
+const LUMANARE := preload("res://models/lumanare.glb")
+
+
+## În spatele ușii lui Jean (owner 16.11): când se deschide, nu se vede interiorul casei (e casa lui Lexy), ci negru
+## și câteva lumânări pe jos. O cutie neagră văzută dinăuntru (doar fețele din spate), fără ceață, cu o lumină mică.
+func _intuneric_jean(casa: Node3D) -> void:
+	var cutie := MeshInstance3D.new()
+	cutie.name = "IntunericUsa"
+	var forma := BoxMesh.new()
+	forma.size = Vector3(1.5, 2.4, 1.3)
+	cutie.mesh = forma
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.018, 0.014, 0.014)
+	mat.roughness = 1.0
+	mat.cull_mode = BaseMaterial3D.CULL_FRONT
+	mat.disable_fog = true
+	cutie.material_override = mat
+	cutie.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	casa.add_child(cutie)
+	cutie.position = Vector3(0.0, BALAMA.y + 1.2, BALAMA.z - 0.08 - 0.65)
+	for loc in [Vector3(-0.42, 0.0, -1.18), Vector3(0.36, 0.0, -1.1), Vector3(0.08, 0.0, -1.32), Vector3(-0.15, 0.0, -0.95)]:
+		var l := LUMANARE.instantiate() as Node3D
+		l.set_script(SCRIPT_MODEL)
+		l.set("material", MATERIAL)
+		l.set("stralucitoare", PackedStringArray(["Flacara"]))
+		l.set("stralucire", 2.4)
+		casa.add_child(l)
+		l.position = Vector3(loc.x, BALAMA.y, loc.z)
+		l.scale = Vector3.ONE * (0.8 + absf(loc.x) * 0.6)
+	var lumina := OmniLight3D.new()
+	lumina.light_color = Color(1.0, 0.6, 0.3)
+	lumina.light_energy = 0.7
+	lumina.omni_range = 1.8
+	lumina.set_script(preload("res://scripts/flacara.gd"))
+	lumina.set("energie", 0.7)
+	casa.add_child(lumina)
+	lumina.position = Vector3(0.0, BALAMA.y + 0.5, -1.05)
