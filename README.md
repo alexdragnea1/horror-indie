@@ -1,5 +1,6 @@
 # horror-indie
 
+nFereastra și exe-ul se cheamă **Unlucky Spells**, cu iconița tabloului cu biserica; la pornire nu mai apare logo-ul Godot (doar negru). Salvările stau tot în `%APPDATA%Godotpp_userdataHorror Indie`.
 Joc **horror/comedie 3D**, story-driven (~30 de minute), cu grafică în stil **PS2**: pixelat, ceață, lumină slabă, texturi care tremură. Făcut în **Godot 4.7**. Jocul e în **engleză** (codul și comentariile sunt în română).
 
 ## Cum îl pornești
