@@ -46,6 +46,12 @@ var _numar_pas := 0
 var _ultimul_pas: AudioStream
 ## Cât a sărit corpul la ultima treaptă; camera rămâne în urmă și ajunge din urmă lin.
 var _decalaj_treapta := 0.0
+## Pentru Unstuck (meniul de pauză, owner 17.11): locurile pe unde ai stat pe podea, cel mai nou la sfârșit.
+## Primul e locul unde ai apărut în scenă și nu se șterge niciodată (ultima soluție).
+var _locuri_sigure: Array[Vector3] = []
+var _ceas_loc_sigur := 0.0
+const PAS_LOC_SIGUR := 0.5  # s între două locuri notate
+const LOCURI_SIGURE_MAX := 60  # ~30 s de mers în urmă
 
 
 func _ready() -> void:
@@ -151,6 +157,68 @@ func _physics_process(delta: float) -> void:
 
 	var tinta := _tinta_privita()
 	_indiciu.text = tinta.indiciu if tinta and not _ocupat() else ""
+	_noteaza_loc_sigur(delta)
+
+
+## Notează din când în când unde stai pe podea (pentru Unstuck). Primul loc e cel de la intrarea în scenă.
+func _noteaza_loc_sigur(delta: float) -> void:
+	_ceas_loc_sigur += delta
+	if not is_on_floor() or (_ceas_loc_sigur < PAS_LOC_SIGUR and not _locuri_sigure.is_empty()):
+		return
+	_ceas_loc_sigur = 0.0
+	var aici := global_position
+	if not _locuri_sigure.is_empty() and _locuri_sigure.back().distance_to(aici) < 0.4:
+		return  # stai pe loc (sau te freci de un perete): nimic nou
+	if not _loc_liber(aici):
+		return
+	_locuri_sigure.append(aici)
+	if _locuri_sigure.size() > LOCURI_SIGURE_MAX:
+		_locuri_sigure.remove_at(1)  # păstrează locul de la intrare
+
+
+## Corpul încape aici (nu intră în nimic) și dedesubt e podea?
+func _loc_liber(p: Vector3) -> bool:
+	var spatiu := get_world_3d().direct_space_state
+	var forma := PhysicsShapeQueryParameters3D.new()
+	forma.shape = ($Coliziune as CollisionShape3D).shape
+	# puțin deasupra podelei, ca să nu atingă podeaua însăși
+	forma.transform = Transform3D(Basis(), p + Vector3(0.0, 0.85 + 0.06, 0.0))
+	forma.collision_mask = collision_mask
+	forma.exclude = [get_rid()]
+	if not spatiu.intersect_shape(forma, 1).is_empty():
+		return false
+	var raza := PhysicsRayQueryParameters3D.create(p + Vector3.UP * 0.3, p + Vector3.DOWN * 1.0, collision_mask, [get_rid()])
+	return not spatiu.intersect_ray(raza).is_empty()
+
+
+## Se poate folosi Unstuck acum? Nu cât te mută o scenă din cod (zbor, cutscene) și nu în dialog.
+func poate_desbloca() -> bool:
+	return is_physics_processing() and not Dialog.activ and not Tranzitie.activa
+
+
+## Unstuck (meniul de pauză): te întoarce la cel mai recent loc sigur care e liber și la cel puțin 1 m de unde ești
+## (acolo unde ești te-ai blocat); dacă niciunul nu merge, la locul unde ai intrat în scenă.
+func desblocheaza() -> void:
+	if not poate_desbloca():
+		return
+	var tinta: Variant = null
+	for i in range(_locuri_sigure.size() - 1, -1, -1):
+		var p := _locuri_sigure[i]
+		if p.distance_to(global_position) >= 1.0 and _loc_liber(p):
+			tinta = p
+			break
+	if tinta == null:
+		if _locuri_sigure.is_empty():
+			return
+		tinta = _locuri_sigure[0]
+	global_position = tinta
+	velocity = Vector3.ZERO
+	_decalaj_treapta = 0.0
+	# locurile de după cel ales ar putea fi chiar locul blocat: le uităm
+	var k := _locuri_sigure.find(tinta)
+	if k >= 0:
+		_locuri_sigure.resize(k + 1)
+	_ceas_loc_sigur = 0.0
 
 
 ## Dacă în față e o muchie joasă (bordură, prag), ridică jucătorul pe ea.

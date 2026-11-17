@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## Autoload "Pauza": Esc în joc oprește tot și deschide meniul de pauză:
-## Resume, Go to main menu, Settings, Quit. Esc din nou = înapoi / închide.
+## Resume, Unstuck, Go to main menu, Settings, Quit. Esc din nou = înapoi / închide.
 ## Se deschide singur și când fereastra pierde focusul (Alt+Tab).
 ## Nu se deschide în meniul principal, în tranziții și cât e deschis alt meniu
 ## (inventarul, meniul cu numele: toate pun Stare.meniu_deschis).
@@ -16,6 +16,7 @@ var _principal: Control
 var _setari: PanouSetari
 var _sarcina: Label
 var _buton_reluare: Button
+var _buton_unstuck: Button
 
 
 func _ready() -> void:
@@ -72,6 +73,7 @@ func deschide() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_sarcina.text = ("Task: " + Limbaj.curata(Stare.sarcina)) if not Stare.sarcina.is_empty() else ""
 	_sarcina.visible = not _sarcina.text.is_empty()
+	_buton_unstuck.visible = _jucator() != null
 	_radacina.show()
 	_arata_principal()
 	Sunet.reda(SUNET_DESCHIDE, Sunet.VOLUM_EFECTE, 0.05, &"Interfata")
@@ -113,6 +115,22 @@ func _meniu_principal() -> void:
 	Tranzitie.mergi_la(SCENA_MENIU)
 
 
+## Unstuck (owner 17.11): te scoate de unde te-ai blocat (Jucator.desblocheaza: înapoi pe unde ai mers) și reia jocul.
+func _desblocheaza() -> void:
+	var jucator := _jucator()
+	if jucator:
+		jucator.desblocheaza()
+	reia()
+
+
+## Jucătorul din scenă, doar dacă se poate folosi Unstuck acum (nu în zbor / cutscene / dialog).
+func _jucator() -> Node:
+	var jucator := get_tree().get_first_node_in_group("jucator")
+	if jucator and jucator.has_method("poate_desbloca") and jucator.poate_desbloca():
+		return jucator
+	return null
+
+
 func _iesi() -> void:
 	Salvare.salveaza(false)
 	get_tree().quit()
@@ -141,6 +159,7 @@ func _ecran_principal() -> Control:
 	spatiu.custom_minimum_size.y = 4
 	coloana.add_child(spatiu)
 	_buton_reluare = _buton(coloana, "Resume", reia)
+	_buton_unstuck = _buton(coloana, "Unstuck", _desblocheaza)
 	_buton(coloana, "Go to main menu", _meniu_principal)
 	_buton(coloana, "Settings", _arata_setari)
 	_buton(coloana, "Quit", _iesi)
