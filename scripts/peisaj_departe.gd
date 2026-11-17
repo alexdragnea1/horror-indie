@@ -315,7 +315,9 @@ func _padure() -> void:
 			if _sa != Vector2.ZERO and absf(Vector2(px, pz).normalized().angle_to(_sa)) < 0.3:
 				continue
 			var pe_munte := false
-			var lista_munti: Array[Vector3] = munti if not munti.is_empty() else [Vector3(munte_unghi, munte_distanta, munte_inaltime)]
+			var lista_munti: Array[Vector3] = munti.duplicate()
+			if lista_munti.is_empty():
+				lista_munti.append(Vector3(munte_unghi, munte_distanta, munte_inaltime))
 			for mt in lista_munti:
 				if Vector2(px, pz).distance_to(Vector2.from_angle(deg_to_rad(mt.x)) * mt.y) < munte_latime * 1.3:
 					pe_munte = true

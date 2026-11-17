@@ -430,7 +430,8 @@ func _fulger_pe(centru: Vector3, avertizare: float, r: int, raza := 1.6, damage 
 	await get_tree().create_timer(avertizare, false).timeout
 	if is_instance_valid(inel):
 		inel.queue_free()  # (la moarte îl șterge deja _curata)
-	coloana.queue_free()
+	if is_instance_valid(coloana):
+		coloana.queue_free()
 	if r != _runda or not _lupta_activa:
 		return
 	Fulger.loveste(self, centru + Vector3(randf_range(-3, 3), 30.0, randf_range(-3, 3)), centru, culoare, 0.28, true, 0.8)
@@ -457,14 +458,16 @@ func _glob_mare(marime := 1.0) -> void:
 		if r != _runda or not is_instance_valid(glob):
 			if is_instance_valid(glob):
 				glob.queue_free()
-			incarcare.queue_free()
+			if is_instance_valid(incarcare):
+				incarcare.queue_free()
 			return
 		if get_tree().paused:
 			continue
 		t += get_process_delta_time()
 		glob.global_position = _boss.varf_toiag() + Vector3.UP * 0.35 * marime
 		glob.scale = Vector3.ONE * lerpf(0.2, marime, minf(t / durata, 1.0))
-	incarcare.queue_free()
+	if is_instance_valid(incarcare):
+		incarcare.queue_free()
 	_boss.ridica_toiagul(-1.3, 0.2)
 	VrajaAtac.sunet_la(self, SUNET_ORB_ZBOR, glob.global_position, Sunet.VOLUM_EFECTE - 2.0, 14.0)
 	var dir := (_piept_jucator() - glob.global_position).normalized()
@@ -557,9 +560,12 @@ func _unda(raza := 7.0) -> void:
 	t.tween_property(lumina, "light_energy", 4.0, 0.9)
 	VrajaAtac.sunet_la(self, SUNET_CERC, centru + Vector3.UP, Sunet.VOLUM_EFECTE + 3.0, 10.0, 0.0)
 	if not await _asteapta(0.9 if not _faza_doi else 0.7):
-		avertizare.queue_free()
+		# lupta s-a oprit (moarte / Retry): inelul poate fi deja șters odată cu restul
+		if is_instance_valid(avertizare):
+			avertizare.queue_free()
 		return
-	avertizare.queue_free()
+	if is_instance_valid(avertizare):
+		avertizare.queue_free()
 	if is_instance_valid(lumina):
 		lumina.queue_free()
 	_boss.ridica_toiagul(-0.6, 0.12)

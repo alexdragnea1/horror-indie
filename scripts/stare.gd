@@ -108,7 +108,9 @@ func reseteaza() -> void:
 	_inventar.hide()
 	_panou_raft.hide()
 	Realizari.porneste()
-	schimbat.connect(Realizari.verifica)
+	# (la Continue din meniu `reseteaza` se cheamă din nou: legat de două ori dădea eroare)
+	if not schimbat.is_connected(Realizari.verifica):
+		schimbat.connect(Realizari.verifica)
 	_mesaj.show()
 
 
