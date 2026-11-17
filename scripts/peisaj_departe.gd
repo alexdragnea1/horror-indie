@@ -329,6 +329,8 @@ func _padure() -> void:
 @export var raza_cartier := 300.0
 ## Cât din copaci rămân (owner 17.11: la M7 de 2× mai puțini → 0,5 în afara_bloc.tscn).
 @export_range(0.0, 1.0) var fractie_copaci := 1.0
+## Până unde nu cresc copaci pe direcția muntelui (m), ca să se vadă muntele din curte.
+@export var culoar_munte := 130.0
 
 func _copaci_imas() -> void:
 	var r := RandomNumberGenerator.new()
@@ -351,6 +353,10 @@ func _copaci_imas() -> void:
 		var pastrat := r.randf() < fractie_copaci
 		var d := Vector2(px, pz).length()
 		if not pastrat or d < copaci_de_la or d > raza_cartier or pete.get_noise_2d(px, pz) < prag_copaci or liber(px, pz) < 0.999:
+			continue
+		# spre munte (owner 17.11: „îl blochează niște copaci”): fără copaci aproape, pe un culoar de ±0,3 rad; de la
+		# `culoar_munte` m un copac de ~15 m e destul de jos pe cer cât să se vadă muntele peste el
+		if cu_munte and d < culoar_munte and absf(Vector2(px, pz).angle_to(Vector2.from_angle(deg_to_rad(munte_unghi)))) < 0.3:
 			continue
 		var celula := Vector2i(floori(px / 4.0), floori(pz / 4.0))
 		var aproape := false
