@@ -802,3 +802,4 @@ script = ExtResource("pd1")
 mediu = NodePath("../Mediu")
 lumina = NodePath("../Luna")
 sol = NodePath("../Teren/Sol")
+fractie_copaci = 0.5

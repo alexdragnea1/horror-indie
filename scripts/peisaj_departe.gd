@@ -327,6 +327,8 @@ func _padure() -> void:
 ## stă pe el. Nu pe stradă, nu în curte, nu lângă blocurile din scenă (`liber`).
 @export_group("Copaci imas")
 @export var raza_cartier := 300.0
+## Cât din copaci rămân (owner 17.11: la M7 de 2× mai puțini → 0,5 în afara_bloc.tscn).
+@export_range(0.0, 1.0) var fractie_copaci := 1.0
 
 func _copaci_imas() -> void:
 	var r := RandomNumberGenerator.new()
@@ -336,35 +338,49 @@ func _copaci_imas() -> void:
 	pete.frequency = 0.02
 	var copaci: Array[Transform3D] = []
 	var trunchiuri: Array[Transform3D] = []
+	# locuri la întâmplare pe tot discul, nu pe o rețea (owner 17.11: „par foarte ordonați”, în rânduri), cu o distanță
+	# minimă între trunchiuri (`grila`: celule de 4 m cu copacii puși deja), ca să nu intre coroanele unele în altele
 	var pas := 7.0
-	var x := -raza_cartier
-	while x < raza_cartier:
-		var z := -raza_cartier
-		while z < raza_cartier:
-			var px := x + r.randf_range(-0.45, 0.45) * pas
-			var pz := z + r.randf_range(-0.45, 0.45) * pas
-			z += pas
-			var d := Vector2(px, pz).length()
-			if d < copaci_de_la or d > raza_cartier or pete.get_noise_2d(px, pz) < prag_copaci or liber(px, pz) < 0.999:
-				continue
-			var s := r.randf_range(4.5, 8.0)
-			var inalt_coroana := s * r.randf_range(1.0, 1.4)
-			var rot := r.randf_range(0.0, TAU)
-			# solul: în centru și cel mai de jos punct din jurul trunchiului (plasa terenului are fațete plate)
-			var sol_mijloc := inaltime(px, pz)
-			var sol_jos := sol_mijloc
-			for k in 6:
-				var o := Vector2.from_angle(TAU * k / 6.0) * 1.5
-				sol_jos = minf(sol_jos, inaltime(px + o.x, pz + o.y))
-			var trunchi := s * r.randf_range(0.45, 0.6)  # cât se vede din trunchi până la coroană
-			var gros := clampf(s * 0.07, 0.35, 0.55)
-			var jos := sol_jos - 1.0
-			var sus := sol_mijloc + trunchi + inalt_coroana * 0.3  # intră în coroană, să nu se vadă capătul
-			trunchiuri.append(Transform3D(Basis(Vector3.UP, rot).scaled(Vector3(gros, sus - jos, gros)), Vector3(px, (jos + sus) * 0.5, pz)))
-			# coroana: partea de jos puțin sub vârful trunchiului
-			var coroana := Basis(Vector3.UP, rot).scaled(Vector3(s, inalt_coroana, s))
-			copaci.append(Transform3D(coroana, Vector3(px, sol_mijloc + trunchi + inalt_coroana * 0.4, pz)))
-		x += pas
+	# tot pătratul (cât era rețeaua veche) + 20% pentru locurile prea apropiate de alt copac: cam tot atâția copaci ca
+	# înainte, înmulțiți cu `fractie_copaci`
+	var incercari := int(4.0 * raza_cartier * raza_cartier / (pas * pas) * 1.2)
+	var grila := {}
+	for _i in incercari:
+		var px := r.randf_range(-raza_cartier, raza_cartier)
+		var pz := r.randf_range(-raza_cartier, raza_cartier)
+		var pastrat := r.randf() < fractie_copaci
+		var d := Vector2(px, pz).length()
+		if not pastrat or d < copaci_de_la or d > raza_cartier or pete.get_noise_2d(px, pz) < prag_copaci or liber(px, pz) < 0.999:
+			continue
+		var celula := Vector2i(floori(px / 4.0), floori(pz / 4.0))
+		var aproape := false
+		for cx in range(-1, 2):
+			for cz in range(-1, 2):
+				for alt: Vector2 in grila.get(celula + Vector2i(cx, cz), []):
+					if alt.distance_to(Vector2(px, pz)) < 4.0:
+						aproape = true
+		if aproape:
+			continue
+		if not grila.has(celula):
+			grila[celula] = []
+		grila[celula].append(Vector2(px, pz))
+		var s := r.randf_range(4.5, 8.0)
+		var inalt_coroana := s * r.randf_range(1.0, 1.4)
+		var rot := r.randf_range(0.0, TAU)
+		# solul: în centru și cel mai de jos punct din jurul trunchiului (plasa terenului are fațete plate)
+		var sol_mijloc := inaltime(px, pz)
+		var sol_jos := sol_mijloc
+		for k in 6:
+			var o := Vector2.from_angle(TAU * k / 6.0) * 1.5
+			sol_jos = minf(sol_jos, inaltime(px + o.x, pz + o.y))
+		var trunchi := s * r.randf_range(0.45, 0.6)  # cât se vede din trunchi până la coroană
+		var gros := clampf(s * 0.07, 0.35, 0.55)
+		var jos := sol_jos - 1.0
+		var sus := sol_mijloc + trunchi + inalt_coroana * 0.3  # intră în coroană, să nu se vadă capătul
+		trunchiuri.append(Transform3D(Basis(Vector3.UP, rot).scaled(Vector3(gros, sus - jos, gros)), Vector3(px, (jos + sus) * 0.5, pz)))
+		# coroana: partea de jos puțin sub vârful trunchiului
+		var coroana := Basis(Vector3.UP, rot).scaled(Vector3(s, inalt_coroana, s))
+		copaci.append(Transform3D(coroana, Vector3(px, sol_mijloc + trunchi + inalt_coroana * 0.4, pz)))
 	var sfera := SphereMesh.new()
 	sfera.radius = 0.5
 	sfera.height = 1.0
