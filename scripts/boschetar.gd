@@ -17,8 +17,10 @@ const MOV := Color(0.7, 0.42, 1.0)
 ## Brațul drept (originea în umăr) și punctul din palmă (de acolo pleacă vraja).
 @export var brat: Node3D
 @export var palma: Node3D
-## Cât își ridică brațul la vrajă (radiani, pe X: negativ = în față și în sus).
-@export var ridicare_brat := -1.9
+## Cât își ridică brațul la vrajă (radiani, pe X: negativ = în sus). În repaus antebrațul e întins în față, pe genunchi:
+## la -1,9 trecea de vertical și mâna intra în ușa din spate (owner 17.11); la -1,15 palma ajunge sus, în fața feței,
+## la 0,36 m de ușă (și cu depășirea de 10% a lui TRANS_BACK).
+@export var ridicare_brat := -1.15
 
 var _in_curs := false
 
