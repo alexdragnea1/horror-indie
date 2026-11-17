@@ -1465,7 +1465,7 @@ def curte(cale):
 	_cutie_coliziune(col, (0.85, 0.7, 0.3), (-15.18, -6.08, 0.15))
 	_cutie_coliziune(col, (0.45, 0.35, 0.65), (-15.4, -5.9, 0.33))
 	for k in range(2):
-		_scaun_plastic(piese, col, -18.6 + k * 0.9, -6.1, (k - 0.5) * 0.3)
+		_scaun_plastic(piese, col, -21.5 + k * 0.9, -6.1, (k - 0.5) * 0.3)  # sub vitrină (în fața ușii blocau intrarea)
 	_casa_sat(piese, col, 19.0, 2.0, 7.0, 6.0, TEAL_DESCHIS, METAL, r, spre=-1)
 	_gard_lemn(piese, 13.5, 26.0, YG, r, col=col)
 	strange()
