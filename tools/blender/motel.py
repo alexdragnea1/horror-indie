@@ -534,7 +534,6 @@ def motel(cale):
 			z = (k + 1) * E2 / trepte
 			piese.append(cub("Stalp balustrada", (0.035, 0.035, 0.95), (xa, y, z + 0.47), METAL_INCHIS))
 		_cutie_coliziune(col, (lung, 0.1, 1.3), ((XS0 + XP0) / 2, y, E2 / 2 + 0.55))
-	piese.append(cub("Stalp scara", (0.16, 0.16, E2), (XS0 + 2.2, ys1 + 0.15, E2 / 2 - 0.4), METAL_INCHIS))
 	# coliziunea scării: o rampă, ca la verandele din joc (treptele te-ar opri)
 	col.append(prisma("Coliziune", [(XS0 - 0.25, 0.0), (XP0, E2), (XP0, 0.0)], "xz", ys0, ys1, NEGRU))
 	strange()
