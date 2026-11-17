@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/peisaj_departe.gd" id="pd_oras"]
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="1_b4xki"]
 [ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="2_ety3g"]
 [ext_resource type="PackedScene" path="res://models/casino_strada.glb" id="3_keh2u"]
@@ -890,3 +891,17 @@ script = ExtResource("muzica_loc_gd")
 intrare = 2.5
 iesire = 1.5
 zona = NodePath("../ZonaPoker")
+
+[node name="PeisajDeparte" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "lumina")]
+script = ExtResource("pd_oras")
+mediu = NodePath("../Mediu")
+lumina = NodePath("../Soare")
+saminta = 13
+cu_munte = false
+cu_turn = false
+locuri_plate = Array[Rect2]([Rect2(-60, -40, 120, 110), Rect2(-400, -2, 800, 20)])
+margine_plat = 20.0
+prag_copaci = 0.3
+copaci_de_la = 60.0
+inaltime_dealuri = 3.0
+dealuri_de_la = 70.0

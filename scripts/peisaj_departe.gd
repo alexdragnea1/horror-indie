@@ -37,6 +37,24 @@ extends Node3D
 @export_range(0.0, 1.0) var turn_ceata := 0.78
 @export_range(0.0, 1.0) var becuri_ceata := 0.5
 
+@export_group("Alte scene")
+## Folosit și în oraș (owner 17.11: „la Sketchy Laundromat, bar și Gun Store niște dealuri și puțini copaci ca la
+## blocul M7, să nu pară așa de gol”): acolo fără munte și fără turn, cu mai puțini copaci.
+@export var cu_munte := true
+@export var cu_turn := true
+## Locurile (în coordonatele lumii, Rect2 pe x/z) unde terenul rămâne plat și fără copaci: tot ce e scena, plus
+## drumul autobuzului. Implicit = curtea blocului M7 (strada, curtea, blocurile).
+@export var locuri_plate: Array[Rect2] = [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
+## Pe câți metri urcă terenul de la marginea unui loc plat (mai mult = mai lin).
+@export var margine_plat := 3.0
+## Copacii rotunzi: cât de rari (pragul zgomotului: 0,05 = pâlcuri dese, 0,35 = rari) și de la ce distanță încep.
+@export var prag_copaci := 0.05
+@export var copaci_de_la := 34.0
+## De câte ori mai înalte sunt dealurile (în oraș, ca să se vadă peste capătul străzii, prin ceață) și de la ce
+## distanță încep să urce.
+@export var inaltime_dealuri := 1.0
+@export var dealuri_de_la := 105.0
+
 const SHADER := preload("res://shaders/peisaj_departe.gdshader")
 
 var _zgomot := FastNoiseLite.new()
@@ -62,7 +80,8 @@ func _ready() -> void:
 	_construieste()
 	_padure()
 	_copaci_imas()
-	_turn()
+	if cu_turn:
+		_turn()
 
 
 func _process(delta: float) -> void:
@@ -98,7 +117,8 @@ func _culori() -> void:
 	_material.set_shader_parameter("putere_lumina", putere * 0.6)
 	# zăpada: noaptea doar se ghicește
 	_material.set_shader_parameter("lumina_zapada", clampf(luminos * 1.1, 0.15, 1.0))
-	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55)
+	# fără munte (în oraș), dealurile înalte nu primesc zăpadă
+	_material.set_shader_parameter("inaltime_zapada", munte_inaltime * 0.55 if cu_munte else 100000.0)
 	# cât de „aproape” stau în ceață (m): cât blocurile din jur, ca să le vezi ca pe ele
 	_material.set_shader_parameter("ceata_aproape", 24.0)
 	_material.set_shader_parameter("ceata_departe", 50.0)
@@ -110,7 +130,7 @@ func inaltime(x: float, z: float) -> float:
 	var r := Vector2(x, z).length()
 	# dealurile din față: line, tot mai înalte spre orizont
 	var dealuri := (0.55 + 0.45 * _zgomot.get_noise_2d(x, z)) * lerpf(14.0, 75.0, smoothstep(250.0, 1200.0, r))
-	dealuri *= smoothstep(105.0, 380.0, r)
+	dealuri *= smoothstep(dealuri_de_la, dealuri_de_la + 275.0, r) * inaltime_dealuri
 	# culmea din spate: muchii ascuțite
 	var culme := (0.5 + 0.5 * _culme.get_noise_2d(x, z)) * 120.0 * smoothstep(520.0, 1000.0, r)
 	# imașul de lângă curte (owner 10.11: „pare că e un lac” între curte și dealuri): ușor vălurit chiar de la marginea
@@ -124,6 +144,8 @@ func inaltime(x: float, z: float) -> float:
 		h *= 1.0 - 0.88 * exp(-pow(unghi / 0.2, 2.0))
 	# muntele nu ajunge în curte / pe stradă (poalele lui largi ridicau terenul de acolo peste ochii jucătorului și
 	# se vedea cerul prin podea, de dedesubt)
+	if not cu_munte:
+		return h - 0.15
 	return maxf(h, _munte(x, z) * liber(x, z)) - 0.15
 
 
@@ -323,7 +345,7 @@ func _copaci_imas() -> void:
 			var pz := z + r.randf_range(-0.45, 0.45) * pas
 			z += pas
 			var d := Vector2(px, pz).length()
-			if d < 34.0 or d > raza_cartier or pete.get_noise_2d(px, pz) < 0.05 or liber(px, pz) < 0.999:
+			if d < copaci_de_la or d > raza_cartier or pete.get_noise_2d(px, pz) < prag_copaci or liber(px, pz) < 0.999:
 				continue
 			var s := r.randf_range(4.5, 8.0)
 			var inalt_coroana := s * r.randf_range(1.0, 1.4)
@@ -393,18 +415,14 @@ func _copie(schimbari: Dictionary) -> ShaderMaterial:
 	return m
 
 
-## Locurile din scenă (în coordonatele lumii) unde terenul trebuie să rămână plat și fără copaci: curtea cu gardul și
-## copacii ei, strada cu trotuarele (merge autobuzul pe ea, de la un capăt la altul), blocul de vizavi, cel lateral.
-const LOCURI_PLATE := [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
-const MARGINE_PLAT := 3.0
-
-## 1 = liber (pot fi dealuri și copaci), 0 = în curte / pe stradă / lângă un bloc, cu o pantă de `MARGINE_PLAT` m.
+## 1 = liber (pot fi dealuri și copaci), 0 = într-un loc plat (`locuri_plate`: la M7 curtea, strada pe toată lungimea,
+## pentru autobuz, blocurile), cu o pantă de `margine_plat` m.
 func liber(x: float, z: float) -> float:
 	var p := Vector2(x, z) + Vector2(position.x, position.z)
 	var rez := 1.0
-	for loc: Rect2 in LOCURI_PLATE:
+	for loc: Rect2 in locuri_plate:
 		var dx := maxf(maxf(loc.position.x - p.x, p.x - loc.end.x), 0.0)
 		var dz := maxf(maxf(loc.position.y - p.y, p.y - loc.end.y), 0.0)
-		rez = minf(rez, smoothstep(0.0, MARGINE_PLAT, Vector2(dx, dz).length()))
+		rez = minf(rez, smoothstep(0.0, margine_plat, Vector2(dx, dz).length()))
 	return rez
 

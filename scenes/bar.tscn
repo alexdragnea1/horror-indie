@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/peisaj_departe.gd" id="pd_oras"]
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="1_ac"]
 [ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="2_vt"]
 [ext_resource type="PackedScene" path="res://models/bar_strada.glb" id="3_st"]
@@ -617,3 +618,17 @@ shape = SubResource("CylinderShape3D_piatra")
 [node name="FormaManer" type="CollisionShape3D" parent="SabiePiatra"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
 shape = SubResource("BoxShape3D_maner_sabie")
+
+[node name="PeisajDeparte" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "lumina")]
+script = ExtResource("pd_oras")
+mediu = NodePath("../Mediu")
+lumina = NodePath("../Soare")
+saminta = 11
+cu_munte = false
+cu_turn = false
+locuri_plate = Array[Rect2]([Rect2(-70, -50, 140, 120), Rect2(-400, -2, 800, 20)])
+margine_plat = 20.0
+prag_copaci = 0.3
+copaci_de_la = 60.0
+inaltime_dealuri = 3.0
+dealuri_de_la = 70.0

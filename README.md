@@ -148,7 +148,9 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 100. **Fără blocurile din jurul blocului M7, copaci cu trunchi** (17.11): blocurile adăugate pe 15.11 în jurul curții au fost scoase. Copacii rotunzi de pe imaș au acum trunchi și stau pe pământ (nu mai plutesc, nici pe pante).
 101. **Unstuck** (17.11): în meniul de pauză (Esc) e un buton nou, **Unstuck**. Dacă te-ai blocat într-un perete sau într-o mobilă, te mută puțin într-o parte, în cel mai apropiat loc liber (până la 3 m). Doar dacă nu e nimic liber în jur (de exemplu, ai căzut prin hartă), te duce înapoi pe unde ai mers ultima dată. Nu apare cât ești în zbor sau într-un cutscene.
 102. **Ce ții în mână nu mai intră în pereți** (17.11): arma sau obiectul din mână (AK-ul, pistolul, katana, mătura, bazooka, vraja etc.) se vede mereu întreg, chiar dacă ești lipit de un perete sau de frigider. E trucul din jocurile FPS: obiectul din mână se desenează peste lume.
-103. Urmează: tu hotărăști (playtest, build, itch.io).
+103. **Gauntlet-ul se vinde la Johnny** (17.11): $150.
+104. **Dealuri și copaci în oraș** (17.11): la Sketchy Laundromat, la bar și la Gun Store, la capetele străzii nu mai e doar ceață: se văd dealuri și pâlcuri rare de copaci (același peisaj ca la blocul M7, dar fără munte și fără turn). Strada și drumul autobuzului rămân plate.
+105. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

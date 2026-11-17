@@ -25,6 +25,7 @@ const OFERTA := {
 	"cadavru_fast_eddie": {"nume": "Fast Eddie", "pret": 10},
 	"katana": {"nume": "Katana", "pret": 40},
 	"sabie_blestemata": {"nume": "Cursed Sword", "pret": 666},
+	"gauntlet": {"nume": "Gauntlet", "pret": 150},  # owner 17.11
 }
 const SUNET_BANI := preload("res://sunete/bancnota.ogg")
 const SUNET_ARMA := preload("res://sunete/arma_pe_tejghea.ogg")
@@ -34,7 +35,7 @@ const SUNET_RONTA := preload("res://sunete/bomboana_ronta.ogg")
 const MODEL_BANCNOTA := preload("res://models/bancnota.glb")
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
-const ARME := ["pistol_roz", "pistol_aur", "shotgun", "cutit", "katana", "sabie_blestemata", "ak47", "bazooka"]
+const ARME := ["pistol_roz", "pistol_aur", "shotgun", "cutit", "katana", "sabie_blestemata", "ak47", "bazooka", "gauntlet"]
 
 @export var om: OmLaMasa
 ## Unde pui obiectul pe tejghea (pe sticlă, în fața lui) și unde îți pune el banii.
