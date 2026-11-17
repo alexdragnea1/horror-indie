@@ -33,6 +33,11 @@ instance uniform float disparitie = 0.0;
 // la a = 0,5 arde doar fundul, la 1 tot ceaunul. Pete mai calde și mai reci, după textura de murdărie.
 instance uniform vec4 incins = vec4(0.0);
 
+// Ce ții în mână (armele, obiectele, mâinile; owner 17.11: „trec prin pereți / frigider, vreau să fie mereu vizibile”):
+// adâncimea e strânsă spre aproape, deci se desenează peste orice perete din fața camerei, dar bucățile obiectului
+// rămân în ordinea lor între ele. Nu se pune de mână: o pune InManaVizibil pe o copie a materialului.
+uniform bool in_mana = false;
+
 varying vec3 uv_afin;
 varying float inaltime_model;
 
@@ -50,6 +55,11 @@ void vertex() {
 		clip.xy = round(clip.xy / clip.w * grila) / grila * clip.w;
 	}
 	inaltime_model = VERTEX.y;
+	if (in_mana) {
+		// Z inversat (1 = lângă cameră): tot obiectul ajunge în ultimii 30% din adâncime, unde un perete ar trebui să
+		// fie la mai puțin de ~7 cm de ochi (corpul jucătorului nu-l lasă mai aproape de 30 cm)
+		clip.z = clip.w * (1.0 - (1.0 - clip.z / clip.w) * 0.3);
+	}
 	POSITION = clip;
 	uv_afin = vec3(UV * clip.w, clip.w);
 }

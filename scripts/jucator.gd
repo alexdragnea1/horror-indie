@@ -50,6 +50,7 @@ var _decalaj_treapta := 0.0
 ## Primul e locul unde ai apărut în scenă și nu se șterge niciodată (ultima soluție).
 var _locuri_sigure: Array[Vector3] = []
 var _ceas_loc_sigur := 0.0
+var _ceas_in_mana := 0.0
 const PAS_LOC_SIGUR := 0.5  # s între două locuri notate
 const LOCURI_SIGURE_MAX := 60  # ~30 s de mers în urmă
 
@@ -75,10 +76,28 @@ func _ready() -> void:
 	_camera.add_child(AK47.new())
 	_camera.add_child(Bazooka.new())
 	_camera.add_child(Gauntlet.new())  # (roata din pivnița lui Jean, roata_noroc.gd)
+	# ce ții în mână se vede și când ești lipit de perete (owner 17.11): tot ce apare sub cameră, de acum încolo
+	get_tree().node_added.connect(_nod_adaugat)
+	InManaVizibil.aplica.call_deferred(_camera)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Salvare.jucator_pregatit(self)
 	# ce ai aruncat pe jos aici data trecută
 	Stare.pune_aruncate.call_deferred()
+
+
+## Orice nod nou din scenă: dacă e un model sub cameră (ce ții în mână), primește materialul „în mână”; dacă a plecat
+## de sub ea (aruncat în lume), îl primește înapoi pe al lui. Amânat, după _ready-ul nodului.
+func _nod_adaugat(nod: Node) -> void:
+	if nod is GeometryInstance3D:
+		InManaVizibil.verifica.call_deferred(nod, _camera)
+
+
+func _process(delta: float) -> void:
+	# din când în când: un script poate schimba materialul unui obiect din mână fără să-l scoată din scenă
+	_ceas_in_mana += delta
+	if _ceas_in_mana > 0.5:
+		_ceas_in_mana = 0.0
+		InManaVizibil.aplica(_camera)
 
 
 func _unhandled_input(event: InputEvent) -> void:

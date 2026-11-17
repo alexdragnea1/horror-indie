@@ -147,7 +147,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 99. **Pivnița lui Jean** (16.11): dacă îl bați pe Jean la șah, după ce se împușcă îi sare o **cheie** pe tablă, iar el, pușca și piesele dispar (rămâne doar cheia). În spatele lui e o ușă veche de pivniță, care nu arată nimic până nu ai cheia; cheia rămâne în ușă când o descui, iar ușa stă deschisă până dai spin la roată. Jos e o pivniță mică de piatră, cu un bec care pâlpâie, și o **roată** (Press E to spin, o singură dată, șanse egale): **Gri** = cuțitul, **Verde** = shotgun, **Albastru** = **Swift Boots** (cât le ai în inventar mergi și fugi cu 30% mai repede), **Mov** = AK-47, **Portocaliu** = **Gauntlet** (pumn de fier, 350 damage pe lovitură la bossi, cu sunete grele de pumn). Și: când Jean scoate pușca, mâinile nu mai trec prin masă și nu se mai încrucișează.
 100. **Fără blocurile din jurul blocului M7, copaci cu trunchi** (17.11): blocurile adăugate pe 15.11 în jurul curții au fost scoase. Copacii rotunzi de pe imaș au acum trunchi și stau pe pământ (nu mai plutesc, nici pe pante).
 101. **Unstuck** (17.11): în meniul de pauză (Esc) e un buton nou, **Unstuck**. Dacă te-ai blocat într-un perete sau într-o mobilă, te mută puțin într-o parte, în cel mai apropiat loc liber (până la 3 m). Doar dacă nu e nimic liber în jur (de exemplu, ai căzut prin hartă), te duce înapoi pe unde ai mers ultima dată. Nu apare cât ești în zbor sau într-un cutscene.
-102. Urmează: tu hotărăști (playtest, build, itch.io).
+102. **Ce ții în mână nu mai intră în pereți** (17.11): arma sau obiectul din mână (AK-ul, pistolul, katana, mătura, bazooka, vraja etc.) se vede mereu întreg, chiar dacă ești lipit de un perete sau de frigider. E trucul din jocurile FPS: obiectul din mână se desenează peste lume.
+103. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
