@@ -736,6 +736,13 @@ marcaj_oprire = "ziua_primariei"
 replici = PackedStringArray("You: I need some fucking sleep.")
 sarcina_noua = "Go home and rest."
 
+[node name="DupaStiri" type="Node" parent="."]
+script = ExtResource("or2")
+marcaj_necesar = "a_citit_stirile"
+marcaj_gata = "a_zis_ca_are_treburi"
+marcaj_oprire = "a_luat_banii_de_la_primar"
+replici = PackedStringArray("You: I will take care of the witch, but first I have some business to attend to.")
+
 [node name="SosireOras" type="Node" parent="." node_paths=PackedStringArray("autobuz")]
 script = ExtResource("32")
 autobuz = NodePath("../Autobuz")
