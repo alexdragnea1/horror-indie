@@ -152,7 +152,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 104. **Dealuri și copaci în oraș** (17.11): la Sketchy Laundromat, la bar și la Gun Store, la capetele străzii nu mai e doar ceață: se văd dealuri și pâlcuri rare de copaci (același peisaj ca la blocul M7, dar fără munte și fără turn). Strada și drumul autobuzului rămân plate.
 105. **Munți și dealuri în jurul motelului** (17.11): Paradise Motel e acum înconjurat de 5 munți cu zăpadă pe vârf și de dealuri cu copaci, care se pierd în ceața nopții. Parcarea, curtea și drumul autobuzului rămân plate. Tot pe 17.11: Tom Berone nu-și mai bagă mâna în ușa din spate când îți face vraja pe scut, iar stâlpul care ieșea prin scara motelului a fost scos.
 106. **Replica după știri** (17.11): după ce citești pe telefon știrea cu vrăjitoarea care vrea să distrugă orașul, prima dată când ieși din bloc personajul zice „You: I will take care of the witch, but first I have some business to attend to.”
-107. Urmează: tu hotărăști (playtest, build, itch.io).
+107. **General Store** (17.11): în magazinul turcoaz din stânga primăriei se poate intra acum (ușa de sticlă cu clopoțel). Înăuntru e o încăpere mică: gresie în carouri, rafturi cu produse simple fără scris, un frigider cu bere, o ladă de înghețată și, după tejghea, casiera, cu raftul de țigări în spate. La E: „Clerk: What would you like?” cu **Beer** ($3) și **Cigarettes** ($10). **Berea**: click cu ea în mână = o bei (capacul sare, două înghițituri, te amețește puțin) și dispare. **Țigările**: în inventar apar ca „Cigarettes (20)”, pe jos sunt un pachet roșu cu alb; în mână ții o singură țigară: primul click o aprinde (o cobori din cadru, se aude bricheta și focul, revine aprinsă, cu jarul și un fir de fum), apoi fiecare click e un fum. După 20 de folosiri pachetul se termină.
+108. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

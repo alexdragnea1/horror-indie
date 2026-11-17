@@ -47,6 +47,24 @@ const MODELE := {
 		"stralucitoare": ["Bomboana", "Ambalaj"],
 		"stralucire": 0.3,
 	},
+	# din magazinul satului (casiera_magazin.gd, owner 17.11): berea ($3) se bea la click și dispare; țigările ($10):
+	# în mână e o singură țigară, la primul click o aprinzi (iese din cadru, bricheta, focul, revine aprinsă), apoi
+	# fiecare click e un fum; după 20 de folosiri pachetul dispare (Tigari)
+	"bere": {
+		"scena": preload("res://models/bere_sticla.glb"),
+		"pozitie": Vector3(0.17, -0.25, -0.36),
+		"rotatie": Vector3(0.05, 0.4, -0.12),
+		"bautura": true,
+		"stralucire_toate": 0.3,
+	},
+	"tigari": {
+		"scena": preload("res://models/tigara.glb"),
+		# filtrul jos-dreapta, vârful spre stânga-sus-înainte, ca între degete
+		"pozitie": Vector3(0.1, -0.11, -0.25),
+		"rotatie": Vector3(0.0, 2.24, 0.35),
+		"fumat": true,
+		"stralucire_toate": 0.35,
+	},
 }
 const SCRIPT_MODEL := preload("res://scripts/model_ps2.gd")
 const MATERIAL := preload("res://shaders/material_model.tres")
@@ -57,6 +75,16 @@ const LA_DESFACUT := Vector3(0.04, -0.11, -0.28)
 const LA_GURA := Vector3(0.0, -0.075, -0.12)
 const SUNET_AMBALAJ := preload("res://sunete/bomboana_ambalaj.ogg")
 const SUNET_RONTA := preload("res://sunete/bomboana_ronta.ogg")
+const SUNET_CAPAC := preload("res://sunete/capac_bere.ogg")
+const SUNET_INGHITITURA := preload("res://sunete/bere_inghititura.ogg")
+const SUNET_RAGAIT := preload("res://sunete/bere_ragait.ogg")
+const SUNET_BRICHETA := preload("res://sunete/tigara_bricheta.ogg")
+const SUNET_FOC := preload("res://sunete/tigara_foc.ogg")
+const SUNET_TRAS := preload("res://sunete/fum_tras.ogg")
+const SUNET_SUFLAT := preload("res://sunete/fum_suflat.ogg")
+## Țigara: cât strălucește jarul (normal / când tragi din ea).
+const JAR_NORMAL := 1.6
+const JAR_TRAS := 4.0
 ## O scenă din cod îl poate ține la vedere cât e Stare.meniu_deschis (ex. mătura pusă jos la antrenament).
 static var in_scena := false
 
@@ -65,10 +93,19 @@ var _model: Node3D
 var _jos := 1.0  # 0 = în mână, 1 = lăsat jos (nu se vede)
 var _timp := 0.0
 var _mananca := false
+## Țigara din mână e aprinsă (o stingi când o pui deoparte: data viitoare aprinzi alta).
+var _aprinsa := false
+var _lumina_jar: OmniLight3D
+var _fum_jar: CPUParticles3D
 
 
 func _process(delta: float) -> void:
 	_timp += delta
+	# fumul țigării aprinse urcă din vârful ei (particulele sunt în lume, deci le muți tu după vârf)
+	if is_instance_valid(_fum_jar) and _model:
+		var jar := _model.find_child("Jar", true, false) as Node3D
+		if jar:
+			_fum_jar.global_position = jar.global_position
 	if _mananca:
 		return  # animația de mâncat mișcă singură modelul
 	var vrut := Stare.in_mana if are_model(Stare.in_mana) else ""
@@ -113,6 +150,13 @@ func _schimba(id: String) -> void:
 	if _model:
 		_model.queue_free()
 		_model = null
+	# țigara pusă deoparte se stinge (fumul ei din aer se oprește)
+	_aprinsa = false
+	if is_instance_valid(_fum_jar):
+		_fum_jar.emitting = false
+		get_tree().create_timer(2.0).timeout.connect(_fum_jar.queue_free)
+	_fum_jar = null
+	_lumina_jar = null
 	_id = id
 	if id == "":
 		return
@@ -147,6 +191,8 @@ func _schimba(id: String) -> void:
 		# lanterna nu prinde ce e lipit de cameră: un pic de luciu pe tot
 		if date.has("stralucire_toate") and (m as GeometryInstance3D).material_override is ShaderMaterial:
 			(m as GeometryInstance3D).set_instance_shader_parameter("stralucire", date.stralucire_toate)
+	if date.get("fumat", false):
+		_arata_varful()
 
 
 ## Îl scoate din mână pe loc, fără să-l coboare (când îl ia o scenă din cod, ex. mătura pusă jos la antrenament).
@@ -160,13 +206,23 @@ func scoate_acum() -> Transform3D:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("trage") and _poate_manca():
+	if not event.is_action_pressed("trage") or not _poate_folosi():
+		return
+	var date := _date(_id)
+	if date.get("mancare", false):
 		get_viewport().set_input_as_handled()
 		_mananca_acum()
+	elif date.get("bautura", false):
+		get_viewport().set_input_as_handled()
+		_bea_acum()
+	elif date.get("fumat", false):
+		get_viewport().set_input_as_handled()
+		_fumeaza_acum()
 
 
-func _poate_manca() -> bool:
-	return _model != null and _date(_id).get("mancare", false) and not _mananca and _jos < 0.05 \
+## Poți folosi ce ții (mânca / bea / fuma): e în mână de tot, nu e altă animație în curs, nu e meniu / dialog.
+func _poate_folosi() -> bool:
+	return _model != null and not _mananca and _jos < 0.05 \
 		and _id == Stare.in_mana and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED \
 		and not Dialog.activ and not Stare.meniu_deschis and not Tranzitie.activa
 
@@ -267,3 +323,192 @@ func _tresare(camera: Camera3D, cat := 1.0) -> void:
 	var t := create_tween()
 	t.tween_property(camera, "rotation:x", -0.035 * cat, 0.06)
 	t.tween_property(camera, "rotation:x", 0.0, 0.2).set_trans(Tween.TRANS_SINE)
+
+
+# ---------------------------------------------------------------- berea și țigările (magazinul satului)
+
+## Berea: o aduci în fața ta și o desfaci (capacul sare), o duci la gură cu fundul în sus, capul se lasă pe spate, două
+## înghițituri, apoi o lași; dispare din inventar. Te ia puțin (Betie, EfectBeat, ca la bar) și uneori râgâi.
+func _bea_acum() -> void:
+	_mananca = true
+	var camera := get_parent() as Camera3D
+	var capac := _model.find_child("Capac", true, false) as Node3D
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(_model, "position", Vector3(0.06, -0.17, -0.3), 0.35)
+	t.parallel().tween_property(_model, "rotation", Vector3.ZERO, 0.35)
+	await t.finished
+	Sunet.reda(SUNET_CAPAC, Sunet.VOLUM_EFECTE, 0.05)
+	if capac:
+		var c := create_tween().set_parallel()
+		c.tween_property(capac, "position", capac.position + Vector3(0.04, 0.12, 0.0), 0.25).set_ease(Tween.EASE_OUT)
+		c.tween_property(capac, "rotation", Vector3(2.5, 1.0, 3.0), 0.25)
+		c.chain().tween_callback(capac.hide)
+	await get_tree().create_timer(0.35).timeout
+	# la gură: sticla vine cu gâtul la buze și fundul în sus, spre dreapta (ca la bar, barman.gd)
+	var axa := Vector3(-0.28, -0.62, 0.73).normalized()
+	var buza := Vector3(0.02, -0.075, -0.1)
+	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
+	t.tween_property(_model, "position", buza - axa * 0.23, 0.6)
+	t.tween_property(_model, "basis", Basis(Quaternion(Vector3.UP, axa)), 0.6)
+	t.tween_property(camera, "rotation:x", 0.3, 0.6)
+	await t.finished
+	for i in 2:
+		Sunet.reda(SUNET_INGHITITURA, Sunet.VOLUM_EFECTE - 1.0, 0.1)
+		await get_tree().create_timer(0.5).timeout
+	t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
+	t.tween_property(_model, "position", Vector3(0.06, -0.3, -0.3), 0.45)
+	t.tween_property(_model, "basis", Basis.IDENTITY, 0.45)
+	t.tween_property(camera, "rotation:x", 0.0, 0.45)
+	await t.finished
+	Stare.scoate_obiect(Tigari.ID_BERE)
+	_jos = 1.0
+	_schimba("")
+	visible = false
+	Betie.adauga(0.5)
+	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
+	if jucator:
+		EfectBeat.porneste(jucator, 6.0)
+	_mananca = false
+	if randf() < 0.6:
+		await get_tree().create_timer(0.5).timeout
+		Sunet.reda(SUNET_RAGAIT, Sunet.VOLUM_EFECTE - 3.0, 0.05)
+
+
+## Țigara: stinsă, o aprinzi (coboară din cadru, bricheta, flacăra luminează de jos, revine aprinsă, cu jarul și fumul
+## de la vârf); aprinsă, tragi un fum (la gură, jarul se întețește, apoi sufli fumul în fața ta). Fiecare click e o
+## folosire din cele 20 ale pachetului (Tigari); după ultima, pachetul dispare din inventar și țigara coboară.
+func _fumeaza_acum() -> void:
+	_mananca = true
+	var camera := get_parent() as Camera3D
+	var date := _date(_id)
+	if not _aprinsa:
+		var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		t.tween_property(_model, "position", date.pozitie + JOS, 0.35)
+		await t.finished
+		Sunet.reda(SUNET_BRICHETA, Sunet.VOLUM_EFECTE, 0.05)
+		await get_tree().create_timer(0.38).timeout
+		# flacăra brichetei, sub cadru: o lumină portocalie care pâlpâie de jos
+		var flacara := OmniLight3D.new()
+		flacara.light_color = Color(1.0, 0.62, 0.3)
+		flacara.omni_range = 1.4
+		flacara.light_energy = 0.0
+		camera.add_child(flacara)
+		flacara.position = Vector3(0.06, -0.38, -0.3)
+		Sunet.reda(SUNET_FOC, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+		var p := create_tween()
+		for k in 6:
+			p.tween_property(flacara, "light_energy", randf_range(0.6, 1.3), 0.1)
+		p.tween_property(flacara, "light_energy", 0.0, 0.15)
+		p.tween_callback(flacara.queue_free)
+		await get_tree().create_timer(0.55).timeout
+		_aprinsa = true
+		_arata_varful()
+		t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		t.tween_property(_model, "position", date.pozitie, 0.45)
+		await t.finished
+	else:
+		var jar := _model.find_child("Jar", true, false) as GeometryInstance3D
+		var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
+		t.tween_property(_model, "position", Vector3(0.0, -0.065, -0.1), 0.4)
+		t.tween_property(_model, "rotation", Vector3(0.0, 1.27, -0.2), 0.4)
+		await t.finished
+		Sunet.reda(SUNET_TRAS, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+		var aprinde := func(v: float) -> void:
+			if is_instance_valid(jar):
+				jar.set_instance_shader_parameter("stralucire", v)
+		if jar:
+			create_tween().tween_method(aprinde, JAR_NORMAL, JAR_TRAS, 0.9)
+		if is_instance_valid(_lumina_jar):
+			create_tween().tween_property(_lumina_jar, "light_energy", 0.7, 0.9)
+		await get_tree().create_timer(1.1).timeout
+		t = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
+		t.tween_property(_model, "position", date.pozitie, 0.45)
+		t.tween_property(_model, "rotation", date.rotatie, 0.45)
+		if jar:
+			t.tween_method(aprinde, JAR_TRAS, JAR_NORMAL, 0.6)
+		if is_instance_valid(_lumina_jar):
+			t.tween_property(_lumina_jar, "light_energy", 0.25, 0.6)
+		await t.finished
+		await get_tree().create_timer(0.2).timeout
+		Sunet.reda(SUNET_SUFLAT, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+		_sufla_fum(camera)
+	_mananca = false
+	# ultima țigară din pachet: pachetul iese din inventar, țigara coboară și dispare (_process)
+	Tigari.foloseste()
+
+
+## Vârful țigării: hârtia albă cât e stinsă; aprinsă = jarul care strălucește (cu o lumină mică portocalie) și cenușa,
+## iar din vârf urcă un fir subțire de fum.
+func _arata_varful() -> void:
+	if _model == null:
+		return
+	var capat := _model.find_child("Capat", true, false) as Node3D
+	var jar := _model.find_child("Jar", true, false) as Node3D
+	var scrum := _model.find_child("Scrum", true, false) as Node3D
+	if capat:
+		capat.visible = not _aprinsa
+	if scrum:
+		scrum.visible = _aprinsa
+	if jar == null:
+		return
+	jar.visible = _aprinsa
+	if not _aprinsa:
+		return
+	if jar is GeometryInstance3D:
+		(jar as GeometryInstance3D).set_instance_shader_parameter("stralucire", JAR_NORMAL)
+	_lumina_jar = OmniLight3D.new()
+	_lumina_jar.light_color = Color(1.0, 0.45, 0.2)
+	_lumina_jar.omni_range = 0.5
+	_lumina_jar.light_energy = 0.25
+	jar.add_child(_lumina_jar)
+	_fum_jar = _particule_fum(6, 1.6, 0.012, Color(0.75, 0.75, 0.75, 0.3))
+	_fum_jar.direction = Vector3.UP
+	_fum_jar.spread = 12.0
+	_fum_jar.initial_velocity_min = 0.03
+	_fum_jar.initial_velocity_max = 0.06
+	_fum_jar.gravity = Vector3(0.0, 0.05, 0.0)
+	_fum_jar.global_position = jar.global_position
+	_fum_jar.preprocess = 1.6
+	_fum_jar.emitting = true
+
+
+## Fumul suflat: un nor mic care iese din gură în fața ta și se risipește.
+func _sufla_fum(camera: Camera3D) -> void:
+	var nor := _particule_fum(18, 1.4, 0.05, Color(0.78, 0.78, 0.78, 0.35))
+	nor.one_shot = true
+	# tot norul deodată: particulele încă nepornite ale unui one_shot apar ca un disc negru (lecția de la ceaun)
+	nor.explosiveness = 1.0
+	nor.global_position = camera.global_transform * Vector3(0.0, -0.08, -0.22)
+	nor.direction = -camera.global_basis.z + Vector3.UP * 0.15
+	nor.spread = 20.0
+	nor.initial_velocity_min = 0.35
+	nor.initial_velocity_max = 0.6
+	nor.damping_min = 0.4
+	nor.damping_max = 0.6
+	nor.gravity = Vector3(0.0, 0.08, 0.0)
+	nor.emitting = true
+	get_tree().create_timer(2.0).timeout.connect(nor.queue_free)
+
+
+## Particule de fum în lume (nu lipite de cameră): cercul moale de 16 px al armelor, gri, care se stinge.
+## Pornite oprite; `emitting` = true după reglaje (altfel apare un pătrat negru la sursă).
+func _particule_fum(cate: int, viata: float, marime: float, culoare: Color) -> CPUParticles3D:
+	var fum := CPUParticles3D.new()
+	fum.emitting = false
+	fum.amount = cate
+	fum.lifetime = viata
+	fum.local_coords = false
+	var quad := QuadMesh.new()
+	quad.size = Vector2(marime, marime)
+	var mat := Arma.material_particule(false)
+	mat.vertex_color_is_srgb = true
+	quad.material = mat
+	fum.mesh = quad
+	var rampa := Gradient.new()
+	rampa.set_color(0, culoare)
+	rampa.set_color(1, Color(culoare, 0.0))
+	fum.color_ramp = rampa
+	fum.scale_amount_min = 1.0
+	fum.scale_amount_max = 1.6
+	get_tree().current_scene.add_child(fum)
+	return fum

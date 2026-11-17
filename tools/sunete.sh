@@ -1600,3 +1600,18 @@ ffmpeg -v error -y -i "$PACHET/Weapons/harsh_thud.wav" -i "$PACHET/Materials/met
 	-ac 1 "$OUT/_g_perete.wav"
 unic gauntlet_perete "$OUT/_g_perete.wav"
 rm -f "$OUT/_g_aer.wav" "$OUT/_g_carne.wav" "$OUT/_g_perete.wav"
+
+# --- magazinul satului (magazin_sat.py, owner 17.11): bricheta și focul la țigară (ObiectInMana, „fumat”)
+# bricheta: clicul capacului (din slide_and_click, scurt și mai sus) + rotița cu cremene (un zgomot scurt, aspru, cu
+# câteva scântei pârâite)
+ffmpeg -v error -y -i "$PACHET/Other/slide_and_click.wav" \
+	-f lavfi -i "anoisesrc=c=white:a=0.6:d=0.25:r=44100" \
+	-f lavfi -i "aevalsrc='lt(random(1)\,0.004)*(random(2)*2-1)*0.9':s=44100:d=0.25" -filter_complex \
+	"[0]aformat=channel_layouts=mono,aresample=44100,silenceremove=start_periods=1:start_threshold=-45dB,atrim=end=0.18,asetrate=44100*1.25,aresample=44100,highpass=f=600,afade=t=out:st=0.1:d=0.05,apad=pad_dur=0.4,atrim=end=0.45[clic];\
+[1]bandpass=f=3500:t=h:w=4000,afade=t=in:st=0:d=0.01,afade=t=out:st=0.04:d=0.08,volume=0.7,adelay=230,apad=pad_dur=0.2,atrim=end=0.45[rotita];\
+[2]highpass=f=3000,afade=t=out:st=0.05:d=0.12,adelay=235,apad=pad_dur=0.2,atrim=end=0.45[scantei];\
+[clic][rotita][scantei]amix=inputs=3:normalize=0" -ac 1 "$OUT/_bricheta.wav"
+unic tigara_bricheta "$OUT/_bricheta.wav"
+# focul: flacăra brichetei care se aprinde și arde puțin (fire_lighting, scurtat), lângă față
+unic tigara_foc "Environment/fire_lighting.wav" mono "atrim=end=1.3,lowpass=f=6000,afade=t=out:st=0.9:d=0.4"
+rm -f "$OUT/_bricheta.wav"

@@ -1439,18 +1439,16 @@ def curte(cale):
 	_bicicleta(piese, col, -5.5, YG - 0.55, 0.0)
 	strange()
 
-	# --- vecinii: în stânga „GENERAL STORE” (magazinul mixt al satului), în dreapta o casă
+	# --- vecinii: în stânga „GENERAL STORE” (magazinul mixt al satului), în dreapta o casă. Pereții magazinului (cu ușa,
+	# vitrina și încăperea de înăuntru) sunt în magazin_sat.py (owner 17.11: „să poți să intri”); aici rămân acoperișul,
+	# firma, lăzile de bere și scaunele din față
 	sx0, sx1 = -24.0, -14.0
-	piese.append(cub("Magazin", (sx1 - sx0, 8.0, 3.2), ((sx0 + sx1) / 2, -1.0, 1.6), ALB))
-	piese.append(cub("Soclu magazin", (sx1 - sx0 + 0.04, 8.04, 0.5), ((sx0 + sx1) / 2, -1.0, 0.25), BETON))
 	piese.append(prisma("Acoperis magazin", [(sx0 - 0.3, 3.15), (sx1 + 0.3, 3.15), ((sx0 + sx1) / 2, 4.6)], "xz", -5.3, 3.3,
 		METAL))
 	piese.append(cub("Firma magazin", (5.0, 0.1, 0.7), ((sx0 + sx1) / 2, -5.06, 2.75), PETROL))
 	piese.append(_text("Scris magazin", "GENERAL STORE", ((sx0 + sx1) / 2, -5.13, 2.75), 0.38, ALB))
-	piese.append(cub("Vitrina magazin", (2.6, 0.04, 1.4), (-20.8, -5.02, 1.45), GEAM))
-	piese.append(cub("Usa magazin", (1.0, 0.04, 2.1), (-17.2, -5.02, 1.05), PETROL_DESCHIS))
 	for k in range(3):
-		piese.append(cub("Afis vitrina", (0.4, 0.01, 0.5), (-21.6 + k * 0.7, -5.05, 1.5), r.choice((ROSU, AUR, ALB))))
+		r.choice((ROSU, AUR, ALB))  # (afișele de pe vitrină sunt acum în magazin_sat.py; aleg tot, ca restul curții să iasă la fel)
 	# lăzile de bere (trei pe jos, una pusă peste prima, cu sticlele în ele) și scaunele de plastic din fața magazinului;
 	# owner, 08.10: scaunele „pluteau” (n-aveau picioare), a patra ladă stătea în aer și lăzile n-aveau coliziune
 	for (lx, ly, lz, rl) in ((-15.4, -5.9, 0.0, 0.0), (-14.95, -5.9, 0.0, 0.05), (-15.4, -6.27, 0.0, -0.04),
@@ -1468,7 +1466,6 @@ def curte(cale):
 	_cutie_coliziune(col, (0.45, 0.35, 0.65), (-15.4, -5.9, 0.33))
 	for k in range(2):
 		_scaun_plastic(piese, col, -18.6 + k * 0.9, -6.1, (k - 0.5) * 0.3)
-	_cutie_coliziune(col, (sx1 - sx0, 8.0, 3.2), ((sx0 + sx1) / 2, -1.0, 1.6))
 	_casa_sat(piese, col, 19.0, 2.0, 7.0, 6.0, TEAL_DESCHIS, METAL, r, spre=-1)
 	_gard_lemn(piese, 13.5, 26.0, YG, r, col=col)
 	strange()

@@ -105,9 +105,28 @@ const MODELE := {
 	},
 	"swift_boots": {  # felia albastră a roții: stau în picioare, pe jos și pe raft
 		"scena": "res://models/swift_boots.glb",
+		"jos": Vector3.ZERO,
+		"ridicare": 0.0,
 	},
 	"cheie_pivnita": {
 		"scena": "res://models/cheie_pivnita.glb",
+		"jos": Vector3.ZERO,
+		"ridicare": 0.0,
+	},
+	# din magazinul satului (owner 17.11): berea culcată pe jos, în picioare pe raft; pachetul de țigări (roșu cu alb, ca
+	# un Marlboro, fără scris) culcat pe spate, cu fața în sus, puțin mai mare (are doar 8,5 cm)
+	"bere": {
+		"scena": "res://models/bere_sticla.glb",
+		"jos": Vector3(0.0, 0.0, PI / 2.0),
+		"ridicare": 0.031,
+		"raft": Vector3.ZERO,
+	},
+	"tigari": {
+		"scena": "res://models/pachet_tigari.glb",
+		"jos": Vector3(-PI / 2.0, 0.0, 0.0),
+		"ridicare": 0.011,
+		"raft": Vector3(0.0, 0.3, 0.0),
+		"marime": 1.4,
 	},
 	# banii: cash-ul (Bani) e o bancnotă, jetoanele (Jetoane) un teanc făcut din cod; suma rămâne în obiectul de pe jos
 	# (`valoare` din ObiectAruncat); pe raft nu se pun

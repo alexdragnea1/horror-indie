@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="PackedScene" path="res://scenes/magazin_sat.tscn" id="magazin_sat"]
 [ext_resource type="Script" path="res://scripts/acustica.gd" id="1_ac"]
 [ext_resource type="AudioStream" path="res://sunete/vant.ogg" id="2_vt"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3_mp"]
@@ -493,13 +494,14 @@ lanterna_pornita = ExtResource("53_lp")
 lanterna_oprita = ExtResource("54_lo")
 suprafata_implicita = "beton"
 
-[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona")]
+[node name="MuzicaAfara" type="AudioStreamPlayer" parent="." node_paths=PackedStringArray("zona", "zone_extra")]
 stream = ExtResource("muzica_afara_ogg")
 bus = &"Muzica"
 script = ExtResource("muzica_loc_gd")
 intrare = 2.5
 iesire = 1.5
 zona = NodePath("../CeataInterior")
+zone_extra = [NodePath("../MagazinSat/CeataMagazin")]
 doar_afara = true
 
 [node name="UsaTaxe" type="StaticBody3D" parent="."]
@@ -671,3 +673,5 @@ stralucitoare = PackedStringArray()
 
 [node name="MaimutaCaca" parent="." instance=ExtResource("68_mc")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -7.5, 0, -13)
+
+[node name="MagazinSat" parent="." instance=ExtResource("magazin_sat")]
