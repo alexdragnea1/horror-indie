@@ -31,8 +31,10 @@ const CER := preload("res://shaders/cer_apus.gdshader")
 @export var unghi_iesire := PI
 
 @export_group("Culori apus")
-## Încotro e soarele (y = cât de sus; mic = la orizont). În stânga străzii, cum te uiți dinspre bloc.
-@export var directie_soare := Vector3(-1.0, 0.035, 0.32)
+## Încotro e soarele (y = cât de sus; mic = la orizont). În stânga străzii, cum te uiți dinspre bloc. Owner 17.11: să se
+## vadă puțin de tot peste copaci: marginea copacilor/dealurilor în direcția lui e la ~0,055 (din toată curtea), deci
+## centrul la ~0,066 (discul are ~0,038 pe verticală): iese cam jumătatea de sus.
+@export var directie_soare := Vector3(-1.0, 0.07, 0.32)
 @export var soare_culoare := Color(1.0, 0.56, 0.3)
 @export var soare_energie := 1.25
 @export var ambient := Color(0.62, 0.45, 0.62)
