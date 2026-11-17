@@ -27,32 +27,46 @@ uniform vec3 margine_aur : source_color = vec3(1.0, 0.85, 0.5);
 uniform float viteza_nori = 0.006;
 uniform vec3 directie_luceafar = vec3(-0.9, 0.24, 0.55);
 
+// (hash12 al lui Dave Hoskins: cel vechi dădea gradienți aliniați pe colțuri vecine, deci linii drepte în nori)
 float hash(vec2 p) {
-	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
-	return fract(p.x * p.y);
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+// Zgomot cu gradienți (nu cu valori pe colțuri): fără muchiile drepte ale grilei, care făceau norii „bugați”
+// (owner 17.11: așchii cu margini tăioase și dungi frânte). Interpolare de gradul 5, fără trepte în pantă.
+vec2 gradient(vec2 i) {
+	float u = hash(i) * 6.2831853;
+	return vec2(cos(u), sin(u));
 }
 
 float zgomot(vec2 p) {
 	vec2 i = floor(p);
 	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	float a = hash(i);
-	float b = hash(i + vec2(1.0, 0.0));
-	float c = hash(i + vec2(0.0, 1.0));
-	float d = hash(i + vec2(1.0, 1.0));
-	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+	vec2 w = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+	float a = dot(gradient(i), f);
+	float b = dot(gradient(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0));
+	float c = dot(gradient(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0));
+	float d = dot(gradient(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0));
+	return mix(mix(a, b, w.x), mix(c, d, w.x), w.y) * 0.75 + 0.5;  // ~0..1
 }
 
-float fbm(vec2 p) {
+// `straturi` = câte octave (mai puține spre orizont, unde detaliul fin s-ar strânge în pâlpâit). Fiecare octavă e
+// rotită, ca să nu se alinieze nimic pe aceleași direcții.
+float fbm(vec2 p, float straturi) {
 	float s = 0.0;
 	float a = 0.5;
-	for (int i = 0; i < 5; i++) {
-		s += zgomot(p) * a;
-		p = p * 2.03 + vec2(1.7, 9.2);
+	float total = 0.0;
+	mat2 rot = mat2(vec2(0.8, 0.6), vec2(-0.6, 0.8));
+	for (int i = 0; i < 6; i++) {
+		float k = clamp(straturi - float(i), 0.0, 1.0);
+		s += zgomot(p) * a * k;
+		total += a * k;
+		p = rot * p * 2.02 + vec2(1.7, 9.2);
 		a *= 0.5;
 	}
-	return s;
+	return s / max(total, 0.0001);
 }
 
 void sky() {
@@ -87,16 +101,21 @@ void sky() {
 
 	// norii: proiectați pe un plafon, dungi întinse, care curg încet
 	if (d.y > 0.0) {
-		vec2 p = d.xz / (d.y + 0.08) * 0.55;
-		p = vec2(p.x * 0.55 + p.y * 0.2, p.y * 1.6);
+		vec2 p = d.xz / (d.y + 0.12) * 0.5;
+		// dungile de altostratus: întinse puțin pe o direcție, nu tăiate
+		p = vec2(p.x * 0.7 + p.y * 0.15, p.y * 1.25);
 		vec2 vant = vec2(TIME * viteza_nori, TIME * viteza_nori * 0.3);
-		float n = fbm(p + vant);
-		float detaliu = fbm(p * 3.1 - vant * 2.0);
-		n = n * 0.8 + detaliu * 0.2;
+		// spre orizont norii se strâng: acolo mai puține octave (altfel pâlpâie și se fac dungi frânte)
+		float straturi = mix(2.5, 5.5, smoothstep(0.03, 0.35, d.y));
+		float n = fbm(p + vant, straturi);
+		float detaliu = fbm(p * 2.3 - vant * 1.5, straturi - 1.5);
+		n = n * 0.82 + detaliu * 0.18;
 		float prag = 1.0 - acoperire_nori;
-		float nor = smoothstep(prag, prag + 0.22, n);
-		float gros = smoothstep(prag + 0.12, prag + 0.4, n);
-		nor *= smoothstep(0.015, 0.12, d.y);
+		// margini moi (înainte 0,22: prea tăioase)
+		// (+0,08: zgomotul cu gradienți e mai strâns în jurul lui 0,5 decât cel vechi; așa acoperă cam cât înainte)
+		float nor = smoothstep(prag + 0.0, prag + 0.28, n);
+		float gros = smoothstep(prag + 0.13, prag + 0.42, n);
+		nor *= smoothstep(0.015, 0.14, d.y);
 		// culoarea: mov-cenușiu în spate, roz deasupra, portocaliu aprins jos spre soare
 		vec3 cn = mix(nori_umbra, nori_roz, smoothstep(-0.5, 0.5, spre) * (1.0 - smoothstep(0.55, 0.95, h) * 0.5));
 		cn = mix(cn, nori_aprinsi, pow(max(spre, 0.0), 2.0) * (1.0 - smoothstep(0.08, 0.45, h)));
