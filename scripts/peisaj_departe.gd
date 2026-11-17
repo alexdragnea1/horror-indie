@@ -49,6 +49,8 @@ extends Node3D
 ## la M7). `stralucire_iarba` = cât de deschisă față de lumina scenei.
 @export var culoare_iarba := Color(0.267, 0.365, 0.275, 0.0)
 @export var stralucire_iarba := 4.0
+## Ceață în plus peste dealuri, copaci și munți (metri „mai departe” în ceața scenei; 0 = ca la M7).
+@export var ceata_in_plus := 0.0
 ## Locurile (în coordonatele lumii, Rect2 pe x/z) unde terenul rămâne plat și fără copaci: tot ce e scena, plus
 ## drumul autobuzului. Implicit = curtea blocului M7 (strada, curtea, blocurile).
 @export var locuri_plate: Array[Rect2] = [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
@@ -130,6 +132,8 @@ func _culori() -> void:
 	_material.set_shader_parameter("ceata_aproape", 24.0)
 	_material.set_shader_parameter("ceata_departe", 50.0)
 	_material.set_shader_parameter("ceata_vale", 16.0)
+	# puțină ceață în plus peste tot peisajul (la motel, owner 17.11): metri în plus „în ceață”
+	_material.set_shader_parameter("ceata_extra", ceata_in_plus)
 
 
 ## Cât de înalt e terenul în punctul (x, z) (față de nod).
