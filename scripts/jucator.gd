@@ -191,15 +191,45 @@ func _loc_liber(p: Vector3) -> bool:
 	return not spatiu.intersect_ray(raza).is_empty()
 
 
+## Cel mai apropiat loc liber în jurul lui `p` (fără `p` însuși), sau null. Pe fiecare inel, direcțiile încep cu
+## cea în care privești, ca la egalitate să te mute înainte.
+func _loc_liber_aproape(p: Vector3) -> Variant:
+	var spatiu := get_world_3d().direct_space_state
+	var inceput := -global_basis.z
+	inceput.y = 0.0
+	for inel in range(1, 13):
+		var raza := inel * 0.25
+		for k in 16:
+			var dir := inceput.rotated(Vector3.UP, TAU * k / 16.0).normalized()
+			var c := p + dir * raza
+			var q := PhysicsRayQueryParameters3D.create(c + Vector3.UP * 0.5, c + Vector3.DOWN * 1.0, collision_mask, [get_rid()])
+			var lovit := spatiu.intersect_ray(q)
+			if lovit.is_empty() or (lovit.normal as Vector3).angle_to(Vector3.UP) > floor_max_angle:
+				continue
+			var pe_podea: Vector3 = lovit.position
+			if _loc_liber(pe_podea):
+				return pe_podea
+	return null
+
+
 ## Se poate folosi Unstuck acum? Nu cât te mută o scenă din cod (zbor, cutscene) și nu în dialog.
 func poate_desbloca() -> bool:
 	return is_physics_processing() and not Dialog.activ and not Tranzitie.activa
 
 
-## Unstuck (meniul de pauză): te întoarce la cel mai recent loc sigur care e liber și la cel puțin 1 m de unde ești
-## (acolo unde ești te-ai blocat); dacă niciunul nu merge, la locul unde ai intrat în scenă.
+## Unstuck (meniul de pauză, owner 17.11: „doar să te miște puțin într-o parte unde vede că e liber”): caută cel mai
+## apropiat loc liber din jur (inele la 0,25 m, până la 3 m, 16 direcții; podeaua căutată cu o rază de la +0,5 m la
+## -1 m: nu te urcă pe mese sau bănci),
+## în afară de locul unde ești. Doar dacă nu e niciunul (ex. ai căzut sub hartă), te întoarce la cel mai recent loc
+## sigur pe unde ai mers, apoi la locul unde ai intrat în scenă.
 func desblocheaza() -> void:
 	if not poate_desbloca():
+		return
+	var aproape: Variant = _loc_liber_aproape(global_position)
+	if aproape != null:
+		global_position = aproape
+		velocity = Vector3.ZERO
+		_decalaj_treapta = 0.0
 		return
 	var tinta: Variant = null
 	for i in range(_locuri_sigure.size() - 1, -1, -1):
