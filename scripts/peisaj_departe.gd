@@ -61,7 +61,7 @@ func _ready() -> void:
 	_culori()
 	_construieste()
 	_padure()
-	_cartier()
+	_copaci_imas()
 	_turn()
 
 
@@ -299,97 +299,49 @@ func _padure() -> void:
 
 
 
-## Cartierul din jurul curții (owner 15.11: „e spațiu gol între blocuri și scenery-ul din spate și când zbori pe mătură
-## se vede urat”): pe imașul dintre curte și dealuri, blocuri de 4 și de 10 etaje (bare, câte una sau două paralele) și
-## blocuri-turn, pe o rețea de `pas_cartier` m, plus copaci (coroane rotunde) între ele. Un MultiMesh de cutii cu
-## același shader ca dealurile (aceeași ceață), cu geamuri desenate în shader: seara și noaptea o parte sunt aprinse,
-## ziua niciunul (ca la blocurile din scenă, după ZiBloc). Nu pe stradă, nu în curte, nu lângă blocurile din scenă
-## (`liber`), nu în șaua soarelui de la apus.
-@export_group("Cartier")
-@export var pas_cartier := 62.0
-@export var raza_cartier := Vector2(50.0, 300.0)
-## Cât din geamurile blocurilor sunt aprinse seara / noaptea.
-@export_range(0.0, 1.0) var geamuri_aprinse := 0.3
+## Copacii de pe imașul din jurul curții (owner 15.11: „e spațiu gol … când zbori pe mătură se vede urât”): pâlcuri de
+## copaci cu coroană rotundă și trunchi, de la 34 m până la `raza_cartier` m. Blocurile din jur au fost scoase (owner
+## 17.11). Trunchiul pornește de sub cel mai jos punct al terenului din jurul lui (pe pantă nu plutește), iar coroana
+## stă pe el. Nu pe stradă, nu în curte, nu lângă blocurile din scenă (`liber`).
+@export_group("Copaci imas")
+@export var raza_cartier := 300.0
 
-func _cartier() -> void:
+func _copaci_imas() -> void:
 	var r := RandomNumberGenerator.new()
 	r.seed = saminta + 5
-	var blocuri: Array[Transform3D] = []
-	var ocupat: Array[Vector3] = []  # (x, z, rază): locurile blocurilor, ca să nu crească copaci prin ele
-	var n := int(raza_cartier.y / pas_cartier) + 1
-	for gx in range(-n, n + 1):
-		for gz in range(-n, n + 1):
-			var c := Vector2(gx, gz) * pas_cartier + Vector2(r.randf_range(-8.0, 8.0), r.randf_range(-8.0, 8.0))
-			var tip := r.randf()
-			var rot := (PI / 2.0 if r.randf() < 0.5 else 0.0) + r.randf_range(-0.06, 0.06)
-			var d := c.length()
-			if d < raza_cartier.x or d > raza_cartier.y or tip > 0.88:
-				continue
-			if _sa != Vector2.ZERO and absf(c.normalized().angle_to(_sa)) < 0.3:
-				continue
-			var piese: Array = []  # [centru, lungime, lățime, înălțime]
-			if tip < 0.25:
-				# bloc-turn
-				piese.append([c, 17.0, 17.0, r.randf_range(29.0, 36.0)])
-			else:
-				var lung := r.randf_range(34.0, 54.0)
-				var inalt := 11.5 if r.randf() < 0.55 else r.randf_range(25.5, 29.0)
-				var doua := r.randf() < 0.5
-				var lat_dir := Vector2(0.0, 1.0).rotated(-rot)
-				for k in (2 if doua else 1):
-					var o := lat_dir * (15.0 * (k * 2 - 1) if doua else 0.0)
-					piese.append([c + o, lung, 12.0, inalt])
-			for p in piese:
-				var centru: Vector2 = p[0]
-				var lung: float = p[1]
-				var lat: float = p[2]
-				var colturi: Array[Vector2] = []
-				for sx in [-1.0, 1.0]:
-					for sz in [-1.0, 1.0]:
-						colturi.append(centru + Vector2(sx * (lung * 0.5 + 4.0), sz * (lat * 0.5 + 4.0)).rotated(-rot))
-				var bun := true
-				var jos := INF
-				for q in colturi + [centru]:
-					if liber(q.x, q.y) < 0.999:
-						bun = false
-						break
-					jos = minf(jos, inaltime(q.x, q.y))
-				if not bun:
-					continue
-				var inalt: float = p[3]
-				var baza := Basis(Vector3.UP, rot).scaled(Vector3(lung, inalt + 1.5, lat))
-				blocuri.append(Transform3D(baza, Vector3(centru.x, jos - 1.5 + (inalt + 1.5) * 0.5, centru.y)))
-				ocupat.append(Vector3(centru.x, centru.y, lung * 0.5 + 3.0))
-	var mat_bloc := _copie({"culoare_baza": 1.25, "putere_lumina": 0.8})
-	mat_bloc.set_shader_parameter("geamuri", 1.0)
-	mat_bloc.set_shader_parameter("geamuri_aprinse", geamuri_aprinse if _geamuri_aprinse_in_scena() else 0.0)
-	_multimesh("Blocuri", BoxMesh.new(), blocuri, mat_bloc)
-	# copacii: pâlcuri pe imaș, între blocuri
 	var pete := FastNoiseLite.new()
 	pete.seed = saminta + 6
 	pete.frequency = 0.02
 	var copaci: Array[Transform3D] = []
+	var trunchiuri: Array[Transform3D] = []
 	var pas := 7.0
-	var x := -raza_cartier.y
-	while x < raza_cartier.y:
-		var z := -raza_cartier.y
-		while z < raza_cartier.y:
+	var x := -raza_cartier
+	while x < raza_cartier:
+		var z := -raza_cartier
+		while z < raza_cartier:
 			var px := x + r.randf_range(-0.45, 0.45) * pas
 			var pz := z + r.randf_range(-0.45, 0.45) * pas
 			z += pas
 			var d := Vector2(px, pz).length()
-			if d < 34.0 or d > raza_cartier.y or pete.get_noise_2d(px, pz) < 0.05 or liber(px, pz) < 0.999:
-				continue
-			var langa_bloc := false
-			for o in ocupat:
-				if Vector2(px - o.x, pz - o.y).length() < o.z:
-					langa_bloc = true
-					break
-			if langa_bloc:
+			if d < 34.0 or d > raza_cartier or pete.get_noise_2d(px, pz) < 0.05 or liber(px, pz) < 0.999:
 				continue
 			var s := r.randf_range(4.5, 8.0)
-			var coroana := Basis(Vector3.UP, r.randf_range(0.0, TAU)).scaled(Vector3(s, s * r.randf_range(1.0, 1.4), s))
-			copaci.append(Transform3D(coroana, Vector3(px, inaltime(px, pz) + s * 0.75, pz)))
+			var inalt_coroana := s * r.randf_range(1.0, 1.4)
+			var rot := r.randf_range(0.0, TAU)
+			# solul: în centru și cel mai de jos punct din jurul trunchiului (plasa terenului are fațete plate)
+			var sol_mijloc := inaltime(px, pz)
+			var sol_jos := sol_mijloc
+			for k in 6:
+				var o := Vector2.from_angle(TAU * k / 6.0) * 1.5
+				sol_jos = minf(sol_jos, inaltime(px + o.x, pz + o.y))
+			var trunchi := s * r.randf_range(0.45, 0.6)  # cât se vede din trunchi până la coroană
+			var gros := clampf(s * 0.07, 0.35, 0.55)
+			var jos := sol_jos - 1.0
+			var sus := sol_mijloc + trunchi + inalt_coroana * 0.3  # intră în coroană, să nu se vadă capătul
+			trunchiuri.append(Transform3D(Basis(Vector3.UP, rot).scaled(Vector3(gros, sus - jos, gros)), Vector3(px, (jos + sus) * 0.5, pz)))
+			# coroana: partea de jos puțin sub vârful trunchiului
+			var coroana := Basis(Vector3.UP, rot).scaled(Vector3(s, inalt_coroana, s))
+			copaci.append(Transform3D(coroana, Vector3(px, sol_mijloc + trunchi + inalt_coroana * 0.4, pz)))
 		x += pas
 	var sfera := SphereMesh.new()
 	sfera.radius = 0.5
@@ -397,6 +349,15 @@ func _cartier() -> void:
 	sfera.radial_segments = 6
 	sfera.rings = 3
 	_multimesh("CopaciCartier", sfera, copaci, _copie({"culoare_baza": 0.8, "putere_lumina": 0.5}))
+	var cilindru := CylinderMesh.new()
+	cilindru.top_radius = 0.5
+	cilindru.bottom_radius = 0.5
+	cilindru.height = 1.0
+	cilindru.radial_segments = 5
+	cilindru.rings = 1
+	cilindru.cap_top = false
+	cilindru.cap_bottom = false
+	_multimesh("TrunchiuriCartier", cilindru, trunchiuri, _copie({"culoare_baza": 0.55, "putere_lumina": 0.4}))
 
 
 func _multimesh(nume: String, mesh: Mesh, transformari: Array[Transform3D], mat: Material) -> void:
@@ -412,18 +373,6 @@ func _multimesh(nume: String, mesh: Mesh, transformari: Array[Transform3D], mat:
 	mmi.material_override = mat
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mmi)
-
-
-## Sunt aprinse geamurile blocurilor din scenă? (ziua ZiBloc le pune `stralucire` 0.)
-func _geamuri_aprinse_in_scena() -> bool:
-	var bloc := get_parent().get_node_or_null("BlocVizavi")
-	if bloc == null:
-		return true
-	for geam in bloc.find_children("Lumini*", "GeometryInstance3D", true, false):
-		var s = (geam as GeometryInstance3D).get_instance_shader_parameter("stralucire")
-		if s != null and float(s) <= 0.0:
-			return false
-	return true
 
 
 ## Materialul dealurilor, dar cu ceața de departe ajunsă (de la câteva sute de metri) la `cat`.
