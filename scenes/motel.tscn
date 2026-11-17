@@ -595,3 +595,5 @@ inaltime_dealuri = 1.5
 dealuri_de_la = 80.0
 fractie_copaci = 0.6
 culoar_munte = 0.0
+culoare_iarba = Color(0.267, 0.365, 0.275, 1)
+stralucire_iarba = 6.0

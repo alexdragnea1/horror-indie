@@ -45,6 +45,10 @@ extends Node3D
 ## Mai mulți munți (owner 17.11, motelul: „surrounded de munți”): fiecare = (unghi în grade, distanță m, înălțime m).
 ## Gol = doar muntele din `munte_*`.
 @export var munti: Array[Vector3] = []
+## Iarba pe teren (owner 17.11, motelul: „verde iarbă închis”): culoarea (din paletă), alfa = cât de mult (0 = fără, ca
+## la M7). `stralucire_iarba` = cât de deschisă față de lumina scenei.
+@export var culoare_iarba := Color(0.267, 0.365, 0.275, 0.0)
+@export var stralucire_iarba := 4.0
 ## Locurile (în coordonatele lumii, Rect2 pe x/z) unde terenul rămâne plat și fără copaci: tot ce e scena, plus
 ## drumul autobuzului. Implicit = curtea blocului M7 (strada, curtea, blocurile).
 @export var locuri_plate: Array[Rect2] = [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
@@ -230,6 +234,13 @@ func _construieste() -> void:
 	mi.name = "Teren"
 	mi.mesh = st.commit()
 	mi.material_override = _material
+	if culoare_iarba.a > 0.0:
+		# iarba doar pe teren (copacii și turnul sunt copii ale lui `_material`, fără ea)
+		var mat_teren := _material.duplicate() as ShaderMaterial
+		mat_teren.set_shader_parameter("iarba", culoare_iarba.a)
+		mat_teren.set_shader_parameter("culoare_iarba", Color(culoare_iarba, 1.0))
+		mat_teren.set_shader_parameter("stralucire_iarba", stralucire_iarba)
+		mi.material_override = mat_teren
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 400.0
 	add_child(mi)
@@ -461,4 +472,3 @@ func liber(x: float, z: float) -> float:
 		var dz := maxf(maxf(loc.position.y - p.y, p.y - loc.end.y), 0.0)
 		rez = minf(rez, smoothstep(0.0, margine_plat, Vector2(dx, dz).length()))
 	return rez
-

@@ -13,6 +13,12 @@ uniform vec3 culoare_baza : source_color = vec3(0.2, 0.18, 0.2);
 uniform vec3 culoare_lumina : source_color = vec3(1.0, 0.56, 0.3);
 uniform vec3 directie_lumina = vec3(-1.0, 0.035, 0.32);
 uniform float putere_lumina = 0.5;
+// Iarba (doar pe teren, PeisajDeparte.culoare_iarba): 0 = fără (culoarea bazei, ca la M7), 1 = verde.
+uniform float iarba = 0.0;
+uniform vec3 culoare_iarba : source_color = vec3(0.267, 0.365, 0.275);
+uniform float stralucire_iarba = 4.0;
+// Până la ce înălțime (m) crește iarba; mai sus, stâncă (culoarea bazei), apoi zăpadă.
+uniform float iarba_pana_la = 120.0;
 uniform vec3 culoare_zapada : source_color = vec3(0.86, 0.86, 0.92);
 uniform float inaltime_zapada = 190.0;
 // Cât de luminoasă e zăpada (noaptea doar se ghicește).
@@ -65,6 +71,14 @@ void fragment() {
 	float lam = max(dot(n, l), 0.0);
 	// fața dinspre lumină se aprinde, cea din spate rămâne în culoarea serii
 	vec3 c = culoare_baza * (0.75 + 0.25 * n.y) + culoare_lumina * lam * putere_lumina;
+	// iarba (owner 17.11, la motel: „să fie un verde iarbă închis”): pe pantele line și jos (nu pe stâncile munților),
+	// cu aceeași luminozitate ca restul (culoarea bazei dă cât de multă lumină e), doar în verde
+	if (iarba > 0.0) {
+		float lum = dot(culoare_baza, vec3(0.3, 0.59, 0.11));
+		vec3 ci = culoare_iarba * lum * stralucire_iarba * (0.75 + 0.25 * n.y) + culoare_lumina * culoare_iarba * lam * putere_lumina * 2.0;
+		float unde = smoothstep(0.55, 0.75, n.y) * (1.0 - smoothstep(iarba_pana_la, iarba_pana_la + 40.0, poz.y));
+		c = mix(c, ci, iarba * unde);
+	}
 	// zăpada: sus, pe fețele nu prea abrupte; coboară în limbi pe văi (marginea zimțată de fațete)
 	float limbi = sin(poz.x * 0.045 + poz.z * 0.02) * 28.0 + sin(poz.z * 0.11) * 12.0;
 	float zapada = smoothstep(inaltime_zapada, inaltime_zapada + 30.0, poz.y + n.x * 14.0 + limbi) * smoothstep(0.3, 0.55, n.y);
