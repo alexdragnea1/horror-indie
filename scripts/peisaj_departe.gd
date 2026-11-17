@@ -42,6 +42,9 @@ extends Node3D
 ## blocul M7, să nu pară așa de gol”): acolo fără munte și fără turn, cu mai puțini copaci.
 @export var cu_munte := true
 @export var cu_turn := true
+## Mai mulți munți (owner 17.11, motelul: „surrounded de munți”): fiecare = (unghi în grade, distanță m, înălțime m).
+## Gol = doar muntele din `munte_*`.
+@export var munti: Array[Vector3] = []
 ## Locurile (în coordonatele lumii, Rect2 pe x/z) unde terenul rămâne plat și fără copaci: tot ce e scena, plus
 ## drumul autobuzului. Implicit = curtea blocului M7 (strada, curtea, blocurile).
 @export var locuri_plate: Array[Rect2] = [Rect2(-21, -27, 42, 57), Rect2(-400, 12, 800, 15), Rect2(-21, 35, 32, 18), Rect2(-45, -15, 18, 31)]
@@ -146,15 +149,22 @@ func inaltime(x: float, z: float) -> float:
 	# se vedea cerul prin podea, de dedesubt)
 	if not cu_munte:
 		return h - 0.15
-	return maxf(h, _munte(x, z) * liber(x, z)) - 0.15
+	var m := 0.0
+	if munti.is_empty():
+		m = _munte(x, z, munte_unghi, munte_distanta, munte_inaltime)
+	else:
+		for mt in munti:
+			m = maxf(m, _munte(x, z, mt.x, mt.y, mt.z))
+	return maxf(h, m * liber(x, z)) - 0.15
 
 
 ## Masivul (owner 10.11: „muntele nu arată terminat”): vârful mare, doi umeri mai mici într-o parte și alta (puțin
 ## mai în spate), dealuri late la poale, și creste adânci tăiate de zgomot, ca să nu fie o movilă netedă.
-func _munte(x: float, z: float) -> float:
-	var radial := Vector2.from_angle(deg_to_rad(munte_unghi))
+## `unghi` (grade), `distanta`, `inalt`: unde e și cât de înalt (implicit `munte_*`; la motel sunt mai mulți, `munti`).
+func _munte(x: float, z: float, unghi: float, distanta: float, inalt: float) -> float:
+	var radial := Vector2.from_angle(deg_to_rad(unghi))
 	var lateral := Vector2(-radial.y, radial.x)
-	var m := radial * munte_distanta
+	var m := radial * distanta
 	var q := Vector2(x, z) - m
 	var u := q.dot(lateral)
 	var v := q.dot(radial)
@@ -163,14 +173,14 @@ func _munte(x: float, z: float) -> float:
 	for vf in varfuri:
 		var d: float = Vector2(u - vf[0], v - vf[1]).length() / (munte_latime * vf[3])
 		# mai ascuțit decât un clopot: pantele drepte, vârful îngust
-		h = maxf(h, munte_inaltime * vf[2] * exp(-pow(d, 1.5)))
+		h = maxf(h, inalt * vf[2] * exp(-pow(d, 1.5)))
 	# creste: muchii în zgomotul „ridged”, mai adânci spre poale
 	var creasta := _culme.get_noise_2d(x * 2.2, z * 2.2) * 0.5 + 0.5
 	h *= lerpf(0.7, 1.05, creasta)
 	# poalele: dealuri late în jurul masivului
 	var dp := Vector2(u * 0.6, v).length()
 	# poalele se termină de tot la ~3 lățimi de munte (altfel ridicau cu câțiva metri tot terenul, până în curte)
-	var poale := munte_inaltime * 0.26 * exp(-pow(dp / (munte_latime * 2.4), 2.0)) * (1.0 - smoothstep(munte_latime * 2.2, munte_latime * 3.2, dp))
+	var poale := inalt * 0.26 * exp(-pow(dp / (munte_latime * 2.4), 2.0)) * (1.0 - smoothstep(munte_latime * 2.2, munte_latime * 3.2, dp))
 	return maxf(h, poale * (0.75 + 0.35 * creasta))
 
 
@@ -289,8 +299,12 @@ func _padure() -> void:
 				continue
 			if _sa != Vector2.ZERO and absf(Vector2(px, pz).normalized().angle_to(_sa)) < 0.3:
 				continue
-			var m := Vector2.from_angle(deg_to_rad(munte_unghi)) * munte_distanta
-			if Vector2(px, pz).distance_to(m) < munte_latime * 1.3:
+			var pe_munte := false
+			var lista_munti: Array[Vector3] = munti if not munti.is_empty() else [Vector3(munte_unghi, munte_distanta, munte_inaltime)]
+			for mt in lista_munti:
+				if Vector2(px, pz).distance_to(Vector2.from_angle(deg_to_rad(mt.x)) * mt.y) < munte_latime * 1.3:
+					pe_munte = true
+			if pe_munte:
 				continue
 			var h := r.randf_range(9.0, 17.0) * lerpf(1.0, 1.6, smoothstep(200.0, 800.0, d))
 			var lat := h * r.randf_range(0.3, 0.42)

@@ -150,7 +150,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 102. **Ce ții în mână nu mai intră în pereți** (17.11): arma sau obiectul din mână (AK-ul, pistolul, katana, mătura, bazooka, vraja etc.) se vede mereu întreg, chiar dacă ești lipit de un perete sau de frigider. E trucul din jocurile FPS: obiectul din mână se desenează peste lume.
 103. **Gauntlet-ul se vinde la Johnny** (17.11): $150.
 104. **Dealuri și copaci în oraș** (17.11): la Sketchy Laundromat, la bar și la Gun Store, la capetele străzii nu mai e doar ceață: se văd dealuri și pâlcuri rare de copaci (același peisaj ca la blocul M7, dar fără munte și fără turn). Strada și drumul autobuzului rămân plate.
-105. Urmează: tu hotărăști (playtest, build, itch.io).
+105. **Munți și dealuri în jurul motelului** (17.11): Paradise Motel e acum înconjurat de 5 munți cu zăpadă pe vârf și de dealuri cu copaci, care se pierd în ceața nopții. Parcarea, curtea și drumul autobuzului rămân plate. Tot pe 17.11: Tom Berone nu-și mai bagă mâna în ușa din spate când îți face vraja pe scut, iar stâlpul care ieșea prin scara motelului a fost scos.
+106. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

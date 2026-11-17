@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/peisaj_departe.gd" id="pd_motel"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="1_jt"]
 [ext_resource type="Script" path="res://scripts/jucator.gd" id="2_jg"]
 [ext_resource type="Script" path="res://scripts/model_ps2.gd" id="3_mp"]
@@ -578,3 +579,19 @@ script = ExtResource("9_om")
 script = ExtResource("3_mp")
 material = ExtResource("4_mt")
 stralucitoare = PackedStringArray("Jar")
+
+[node name="PeisajDeparte" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "lumina")]
+script = ExtResource("pd_motel")
+mediu = NodePath("../Mediu")
+lumina = NodePath("../Luna")
+saminta = 23
+cu_turn = false
+munti = Array[Vector3]([Vector3(20, 1100, 360), Vector3(95, 1300, 420), Vector3(165, 1050, 330), Vector3(235, 1250, 400), Vector3(305, 1150, 380)])
+locuri_plate = Array[Rect2]([Rect2(-70, -50, 130, 115), Rect2(-400, 12, 800, 18)])
+margine_plat = 25.0
+prag_copaci = 0.15
+copaci_de_la = 90.0
+inaltime_dealuri = 1.5
+dealuri_de_la = 80.0
+fractie_copaci = 0.6
+culoar_munte = 0.0
