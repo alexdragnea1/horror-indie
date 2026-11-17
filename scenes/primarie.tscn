@@ -681,8 +681,8 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -7.5, 0, -13)
 
 [node name="CampuriSat" type="Node3D" parent="."]
 script = ExtResource("campuri_sat")
-lanuri = Array[Rect2]([Rect2(-45, -75, 70, 57), Rect2(30, -70, 65, 50), Rect2(-95, 38, 75, 52), Rect2(45, 35, 65, 60), Rect2(-110, -70, 60, 70)])
-tipuri = PackedStringArray("porumb", "floare", "floare", "porumb", "porumb")
+lanuri = Array[Rect2]([Rect2(-30, -75, 60, 58.5), Rect2(30, -70, 70, 76.4), Rect2(-100, -70, 50, 76.4), Rect2(-50, -70, 20, 58), Rect2(-34, 31, 58, 54), Rect2(24, 31, 16, 27), Rect2(41, 17, 59, 68), Rect2(-100, 17, 65, 68)])
+tipuri = PackedStringArray("porumb", "floare", "porumb", "porumb", "floare", "porumb", "porumb", "floare")
 spre = Vector2(0, 5)
 
 [node name="Vaca1" type="Node3D" parent="."]
