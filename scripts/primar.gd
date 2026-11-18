@@ -1,6 +1,6 @@
 extends Interactabil
 ## Primarul Smegma, în biroul oval de la etajul primăriei (primarie.tscn). Stă la birou (OmLaMasa `om`, pe fotoliul
-## `scaun`), cu fața spre ușă. Când intri pe ușă (`zona`, după `marcaj_necesar` = ți-a zis funcționara de el):
+## `scaun`), cu fața spre ușă. Când intri pe ușă (`zona`; ușa nu mai e încuiată, poți urca și fără să fi vorbit jos cu funcționara, owner 18.11):
 ##  1. sare în picioare, speriat, cu mâinile sus (fotoliul fuge în spate) → `replici_inceput`;
 ##  2. se lasă încet înapoi pe scaun, tu vii în fața biroului (`loc_jucator`) → `replici_oferta` (ultima rămâne pe ecran
 ##     cu butoanele `optiune_haggle` / `optiune_accept`);
@@ -16,7 +16,10 @@ extends Interactabil
 ## Zona din dreptul ușii: când intri în ea, începe scena.
 @export var zona: Area3D
 @export var teanc: PackedScene
-@export var marcaj_necesar := "angajata_a_zis_de_primar"
+## Gol = poți urca direct, fără să vorbești cu funcționara (owner 18.11). Altfel scena pornește doar după marcajul ăsta.
+@export var marcaj_necesar := ""
+## Pus când începe scena; dacă n-ai vorbit înainte cu funcționara, ea nu mai vorbește cu tine (angajata_primarie.gd).
+const MARCAJ_A_INTRAT := "a_intrat_la_primar"
 @export var marcaj_gata := "a_luat_banii_de_la_primar"
 ## Câți dolari ți-a dat (valoarea marcajului).
 @export var marcaj_suma := "bani_de_la_primar"
@@ -92,13 +95,15 @@ func interactioneaza() -> void:
 
 
 func _la_intrare(corp: Node3D) -> void:
-	if _in_curs or not corp.is_in_group("jucator") or not Stare.e_marcat(marcaj_necesar) or Stare.e_marcat(marcaj_gata):
+	if _in_curs or not corp.is_in_group("jucator") or Stare.e_marcat(marcaj_gata) \
+			or (marcaj_necesar != "" and not Stare.e_marcat(marcaj_necesar)):
 		return
 	# banii trebuie să încapă în inventar (ca la Lexy): altfel îți spune jocul „Inventory full” și mai încerci
 	if Stare.obiecte.size() >= Stare.LOCURI_INVENTAR and not Stare.are_obiect(Bani.ID):
 		Stare.adauga_obiect(Bani.ID, Bani.nume(0))
 		return
 	_in_curs = true
+	Stare.marcheaza(MARCAJ_A_INTRAT)
 	await _scena()
 	_in_curs = false
 

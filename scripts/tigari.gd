@@ -36,3 +36,19 @@ static func foloseste() -> bool:
 	Stare.obiecte[ID] = nume(FOLOSIRI - folosite)
 	Stare.schimbat.emit()
 	return false
+
+
+# ---------------------------------------------------------------- boost-ul de la fumat (owner 18.11)
+## Când tragi dintr-o țigară, un minut mergi și fugi cu 10% mai repede (jucator.gd). Nu se adună: fiecare fum doar
+## repornește minutul de la capăt. Ține și când schimbi scena (e static), dar nu intră în salvare.
+const BONUS_VITEZA := 1.1
+const DURATA_BONUS_MS := 60000
+static var _bonus_pana_la := -1
+
+
+static func porneste_bonus() -> void:
+	_bonus_pana_la = Time.get_ticks_msec() + DURATA_BONUS_MS
+
+
+static func bonus_viteza() -> float:
+	return BONUS_VITEZA if _bonus_pana_la >= 0 and Time.get_ticks_msec() < _bonus_pana_la else 1.0

@@ -5,8 +5,12 @@ extends Interactabil
 ## mâinile, `replici_dupa_arma`, lasă mâinile jos → `marcaj_gata` (ușa biroului de sus se deschide) și `sarcina_noua`.
 ## După aceea, la E: `replici_dupa`.
 ## Replicile sunt ale owner-ului (nu le corecta); `sarcina_noua` și `replici_dupa` sunt ale lui Claude.
+## Owner 18.11: dacă urci direct la primar fără să fi vorbit cu ea (primar.gd, „a_intrat_la_primar”), nu mai vorbește cu tine.
+## Se poate omorî (OmOmorabil, `MARCAJ_MORT`): glonțul tras prin geam îl crapă (`geam`, GeamCrapat) și merge mai departe
+## în ea; forma ei (geamul din dreptul ei) trimite lovitura geamului.
 
 @export var om: OmLaMasa
+@export var geam: GeamCrapat
 @export var marcaj_gata := "angajata_a_zis_de_primar"
 @export var sarcina_noua := "Go to the Mayor's office upstairs."
 @export_multiline var replici_inainte: PackedStringArray = ["You: I'm here to talk to the Mayor about the witch situation.",
@@ -15,6 +19,7 @@ extends Interactabil
 	"Employee: The mayor is upstairs in his office.", "You: Why is everyone so difficult.."]
 @export_multiline var replici_dupa: PackedStringArray = ["Employee: Upstairs. Please don't hurt me."]
 
+const MARCAJ_MORT := "angajata_primariei_a_murit"
 const SUNET_MAINI_SUS := preload("res://sunete/maini_sus.ogg")
 ## De la cea mai „șmecheră” la cea mai slabă; fără niciuna, Fireball-ul.
 const ARME := ["bazooka", "ak47", "shotgun", "pistol_aur", "pistol_roz", "katana", "cutit", "vraja_foc"]
@@ -28,10 +33,28 @@ func _ready() -> void:
 	var jucator := get_tree().get_first_node_in_group("jucator") as Node3D
 	if jucator and om:
 		om.privire = jucator.get_node("Cap")
+	if om:
+		OmOmorabil.adauga(om, MARCAJ_MORT)
 
 
 func poate_fi_folosit() -> bool:
+	if Stare.e_marcat(MARCAJ_MORT):
+		return false
+	# ai urcat direct la primar: nu mai începi dialogul cu ea (owner 18.11)
+	if Stare.e_marcat("a_intrat_la_primar") and not Stare.e_marcat(marcaj_gata):  # primar.gd MARCAJ_A_INTRAT
+		return false
 	return not _in_curs
+
+
+## Forma ei e geamul din dreptul ei: glonțul crapă geamul și trece prin el (GeamCrapat).
+func impuscat(directie: Vector3, punct := Vector3.ZERO) -> void:
+	if geam:
+		geam.impuscat(directie, punct)
+
+
+func lovit_de_foc(directie: Vector3, punct := Vector3.ZERO) -> void:
+	if geam:
+		geam.lovit_de_foc(directie, punct)
 
 
 func interactioneaza() -> void:

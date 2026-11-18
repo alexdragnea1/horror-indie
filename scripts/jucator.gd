@@ -20,6 +20,8 @@ extends CharacterBody3D
 @export var pasi_frunze: Array[AudioStream] = []
 ## Pe poteca din pădure (pământ bătătorit și pietriș).
 @export var pasi_poteca: Array[AudioStream] = []
+## Mocheta subțire pe beton (primăria). Goală = se folosesc pașii de covor.
+@export var pasi_mocheta: Array[AudioStream] = []
 ## Implicit Sunet.VOLUM_PASI (65% din volumul de înainte); schimbă doar dacă vrei intenționat altfel.
 @export var volum_pasi_db := Sunet.VOLUM_PASI
 ## Scârțâitul podelei vechi, care se aude uneori peste pași (doar pe lemn).
@@ -31,7 +33,7 @@ extends CharacterBody3D
 ## Pe ce calci când nu ești într-o ZonaSuprafata ("lemn" în casă, "frunze" afară).
 @export var suprafata_implicita := "lemn"
 
-## Pe ce calci acum ("lemn", "covor", "beton", "frunze", "poteca"). O schimbă ZonaSuprafata (în pădure, atmosfera_padure.gd).
+## Pe ce calci acum ("lemn", "covor", "mocheta", "beton", "frunze", "poteca"). O schimbă ZonaSuprafata (în pădure, atmosfera_padure.gd).
 var suprafata := "lemn"
 
 @onready var _cap: Node3D = $Cap
@@ -130,6 +132,8 @@ func _physics_process(delta: float) -> void:
 	var directie := (transform.basis * Vector3(intrare.x, 0, intrare.y)).normalized()
 	# Swift Boots (roata din pivnița lui Jean, owner 16.11): cât le ai în inventar, mergi și fugi cu 30% mai repede
 	var bonus := RoataNoroc.BONUS_GHETE if Stare.are_obiect(RoataNoroc.ID_GHETE) else 1.0
+	# țigara (owner 18.11): un minut după ce tragi din ea, încă 10% (nu se adună dacă fumezi mai multe)
+	bonus *= Tigari.bonus_viteza()
 	var viteza := (viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers) * bonus
 	velocity.x = move_toward(velocity.x, directie.x * viteza, viteza * 10.0 * delta)
 	velocity.z = move_toward(velocity.z, directie.z * viteza, viteza * 10.0 * delta)
@@ -315,6 +319,7 @@ func _pas(_fuge: bool) -> void:
 		"beton": lista = pasi_beton
 		"frunze": lista = pasi_frunze
 		"poteca": lista = pasi_poteca
+		"mocheta": lista = pasi_mocheta if not pasi_mocheta.is_empty() else pasi_covor
 	if lista.is_empty():
 		return
 	var sunet: AudioStream = lista.pick_random()

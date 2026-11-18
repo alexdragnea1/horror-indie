@@ -59,8 +59,9 @@ const MODELE := {
 	},
 	"tigari": {
 		"scena": preload("res://models/tigara.glb"),
-		# filtrul jos-dreapta, vârful spre stânga-sus-înainte, ca între degete
-		"pozitie": Vector3(0.1, -0.11, -0.25),
+		# filtrul jos, vârful spre stânga-sus-înainte, ca între degete; mai spre mijlocul cadrului (owner 18.11: „stă cam
+		# într-o parte”, era la x 0,1)
+		"pozitie": Vector3(0.035, -0.11, -0.25),
 		"rotatie": Vector3(0.0, 2.24, 0.35),
 		"fumat": true,
 		"stralucire_toate": 0.35,
@@ -413,6 +414,7 @@ func _fumeaza_acum() -> void:
 		t.tween_property(_model, "rotation", Vector3(0.0, 1.27, -0.2), 0.4)
 		await t.finished
 		Sunet.reda(SUNET_TRAS, Sunet.VOLUM_EFECTE - 2.0, 0.05)
+		Tigari.porneste_bonus()  # un minut cu 10% mai repede (owner 18.11)
 		var aprinde := func(v: float) -> void:
 			if is_instance_valid(jar):
 				jar.set_instance_shader_parameter("stralucire", v)

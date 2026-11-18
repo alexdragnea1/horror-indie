@@ -1094,11 +1094,8 @@ def interior(cale):
 		piese.append(sfera("Continent", 0.09, (3.2 + 0.24 * math.cos(a), OCY + 0.24 * math.sin(a), z + 0.95 + h), MASLINIU,
 			segmente=6, inele=4))
 	_cutie_coliziune(col, (0.6, 0.6, 1.25), (3.2, OCY, z + 0.62))
-	# ceasul cu pendul de lângă ușă
-	piese.append(cub("Ceas pendul", (0.5, 0.35, 2.1), (2.2, 7.05, z + 1.05), LEMN_INCHIS, rot=(0, 0, 0.45)))
-	piese.append(cilindru("Cadran ceas", 0.16, 0.16, 0.02, (2.12, 6.88, z + 1.75), ALB, laturi=14, rot=(math.pi / 2, 0, 0.45)))
-	piese.append(cub("Usita pendul", (0.3, 0.02, 0.9), (2.12, 6.88, z + 0.85), AUR, rot=(0, 0, 0.45)))
-	col.append(cub("Coliziune", (0.5, 0.35, 2.1), (2.2, 7.05, z + 1.05), NEGRU, rot=(0, 0, 0.45)))
+	# (ceasul cu pendul de lângă ușă e scos, owner 18.11: „obiect lung de lemn în stânga”; ticăitul e acum la ceasul de pe
+	# poliță, nodul CeasPendul din primarie.tscn)
 	# bustul pe soclu (lângă fereastra din stânga) și palmierii din colțurile ferestrelor
 	piese.append(cub("Soclu bust", (0.4, 0.4, 1.1), (-3.75, 1.85, z + 0.55), ALB))
 	piese.append(sfera("Bust umeri", 0.22, (-3.75, 1.85, z + 1.28), CROM, scara=(1.3, 0.8, 0.6), segmente=8, inele=5))
@@ -1124,8 +1121,9 @@ def interior(cale):
 			piese.append(os_intre("Frunza palmier", mij, capat, 0.035, VERDE, laturi=3))
 		_cutie_coliziune(col, (0.5, 0.5, 1.4), (px, py, z + 0.7))
 	piese.append(cilindru("Cos auriu", 0.13, 0.11, 0.3, (0.95, 1.05, z + 0.15), AUR, laturi=8))
-	# tablourile de pe pereți (peisaje) și aplicele dintre ferestre
-	for (t, cul) in ((math.radians(150), MASLINIU), (math.radians(30), PETROL)):
+	# tablourile de pe pereți (peisaje) și aplicele dintre ferestre; cel de la 30° (PETROL) e scos: stătea în spatele
+	# primei biblioteci din stânga (owner 18.11)
+	for (t, cul) in ((math.radians(150), MASLINIU),):
 		tx, ty = _elipsa(t)
 		nxv, nyv = math.cos(t) / OA, math.sin(t) / OB
 		nl = math.hypot(nxv, nyv)

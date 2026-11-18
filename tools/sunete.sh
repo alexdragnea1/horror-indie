@@ -73,6 +73,15 @@ for i in 1 2 3 4; do
 	rm -f "$OUT/_lemn.wav"
 	unic "pas_covor_$i" "Footsteps/foley_footstep_carpet_$i.wav"
 done
+# Mocheta subțire de birou pusă pe beton (primăria: Taxe și holul de sus, owner 18.11 „nu e sunet”): covorul singur e
+# numai bas (peste 400 Hz e cu ~18 dB sub beton, în căști nu se aude). Peste el, pasul pe beton înfundat (lowpass 2,4 kHz), covorul cu 5 dB mai încet.
+for i in 1 2 3 4; do
+	ffmpeg -v error -y -i "$PACHET/Footsteps/foley_footstep_carpet_$i.wav" -i "$PACHET/Footsteps/foley_footstep_concrete_$i.wav" -filter_complex \
+		"[0]aformat=channel_layouts=mono,silenceremove=start_periods=1:start_threshold=-50dB,highpass=f=70,volume=-5dB[a];[1]aformat=channel_layouts=mono,silenceremove=start_periods=1:start_threshold=-50dB,lowpass=f=2400,lowpass=f=2400,highpass=f=120[b];[a][b]amix=inputs=2:normalize=0" \
+		-ac 1 "$OUT/_mocheta.wav"
+	unic "pas_mocheta_$i" "$OUT/_mocheta.wav"
+	rm -f "$OUT/_mocheta.wav"
+done
 unic scartait_podea "Footsteps/foley_creak_1.wav"
 
 # --- uși, frigider, obiecte
@@ -1615,3 +1624,12 @@ unic tigara_bricheta "$OUT/_bricheta.wav"
 # focul: flacăra brichetei care se aprinde și arde puțin (fire_lighting, scurtat), lângă față
 unic tigara_foc "Environment/fire_lighting.wav" mono "atrim=end=1.3,lowpass=f=6000,afade=t=out:st=0.9:d=0.4"
 rm -f "$OUT/_bricheta.wav"
+
+# --- geamul ghișeului de la primărie crăpat de un glonț (geam_crapat.gd, owner 18.11): pocnetul sec al sticlei (zgomot
+# alb foarte scurt, tăiat sus), două clinchete (cel mare mai jos) și un pârâit mic de zgomot după, cât fuge crăpătura.
+ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=0.8:d=0.25:r=44100:s=7" -i "$PACHET/Materials/glass_ping_small.wav" \
+	-i "$PACHET/Materials/glass_ping_big.wav" -f lavfi -i "anoisesrc=c=pink:a=0.4:d=0.5:r=44100:s=12" -filter_complex \
+	"[0]highpass=f=1800,afade=t=out:st=0.005:d=0.08:curve=exp,volume=1.0[p];[1]asetrate=44100*1.2,aresample=44100,volume=0.6[a];[2]asetrate=44100*0.8,aresample=44100,adelay=25,volume=0.45[b];[3]highpass=f=3000,afade=t=in:d=0.05,afade=t=out:st=0.1:d=0.35,adelay=40,volume=0.35[c];[p][a][b][c]amix=inputs=4:normalize=0,atrim=end=0.9,afade=t=out:st=0.6:d=0.3" \
+	-ac 1 "$OUT/_geam.wav"
+unic geam_crapat "$OUT/_geam.wav"
+rm -f "$OUT/_geam.wav"
