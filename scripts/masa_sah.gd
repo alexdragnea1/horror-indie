@@ -57,6 +57,10 @@ const C_ROSU := Color("904a40")
 ## Câți centipioni de „gust” la întâmplare pune Jean pe fiecare mutare (mai mult = mai ușor de bătut).
 @export var zgomot := 35
 @export var gandire_minima := Vector2(0.9, 2.2)
+## Muzica casei (`MuzicaCasa`, muzica_loc.gd): se stinge când începe împușcătura (owner 22.11). Gol = o caută după nume.
+@export var muzica: Node
+## În câte secunde se stinge.
+@export var stingere_muzica := 1.0
 
 var _sah: Sah
 var _piese := {}  # pătrat -> Node3D
@@ -712,6 +716,7 @@ func _sange(punct: Vector3, directie: Vector3) -> void:
 ## Te împușcă (la „No” sau când pierzi pe viață): pușca scoasă și îndreptată spre tine, pompa, focul; cazi pe spate,
 ## YOU DIED, Retry → în fața casei lui.
 func _te_impusca() -> void:
+	_opreste_muzica()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	jean.privire = _cap
 	await _scoate_pusca()
@@ -754,6 +759,7 @@ func _te_impusca() -> void:
 
 ## Pierde Jean: pușca sub bărbie și se împușcă; cade pe spate în tron, pușca îi cade din mâini.
 func _se_impusca() -> void:
+	_opreste_muzica()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	await _scoate_pusca()
 	await _pompeaza()
@@ -907,3 +913,10 @@ func _vedere(sus: bool, durata := 0.6) -> void:
 	_vedere_in_miscare = false
 	if is_instance_valid(_vedere_text):
 		_vedere_text.text = "Right Click: look at Jean" if sus else "Right Click: look at the board"
+
+
+## Stinge muzica casei când începe o împușcătură (te împușcă Jean sau se împușcă el); nu mai pornește până pleci.
+func _opreste_muzica() -> void:
+	var m = muzica if muzica else get_parent().get_node_or_null("MuzicaCasa")
+	if m and m.has_method("opreste"):
+		m.opreste(stingere_muzica)
