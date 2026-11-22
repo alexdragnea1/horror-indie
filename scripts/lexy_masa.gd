@@ -8,7 +8,8 @@ extends Interactabil
 ##     hanoracului o bancnotă de 5 dolari și ți-o întinde; o iei („$5” în inventar), ea lasă mâinile jos, pune felia
 ##     în cutie și nu mai mănâncă, doar se uită la tine (`marcaj_jaf`);
 ##   - `optiune_plecare` („Leave Lexy's House”): `replici_plecare`, sau `replici_plecare_dupa_jaf` după jaf.
-## După jaf (sau după împrumut, în ziua în oraș) o poți împușca: cade de pe scaun ca un ragdoll (`marcaj_moarta`), iar apoi o iei în inventar cu E
+## O poți împușca (owner 22.11): imediat după cearta pentru televizorul spart (și cât merge spre masă), altfel doar după
+## jaf, după ce i-ai zis că pleci (`marcaj_a_zis_ca_pleaca`) sau, în ziua în oraș, după împrumut: cade de pe scaun ca un ragdoll (`marcaj_moarta`), iar apoi o iei în inventar cu E
 ## („Lexy”, `ID_CADAVRU`, `marcaj_luata`). O poți arunca peste gardul cimitirului (gard_cimitir.gd).
 ## Replicile sunt ale owner-ului: nu le corecta.
 
@@ -28,6 +29,10 @@ const NUME_CADAVRU := "Lexy"
 ## autobuzul vine oricum), deci fără pistol nu mai ai ce vorbi cu ea.
 @export var marcaj_suparata := "lexy_suparata_tv"
 @export var marcaj_luata := "lexy_luata"
+## Pus când alegi `optiune_plecare`: de acum o poți împușca.
+@export var marcaj_a_zis_ca_pleaca := "i_a_zis_lexy_ca_pleaca"
+## `SosireAutobuzAcasa`: după jaf autobuzul vine imediat (fără `intarziere`).
+@export var sosire_acasa: Node
 @export var optiune_jaf := "Rob her at gun point"
 @export var optiune_plecare := "Leave Lexy's House"
 @export var indiciu_cadavru := "[E] Pick up Lexy"
@@ -158,6 +163,7 @@ func interactioneaza() -> void:
 		await _jefuieste()
 	else:
 		await _spune(replici_plecare_dupa_jaf if Stare.e_marcat(marcaj_jaf) else replici_plecare)
+		Stare.marcheaza(marcaj_a_zis_ca_pleaca)
 		if not zi_oras:
 			pleaca(marcaj_plecare, sarcina_plecare)
 	_in_curs = false
@@ -214,6 +220,11 @@ func _jefuieste() -> void:
 	Pistol.in_scena = false
 	_jucator.seteaza_purtat(false)
 	await c.opreste()
+	# după jaf vine autobuzul imediat (owner 22.11)
+	if not Stare.e_marcat(marcaj_zi_oras):
+		if sosire_acasa:
+			sosire_acasa.intarziere = 0.0
+		pleaca(marcaj_plecare, sarcina_plecare)
 
 
 ## Iei bancnota din mâna ei: ți-o aduci în fața ochilor, te uiți la ea, o bagi în buzunar (intră în cash: 5 dolari la
@@ -291,12 +302,33 @@ func _tween() -> Tween:
 
 # ---------------------------------------------------------------- moartea
 
-## O lovește un glonț (orice armă). Moare doar după ce ai jefuit-o sau după ce ți-a împrumutat banii (owner, 08.10).
+## O lovește un glonț (orice armă). Vezi `_poate_muri`.
 func impuscat(directie: Vector3, _punct := Vector3.ZERO) -> void:
-	var poate := Stare.e_marcat(marcaj_jaf) or Stare.e_marcat(marcaj_imprumut)
-	if not lexy.mort and poate and _sta_pe_scaun():
+	if not lexy.mort and _poate_muri() and (_sta_pe_scaun() or _cearta_tv()):
 		_moare(directie, forta_glont)
 		pleaca(marcaj_plecare, sarcina_plecare)
+
+
+## Owner 22.11: cu televizorul spart, imediat după ceartă; altfel după jaf, după ce i-ai zis că pleci, sau după
+## împrumut (ziua în oraș).
+func _poate_muri() -> bool:
+	return _cearta_tv() or Stare.e_marcat(marcaj_jaf) or Stare.e_marcat(marcaj_imprumut) \
+		or Stare.e_marcat(marcaj_a_zis_ca_pleaca)
+
+
+## Ați avut cearta pentru televizor (ziua întâi): o poți împușca și cât merge spre masă.
+func _cearta_tv() -> bool:
+	return Stare.e_marcat(marcaj_suparata) and not Stare.e_marcat(marcaj_zi_oras)
+
+
+## Capsula o urmează cât nu stă pe scaun (merge spre masă după ceartă), ca gloanțele să o prindă și din mers.
+func _physics_process(_delta: float) -> void:
+	if lexy.mort or _forma.disabled:
+		return
+	if _sta_pe_scaun():
+		_forma.position = Vector3(0.0, 0.65, 0.0)
+	else:
+		_forma.global_position = lexy.global_position + Vector3.UP * 0.8
 
 
 ## Cade de pe scaun ca un ragdoll, iar după ce se oprește o poți lua cu E. Ca Personaj.omoara.

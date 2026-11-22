@@ -484,11 +484,12 @@ mediu = NodePath("../Mediu")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -3.8)
 shape = SubResource("forma_interior")
 
-[node name="LexyMasa" type="StaticBody3D" parent="." node_paths=PackedStringArray("lexy", "muzica")]
+[node name="LexyMasa" type="StaticBody3D" parent="." node_paths=PackedStringArray("lexy", "muzica", "sosire_acasa")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.05, 0.45, -2.3)
 script = ExtResource("40")
 lexy = NodePath("../Lexy")
 muzica = NodePath("../MuzicaCasa")
+sosire_acasa = NodePath("../SosireAutobuzAcasa")
 
 [node name="Forma" type="CollisionShape3D" parent="LexyMasa"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)

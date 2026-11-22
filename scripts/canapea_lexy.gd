@@ -207,6 +207,9 @@ func interactioneaza() -> void:
 
 func _la_bucatarie(drum: Array[Vector3]) -> void:
 	await lexy.mergi(drum)
+	# a împușcat-o pe drum
+	if lexy.mort:
+		return
 	await lexy.asaza_te(scaun_bucatarie.global_position, scaun_bucatarie.rotation.y)
 	await get_tree().create_timer(0.6).timeout
 	await lexy.incepe_pizza(cutie_pizza.global_position)
