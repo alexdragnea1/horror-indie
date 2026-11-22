@@ -9,8 +9,9 @@ extends Node3D
 ## Se poate omorî (owner, 15.11): are un hitbox (`Hitbox`, cutie pe stratul 1) și un glonț îl omoară ca pe bețiv
 ## (Personaj.omoara: ragdoll pe spate, apoi „[E] Pick up the guy”), doar cât n-ai omorât pe nimeni
 ## (`Personaj.MARCAJ_CRIMA`; altfel glonțul doar îl sperie și fuge). E în grupul „cadavre”, deci îl poți arunca în
-## cazan în locul bețivului (cazan.gd). Ca să-l prinzi și dacă a fugit înainte să ai pistolul: după ce ai primit
-## pistolul (`marcaj_intors`) și până la vrajă se întoarce la locul lui (o singură dată: dacă fuge iar,
+## cazan în locul bețivului (cazan.gd). Owner 22.11: îl prinzi O SINGURĂ DATĂ — dacă a fugit, nu mai revine.
+## (Varianta veche, doar cu `revine` bifat: după ce ai primit
+## pistolul (`marcaj_intors`) și până la vrajă se întoarce la locul lui; o singură dată: dacă fuge iar,
 ## `marcaj_fugit_iar`, nu mai vine). Dacă îl împuști din fugă, cadavrul cade în pădure: acolo se poate umbla
 ## (cercul lui din `cercuri_extra`, limite_padure.gd).
 
@@ -27,6 +28,8 @@ extends Node3D
 @export var marcaj_intors := "a_vorbit_cu_vrajitoarele"
 @export var marcaj_vraja := "vraja_facuta"
 @export var marcaj_fugit_iar := "omul_din_padure_a_fugit_iar"
+## Bifat = după ce a fugit, se întoarce o dată după pistol. Owner 22.11: NU (îl prinzi o singură dată, apoi a plecat de tot).
+@export var revine := false
 @export var marcaj_mort := "omul_din_padure_e_mort"
 @export var marcaj_luat := "omul_din_padure_luat"
 @export var id_cadavru := "cadavru_om_padure"
@@ -285,7 +288,7 @@ func _ascunde() -> void:
 
 ## Se întoarce doar după pistol, înainte de vrajă, o singură dată, și cât nu ești pe aproape să-l vezi apărând.
 func _poate_reveni(jucator: Node3D) -> bool:
-	if jucator == null or Stare.e_marcat(marcaj_fugit_iar) or not Stare.e_marcat(marcaj_intors):
+	if not revine or jucator == null or Stare.e_marcat(marcaj_fugit_iar) or not Stare.e_marcat(marcaj_intors):
 		return false
 	if Stare.e_marcat(marcaj_vraja) or Stare.e_marcat(Personaj.MARCAJ_CRIMA):
 		return false
