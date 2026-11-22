@@ -35,6 +35,8 @@
 [ext_resource type="PackedScene" path="res://models/usa_pivnita.glb" id="usa_pivnita"]
 [ext_resource type="Script" path="res://scripts/usa_pivnita.gd" id="usa_pivnita_gd"]
 [ext_resource type="Script" path="res://scripts/buton_test_jean.gd" id="buton_test"]
+[ext_resource type="AudioStream" path="res://sunete/muzica_deal.ogg" id="muzica_deal_ogg"]
+[ext_resource type="Script" path="res://scripts/muzica_loc.gd" id="muzica_loc_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -409,3 +411,8 @@ script = ExtResource("sosire")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0, 4.9)
 script = ExtResource("buton_test")
 masa = NodePath("../MasaSah")
+
+[node name="MuzicaCasa" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("muzica_deal_ogg")
+bus = &"Muzica"
+script = ExtResource("muzica_loc_gd")
