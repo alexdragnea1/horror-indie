@@ -22,6 +22,10 @@ extends Node3D
 @export var marime_pete := 7.0
 ## După acest marcaj (finalul văzut) ninge de la început.
 @export var marcaj := "head_witch_moarta"
+## Owner 24.11: „scoate faza cu zăpada de pe jos (pălăria era bugată în ea), să pice doar puțină zăpadă”. Debifat =
+## fără strat pe pavaj; `intensitate_finala` = cât ninge după Head Witch (0,5 = două straturi de fulgi din patru, jumătate din cât era).
+@export var strat_pe_jos := false
+@export_range(0.0, 1.0) var intensitate_finala := 0.5
 
 const STRATURI := 4
 
@@ -61,8 +65,8 @@ func _ready() -> void:
 	_strat.visible = false
 	add_child(_strat)
 	if deja:
-		intensitate = 1.0
-		pe_jos = 1.0
+		intensitate = intensitate_finala
+		pe_jos = 1.0 if strat_pe_jos else 0.0
 	else:
 		intensitate = 0.0
 
@@ -147,4 +151,5 @@ func _strat_fulgi(plin: bool) -> CPUParticles3D:
 func porneste(spre: float, durata: float) -> void:
 	var t := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
 	t.tween_property(self, "intensitate", spre, durata)
-	t.tween_property(self, "pe_jos", spre, durata * 3.0)
+	if strat_pe_jos:
+		t.tween_property(self, "pe_jos", spre, durata * 3.0)

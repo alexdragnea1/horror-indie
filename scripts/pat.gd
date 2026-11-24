@@ -60,6 +60,8 @@ extends Interactabil
 ## Scrise de Claude; owner-ul le poate schimba.
 @export_multiline var titlu_dupa_liber := "Home\nNext day, 10:15 AM"
 @export_multiline var replici_somn_liber: PackedStringArray = ["You: No witches, no warlocks. Just sleep."]
+## Prima noapte de după final (vii de la Head Witch, ai vorbit cu Mom pe bancă; owner 24.11).
+@export_multiline var replici_somn_final: PackedStringArray = ["You: Can I catch a fucking break?"]
 
 var _in_curs := false
 
@@ -155,6 +157,8 @@ func interactioneaza() -> void:
 	await tween.finished
 	await get_tree().create_timer(0.5).timeout
 	var replici: PackedStringArray = replici_somn_liber if liber else [replici_somn, replici_somn_2, replici_somn_3][n - 1]
+	if liber and int(Stare.valoare_marcaj(marcaj_zile_liber, 0)) == 0:
+		replici = replici_somn_final
 	if not replici.is_empty():
 		Dialog.spune(replici)
 		if Dialog.activ:

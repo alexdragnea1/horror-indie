@@ -19,6 +19,10 @@ static var din_casa := false
 @export var marcaj_apus := "a_primit_mesajul_sefei"
 ## Ziua de după Warlock (după al treilea somn): iar zi, chiar dacă a fost apusul.
 @export var marcaj_zi_primarie := "ziua_primariei"
+## Seara de după Head Witch (owner 24.11): vii acasă de la final (`marcaj_final`), Mom te așteaptă pe bancă: e noapte
+## până dormi prima dată după final (`marcaj_somn_final`).
+@export var marcaj_final := "jocul_terminat"
+@export var marcaj_somn_final := "nopti_dupa_final"
 @export var mediu: WorldEnvironment
 ## `Luna` din scenă: ziua e soarele (aceeași direcție, altă culoare și putere).
 @export var soare: DirectionalLight3D
@@ -50,6 +54,8 @@ static var din_casa := false
 func _ready() -> void:
 	var jucator := get_parent().get_node_or_null("Jucator") as Node3D
 	var zi := Stare.e_marcat(marcaj_zi_oras) or (Stare.e_marcat(marcaj_dimineata) and not Stare.e_marcat(marcaj_seara))
+	if Stare.e_marcat(marcaj_final) and not Stare.e_marcat(marcaj_somn_final):
+		zi = false  # seara de după Head Witch: noapte, cu felinarele aprinse
 	var apus := Stare.e_marcat(marcaj_apus) and not Stare.e_marcat(marcaj_zi_primarie)
 	if jucator == null:
 		din_casa = false

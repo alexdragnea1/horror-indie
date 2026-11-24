@@ -858,8 +858,71 @@ def spray_mana(cale):
 	exporta(os.path.join(cale, "spray_mana.glb"))
 
 
+def mama_banca(cale):
+	"""Mom pe banca din fața blocului (după final, owner 24.11): aceeași Mom ca în bucătărie (mama() din modele.py:
+	rochia mov cu gulerul gri-albastru, cureaua neagră, pandantivul, bigudiurile roșii, sprâncenele încruntate),
+	dar așezată: șoldurile pe șezut, coapsele înainte sub rochie, gambele drepte, mâinile odihnite pe genunchi.
+	Ca baba: originea = podeaua din fața băncii, la mijlocul șezutului (z 0,46), fața spre -Y. Capul e separat
+	(originea în gât), ca să te urmărească."""
+	curata()
+	piele = p("a56850")
+	rochie, tiv, par = p("655269"), p("553e4d"), p("5e363e")
+	sus = lambda x, y, z: (x, y + 0.11, z - 0.4)  # trunchiul lui Mom din bucătărie, coborât pe bancă și puțin spre spătar
+	piese = [
+		# șezutul: rochia peste șolduri, pe bancă
+		cilindru("Sold", 0.215, 0.205, 0.17, (0, 0.1, 0.545), rochie, scara=(1, 0.86, 1)),
+		cilindru("Curea", 0.21, 0.205, 0.05, sus(0, 0, 1.06), NEGRU, scara=(1, 0.78, 1)),
+		cilindru("Bust", 0.2, 0.23, 0.37, sus(0, 0, 1.235), rochie, scara=(1, 0.74, 1)),
+		cilindru("Guler", 0.13, 0.09, 0.05, sus(0, 0, 1.43), p("778c96"), scara=(1, 0.85, 1)),
+		cilindru("Gat", 0.05, 0.05, 0.1, sus(0, 0, 1.47), piele, laturi=6),
+		sfera("Pandantiv", 0.022, sus(0, -0.17, 1.33), p("438b88"), segmente=6, inele=4),
+		# poala rochiei întinsă peste coapse, cu tivul la genunchi
+		cub("Poala", (0.4, 0.36, 0.13), (0, -0.12, 0.535), rochie),
+		cub("Tiv", (0.42, 0.04, 0.15), (0, -0.31, 0.535), tiv),  # cu 1 cm peste poală pe fiecare parte (altfel fețele se bat)
+	]
+	for s in (1, -1):
+		genunchi = (0.1 * s, -0.32, 0.5)
+		piese += [
+			os_intre("Coapsa", (0.1 * s, 0.06, 0.53), genunchi, 0.075, rochie),
+			sfera("Genunchi", 0.052, (0.1 * s, -0.34, 0.47), piele, segmente=6, inele=4),
+			os_intre("Picior", (0.1 * s, -0.34, 0.46), (0.1 * s, -0.36, 0.1), 0.05, piele),
+			cub("Pantof", (0.1, 0.22, 0.08), (0.1 * s, -0.42, 0.04), p("48313b")),
+		]
+		# brațele: din umeri în jos, coatele pe lângă corp, mâinile odihnite pe genunchi
+		umar, cot, mana = sus(0.25 * s, 0, 1.37), (0.3 * s, 0.03, 0.75), (0.14 * s, -0.24, 0.6)
+		piese += [
+			sfera("Umar", 0.075, umar, rochie, segmente=6, inele=4),
+			os_intre("Brat", umar, cot, 0.06, rochie),
+			sfera("Cot", 0.05, cot, piele, segmente=6, inele=4),
+			os_intre("Antebrat", cot, mana, 0.045, piele),
+			sfera("Mana", 0.05, mana, piele, segmente=6, inele=4, scara=(1.1, 1.2, 0.7)),
+		]
+	uneste(piese, "Corp")
+
+	cap = [
+		sfera("Fata", 0.115, sus(0, 0, 1.6), piele, scara=(1, 1.05, 1.2)),
+		sfera("Calota", 0.13, sus(0, 0.01, 1.67), par, scara=(1.02, 1.05, 0.6)),
+		sfera("Ceafa", 0.115, sus(0, 0.06, 1.6), par, scara=(1.06, 0.8, 1.1)),
+		sfera("Coc", 0.07, sus(0, 0.04, 1.76), par),
+		cub("Nas", (0.022, 0.03, 0.04), sus(0, -0.123, 1.585), p("904a40")),
+		cub("Gura", (0.055, 0.01, 0.012), sus(0, -0.117, 1.535), p("7b383a")),
+	]
+	for s in (1, -1):
+		cap += [
+			cub("Ochi", (0.042, 0.01, 0.026), sus(0.042 * s, -0.117, 1.61), ALB),
+			cub("Pupila", (0.017, 0.01, 0.02), sus(0.042 * s, -0.121, 1.608), NEGRU),
+			cub("Spranceana", (0.05, 0.012, 0.012), sus(0.045 * s, -0.12, 1.64), par, rot=(0, 0.35 * s, 0)),
+			cub("Cercel", (0.015, 0.015, 0.03), sus(0.118 * s, -0.01, 1.56), p("a18463")),
+		]
+	for x in (-0.065, 0.0, 0.065):  # bigudiuri roșii
+		cap.append(cilindru("Bigudiu", 0.026, 0.026, 0.07, sus(x, -0.08, 1.7), p("7b383a"), laturi=6, rot=(0, 1.5708, 0)))
+	uneste(cap, "Cap", sus(0, 0, 1.47))
+	exporta(os.path.join(cale, "mama_banca.glb"))
+
+
 def toate(cale):
 	bloc(cale)
+	mama_banca(cale)
 	copac(cale, "copac_1", 21, 6.5, [p("904a40"), p("a56850"), p("7b383a")])
 	copac(cale, "copac_2", 34, 5.5, [p("a18463"), p("a56850"), p("7a7b59")])
 	copac(cale, "copac_3", 55, 7.0, [p("7b383a"), p("904a40"), p("a18463")], bucati=11)

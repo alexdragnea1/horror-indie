@@ -28,6 +28,13 @@ static var intrat_pe_usa := false
 @export var marcaj_motel := "warlock_absorbit"
 @export var marcaj_zi_primarie := "ziua_primariei"
 @export_multiline var titlu_acasa_motel := "Home\n11:23 PM"
+## Seara de după Head Witch (owner 24.11): de la `marcaj_final` până dormi (`marcaj_somn_final`) nu urci până nu
+## vorbești cu Mom de pe bancă (`marcaj_mom_final`, mama_banca.gd); până atunci `replici_fara_mom` (scrisă de Claude).
+@export var marcaj_final := "jocul_terminat"
+@export var marcaj_somn_final := "nopti_dupa_final"
+@export var marcaj_mom_final := "a_vorbit_cu_mom_dupa_final"
+@export_multiline var replici_fara_mom: PackedStringArray = ["You: Mom's right there on the bench. Better get this over with."]
+@export_multiline var titlu_acasa_final := "Home\n9:27 PM"
 ## Ce se aude pe negru: ușa blocului, scările, ușa apartamentului.
 @export var sunete_tranzitie: Array[AudioStream] = []
 @export var sunet_usa: AudioStream
@@ -38,7 +45,12 @@ func interactioneaza() -> void:
 		super.interactioneaza()
 		return
 	var titlu := titlu_acasa_dimineata if Stare.e_marcat(marcaj_dimineata) else titlu_acasa
-	if Stare.e_marcat(marcaj_motel) and not Stare.e_marcat(marcaj_zi_primarie):
+	if Stare.e_marcat(marcaj_final) and not Stare.e_marcat(marcaj_somn_final):
+		if not Stare.e_marcat(marcaj_mom_final):
+			Dialog.spune(replici_fara_mom)
+			return
+		titlu = titlu_acasa_final
+	elif Stare.e_marcat(marcaj_motel) and not Stare.e_marcat(marcaj_zi_primarie):
 		titlu = titlu_acasa_motel
 	elif Stare.e_marcat(marcaj_zi_oras):
 		titlu = titlu_acasa_dimineata

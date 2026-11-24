@@ -58,6 +58,11 @@ static var cu_autobuzul := false
 ## După `marcaj_liber` (jocul terminat; owner 17.10: free roam) orarul e același peste tot: doar `LIBER`, fără locul
 ## în care ești, și nimic nu mai e blocat.
 @export var marcaj_liber := "jocul_terminat"
+## Seara de după Head Witch (owner 24.11): până dormi prima dată după final (`marcaj_somn_final`) orarul are doar Home
+## (`titlu_acasa_final`, noaptea); din stația de la bloc nu mai pleci nicăieri (`replici_acasa_final`, de la Claude).
+@export var marcaj_somn_final := "nopti_dupa_final"
+@export_multiline var titlu_acasa_final := "Block M7, Entrance B\n9:24 PM"
+@export_multiline var replici_acasa_final: PackedStringArray = ["You: I'm already home. I need some fucking rest."]
 
 ## Locurile din free roam: [buton, scenă, titlu].
 const LIBER := [
@@ -146,10 +151,21 @@ func _orar_liber() -> void:
 	var aici := get_tree().current_scene.scene_file_path
 	var locuri := []
 	var butoane := PackedStringArray()
+	var doar_acasa := not Stare.e_marcat(marcaj_somn_final)
+	if doar_acasa and aici == LIBER[0][1]:
+		Dialog.spune(replici_acasa_final)
+		if Dialog.activ:
+			await Dialog.terminat
+		return
 	for loc in LIBER:
-		if loc[1] != aici:
-			locuri.append(loc)
-			butoane.append(loc[0])
+		if loc[1] == aici:
+			continue
+		if doar_acasa:
+			if loc[0] != "Home":
+				continue
+			loc = [loc[0], loc[1], titlu_acasa_final]
+		locuri.append(loc)
+		butoane.append(loc[0])
 	butoane.append(optiune_anulare)
 	var buton := await Dialog.intreaba("", butoane)
 	if buton < 0 or buton >= locuri.size():

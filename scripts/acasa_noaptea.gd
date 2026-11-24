@@ -49,6 +49,13 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 ## După prima ieșire din casă în ziua aia nu mai scrie ora.
 @export var marcaj_iesit_zi_3 := "a_iesit_ziua_primariei"
 
+@export_group("Seara de după final")
+## După Head Witch (owner 24.11): vii acasă după ce ai vorbit cu Mom de pe bancă; intri pe ușă (`marcaj_venit_final`,
+## aceeași `sarcina_noua`), ușa nu te lasă afară până dormi (pat.gd numără nopțile în `marcaj_somn_final`).
+@export var marcaj_final := "jocul_terminat"
+@export var marcaj_somn_final := "nopti_dupa_final"
+@export var marcaj_venit_final := "a_venit_acasa_dupa_final"
+
 
 func _ready() -> void:
 	# ieși pe ușă (oricând, și prima dată): afară te pune lângă ușa blocului, cu fața spre stradă (vezi zi_bloc.gd)
@@ -60,10 +67,13 @@ func _ready() -> void:
 		mama.queue_free()
 	var noaptea_3 := Stare.e_marcat(marcaj_noapte_3) and not Stare.e_marcat(marcaj_zi_3)
 	var noaptea_2 := Stare.e_marcat(marcaj_noapte_2) and not Stare.e_marcat(marcaj_zi_oras)
+	var noaptea_final := Stare.e_marcat(marcaj_final) and not Stare.e_marcat(marcaj_somn_final)
 	if usa_intrare:
 		usa_intrare.marcaj_necesar = marcaj_iesire
 		usa_intrare.replici_fara_marcaj = replici_usa
-		if noaptea_3:
+		if noaptea_final:
+			usa_intrare.marcaj_necesar = marcaj_somn_final
+		elif noaptea_3:
 			usa_intrare.marcaj_necesar = marcaj_zi_3
 		elif Stare.e_marcat(marcaj_zi_3):
 			usa_intrare.marcaj_necesar = ""
@@ -86,6 +96,8 @@ func _ready() -> void:
 	var pe_usa: bool = USA_BLOC.intrat_pe_usa
 	USA_BLOC.intrat_pe_usa = false
 	var venit := marcaj_venit_3 if noaptea_3 else (marcaj_venit_2 if noaptea_2 else marcaj_venit)
+	if noaptea_final:
+		venit = marcaj_venit_final
 	if jucator == null or (Stare.e_marcat(venit) and not pe_usa):
 		return
 	jucator.global_position = loc_intrare

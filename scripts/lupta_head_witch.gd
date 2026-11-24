@@ -40,6 +40,9 @@ extends LuptaBoss
 @export var marcaj_final := "jocul_terminat"
 ## Sarcina în luptă (a lui Claude).
 @export var sarcina_lupta := "Kill the Head Witch."
+## După final, până dormi prima dată (`marcaj_somn_final`, pat.gd): mergi acasă, Mom te așteaptă pe bancă (owner 24.11).
+@export var sarcina_dupa_final := "Go home and rest."
+@export var marcaj_somn_final := "nopti_dupa_final"
 
 @export_group("Replici")
 @export_multiline var replici_intro: PackedStringArray = ["Head Witch: What are you doing here child?",
@@ -1150,28 +1153,18 @@ func _finalul(_din_lupta: bool) -> void:
 	_vant.volume_db = -40.0
 	add_child(_vant)
 	_vant.play()
-	create_tween().tween_property(_vant, "volume_db", Sunet.VOLUM_AMBIANTA + 2.0, 4.0)
-	_spre_iarna(6.0)
+	create_tween().tween_property(_vant, "volume_db", Sunet.VOLUM_AMBIANTA - 2.0, 4.0)
+	# owner 24.11: după ea piața arată iar ca la începutul luptei (apusul / blue hour, fără verdele fazei a doua și fără
+	# iarnă), doar că ninge puțin, fără strat pe jos (Zapada.intensitate_finala, strat_pe_jos)
+	_tween_cer(0.0, 6.0)
 	await get_tree().create_timer(1.0, false).timeout
 	if zapada:
-		zapada.porneste(1.0, 7.0)
+		zapada.porneste(zapada.intensitate_finala, 7.0)
 	Sunet.reda(SUNET_DOBORAT, Sunet.VOLUM_EFECTE)
 	await _bara.mesaj("HEAD WITCH DEFEATED", BaraBoss.AURIU, 2.6)
 	_sefa.queue_free()
 	await _palaria(unde)
 
-
-## Cerul și ceața spre o seară de iarnă (fulgii se văd pe un albastru deschis, ceața e albă).
-func _spre_iarna(durata: float) -> void:
-	if _env == null:
-		return
-	var de_la := {"fog_light_color": _env.fog_light_color, "fog_density": _env.fog_density,
-		"ambient_light_color": _env.ambient_light_color, "ambient_light_energy": _env.ambient_light_energy}
-	create_tween().tween_method(func(x: float) -> void:
-		_env.fog_light_color = (de_la["fog_light_color"] as Color).lerp(Color(0.62, 0.68, 0.8), x)
-		_env.fog_density = lerpf(de_la["fog_density"], 0.035, x)
-		_env.ambient_light_color = (de_la["ambient_light_color"] as Color).lerp(Color(0.62, 0.7, 0.92), x)
-		_env.ambient_light_energy = lerpf(de_la["ambient_light_energy"], 0.75, x), 0.0, 1.0, durata)
 
 
 ## Fulgii care pleacă din explozie: un nor alb care se lărgește încet și cade, ca primii fulgi.
@@ -1341,15 +1334,21 @@ func _fa_mesajul() -> void:
 	strat.add_child(_mesaj)
 
 
-## După final (Continue): ninge, e seară de iarnă; nu mai e nimeni în piață. Dacă ai ieșit
-## între explozie și generic, finalul o ia de la pălărie.
+## După final (Continue / înapoi din generic): piața ca la începutul luptei, ninge puțin, nu mai e nimeni. Până dormi
+## prima dată după final ai sarcina `sarcina_dupa_final` (owner 24.11), iar orarul are doar Home (orar_autobuz.gd).
+## Dacă ai ieșit între explozie și generic, finalul o ia de la pălărie.
 func _dupa_moarte() -> void:
 	if declansator:
 		declansator.monitoring = false
 	if civili:
 		civili.hide()
-	_spre_iarna(0.01)
 	if Stare.e_marcat(marcaj_final):
+		if not Stare.e_marcat(marcaj_somn_final) and Stare.sarcina != sarcina_dupa_final:
+			await get_tree().process_frame
+			while Tranzitie.activa:
+				await get_tree().process_frame
+			await get_tree().create_timer(1.0, false).timeout
+			Stare.seteaza_sarcina(sarcina_dupa_final)
 		return
 	# între explozie și generic: de la pălărie
 	await get_tree().process_frame
