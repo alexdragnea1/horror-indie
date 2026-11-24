@@ -292,8 +292,11 @@ def _masina(tip, culoare, r):
 				s.append(cub("Geam lateral", (0.02, 0.85, 0.36), (x, y, h0 + 0.92), GEAM if tip != "epava" or r.random() < 0.5 else NEGRU))
 	if tip == "epava":
 		# capota ridicată, motorul la vedere, roțile scoase, pe butuci de beton
-		s.append(cub("Capota", (1.7, 1.3, 0.04), (0, -1.95, h0 + 1.1), culoare, rot=(-1.1, 0, 0)))
-		s.append(cub("Motor", (1.1, 1.0, 0.4), (0, -1.7, h0 + 0.62), METAL_INCHIS))
+		# capota se sprijină în balamale la y -1,2 (în fața parbrizului), lângă caroserie, și urcă în față la 60°:
+		# centrul ei e la jumătatea lungimii pe direcția (0, -0,5, 0,87); motorul stă dedesubt, mai în față,
+		# ca să nu treacă capota prin el (înainte capota era rotită în jurul centrului și intra în motor)
+		s.append(cub("Capota", (1.7, 1.3, 0.04), (0, -1.2 - 0.65 * 0.5, h0 + 0.66 + 0.65 * 0.866), culoare, rot=(-1.047, 0, 0)))
+		s.append(cub("Motor", (1.1, 0.8, 0.3), (0, -1.85, h0 + 0.72), METAL_INCHIS))
 		for x in (-0.72, 0.72):
 			for y in (-1.5, 1.5):
 				s.append(cub("Butuc", (0.38, 0.38, 0.28), (x, y, 0.14), BETON))
@@ -844,14 +847,15 @@ def receptie(cale):
 	piese.append(cub("Tastatura automat", (0.03, 0.12, 0.3), (ax - 0.44, 9.5, FL + 1.2), CROM))
 	_cutie_coliziune(col, (0.85, 0.8, 1.9), (ax, 9.2, FL + 0.95))
 	# aparatul de cafea „OUT OF ORDER” și coșul de gunoi plin
-	piese.append(cub("Masa cafea", (0.8, 0.45, 0.05), (ix1 - 0.3, 7.6, FL + 0.85), LEMN))
-	piese.append(cub("Picior masa cafea", (0.7, 0.4, 0.82), (ix1 - 0.3, 7.6, FL + 0.42), LEMN_INCHIS))
+	# masa e destul de adâncă (7,3…8,05) cât să încapă și teancul de pahare de lângă aparat (înainte stăteau în aer)
+	piese.append(cub("Masa cafea", (0.8, 0.75, 0.05), (ix1 - 0.3, 7.68, FL + 0.85), LEMN))
+	piese.append(cub("Picior masa cafea", (0.7, 0.68, 0.82), (ix1 - 0.3, 7.68, FL + 0.42), LEMN_INCHIS))
 	piese.append(cub("Aparat cafea", (0.3, 0.3, 0.42), (ix1 - 0.3, 7.6, FL + 1.085), NEGRU))
 	piese.append(cilindru("Carafa", 0.08, 0.07, 0.16, (ix1 - 0.38, 7.6, FL + 0.96), GEAM, laturi=8))
 	piese.append(cub("Bilet aparat", (0.01, 0.22, 0.15), (ix1 - 0.46, 7.6, FL + 1.15), ALB))
 	piese.append(_text_o_fata("Out of order", "OUT OF\nORDER", (ix1 - 0.466, 7.6, FL + 1.15), 0.04, ROSU, rot=(1.5708, 0, -1.5708)))
 	piese.append(cilindru("Teanc pahare", 0.04, 0.035, 0.18, (ix1 - 0.3, 7.88, FL + 0.97), ALB, laturi=6))
-	_cutie_coliziune(col, (0.8, 0.5, 1.3), (ix1 - 0.3, 7.6, FL + 0.65))
+	_cutie_coliziune(col, (0.8, 0.8, 1.3), (ix1 - 0.3, 7.68, FL + 0.65))
 	piese.append(cilindru("Cos gunoi", 0.17, 0.15, 0.42, (ix1 - 0.3, 6.6, FL + 0.21), METAL, laturi=8))
 	for k in range(5):
 		piese.append(sfera("Gunoi cos", r.uniform(0.05, 0.09), (ix1 - 0.3 + r.uniform(-0.1, 0.1), 6.6 + r.uniform(-0.1, 0.1),
