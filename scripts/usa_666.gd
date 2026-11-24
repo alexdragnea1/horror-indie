@@ -14,9 +14,11 @@ const SUNET_VOCE_DEMON := preload("res://sunete/demon_voce.ogg")
 @export_multiline var replici_demon: PackedStringArray = ["Demon: Can I fucking help you?",
 	"Demon: I'm doing my skincare routine.."]
 @export var unghi_deschidere := 80.0
-## Unde stă demonul, față de balama (înăuntru = -Z), și cât de mare e (în prag trebuie să încapă sub toc).
-@export var loc_demon := Vector3(0.5, 0.0, -0.85)
-@export var marime_demon := 0.8
+## Unde stă demonul, față de balama (înăuntru = -Z), și cât de mare e. Foaia ușii mătură un sfert de cerc de ~0,95 m
+## în jurul balamalei: brațele lui (în față, +0,42 m la 0,75) trebuie să rămână dincolo de el, altfel ușa trece prin ele;
+## aripile (în spate, -1,07 m) încap până la peretele din fund al cămăruței (~-2,7 m).
+@export var loc_demon := Vector3(0.5, 0.0, -1.45)
+@export var marime_demon := 0.75
 ## Cât așteaptă după ce bați până deschide (secunde).
 @export var asteptare := 1.4
 
