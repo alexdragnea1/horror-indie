@@ -1765,7 +1765,35 @@ def maimuta_caca(cale):
 	exporta(os.path.join(cale, "maimuta_caca.glb"))
 
 
+def furca(cale):
+	"""Furca rezemată de spatele casei din dreapta primăriei (owner 24.11), armă: coada de lemn tocit, manșonul de
+	fier, traversa ruginită și patru dinți de fier ușor curbați în sus. Originea = unde o ții cu mâna din față
+	(0,35 m de capătul cozii); dinții spre +Y (în Godot spre -Z, ca restul armelor). Lungă de ~1,55 m."""
+	curata()
+	piese = [
+		cilindru("Coada", 0.017, 0.016, 1.12, (0, 0.21, 0), BRONZ, laturi=6, rot=(-1.5708, 0, 0)),  # lemn tocit (LEMN_DESCHIS e roșiatic)
+		cilindru("Capat coada", 0.018, 0.018, 0.03, (0, -0.345, 0), LEMN_INCHIS, laturi=6, rot=(-1.5708, 0, 0)),
+		cilindru("Manson", 0.021, 0.019, 0.09, (0, 0.8, 0), METAL_INCHIS, laturi=6, rot=(-1.5708, 0, 0)),
+		cub("Gat furca", (0.03, 0.03, 0.026), (0, 0.858, 0), METAL_INCHIS),  # până în traversă, fără să intre în ea
+		# traversa: ușor arcuită (capetele trase puțin înapoi), ruginită
+		cub("Traversa", (0.12, 0.024, 0.02), (0, 0.885, 0), RUGINA),
+	]
+	for s in (-1, 1):
+		piese.append(cub("Traversa", (0.07, 0.024, 0.02), (s * 0.085, 0.878, 0), RUGINA, rot=(0, 0, s * 0.2)))
+	# dinții: din traversă drept înainte, apoi curbați în sus spre vârf, mai subțiri
+	for x in (-0.1, -0.034, 0.034, 0.1):
+		baza = (x, 0.885 if abs(x) < 0.05 else 0.872, 0.0)
+		mijloc = (x * 1.04, 1.04, 0.01)
+		varf = (x * 1.07, 1.2, 0.038)
+		piese.append(os_intre("Dinte", baza, mijloc, 0.011, METAL, laturi=5))  # groși cât să se vadă la 480×270
+		piese.append(os_intre("Dinte", mijloc, varf, 0.008, METAL, laturi=5))
+		piese.append(sfera("Varf dinte", 0.008, varf, METAL, segmente=5, inele=3))
+	uneste(piese, "Furca")
+	exporta(os.path.join(cale, "furca.glb"))
+
+
 def toate(cale):
+	furca(cale)
 	cladire(cale)
 	interior(cale)
 	curte(cale)

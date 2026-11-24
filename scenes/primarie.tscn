@@ -75,6 +75,8 @@
 [ext_resource type="PackedScene" path="res://models/maimuta_taxe_5.glb" id="66_m5"]
 [ext_resource type="PackedScene" path="res://models/maimuta_taxe_6.glb" id="67_m6"]
 [ext_resource type="PackedScene" path="res://scenes/maimuta_caca.tscn" id="68_mc"]
+[ext_resource type="Script" path="res://scripts/furca_jos.gd" id="furca_jos"]
+[ext_resource type="PackedScene" path="res://models/furca.glb" id="furca_glb"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -138,6 +140,9 @@ size = Vector3(4.7, 3.4, 11.4)
 
 [sub_resource type="BoxShape3D" id="forma_mocheta_taxe"]
 size = Vector3(4.4, 1.0, 11.4)
+
+[sub_resource type="BoxShape3D" id="forma_furca"]
+size = Vector3(0.3, 1.5, 0.35)
 
 [node name="Primarie" type="Node3D"]
 
@@ -720,3 +725,18 @@ saminta = 2
 [node name="Model" parent="Vaca2" instance=ExtResource("vaca_glb")]
 script = ExtResource("3_mp")
 material = ExtResource("4_mt")
+
+[node name="FurcaJos" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0, -5.3)
+script = ExtResource("furca_jos")
+indiciu = "[E] Take the pitchfork"
+replici = PackedStringArray("You: I think nobody saw me.")
+
+[node name="Model" type="Node3D" parent="FurcaJos" instance=ExtResource("furca_glb")]
+transform = Transform3D(-1, 0, 0, 0, 0.2955, -0.9553, 0, -0.9553, -0.2955, 0, 0.344, -0.07)
+script = ExtResource("3_mp")
+material = ExtResource("4_mt")
+
+[node name="Forma" type="CollisionShape3D" parent="FurcaJos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0.05)
+shape = SubResource("forma_furca")

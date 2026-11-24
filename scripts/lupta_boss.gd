@@ -28,8 +28,10 @@ extends Node3D
 @export var damage_ak47 := 25
 @export var damage_bazooka := 500
 @export var damage_fireball := 100  # owner 10.11 (înainte 50)
-## Gauntlet-ul (roata din pivniță, felia portocalie, owner 16.11): pe lovitură.
-@export var damage_gauntlet := 350
+## Gauntlet-ul (roata din pivniță, felia portocalie, owner 16.11): pe lovitură (owner 24.11: cât furca; înainte 350).
+@export var damage_gauntlet := 100
+## Furca din spatele casei de lângă primărie (furca.gd, owner 24.11): pe împuns.
+@export var damage_furca := 100
 ## Viața ta în luptă și cât iei de la fiecare atac al lui.
 @export var viata_jucator := 100.0
 @export var damage_vraja := 15.0
@@ -277,6 +279,8 @@ func _damage_arma(arma: String) -> int:
 			return damage_bazooka
 		"gauntlet":
 			return damage_gauntlet
+		"furca":
+			return damage_furca
 		"vraja_foc":
 			return damage_fireball
 	return damage_pistol

@@ -480,6 +480,35 @@ func evalueaza() -> int:
 	return scor if la_mutare == ALB else -scor
 
 
+## Mutarea unui începător de ~100 elo (owner 24.11, ca boții cei mai slabi de pe site-urile de șah): nu se uită
+## deloc înainte. Vede doar ce e chiar acum pe tablă: un mat la o mutare îl dă de multe ori (`sansa_mat`), o piesă
+## de luat o ia des, mereu pe cea mai mare (`sansa_lacom`), fără să se întrebe dacă e apărată; altfel mută la
+## întâmplare. Așa lasă piese în priză, nu-și apără regele și ia „otrava”.
+func mutare_incepator(sansa_mat := 0.5, sansa_lacom := 0.55, saminta := 0) -> int:
+	_rng.seed = saminta if saminta != 0 else Time.get_ticks_usec()
+	var mutari := mutari_legale()
+	if mutari.is_empty():
+		return -1
+	if _rng.randf() < sansa_mat:
+		for m in mutari:
+			muta(m, false)
+			var mat := mutari_legale().is_empty() and in_sah()
+			anuleaza()
+			if mat:
+				return m
+	if _rng.randf() < sansa_lacom:
+		var cea_lacoma := -1
+		var cel_mai_mult := 0
+		for m in mutari:
+			var luat := capturat_de(m)
+			if luat != 0 and VALOARE[tip(luat)] > cel_mai_mult:
+				cel_mai_mult = VALOARE[tip(luat)]
+				cea_lacoma = m
+		if cea_lacoma != -1:
+			return cea_lacoma
+	return mutari[_rng.randi_range(0, mutari.size() - 1)]
+
+
 ## Mutarea aleasă pentru cel la mutare. `adancime` = câte mutări înainte se uită (plus capturile până se liniștesc);
 ## `zgomot` = câți centipioni de „gust” la întâmplare primește fiecare mutare (0 = mereu cea mai bună).
 func cea_mai_buna(adancime: int, zgomot := 0, saminta := 0) -> int:

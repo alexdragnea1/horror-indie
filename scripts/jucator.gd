@@ -53,6 +53,9 @@ var _decalaj_treapta := 0.0
 var _locuri_sigure: Array[Vector3] = []
 var _ceas_loc_sigur := 0.0
 var _ceas_in_mana := 0.0
+## Avântul (furca, owner 24.11): cât mai ține și cu ce viteză (orizontală) te duce înainte, peste mersul tău.
+var _avant_timp := 0.0
+var _avant_viteza := Vector3.ZERO
 const PAS_LOC_SIGUR := 0.5  # s între două locuri notate
 const LOCURI_SIGURE_MAX := 60  # ~30 s de mers în urmă
 
@@ -78,6 +81,7 @@ func _ready() -> void:
 	_camera.add_child(AK47.new())
 	_camera.add_child(Bazooka.new())
 	_camera.add_child(Gauntlet.new())  # (roata din pivnița lui Jean, roata_noroc.gd)
+	_camera.add_child(Furca.new())  # (din spatele casei din dreapta primăriei, furca_jos.gd)
 	# ce ții în mână se vede și când ești lipit de perete (owner 17.11): tot ce apare sub cameră, de acum încolo
 	get_tree().node_added.connect(_nod_adaugat)
 	InManaVizibil.aplica.call_deferred(_camera)
@@ -137,6 +141,14 @@ func _physics_process(delta: float) -> void:
 	var viteza := (viteza_fuga if Input.is_action_pressed("alearga") else viteza_mers) * bonus
 	velocity.x = move_toward(velocity.x, directie.x * viteza, viteza * 10.0 * delta)
 	velocity.z = move_toward(velocity.z, directie.z * viteza, viteza * 10.0 * delta)
+	if _avant_timp > 0.0:
+		_avant_timp -= delta
+		velocity.x = _avant_viteza.x
+		velocity.z = _avant_viteza.z
+		if _avant_timp <= 0.0:
+			# la capăt te oprești (altfel mai alunecai încă 2 m până frânai), mersul pornește iar de la tine
+			velocity.x = directie.x * viteza
+			velocity.z = directie.z * viteza
 	var y_inainte := global_position.y
 	var era_pe_podea := is_on_floor()
 	if _urca_treapta(delta):
@@ -184,6 +196,17 @@ func _physics_process(delta: float) -> void:
 
 
 ## Notează din când în când unde stai pe podea (pentru Unstuck). Primul loc e cel de la intrarea în scenă.
+## Un avânt scurt înainte (furca): `viteza` = viteza orizontală (m/s), timp de `durata` secunde, în locul mersului.
+## Zidurile și oamenii te opresc (move_and_slide), deci nu treci prin nimic.
+func avant(viteza: Vector3, durata: float) -> void:
+	_avant_viteza = Vector3(viteza.x, 0.0, viteza.z)
+	_avant_timp = durata
+	if durata <= 0.0:
+		# oprit (ai lovit ceva): stai pe loc, nu mai aluneci
+		velocity.x = 0.0
+		velocity.z = 0.0
+
+
 func _noteaza_loc_sigur(delta: float) -> void:
 	_ceas_loc_sigur += delta
 	if not is_on_floor() or (_ceas_loc_sigur < PAS_LOC_SIGUR and not _locuri_sigure.is_empty()):

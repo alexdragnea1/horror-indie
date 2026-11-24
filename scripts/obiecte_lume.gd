@@ -47,6 +47,16 @@ const MODELE := {
 		"ridicare": 0.016,
 		"raft": Vector3(0.0, 0.0, PI / 2.0),
 	},
+	# furca din spatele casei de lângă primărie (furca_jos.gd, owner 24.11): pe jos culcată pe spate (dinții în sus, puțin),
+	# pe raft rezemată cu coada jos
+	"furca": {
+		"scena": "res://models/furca.glb",
+		"jos": Vector3.ZERO,
+		"ridicare": 0.02,
+		"sprijinita": true,
+		"sprijin": Vector3(PI / 2.0 - 0.2, 0.0, 0.0),
+		"sprijin_y": 0.36,
+	},
 	# katana din parcarea barului URBAN (katana_jos.gd): pe jos pe o parte (garda o ridică), pe raft rezemată, cu mânerul jos
 	"katana": {
 		"scena": "res://models/katana.glb",

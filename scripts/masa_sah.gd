@@ -53,6 +53,12 @@ const C_ROSU := Color("904a40")
 @export var centru_tabla: Marker3D
 ## Pușca de sub masă (Node3D cu `Model`, `Maner`, `Tub`, `Gura`), și unde stă când e scoasă.
 @export var pusca: Node3D
+## Jean joacă ca un bot de ~100 elo (owner 24.11): nu calculează nimic, ia piese când le vede, dă mat când îl vede
+## (`Sah.mutare_incepator`, cu șansele de mai jos), altfel mută la întâmplare. Debifat = motorul adevărat (`adancime`, `zgomot`).
+@export var incepator := true
+## Cât de des dă matul pe care îl are la o mutare și cât de des ia cea mai mare piesă pe care o poate lua (0..1).
+@export_range(0.0, 1.0) var sansa_mat := 0.5
+@export_range(0.0, 1.0) var sansa_lacom := 0.55
 @export var adancime := 2
 ## Câți centipioni de „gust” la întâmplare pune Jean pe fiecare mutare (mai mult = mai ușor de bătut).
 @export var zgomot := 35
@@ -393,7 +399,8 @@ func _meci() -> void:
 func _gandeste() -> int:
 	var copie := _sah.copie()
 	var rezultat := [-1]
-	var de_facut := func() -> void: rezultat[0] = copie.cea_mai_buna(adancime, zgomot)
+	var de_facut := func() -> void:
+		rezultat[0] = copie.mutare_incepator(sansa_mat, sansa_lacom) if incepator else copie.cea_mai_buna(adancime, zgomot)
 	var sarcina := WorkerThreadPool.add_task(de_facut, false, "Jean gândește")
 	var minim := randf_range(gandire_minima.x, gandire_minima.y)
 	var start := Time.get_ticks_msec()
