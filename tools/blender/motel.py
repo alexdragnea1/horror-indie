@@ -86,9 +86,10 @@ TY0, TY1, TZ = 10.0, 10.7, FL + 1.05   # tejgheaua: fața spre client, spatele, 
 PERETE_SPATE = 12.5                   # peretele din spatele receptionerei (cu panoul de chei)
 # receptionera stă pe scaun în spatele tejghelei
 RX, RY = 13.75, 10.98
-# --- piscina (golită)
-PX0, PX1, PY0, PY1, PADANC = -15.5, -9.5, -6.0, -1.0, 1.6
-GX0, GX1, GY0, GY1 = -17.0, -8.0, -7.5, 0.5   # gardul de plasă / dalele din jur
+# --- piscina (golită): în spatele scării, lipită de capătul aripii cu „IHATEPINK WAS HERE” (owner 24.11; înainte era
+# în mijlocul parcării). Peretele ține loc de gard pe latura dinspre el (GX1 = XV0), poarta e pe latura din stânga (GX0).
+PX0, PX1, PY0, PY1, PADANC = -26.3, -20.3, 11.75, 16.75, 1.6
+GX0, GX1, GY0, GY1 = -27.8, XV0, 10.5, 18.0   # gardul de plasă / dalele din jur
 # --- strada
 SY0, SY1 = -26.0, -18.0
 
@@ -956,15 +957,17 @@ def parcare(cale):
 				w, h = r.uniform(2, 8), r.uniform(1.5, 8)
 				piese.append(cub("Iarba uscata", (w, h, 0.02), (cx + 5 + r.uniform(-(10 - w) / 2, (10 - w) / 2),
 					cy + 5 + r.uniform(-(10 - h) / 2, (10 - h) / 2), -0.045), r.choice((MASLINIU, VERDE, BRONZ, LEMN))))
-	# --- asfaltul parcării, în jurul curții piscinei
+	# --- asfaltul parcării
 	# (până sub zidurile invizibile din motel.tscn, x = -33 și 25, z = -18,5: altfel rămâneau fâșii fără podea prin care cădeai)
 	ax0, ax1, ay0, ay1, ay_spate = -34.0, 26.0, SY1, YP, 19.5
-	for (a, b, c, d) in ((ax0, GX0, ay0, ay1), (GX1, ax1, ay0, ay1), (GX0, GX1, ay0, GY0), (GX0, GX1, GY1, ay1)):
-		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
+	piese.append(cub("Asfalt", (ax1 - ax0, ay1 - ay0, 0.06), ((ax0 + ax1) / 2, (ay0 + ay1) / 2, -0.03), ASFALT))
 	_cutie_coliziune(col, (ax1 - ax0, ay1 - ay0, 0.2), ((ax0 + ax1) / 2, (ay0 + ay1) / 2, -0.1))
-	# asfaltul din spatele clădirilor: lângă scară, în spatele aripii, în spatele recepției (la tomberon) și în dreapta ei
-	for (a, b, c, d) in ((ax0, XV0 - 6.6, YP, YF), (ax0, XV0, YF, ay_spate), (XV0, XB, YS, ay_spate), (XB, OX1, OY1, ay_spate),
-			(OX1, ax1, YP, ay_spate)):
+	# asfaltul din spatele clădirilor: lângă scară, în spatele aripii (în jurul curții piscinei), în spatele recepției
+	# (la tomberon) și în dreapta ei
+	for (a, b, c, d) in ((ax0, XV0 - 6.6, YP, YF), (ax0, GX0, YF, ay_spate), (GX1, XV0, YF, ay_spate), (GX0, GX1, YF, GY0),
+			(GX0, GX1, GY1, ay_spate), (XV0, XB, YS, ay_spate), (XB, OX1, OY1, ay_spate), (OX1, ax1, YP, ay_spate)):
+		if b - a < 0.01 or d - c < 0.01:
+			continue
 		piese.append(cub("Asfalt", (b - a, d - c, 0.06), ((a + b) / 2, (c + d) / 2, -0.03), ASFALT))
 	_cutie_coliziune(col, (ax1 - ax0, ay_spate - YP, 0.2), ((ax0 + ax1) / 2, (YP + ay_spate) / 2, -0.1))
 	# asfaltul continuă și dincolo de zidurile invizibile (în stânga, în dreapta și în spate, 200 m), ca la stradă:
@@ -1082,28 +1085,33 @@ def parcare(cale):
 	piese.append(cub("Postament trambulina", (0.5, 0.6, 0.4), ((PX0 + PX1) / 2, PY1 + 0.6, 0.2), BETON))
 	piese.append(cub("Trambulina", (0.45, 1.6, 0.06), ((PX0 + PX1) / 2, PY1 - 0.2, 0.44), ALB, rot=(0.1, 0, 0)))
 	piese.append(cub("Trambulina rupta", (0.45, 0.6, 0.06), ((PX0 + PX1) / 2 + 0.1, PY1 - 1.5, -PADANC + 0.2), ALB, rot=(-0.7, 0.2, 0.3)))
-	# gardul de plasă cu poarta încuiată (lanț și lacăt) și panourile
-	_plasa_gard(piese, (GX0, GY0), (GX1, GY0), 1.5, r)
-	_plasa_gard(piese, (GX0, GY1), (GX1, GY1), 1.5, r, poarta=(4.0, 5.2))
-	_plasa_gard(piese, (GX0, GY0), (GX0, GY1), 1.5, r)
-	_plasa_gard(piese, (GX1, GY0), (GX1, GY1), 1.5, r)
+	# gardul de plasă pe trei laturi (a patra e peretele aripii), cu poarta încuiată (lanț și lacăt) pe latura din stânga,
+	# spre locul liber dintre piscină și zidul invizibil; panourile tot pe ea, cu fața spre -X
+	gx1 = GX1 - 0.05  # gardurile se opresc chiar înainte de perete
+	_plasa_gard(piese, (GX0, GY0), (gx1, GY0), 1.5, r)
+	_plasa_gard(piese, (GX0, GY1), (gx1, GY1), 1.5, r)
+	_plasa_gard(piese, (GX0, GY0), (GX0, GY1), 1.5, r, poarta=(3.15, 4.35))
 	strange()
-	px = GX0 + 4.6
-	piese.append(cub("Rama poarta", (1.2, 0.05, 1.45), (px, GY1, 0.76), METAL))
-	for k in range(6):
-		piese.append(cub("Bara poarta", (0.025, 0.03, 1.4), (px - 0.5 + k * 0.2, GY1, 0.75), METAL))
-	piese.append(_tor("Lant", 0.06, 0.012, (px + 0.6, GY1 + 0.03, 0.9), CROM, rot=(1.5708, 0, 0), segmente=8))
-	piese.append(_tor("Lant", 0.06, 0.012, (px + 0.6, GY1 + 0.03, 0.8), CROM, rot=(1.5708, 0, 0.6), segmente=8))
-	piese.append(cub("Lacat", (0.07, 0.03, 0.09), (px + 0.6, GY1 + 0.06, 0.7), AUR))
-	piese.append(cub("Panou piscina", (1.1, 0.02, 0.5), (GX0 + 2.0, GY1 + 0.03, 1.1), ALB))
-	piese.append(_text("Scris piscina", "POOL CLOSED", (GX0 + 2.0, GY1 + 0.042, 1.18), 0.1, ROSU, rot=(1.5708, 0, 3.1416)))
-	piese.append(_text("Scris piscina", "NO LIFEGUARD ON DUTY", (GX0 + 2.0, GY1 + 0.042, 1.0), 0.06, NEGRU, rot=(1.5708, 0, 3.1416)))
-	piese.append(cub("Panou piscina", (1.1, 0.02, 0.5), (GX1 - 2.0, GY0 - 0.03, 1.1), ALB))
-	piese.append(_text("Scris piscina", "SWIM AT YOUR\nOWN RISK", (GX1 - 2.0, GY0 - 0.042, 1.1), 0.08, NEGRU))
-	for (a, b) in (((GX0, GY0), (GX1, GY0)), ((GX0, GY1), (GX1, GY1))):
-		_cutie_coliziune(col, (GX1 - GX0, 0.12, 1.6), ((a[0] + b[0]) / 2, a[1], 0.8))
-	for x in (GX0, GX1):
-		_cutie_coliziune(col, (0.12, GY1 - GY0, 1.6), (x, (GY0 + GY1) / 2, 0.8))
+	py = GY0 + 3.75
+	# rama porții (doar conturul: printre bare se vede piscina) și barele
+	for dy in (-0.6, 0.6):
+		piese.append(cub("Rama poarta", (0.05, 0.05, 1.45), (GX0, py + dy, 0.76), METAL))
+	for z in (0.06, 1.46):
+		piese.append(cub("Rama poarta", (0.05, 1.25, 0.05), (GX0, py, z), METAL))
+	for k in range(5):
+		piese.append(cub("Bara poarta", (0.03, 0.025, 1.4), (GX0, py - 0.4 + k * 0.2, 0.75), METAL))
+	piese.append(_tor("Lant", 0.06, 0.012, (GX0 - 0.03, py - 0.6, 0.9), CROM, rot=(1.5708, 0, 1.5708), segmente=8))
+	piese.append(_tor("Lant", 0.06, 0.012, (GX0 - 0.03, py - 0.6, 0.8), CROM, rot=(1.5708, 0.6, 1.5708), segmente=8))
+	piese.append(cub("Lacat", (0.03, 0.07, 0.09), (GX0 - 0.06, py - 0.6, 0.7), AUR))
+	spre_x = (1.5708, 0, -1.5708)  # textul cu fața spre -X (ca graffiti-ul de pe capătul aripii)
+	piese.append(cub("Panou piscina", (0.02, 1.1, 0.5), (GX0 - 0.03, GY0 + 1.6, 1.1), ALB))
+	piese.append(_text("Scris piscina", "POOL CLOSED", (GX0 - 0.042, GY0 + 1.6, 1.18), 0.1, ROSU, rot=spre_x))
+	piese.append(_text("Scris piscina", "NO LIFEGUARD ON DUTY", (GX0 - 0.042, GY0 + 1.6, 1.0), 0.06, NEGRU, rot=spre_x))
+	piese.append(cub("Panou piscina", (0.02, 1.1, 0.5), (GX0 - 0.03, GY1 - 1.6, 1.1), ALB))
+	piese.append(_text("Scris piscina", "SWIM AT YOUR\nOWN RISK", (GX0 - 0.042, GY1 - 1.6, 1.1), 0.08, NEGRU, rot=spre_x))
+	for y in (GY0, GY1):
+		_cutie_coliziune(col, (gx1 - GX0, 0.12, 1.6), ((GX0 + gx1) / 2, y, 0.8))
+	_cutie_coliziune(col, (0.12, GY1 - GY0, 1.6), (GX0, (GY0 + GY1) / 2, 0.8))
 	strange()
 
 	# --- mașinile: maro în fața camerei 119, neagră în fața lui 122 (a lui?), pickup-ul cu pană în fața lui 124,

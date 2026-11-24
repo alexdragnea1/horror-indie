@@ -158,7 +158,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 110. **Când o poți împușca pe Lexy** (22.11): dacă i-ai spart televizorul, o poți împușca imediat după ce vorbești cu ea („Did you just shoot my fucking TV?!”), chiar și cât merge spre masă. Dacă nu i l-ai spart, o poți împușca doar după ce o jefuiești sau după ce îi spui că pleci („Leave Lexy's House”). După jaf, autobuzul spre casă vine imediat.
 111. **Reparații la motel** (24.11): pe scara de la capătul pasarelei nu mai cazi pe lateral, peste balustradă, când ești aproape sus. Ușa camerei 666 nu mai trece prin demon când se deschide: el stă acum mai în spate în cămăruță și e puțin mai mic (`loc_demon` și `marime_demon` în Inspector, pe `Usa666`). Paharele de lângă aparatul de cafea din recepție stau acum pe masă (masa e mai adâncă), iar la mașina stricată de lângă scară capota ridicată nu mai trece prin motor.
 112. **Stele căzătoare pe platou** (24.11): sus pe platoul din pădure, la câteva secunde (între 3 și 8), trece o stea căzătoare pe cer, cam pe unde te uiți. Le reglezi din nodul `SteleCazatoare` din `padure.tscn`: `pauza_min` / `pauza_max` (cât de des), `durata`, `raspandire`; cât de lungi și de strălucitoare sunt, din materialul cerului (`drum_stele_cazatoare`, `luminozitate_stele_cazatoare`).
-113. Urmează: tu hotărăști (playtest, build, itch.io).
+113. **Piscina motelului s-a mutat** (24.11): nu mai e în mijlocul parcării, ci în spatele scării, lipită de peretele cu „IHATEPINK WAS HERE” (graffiti-ul se vede deasupra ei). Poarta cu lacăt și panourile „POOL CLOSED” / „SWIM AT YOUR OWN RISK” sunt pe latura din stânga; parcarea e acum liberă.
+114. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 

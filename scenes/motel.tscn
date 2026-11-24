@@ -126,7 +126,7 @@ size = Vector3(1, 1, 1.05)
 size = Vector3(0.95, 2.08, 0.06)
 
 [sub_resource type="BoxShape3D" id="forma_piscina"]
-size = Vector3(9.6, 1.9, 8.6)
+size = Vector3(9.6, 1.9, 8.1)
 
 [node name="Motel" type="Node3D"]
 
@@ -552,7 +552,7 @@ script = ExtResource("49_in")
 replici = PackedStringArray("You: I never learned how to swim..")
 
 [node name="Forma" type="CollisionShape3D" parent="Piscina"]
-position = Vector3(-12.5, 0.95, 3.5)
+position = Vector3(-23.3, 0.95, -14.25)
 shape = SubResource("forma_piscina")
 
 [node name="GratarMotel" type="Node3D" parent="." node_paths=PackedStringArray("gratar")]
