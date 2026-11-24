@@ -60,6 +60,7 @@
 [ext_resource type="AudioStream" path="res://sunete/creatura_goana.ogg" id="s_goana"]
 [ext_resource type="AudioStream" path="res://sunete/creatura_tipat.ogg" id="s_tipat"]
 [ext_resource type="AudioStream" path="res://sunete/inima_rapida.ogg" id="s_inima"]
+[ext_resource type="Script" uid="uid://bwo6dv47osjk0" path="res://scripts/stele_cazatoare.gd" id="stele_gd"]
 
 [sub_resource type="ShaderMaterial" id="mat_cer"]
 shader = ExtResource("2")
@@ -424,3 +425,8 @@ sunet_goana = ExtResource("s_goana")
 sunet_tipat = ExtResource("s_tipat")
 sunet_crengi = ExtResource("41")
 sunet_inima = ExtResource("s_inima")
+
+[node name="SteleCazatoare" type="Node" parent="." node_paths=PackedStringArray("teren", "mediu")]
+script = ExtResource("stele_gd")
+teren = NodePath("../Teren")
+mediu = NodePath("../Mediu")
