@@ -163,7 +163,8 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 115. **Jean joacă șah ca un bot de ~100 elo** (24.11): nu mai calculează nimic; dă mat doar când îl vede la o mutare, ia piesele pe care le vede (chiar dacă sunt apărate), în rest mută la întâmplare. Pe `MasaSah` din `casa_jean.tscn`: `incepator` (debifat = Jean cel greu de dinainte), `sansa_mat`, `sansa_lacom`.
 116. **Băutul de la bar, refăcut** (24.11): paharele au forme noi (sticlă de bere verde cu etichetă; whiskey în pahar scurt și greu, cu gheață; shot de vodcă; rom cu cola în pahar înalt, cu lime). Animația: ridici paharul pe un arc, îl duci la gură, la fiecare înghițitură îl înclini mai tare și capul tresare, băutura scade și gheața coboară pe fund, apoi îl cobori și îl pui pe suport cu un clinchet; după whiskey, vodcă și rom scuturi scurt din cap. Unghiurile și numărul de înghițituri sunt în `FEL_BAUT` din `barman.gd`.
 117. **Seara de după final** (24.11): după Head Witch piața arată iar ca la începutul luptei și ninge doar puțin, fără zăpadă pe jos (pălăria nu mai e bugată). Primești „Go home and rest.”, iar în stație ai doar Home. La bloc e noapte și Mom te așteaptă pe bancă; nu urci până nu vorbești cu ea („Hey, you defetead the Head Witch!” … „Good night little bitch.”). Acasă, la pat: „You: Can I catch a fucking break?”. A doua zi totul e ca înainte (free roam). Cât ninge: `intensitate_finala` pe nodul `Zapada` din `centru.tscn`.
-118. Urmează: tu hotărăști (playtest, build, itch.io).
+118. **Stația barului** (24.11): de la bar poți lua autobuzul și la Sketchy Laundromat și la Gun Store, nu doar la Town Center (și după ce ți-a zis barmanul de vrăjitoare).
+119. Urmează: tu hotărăști (playtest, build, itch.io).
 
 **Premisa:** personajul nu vrea să facă magie niciodată, preferă armele (e mult mai lejer).
 
