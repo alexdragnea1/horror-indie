@@ -373,47 +373,96 @@ func _toarna(nume: String, pahar: Node3D, lichid: Node3D) -> void:
 	_c.priveste(pe_tejghea.global_position + Vector3.UP * 0.1, 0.4)
 
 
-## O dai pe gât: paharul vine la gură dinspre dreapta-jos, capul se lasă puțin pe spate, băutura scade, apoi îl pui
-## gol la loc. Sticla de bere vine cu gâtul la gură și fundul în sus, spre dreapta (de pe lângă, nu din capăt: altfel
-## umplea tot ecranul ca un stâlp).
+## Cum bei fiecare băutură (owner 24.11: animația „să fie super profi”): unghiul paharului la prima înghițitură și la
+## ultima (radiani față de vertical, spre tine; peste PI/2 = cu fundul în sus), câte înghițituri, cât de mult îți lași
+## capul pe spate la sfârșit, dacă e tare (după ea scuturi din cap).
+const FEL_BAUT := {
+	"Beer": {"unghi": Vector2(0.8, 1.75), "inghitituri": 4, "cap": 0.42, "tare": false},
+	"Whiskey": {"unghi": Vector2(0.55, 1.2), "inghitituri": 2, "cap": 0.2, "tare": true},
+	"Vodka": {"unghi": Vector2(0.75, 1.7), "inghitituri": 1, "cap": 0.4, "tare": true},
+	"Rum": {"unghi": Vector2(0.6, 1.45), "inghitituri": 3, "cap": 0.3, "tare": true},
+}
+## Unde e paharul cât îl ții (în fața ta, dreapta-jos) și unde e buza lui când bei, față de cameră: nu chiar la gură
+## (8 cm sub ochi), ci ~19 cm în față și mai jos, ca în jocurile mari, ca să vezi paharul cum se înclină.
+const PAHAR_TINUT := Vector3(0.1, -0.15, -0.3)
+const GURA := Vector3(0.025, -0.062, -0.2)
+
+
+## O dai pe gât, ca într-un joc mare: ridici paharul de pe suport pe un arc (`_arc`), îl ții o clipă în fața ta, îl duci
+## la gură înclinat puțin, apoi la fiecare înghițitură îl înclini tot mai tare (băutura scade, gheața coboară pe fund),
+## capul se lasă pe spate și tresare puțin la fiecare înghițitură. Îl cobori cu un mic recul, la băuturile tari
+## scuturi din cap, și îl pui pe suport (clinchet). Buza paharului stă la gură, fundul în sus-dreapta: de pe lângă,
+## nu din capăt (altfel sticla umplea ecranul ca un stâlp).
 func _bea(pahar: Node3D, bautura: Dictionary) -> void:
+	var fel: Dictionary = FEL_BAUT.get(bautura.nume, FEL_BAUT["Beer"])
 	var lichid := pahar.find_child("Lichid", true, false) as Node3D
+	var gheata := pahar.find_child("Gheata", true, false) as Node3D
+	var gheata_y := gheata.position.y if gheata else 0.0
 	var loc := pahar.global_transform
 	var inalt := _inaltime(pahar)
-	await _c.priveste(pahar.global_position + Vector3.UP * 0.05, 0.4)
+	await _c.priveste(pahar.global_position + Vector3.UP * 0.05, 0.45)
+	var sus := _cap.rotation.x
 	pahar.reparent(_camera, true)
 	_lumineaza(pahar, 0.3)
+	# 1. îl ridici de pe suport: pe un arc, spre dreapta-jos, puțin înclinat spre tine
+	var tinut := Transform3D(Basis.from_euler(Vector3(0.12, -0.2, 0.06)), PAHAR_TINUT)
 	var t := _tween()
-	t.tween_property(pahar, "position", Vector3(0.06, -0.16, -0.3), 0.55)
-	t.tween_property(pahar, "rotation", Vector3(0.0, 0.0, 0.0), 0.55)
+	t.tween_method(_arc.bind(pahar, pahar.transform, tinut, 0.06), 0.0, 1.0, 0.6)
+	t.tween_property(_cap, "rotation:x", sus - 0.08, 0.6)
 	await t.finished
-	var sus := _cap.rotation.x
-	# axa paharului (de la fund la buză), în coordonatele camerei, când bei
-	var axa := Vector3(-0.42, -0.4, 0.81).normalized() if bautura.sticla == "" else Vector3(-0.28, -0.62, 0.73).normalized()
-	var buza := Vector3(0.02, -0.075, -0.1)
-	var baza := Basis(Quaternion(Vector3.UP, axa))
+	await _asteapta(0.12)
+	# 2. la gură, încă aproape drept; capul începe să se lase pe spate
+	var unghi: Vector2 = fel.unghi
+	var cap_sus: float = fel.cap
 	t = _tween()
-	t.tween_property(pahar, "position", buza - axa * inalt, 0.6)
-	t.tween_property(pahar, "basis", baza, 0.6)
-	t.tween_property(_cap, "rotation:x", sus + 0.35, 0.6)
+	t.tween_method(_arc.bind(pahar, tinut, _la_gura(unghi.x, inalt), 0.025), 0.0, 1.0, 0.5)
+	t.tween_property(_cap, "rotation:x", sus + cap_sus * 0.35, 0.5)
 	await t.finished
-	var inghitituri := 3 if bautura.sticla == "" else 1
-	for i in inghitituri:
+	# 3. înghițiturile: tot mai înclinat, băutura scade, capul tresare la fiecare
+	var n: int = fel.inghitituri
+	for i in n:
+		var k0 := float(i) / n
+		var k1 := float(i + 1) / n
 		Sunet.reda(SUNET_INGHITITURA, Sunet.VOLUM_EFECTE - 1.0, 0.1)
-		await _asteapta(0.45)
-	if lichid:
+		var de_la := pahar.transform
+		var spre := _la_gura(lerpf(unghi.x, unghi.y, k1), inalt)
+		var pas := func(u: float) -> void:
+			var e := smoothstep(0.0, 1.0, u)
+			pahar.transform = Transform3D(de_la.basis.slerp(spre.basis, e), de_la.origin.lerp(spre.origin, e))
+			# înghițitura: capul tresare puțin în sus, paharul vine 3 mm spre gură, apoi revine
+			var tresare := sin(u * PI)
+			_cap.rotation.x = sus + cap_sus * lerpf(0.35 + 0.65 * k0, 0.35 + 0.65 * k1, e) + tresare * 0.025
+			pahar.position += -spre.basis.y * tresare * 0.003
+			var plin := 1.0 - lerpf(k0, k1, e)
+			if lichid:
+				lichid.scale.y = maxf(plin, 0.001)
+			if gheata:
+				gheata.position.y = lerpf(0.004, gheata_y, plin) if gheata_y > 0.004 else gheata_y
 		t = create_tween()
-		t.tween_property(lichid, "scale:y", 0.001, 0.3)
+		t.tween_method(pas, 0.0, 1.0, 0.45)
 		await t.finished
+		await _asteapta(0.06)
+	await _asteapta(0.15)
+	# 4. îl cobori (cu un mic recul la capăt) și capul revine
 	t = _tween()
-	t.tween_property(pahar, "position", Vector3(0.06, -0.16, -0.3), 0.5)
-	t.tween_property(pahar, "basis", Basis.IDENTITY, 0.5)
-	t.tween_property(_cap, "rotation:x", sus, 0.5)
+	t.tween_method(_arc.bind(pahar, pahar.transform, tinut, 0.02), 0.0, 1.0, 0.55)
+	t.tween_property(_cap, "rotation:x", sus, 0.65).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await t.finished
+	if fel.tare:
+		# „brr”: o scuturătură scurtă din cap după ceva tare
+		t = create_tween().set_trans(Tween.TRANS_SINE)
+		t.tween_property(_cap, "rotation:z", -0.045, 0.08)
+		t.tween_property(_cap, "rotation:z", 0.035, 0.1)
+		t.tween_property(_cap, "rotation:z", -0.015, 0.09)
+		t.tween_property(_cap, "rotation:z", 0.0, 0.12)
+		await t.finished
+	# 5. îl pui la loc pe suport: pe un arc, se lasă ultimii milimetri, clinchet
 	pahar.reparent(get_tree().current_scene, true)
 	_lumineaza(pahar, 0.0)
-	t = _tween()
-	t.tween_property(pahar, "global_transform", loc, 0.5)
+	var deasupra := Transform3D(loc.basis, loc.origin + Vector3.UP * 0.012)
+	t = create_tween()
+	t.tween_method(_arc_global.bind(pahar, pahar.global_transform, deasupra, 0.05), 0.0, 1.0, 0.5)
+	t.tween_property(pahar, "global_transform", loc, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await t.finished
 	Sunet.reda_la(SUNET_PAHAR, loc.origin, Sunet.VOLUM_EFECTE - 1.0, 0.08)
 	_de_strans.append(pahar)
@@ -467,6 +516,31 @@ func _mergi(unde: Vector3, unghi: float, durata: float) -> void:
 		await get_tree().create_timer(durata / pasi).timeout
 	if t.is_running():
 		await t.finished
+
+
+## Mișcare pe un arc lin (curbă Bézier, cu vârful `ridicare` metri mai sus decât mijlocul drumului), cu pornire și
+## oprire moi (smootherstep), iar rotația o urmează (slerp): așa se mișcă o mână, nu în linie dreaptă. Pentru tween_method:
+## `u` 0..1; `a`, `b` în coordonatele părintelui lui `nod`.
+func _arc(u: float, nod: Node3D, a: Transform3D, b: Transform3D, ridicare: float) -> void:
+	var e := u * u * u * (u * (u * 6.0 - 15.0) + 10.0)
+	var varf := (a.origin + b.origin) * 0.5 + Vector3.UP * ridicare
+	var p := a.origin.lerp(varf, e).lerp(varf.lerp(b.origin, e), e)
+	nod.transform = Transform3D(a.basis.orthonormalized().slerp(b.basis.orthonormalized(), e), p)
+
+
+## La fel, în coordonatele lumii (când îl pui înapoi pe tejghea).
+func _arc_global(u: float, nod: Node3D, a: Transform3D, b: Transform3D, ridicare: float) -> void:
+	var e := u * u * u * (u * (u * 6.0 - 15.0) + 10.0)
+	var varf := (a.origin + b.origin) * 0.5 + Vector3.UP * ridicare
+	var p := a.origin.lerp(varf, e).lerp(varf.lerp(b.origin, e), e)
+	nod.global_transform = Transform3D(a.basis.orthonormalized().slerp(b.basis.orthonormalized(), e), p)
+
+
+## Paharul la gură, înclinat cu `unghi` față de vertical (spre tine și puțin spre stânga), cu buza (la `inalt` de bază)
+## chiar în `GURA`: fundul rămâne sus-dreapta-înainte. Peste PI/2 = cu fundul în sus (berea la final).
+func _la_gura(unghi: float, inalt: float) -> Transform3D:
+	var axa := Vector3(-sin(unghi) * 0.38, cos(unghi), sin(unghi)).normalized()
+	return Transform3D(Basis(Quaternion(Vector3.UP, axa)), GURA - axa * inalt)
 
 
 ## Înălțimea (globală) la care un pahar trece peste blat fără să-l atingă.

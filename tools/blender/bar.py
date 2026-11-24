@@ -1069,31 +1069,53 @@ def _lichid(raza_jos, raza_sus, h_pahar, nivel, cul, fund=0.012, gros=0.004):
 
 
 def pahare(cale):
-	"""Băuturile de la bar: sticla de bere (cu `Capac` separat, îl scoate barmanul), paharul de whiskey cu gheață, shot-ul
-	de vodcă, paharul de rom. În fiecare: `Lichid` (originea pe fundul paharului, se scalează pe Z când bei) și sticla
-	(`Geam*`, transparentă). Originea = baza."""
-	# --- berea: sticla maro cu eticheta, gâtul, capacul
+	"""Băuturile de la bar (refăcute 24.11, owner: „paharele au o formă dubioasă”). Sticla de bere: longneck verde,
+	corp zvelt, umeri rotunjiți, gât lung, eticheta de hârtie și folia de pe gât, `Capac` separat (îl scoate barmanul).
+	Whiskey: pahar scurt și greu („rocks”), fundul gros de sticlă, băutura aurie, două cuburi mici pe jumătate în ea.
+	Vodcă: shot conic cu fundul foarte gros. Rom: pahar înalt (rom cu cola), gheață sus și o felie de lime pe buză.
+	În fiecare: `Lichid` (originea pe fundul dinăuntru, se scalează pe Z: barmanul îl umple, tu îl golești), `Gheata`
+	(coboară pe fund când bei), sticla (`Geam*`, transparentă). Originea = baza."""
+	# --- berea
 	curata()
+	profil = [((0, 0, 0.0), 0.0, 0.0), ((0, 0, 0.001), 0.026, 0.026), ((0, 0, 0.006), 0.029, 0.029), ((0, 0, 0.118), 0.029, 0.029),
+		((0, 0, 0.135), 0.026, 0.026), ((0, 0, 0.15), 0.019, 0.019), ((0, 0, 0.165), 0.0135, 0.0135), ((0, 0, 0.21), 0.0122, 0.0122),
+		((0, 0, 0.213), 0.0138, 0.0138), ((0, 0, 0.221), 0.0138, 0.0138), ((0, 0, 0.222), 0.0, 0.0)]
 	piese = [
-		trunchi("Sticla bere", [((0, 0, 0.0), 0.0, 0.0), ((0, 0, 0.002), 0.03, 0.03), ((0, 0, 0.135), 0.031, 0.031), ((0, 0, 0.165), 0.022, 0.022),
-			((0, 0, 0.21), 0.0125, 0.0125), ((0, 0, 0.228), 0.0135, 0.0135), ((0, 0, 0.23), 0.0, 0.0)], LEMN, laturi=12),
-		trunchi("Eticheta bere", [((0, 0, 0.05), 0.0318, 0.0318), ((0, 0, 0.11), 0.0318, 0.0318)], AUR, laturi=12, capete=False),
-		trunchi("Eticheta gat", [((0, 0, 0.18), 0.0185, 0.0185), ((0, 0, 0.198), 0.0158, 0.0158)], ROSU, laturi=12, capete=False),
-		cub("Sigla bere", (0.03, 0.006, 0.025), (0, -0.032, 0.08), ROSU),
+		trunchi("Sticla bere", profil, VERDE, laturi=12),  # verde, ca sticlele de bere (chihlimbarul semăna cu pielea barmanului)
+		# eticheta de hârtie (crem) cu o bandă roșie și sigla, puțin peste sticlă
+		trunchi("Eticheta bere", [((0, 0, 0.032), 0.0298, 0.0298), ((0, 0, 0.092), 0.0298, 0.0298)], ALB, laturi=12, capete=False),
+		trunchi("Banda eticheta", [((0, 0, 0.052), 0.0303, 0.0303), ((0, 0, 0.066), 0.0303, 0.0303)], ROSU, laturi=12, capete=False),
+		cub("Sigla bere", (0.022, 0.004, 0.016), (0, -0.0305, 0.078), AUR),
+		# folia de pe gât
+		trunchi("Folie gat", [((0, 0, 0.172), 0.0141, 0.0141), ((0, 0, 0.198), 0.0131, 0.0131)], AUR, laturi=12, capete=False),
 	]
 	uneste(piese, "Bere")
-	uneste([cilindru("Capac", 0.0145, 0.0145, 0.008, (0, 0, 0.233), AUR, laturi=10)], "Capac", (0, 0, 0.229))
+	uneste([cilindru("Capac", 0.0145, 0.0145, 0.007, (0, 0, 0.2245), AUR, laturi=10)], "Capac", (0, 0, 0.221))
 	exporta(os.path.join(cale, "bere_sticla.glb"))
-	# --- whiskey: pahar jos și lat, gheață, lichidul chihlimbar
-	for nume, rj, rs, h, niv, cul, gheata in (("pahar_whiskey", 0.038, 0.042, 0.09, 0.045, LEMN_DESCHIS, 2),
-			("pahar_vodka", 0.02, 0.025, 0.065, 0.045, GRI_ALBASTRU, 0), ("pahar_rom", 0.036, 0.04, 0.1, 0.05, LEMN, 1)):
+	# --- paharele: nume, rază jos, rază sus, înălțime, fund (sticla groasă de jos), nivelul băuturii, culoare, gheață
+	for nume, rj, rs, h, fund, niv, cul, gheata in (
+			("pahar_whiskey", 0.035, 0.039, 0.082, 0.018, 0.046, AUR, 2),
+			("pahar_vodka", 0.017, 0.023, 0.058, 0.02, 0.05, ALB, 0),
+			("pahar_rom", 0.029, 0.032, 0.13, 0.014, 0.108, LEMN_INCHIS, 2)):
 		curata()
-		uneste(_pahar(rj, rs, h), "Geam")
-		uneste([_lichid(rj, rs, h, niv, cul)], "Lichid", (0, 0, 0.012))
+		uneste(_pahar(rj, rs, h, gros=0.0032, fund=fund), "Geam")
+		uneste([_lichid(rj, rs, h, niv, cul, fund=fund, gros=0.0032)], "Lichid", (0, 0, fund))
 		if gheata:
-			cuburi = [cub("Gheata", (0.024, 0.024, 0.022), (0.009 * (k * 2 - 1), 0.006 * (1 - 2 * k), niv - 0.004 + k * 0.006), ALB,
-				rot=(0.3 * k, 0.5, 0.4 * k)) for k in range(gheata)]
+			# cuburi mici, rotite, pe jumătate în băutură (nu deasupra ei)
+			latura = 0.017 if nume != "pahar_rom" else 0.019
+			cuburi = []
+			for k in range(gheata):
+				dx, dy = (0.008, -0.004) if k == 0 else (-0.007, 0.006)
+				cuburi.append(cub("Gheata", (latura, latura, latura * 0.9), (dx, dy, niv - latura * 0.15 + k * 0.002), ALB,
+					rot=(0.25 + 0.2 * k, 0.4 - 0.3 * k, 0.6 * k)))
 			uneste(cuburi, "Gheata")
+		if nume == "pahar_rom":
+			# felia de lime prinsă pe buză: coaja verde, miezul mai deschis, despicată pe sticlă
+			lime = [
+				cilindru("Lime", 0.016, 0.016, 0.006, (rs - 0.002, 0, h - 0.004), VERDE, laturi=10, rot=(1.5708, 0, 0), scara=(1, 1, 1)),
+				cilindru("Lime miez", 0.013, 0.013, 0.0065, (rs - 0.002, 0, h - 0.004), MASLINIU, laturi=10, rot=(1.5708, 0, 0)),
+			]
+			uneste(lime, "Lime")
 		exporta(os.path.join(cale, nume + ".glb"))
 
 
