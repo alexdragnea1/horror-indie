@@ -50,6 +50,10 @@ extends LuptaBoss
 	"Head Witch: Fear my power, you insolent child!", "You: Fear my dick bitch."]
 @export var mesaj_final := "Fuck magic"
 @export_file("*.tscn") var scena_credite := "res://scenes/credite.tscn"
+## Genericul e scos deocamdată (owner 25.11: vine o continuare, îl punem la loc altă dată). false = după negru
+## te întorci direct în Town Center (free roam, din salvare), ca după generic. Textul e păstrat neatins în
+## scripts/credite.gd și în docs/credite_final.txt.
+@export var arata_creditele := false
 
 @export_group("Faze")
 ## În faza întâi are `viata_maxima` (8000, din grupul „Viață și damage”); la `prag_faza_doi` HP se transformă.
@@ -1285,7 +1289,10 @@ func _pune_palaria_pe_cap(cap: Node3D) -> void:
 	Salvare.salveaza(false)
 	await get_tree().create_timer(0.8, false).timeout
 	Stare.meniu_deschis = false
-	Tranzitie.mergi_la(scena_credite)
+	if arata_creditele:
+		Tranzitie.mergi_la(scena_credite)
+	else:
+		Salvare.continua()
 
 
 ## Direcția (cât mai aproape de `dir`) în care pălăria poate cădea la `departe` metri de tine: pe pavaj liber, nu în
