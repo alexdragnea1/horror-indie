@@ -631,6 +631,7 @@ def toate(cale):
 	statie(cale, "BASCOV", "statie_bascov.glb")
 	statie(cale, "OLD TOWN", "statie_old_town.glb")
 	statie(cale, "ALBOTA", "statie_town_hall.glb")
+	statie(cale, "EXERCITIU", "statie_exercitiu.glb")  # la sală (owner 25.11; Exercițiu, cartierul din Pitești)
 	sofer(cale)
 	creatura(cale)
 	brad(cale, "brad_1", 4, 9.0, 6)

@@ -1633,3 +1633,12 @@ ffmpeg -v error -y -f lavfi -i "anoisesrc=c=white:a=0.8:d=0.25:r=44100:s=7" -i "
 	-ac 1 "$OUT/_geam.wav"
 unic geam_crapat "$OUT/_geam.wav"
 rm -f "$OUT/_geam.wav"
+# --- sala de forță „Iron Pump” (owner 25.11; rulează doar ea, cu liniile 1–64)
+# bara pusă pe suporturi / scoasă de pe ele: zăngănit greu de fier (mai jos), cu bufnitura discurilor dedesubt
+ffmpeg -v error -y -i "$PACHET/Materials/metal_clang.wav" -i "$PACHET/Materials/metal_blunt_tap.wav" -filter_complex \
+	"[0]aformat=channel_layouts=mono,asetrate=44100*0.62,aresample=44100,lowpass=f=1800[a];[1]aformat=channel_layouts=mono,asetrate=44100*0.5,aresample=44100,lowpass=f=900,adelay=15,volume=0.9[b];[a][b]amix=inputs=2:normalize=0,atrim=end=1.2,afade=t=out:st=0.8:d=0.4" \
+	-ac 1 "$OUT/_bara.wav"
+unic bara_pusa "$OUT/_bara.wav"
+rm -f "$OUT/_bara.wav"
+# ganterele luate de pe rastel / puse la loc: un clinchet scurt de fontă
+unic gantera_pusa "Materials/metal_blunt_tap.wav" mono "asetrate=44100*0.8,aresample=44100,lowpass=f=2500,afade=t=out:st=0.3:d=0.2"

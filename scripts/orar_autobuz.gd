@@ -64,12 +64,14 @@ static var cu_autobuzul := false
 @export_multiline var titlu_acasa_final := "Block M7, Entrance B\n9:24 PM"
 @export_multiline var replici_acasa_final: PackedStringArray = ["You: I'm already home. I need some fucking rest."]
 
-## Locurile din free roam: [buton, scenă, titlu].
+## Locurile din free roam: [buton, scenă, titlu] (+ un marcaj, dacă locul apare abia după el: sala, după „Go to the
+## gym.”, `vrea_la_sala`, owner 25.11).
 const LIBER := [
 	["Home", "res://scenes/afara_bloc.tscn", "Block M7, Entrance B"],
 	["Sketchy Laundromat", "res://scenes/casino.tscn", "Sketchy Laundromat"],
 	["Gun Store", "res://scenes/magazin_arme.tscn", "Freedom Gun Store"],
 	["Bar", "res://scenes/bar.tscn", "Urban Bar"],
+	["Gym", "res://scenes/sala.tscn", "Iron Pump Gym", "vrea_la_sala"],
 ]
 
 var _in_curs := false
@@ -158,7 +160,7 @@ func _orar_liber() -> void:
 			await Dialog.terminat
 		return
 	for loc in LIBER:
-		if loc[1] == aici:
+		if loc[1] == aici or (loc.size() > 3 and not Stare.e_marcat(loc[3])):
 			continue
 		if doar_acasa:
 			if loc[0] != "Home":

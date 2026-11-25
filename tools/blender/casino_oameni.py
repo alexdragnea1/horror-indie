@@ -438,7 +438,7 @@ def _tors(piese, z0, s, picioare=None):
 	burta = s.get("burta", 0.0)
 	fem = s.get("femeie", False)
 	haina, umbra = s["haina"], s["haina_umbra"]
-	lat = 0.92 if fem else 1.0
+	lat = (0.92 if fem else 1.0) * s.get("lat", 1.0)  # `lat` = mai lat în umeri și piept (Gym Bro, sala.py)
 	inele = [  # (z față de șezut, y, rx, ry)
 		(0.02, 0.03, 0.17 * lat, 0.13), (0.13, 0.02 - 0.05 * burta, (0.175 + 0.05 * burta) * lat, 0.135 + 0.07 * burta),
 		(0.25, 0.01 - 0.05 * burta, (0.18 + 0.05 * burta) * lat, 0.135 + 0.065 * burta), (0.36, 0.0 - 0.02 * burta, 0.195 * lat, 0.13 + 0.03 * burta),
@@ -576,6 +576,8 @@ def _tors(piese, z0, s, picioare=None):
 			piese.append(cub("Medalion", (0.04, 0.012, 0.05), (0, fata(0.38, 0.012), z0 + 0.38 * h), s["lant"]))
 	if s.get("brosa"):
 		piese.append(sfera("Brosa", 0.018, (-0.09, fata(0.44, 0.01), z0 + 0.44 * h), s["brosa"], scara=(1, 0.5, 1), segmente=6, inele=4))
+	if s.get("fara_picioare"):  # picioarele le face cine cere omul (Gym Bro, culcat pe bancă: sala.py)
+		return inele
 	pant, pantofi = s.get("pantaloni", haina), s.get("pantofi", NEGRU)
 	if s.get("in_picioare"):
 		# în picioare: picioarele drepte (blugi), cizme de cowboy cu tocul înalt și vârful ascuțit. Merg în `picioare`
@@ -659,7 +661,7 @@ def om(cale, nume, s, saminta):
 	gros = s.get("gros_brat", 1.0)
 	bordura = "masa" not in s
 	for k, l in ((-1, "D"), (1, "S")):
-		umar = (0.19 * k, 0.01, z0 + 0.555)
+		umar = (0.19 * k * s.get("umeri", 1.0), 0.01, z0 + 0.555)
 		if bordura:
 			cot = (0.24 * k, -0.38, masa + 0.12 + 0.05 * gros)
 			inch = (0.11 * k, -0.62, masa + 0.035)
