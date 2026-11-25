@@ -56,6 +56,22 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 @export var marcaj_somn_final := "nopti_dupa_final"
 @export var marcaj_venit_final := "a_venit_acasa_dupa_final"
 
+@export_group("Dimineața de după final: noul tutore")
+## Owner 25.11: după ce dormi prima dată după final (`marcaj_somn_final` ≥ 1), Mom e în bucătărie și nu ieși din casă
+## până nu vorbești cu ea (`marcaj_mom_tutore`). Afară te așteaptă vrăjitorul (lupta_vrajitor.gd); după ce a apărut
+## (`marcaj_vrajitor`), Mom nu mai e acasă.
+@export var marcaj_mom_tutore := "a_vorbit_cu_mom_tutore"
+@export var marcaj_vrajitor := "vrajitor_a_aparut"
+## Replicile owner-ului (nu le corecta).
+@export_multiline var replici_mom_tutore: PackedStringArray = ["Mom: Good news.", "Mom: I've found you a new tutor.",
+	"You: Bitch, are you mentally ill?", "You: Do you think I need a tutor?", "Mom: He's already outside, waiting for you.",
+	"Mom: Please at least try for only a session."]
+## Scrise de Claude; owner-ul le poate schimba.
+@export_multiline var replici_mom_tutore_dupa: PackedStringArray = ["Mom: He's waiting outside. Go!"]
+@export var sarcina_mom_tutore := "Meet your new tutor outside."
+@export_multiline var replici_usa_tutore: PackedStringArray = ["You: Mom's in the kitchen. She'll lose her shit if I leave without talking to her."]
+@export_multiline var titlu_afara_tutore := "Block M7, Entrance B\n10:46 AM"
+
 
 func _ready() -> void:
 	# ieși pe ușă (oricând, și prima dată): afară te pune lângă ușa blocului, cu fața spre stradă (vezi zi_bloc.gd)
@@ -63,15 +79,30 @@ func _ready() -> void:
 		usa_intrare.deschisa.connect(func() -> void: ZiBloc.din_casa = true)
 	if not Stare.e_marcat(marcaj_trezit):
 		return
+	var tutore := Stare.e_marcat(marcaj_final) and int(Stare.valoare_marcaj(marcaj_somn_final, 0)) >= 1 \
+		and not Stare.e_marcat(marcaj_vrajitor)
 	if is_instance_valid(mama):
-		mama.queue_free()
+		if tutore:
+			# Mom în bucătărie, cu vestea cu tutorele (Personaj: prima dată `replici`, apoi `replici_dupa`)
+			mama.set("replici", replici_mom_tutore)
+			mama.set("replici_dupa", replici_mom_tutore_dupa)
+			mama.set("marcaj_dupa", marcaj_mom_tutore)
+			mama.set("sarcina_noua", sarcina_mom_tutore)
+			if Stare.e_marcat(marcaj_mom_tutore):
+				mama.set("_a_vorbit", true)
+		else:
+			mama.queue_free()
 	var noaptea_3 := Stare.e_marcat(marcaj_noapte_3) and not Stare.e_marcat(marcaj_zi_3)
 	var noaptea_2 := Stare.e_marcat(marcaj_noapte_2) and not Stare.e_marcat(marcaj_zi_oras)
 	var noaptea_final := Stare.e_marcat(marcaj_final) and not Stare.e_marcat(marcaj_somn_final)
 	if usa_intrare:
 		usa_intrare.marcaj_necesar = marcaj_iesire
 		usa_intrare.replici_fara_marcaj = replici_usa
-		if noaptea_final:
+		if tutore:
+			usa_intrare.marcaj_necesar = marcaj_mom_tutore
+			usa_intrare.replici_fara_marcaj = replici_usa_tutore
+			usa_intrare.titlu_locatie = titlu_afara_tutore
+		elif noaptea_final:
 			usa_intrare.marcaj_necesar = marcaj_somn_final
 		elif noaptea_3:
 			usa_intrare.marcaj_necesar = marcaj_zi_3

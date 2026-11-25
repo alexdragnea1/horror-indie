@@ -80,7 +80,7 @@ func _ready() -> void:
 
 
 func poate_fi_folosit() -> bool:
-	return not _in_curs and Stare.e_marcat(marcaj_necesar) and sosire != null and sosire.poate_fi_chemat()
+	return activ and not _in_curs and Stare.e_marcat(marcaj_necesar) and sosire != null and sosire.poate_fi_chemat()
 
 
 func interactioneaza() -> void:

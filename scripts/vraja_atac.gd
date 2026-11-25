@@ -25,6 +25,8 @@ static var sunet_lovit: AudioStream = SUNET_LOVIT
 const CULORI := {
 	"foc": [Color(1.0, 0.92, 0.7), Color(1.0, 0.5, 0.18), Color(0.36, 0.3, 0.28)],
 	"rosu": [Color(1.0, 0.78, 0.72), Color(0.95, 0.14, 0.1), Color(0.3, 0.13, 0.12)],
+	# mingea de foc roșie a vrăjitorului din curtea blocului (lupta_vrajitor.gd, owner 25.11): miez de foc, flacără roșie
+	"foc_rosu": [Color(1.0, 0.85, 0.55), Color(1.0, 0.12, 0.04), Color(0.34, 0.12, 0.1)],
 	"mov": [Color(0.96, 0.86, 1.0), Color(0.6, 0.28, 0.95), Color(0.24, 0.17, 0.3)],
 	"verde": [Color(0.86, 1.0, 0.86), Color(0.28, 0.95, 0.42), Color(0.17, 0.27, 0.2)],
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=91 format=3]
+[gd_scene load_steps=92 format=3]
 
 [ext_resource type="Shader" path="res://shaders/ps2.gdshader" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/jucator.tscn" id="2"]
@@ -70,6 +70,7 @@
 [ext_resource type="Script" path="res://scripts/peisaj_departe.gd" id="pd1"]
 [ext_resource type="Script" path="res://scripts/mama_banca.gd" id="mama_banca_gd"]
 [ext_resource type="PackedScene" path="res://models/mama_banca.glb" id="mama_banca_glb"]
+[ext_resource type="Script" path="res://scripts/lupta_vrajitor.gd" id="lupta_vrajitor_gd"]
 
 [sub_resource type="Environment" id="mediu"]
 background_mode = 1
@@ -834,3 +835,9 @@ material = ExtResource("4")
 [node name="Coliziune" type="CollisionShape3D" parent="MamaBanca"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 shape = SubResource("forma_mama_banca")
+
+[node name="LuptaVrajitor" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "blocate_in_lupta")]
+script = ExtResource("lupta_vrajitor_gd")
+mediu = NodePath("../Mediu")
+viata_maxima = 1000
+blocate_in_lupta = [NodePath("../OrarBloc"), NodePath("../Bloc/UsaBloc")]
