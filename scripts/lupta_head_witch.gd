@@ -121,6 +121,8 @@ var _damage_initial := {}
 var _matura: Node3D
 var _poarta: StaticBody3D
 var _palarie: Node3D
+## Benzile cutscene-ului de final (le scoți când joci mai departe, fără generic).
+var _cutscena_final: Cutscena
 var _mesaj: Label
 var _vant: AudioStreamPlayer
 ## Cât e un număr (nu NAN), ea stă întoarsă așa (raza, mătura), nu spre tine.
@@ -1087,6 +1089,7 @@ func _finalul(_din_lupta: bool) -> void:
 	var j := _jucator()
 	var cap: Node3D = j.get_node("Cap")
 	var c := Cutscena.porneste(self)
+	_cutscena_final = c
 	_hud(false)
 	j.seteaza_purtat(true)
 	create_tween().set_parallel().tween_property(cap, "position", Vector3(0.0, 1.55, 0.0), 0.5)
@@ -1278,21 +1281,33 @@ func _pune_palaria_pe_cap(cap: Node3D) -> void:
 	t.tween_property(_mesaj, "modulate:a", 1.0, 1.8).set_trans(Tween.TRANS_SINE)
 	t.parallel().tween_property(_mesaj, "scale", Vector2.ONE * 1.05, 5.5)
 	await get_tree().create_timer(4.0, false).timeout
-	# negru, apoi genericul
-	var negru := create_tween().set_parallel()
-	negru.tween_property(_negru, "color:a", 1.0, 2.5).set_trans(Tween.TRANS_SINE)
-	negru.tween_property(_mesaj, "modulate:a", 0.0, 2.5)
-	if _vant:
-		negru.tween_property(_vant, "volume_db", -40.0, 2.5)
-	await negru.finished
-	Stare.marcheaza(marcaj_final)
-	Salvare.salveaza(false)
-	await get_tree().create_timer(0.8, false).timeout
-	Stare.meniu_deschis = false
 	if arata_creditele:
+		# negru, apoi genericul
+		var negru := create_tween().set_parallel()
+		negru.tween_property(_negru, "color:a", 1.0, 2.5).set_trans(Tween.TRANS_SINE)
+		negru.tween_property(_mesaj, "modulate:a", 0.0, 2.5)
+		if _vant:
+			negru.tween_property(_vant, "volume_db", -40.0, 2.5)
+		await negru.finished
+		Stare.marcheaza(marcaj_final)
+		Salvare.salveaza(false)
+		await get_tree().create_timer(0.8, false).timeout
+		Stare.meniu_deschis = false
 		Tranzitie.mergi_la(scena_credite)
-	else:
-		Salvare.continua()
+		return
+	# owner 25.11: fără negru și fără generic: mesajul se stinge, privirea coboară și joci mai departe, în piață
+	var gata := create_tween().set_parallel().set_trans(Tween.TRANS_SINE)
+	gata.tween_property(_mesaj, "modulate:a", 0.0, 2.0)
+	gata.tween_property(cap, "rotation:x", 0.0, 2.0)
+	await gata.finished
+	Stare.marcheaza(marcaj_final)
+	Stare.meniu_deschis = false
+	_jucator().seteaza_purtat(false)
+	_hud(true)
+	await _cutscena_final.opreste()
+	Salvare.salveaza(false)
+	await get_tree().create_timer(1.0, false).timeout
+	Stare.seteaza_sarcina(sarcina_dupa_final)
 
 
 ## Direcția (cât mai aproape de `dir`) în care pălăria poate cădea la `departe` metri de tine: pe pavaj liber, nu în
@@ -1362,7 +1377,7 @@ func _dupa_moarte() -> void:
 	while Tranzitie.activa:
 		await get_tree().process_frame
 	_pune_jucatorul(loc_intrare + Vector3(0, 0, -6.0), loc_scena)
-	Cutscena.porneste(self)
+	_cutscena_final = Cutscena.porneste(self)
 	_hud(false)
 	_jucator().seteaza_purtat(true)
 	_vant = AudioStreamPlayer.new()
