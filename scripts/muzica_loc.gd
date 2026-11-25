@@ -63,6 +63,12 @@ func opreste(durata := 0.3) -> void:
 	_spre(0.0, durata)
 
 
+## O pornește iar (după `opreste`), urcând în `durata` secunde (ex. după lupta cu vrăjitorul din curtea blocului).
+func porneste(durata := 4.0) -> void:
+	_oprita = false
+	_spre(1.0, durata)
+
+
 func _zone() -> Array[Area3D]:
 	var zone: Array[Area3D] = [zona]
 	for z in zone_extra:

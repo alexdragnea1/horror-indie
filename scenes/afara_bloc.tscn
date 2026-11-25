@@ -836,8 +836,9 @@ material = ExtResource("4")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 shape = SubResource("forma_mama_banca")
 
-[node name="LuptaVrajitor" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "blocate_in_lupta")]
+[node name="LuptaVrajitor" type="Node3D" parent="." node_paths=PackedStringArray("mediu", "blocate_in_lupta", "muzica_bloc")]
 script = ExtResource("lupta_vrajitor_gd")
 mediu = NodePath("../Mediu")
 viata_maxima = 1000
 blocate_in_lupta = [NodePath("../OrarBloc"), NodePath("../Bloc/UsaBloc")]
+muzica_bloc = NodePath("../Muzica")

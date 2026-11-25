@@ -16,6 +16,9 @@ extends LuptaBoss
 
 ## Ce nu merge cât e vrăjitorul în curte (orarul, ușa blocului).
 @export var blocate_in_lupta: Array[Interactabil] = []
+## Muzica obișnuită a blocului (muzica_loc.gd, owner 25.11): tace de cum ieși și până după cutscene-ul în care el
+## dispare (se aude doar muzica luptei); apoi lupta tace și pornește iar ea.
+@export var muzica_bloc: Node
 
 @export_group("Marcaje")
 @export var marcaj_final := "jocul_terminat"
@@ -71,6 +74,8 @@ func _ready() -> void:
 		Vector3(-7.5, 0, 8.5), Vector3(8.5, 0, 5.5), Vector3(-3.8, 0, 4.8), Vector3(2.4, 0, 5.4),
 		Vector3(-8.0, 0, 12.0), Vector3(7.2, 0, 12.4), Vector3(-0.8, 0, 12.6)])
 	_pregateste(SUNET_MUZICA)
+	if not Stare.e_marcat(marcaj_disparut) and muzica_bloc:
+		muzica_bloc.call("opreste", 0.3)
 	sunet_durere = SUNET_DURERE
 	sunet_ras = SUNET_RAS
 	var intro := not Stare.e_marcat(marcaj_aparut)
@@ -225,7 +230,8 @@ func _finalul(din_lupta: bool) -> void:
 	create_tween().set_parallel().tween_property(cap, "position", Vector3(0.0, 1.55, 0.0), 0.5)
 	create_tween().tween_property(_camera_jucator, "rotation:z", 0.0, 0.5)
 	if din_lupta:
-		create_tween().tween_property(_muzica, "volume_db", -40.0, 2.0)
+		# muzica luptei merge până la capătul cutscene-ului (owner 25.11), puțin mai încet sub replici
+		create_tween().tween_property(_muzica, "volume_db", Sunet.VOLUM_MUZICA - 6.0, 2.0)
 		_boss.tresare(_boss.global_position - j.global_position, 2.5)
 		_lumina_scurta(_piept_boss(), ROSU, 8.0, 10.0, 0.6)
 		Sunet.reda(SUNET_IMPACT, Sunet.VOLUM_EFECTE - 3.0)
@@ -244,7 +250,6 @@ func _finalul(din_lupta: bool) -> void:
 		Sunet.reda(SUNET_DOBORAT, Sunet.VOLUM_EFECTE)
 		_bara.ascunde(0.6)
 		await _bara.mesaj("WIZARD DEFEATED", BaraBoss.AURIU, 2.4)
-		_muzica.stop()
 		_camera_jucator.make_current()
 	# te duci la el (cât să nu-l calci) și te uiți în jos, la el
 	var w2 := _boss.global_position
@@ -278,6 +283,11 @@ func _finalul(din_lupta: bool) -> void:
 	var inainte := -j.global_basis.z * Vector3(1, 0, 1)
 	await c.priveste(cap.global_position + inainte.normalized() * 6.0 - Vector3.UP * 0.3, 1.0)
 	Stare.marcheaza(marcaj_disparut)
+	# lupta tace de tot, revine muzica blocului
+	if _muzica.playing:
+		create_tween().tween_property(_muzica, "volume_db", -40.0, 1.5).finished.connect(_muzica.stop)
+	if muzica_bloc:
+		muzica_bloc.call("porneste", 4.0)
 	await get_tree().create_timer(0.3, false).timeout
 	_boss.queue_free()
 	j.seteaza_purtat(false)
