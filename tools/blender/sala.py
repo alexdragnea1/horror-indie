@@ -414,7 +414,7 @@ def decor(cale):
 	piese.append(cub("Clopotel recepție", (0.08, 0.08, 0.04), (-0.35, BY0 + 0.12, BZ + 0.02), AUR))
 	# pe peretele din spatele recepției (fața peretelui scund spre hol... nu: peretele din stânga): sigla sălii
 	piese.append(cub("Placa sigla", (0.02, 1.6, 0.6), (-W + 0.01, 1.4, 2.2), NEGRU))
-	piese.append(_text("Sigla", "IRON\nPUMP", (-W + 0.025, 1.4, 2.2), 0.18, AUR, rot=(1.5708, 0, -1.5708)))
+	piese.append(_text("Sigla", "IRON\nPUMP", (-W + 0.025, 1.4, 2.2), 0.18, AUR, rot=(1.5708, 0, 1.5708)))
 	strange()
 	# holul: două scaune de plastic, automatul cu băuturi, un ficus, preșul
 	for sy in (0.9, 1.5):
@@ -528,9 +528,9 @@ def decor(cale):
 	_cutie_coliziune(col, (0.5, 0.5, 0.6), (W - 0.3, 3.7, FL + 0.3))
 	# pe peretele din dreapta: „RE-RACK YOUR WEIGHTS” și „NO CHALK”
 	piese.append(cub("Placa", (0.02, 1.4, 0.3), (W - 0.01, 6.4, 2.4), NEGRU))
-	piese.append(_text("Scris placa", "RE-RACK YOUR WEIGHTS", (W - 0.025, 6.4, 2.4), 0.07, AUR, rot=(1.5708, 0, 1.5708)))
+	piese.append(_text("Scris placa", "RE-RACK YOUR WEIGHTS", (W - 0.025, 6.4, 2.4), 0.07, AUR, rot=(1.5708, 0, -1.5708)))
 	piese.append(cub("Placa", (0.02, 0.8, 0.3), (W - 0.01, 8.6, 2.4), ALB))
-	piese.append(_text("Scris placa", "NO CHALK", (W - 0.025, 8.6, 2.4), 0.08, ROSU, rot=(1.5708, 0, 1.5708)))
+	piese.append(_text("Scris placa", "NO CHALK", (W - 0.025, 8.6, 2.4), 0.08, ROSU, rot=(1.5708, 0, -1.5708)))
 	strange()
 
 	uneste(piese, "Decor")

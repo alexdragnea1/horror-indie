@@ -62,6 +62,12 @@
 [ext_resource type="PackedScene" path="res://models/bara_sala.glb" id="m_bara"]
 [ext_resource type="PackedScene" path="res://models/bara_500.glb" id="m_b500"]
 [ext_resource type="PackedScene" path="res://models/gantera.glb" id="m_gant"]
+[ext_resource type="Script" path="res://scripts/tablou.gd" id="s_tab"]
+[ext_resource type="Texture2D" path="res://textures/poster_sala_1.png" id="p_1"]
+[ext_resource type="Texture2D" path="res://textures/poster_sala_2.png" id="p_2"]
+[ext_resource type="Texture2D" path="res://textures/poster_sala_3.png" id="p_3"]
+[ext_resource type="Texture2D" path="res://textures/poster_sala_4.png" id="p_4"]
+[ext_resource type="Texture2D" path="res://textures/poster_sala_5.png" id="p_5"]
 
 
 [sub_resource type="Environment" id="Environment_sala"]
@@ -540,3 +546,40 @@ prag_copaci = 0.3
 copaci_de_la = 60.0
 inaltime_dealuri = 3.0
 dealuri_de_la = 70.0
+
+[node name="Postere" type="Node3D" parent="."]
+
+[node name="Poster1" type="StaticBody3D" parent="Postere"]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.99, 1.95, -4.2)
+script = ExtResource("s_tab")
+imagine = ExtResource("p_1")
+marime = Vector2(0.5, 0.89)
+replici = PackedStringArray()
+
+[node name="Poster2" type="StaticBody3D" parent="Postere"]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.99, 1.95, -7.8)
+script = ExtResource("s_tab")
+imagine = ExtResource("p_2")
+marime = Vector2(0.6, 0.8)
+replici = PackedStringArray()
+
+[node name="Poster3" type="StaticBody3D" parent="Postere"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 2.15, -9.99)
+script = ExtResource("s_tab")
+imagine = ExtResource("p_3")
+marime = Vector2(0.6, 0.8)
+replici = PackedStringArray()
+
+[node name="Poster4" type="StaticBody3D" parent="Postere"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0.75, 1.9, -0.26)
+script = ExtResource("s_tab")
+imagine = ExtResource("p_4")
+marime = Vector2(0.6, 0.8)
+replici = PackedStringArray()
+
+[node name="Poster5" type="StaticBody3D" parent="Postere"]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.99, 1.95, -1.2)
+script = ExtResource("s_tab")
+imagine = ExtResource("p_5")
+marime = Vector2(0.8, 0.6)
+replici = PackedStringArray()
