@@ -62,6 +62,11 @@ extends Interactabil
 @export_multiline var replici_somn_liber: PackedStringArray = ["You: No witches, no warlocks. Just sleep."]
 ## Prima noapte de după final (vii de la Head Witch, ai vorbit cu Mom pe bancă; owner 24.11).
 @export_multiline var replici_somn_final: PackedStringArray = ["You: Can I catch a fucking break?"]
+## Owner 25.11: nu mai dormi imediat după ce te-ai trezit. Patul merge abia după ce ai ieșit din casă de la ultima
+## trezire: `marcaj_iesit_liber` = după a câta noapte ai ieșit (îl pune acasa_noaptea.gd când deschizi ușa de la
+## intrare). Până atunci, la E: `replici_abia_trezit` (Claude).
+@export var marcaj_iesit_liber := "iesit_dupa_noaptea"
+@export_multiline var replici_abia_trezit: PackedStringArray = ["You: I literally just woke up."]
 
 var _in_curs := false
 
@@ -127,8 +132,20 @@ func poate_fi_folosit() -> bool:
 	return not _in_curs and Stare.e_marcat(_necesar()) and not Stare.e_marcat(_dormit())
 
 
+## După final: ai ieșit din casă de când te-ai trezit ultima dată (sau n-ai dormit încă de la final)?
+func _poate_dormi_liber() -> bool:
+	return int(Stare.valoare_marcaj(marcaj_iesit_liber, 0)) >= int(Stare.valoare_marcaj(marcaj_zile_liber, 0))
+
+
 func interactioneaza() -> void:
 	if not poate_fi_folosit():
+		return
+	if Stare.e_marcat(marcaj_liber) and not _poate_dormi_liber():
+		_in_curs = true
+		Dialog.spune(replici_abia_trezit)
+		if Dialog.activ:
+			await Dialog.terminat
+		_in_curs = false
 		return
 	_in_curs = true
 	var n := _noaptea()

@@ -76,7 +76,11 @@ const USA_BLOC := preload("res://scripts/usa_bloc.gd")
 func _ready() -> void:
 	# ieși pe ușă (oricând, și prima dată): afară te pune lângă ușa blocului, cu fața spre stradă (vezi zi_bloc.gd)
 	if usa_intrare:
-		usa_intrare.deschisa.connect(func() -> void: ZiBloc.din_casa = true)
+		usa_intrare.deschisa.connect(func() -> void:
+			ZiBloc.din_casa = true
+			# după final: ai ieșit din casă după a câta noapte (pat.gd: abia apoi poți dormi iar; owner 25.11)
+			if Stare.e_marcat(marcaj_final):
+				Stare.marcheaza("iesit_dupa_noaptea", int(Stare.valoare_marcaj(marcaj_somn_final, 0))))
 	if not Stare.e_marcat(marcaj_trezit):
 		return
 	var tutore := Stare.e_marcat(marcaj_final) and int(Stare.valoare_marcaj(marcaj_somn_final, 0)) >= 1 \
