@@ -322,8 +322,10 @@ def stalp(cale):
 		os_intre("Brat", (0, 0, 6.0), (0, -1.2, 6.35), 0.04, BETON_INCHIS, laturi=5),
 		cub("Lampa", (0.3, 0.6, 0.14), (0, -1.35, 6.35), BETON_INCHIS),
 		cub("Cutie", (0.18, 0.12, 0.3), (0, 0.12, 2.6), p("6f6d7f")),
-		cub("Afis", (0.3, 0.01, 0.4), (0, -0.09, 1.7), ALB, rot=(0, 0, 0)),
-		cub("Afis", (0.25, 0.01, 0.12), (0.05, -0.1, 1.45), p("a18463")),
+		# afișele lipite PE stâlp: un colț al hexagonului e spre -Y, la raza lui (~0,126 m la 1,5 m), deci în fața lui
+		# (owner 25.11: la -0,09 stâlpul trecea prin ele)
+		cub("Afis", (0.3, 0.01, 0.4), (0, -0.133, 1.7), ALB, rot=(0, 0, 0)),
+		cub("Afis", (0.25, 0.01, 0.12), (0.05, -0.14, 1.45), p("a18463")),
 	]
 	uneste(piese, "Stalp")
 	uneste([cub("Sticla", (0.24, 0.5, 0.04), (0, -1.35, 6.27), p("a18463"))], "Sticla")
