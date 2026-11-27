@@ -217,7 +217,7 @@ La un **joc nou**, înainte să înceapă, jocul te întreabă **„Do you want 
 - `scripts/acasa_noaptea.gd` (nodul `AcasaNoaptea` din `nivel_test.tscn`) – casa după ce te-ai întors: Mom dispare, ușa de la intrare nu te mai lasă afară, unde apari, ce sarcină primești. Replicile din bucătărie sunt pe nodul `BucatarieGoala`.
 - `scripts/pat.gd` (nodul `Pat` din `dormitor.tscn`) – somnul: replica de pe marginea patului (`replici_somn`), unde stai și cât de jos îți sunt ochii, scena de după (`scena_dupa`; goală = „To be continued...”).
 - `scripts/obiect_in_mana.gd` – obiectele din mână în afară de pistol: în `MODELE` scrii pentru fiecare id din inventar ce model are, unde îl ții (`pozitie`) și cum e rotit (`rotatie`). Cu `"mancare": true` obiectul se mănâncă la click (bomboana); cu `"voma": true` după aceea vomiți.
-- `scripts/voma.gd` – voma (jetul, balta care rămâne pe jos, sunetele): o folosesc bomboana și Johnny de la amanet.
+- `scripts/voma.gd` – voma (jetul, balta care rămâne pe jos, sunetele): o folosesc bomboana și Johnny de la amanet. Stropii jetului pornesc din `emission_points`, iar nodul particulelor stă mult sub podea, ca stropii care încă n-au pornit (desenați negri) să nu se vadă la gură.
 - `scripts/sefa_acasa.gd` (nodul `HeadWitch` din `nivel_test.tscn`) – Head Witch în bucătărie dimineața: replicile, sarcina, cât durează dispariția.
 - `scripts/matura_camera.gd` (nodul `Matura` din `dormitor.tscn`) – mătura pe care o iei din cameră (întrebarea Yes/No).
 - `scripts/sefa_antrenament.gd` (nodul `HeadWitchZi` din `afara_bloc.tscn`) – antrenamentul din fața blocului: toate replicile (grupul „Replici”), cât de departe pui mătura, cât durează zborul. `final_si_cu_matura`: debifat = „I hate this bitch.” doar la varianta fără mătură.
