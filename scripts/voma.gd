@@ -31,6 +31,10 @@ var _raza := 0.0
 var _raza_max := 1.0
 
 
+## Unde stă nodul particulelor față de locul din care pornesc stropii (sub podea, departe de orice cameră).
+const ASCUNS := Vector3(0.0, -60.0, 0.0)
+
+
 static func porneste(parinte: Node, exclus: Array[RID] = []) -> Voma:
 	var v := Voma.new()
 	v._exclus = exclus
@@ -51,13 +55,13 @@ func jet(gura: Vector3, viteza: Vector3, durata: float) -> void:
 		_stropi.initial_velocity_min = 0.6
 		_stropi.initial_velocity_max = 1.4
 		_stropi.lifetime = 0.35
-	_jet.global_position = gura
+	_pune_emitatorul(_jet, gura)
 	_jet.direction = viteza.normalized()
 	_jet.initial_velocity_min = viteza.length() * 0.85
 	_jet.initial_velocity_max = viteza.length() * 1.1
 	_jet.lifetime = timp  # se sting exact când ajung jos
 	_jet.emitting = true
-	_stropi.global_position = lovit.punct + lovit.normala * 0.03
+	_pune_emitatorul(_stropi, lovit.punct + lovit.normala * 0.03)
 	_stropi.direction = lovit.normala
 	get_tree().create_timer(timp).timeout.connect(func() -> void: if is_instance_valid(_stropi): _stropi.emitting = true)
 	# balta: apare când ajunge primul strop jos și se lățește cât curge
@@ -73,6 +77,15 @@ func jet(gura: Vector3, viteza: Vector3, durata: float) -> void:
 	if is_instance_valid(_jet):
 		_jet.emitting = false
 		_stropi.emitting = false
+
+
+## Stropii pornesc din `punct`, dar nodul particulelor stă la ASCUNS de el: stropii care încă n-au pornit (în prima
+## viață a jetului) se desenează negri chiar în originea nodului, iar cu nodul la gură ieșea un pătrat negru sub jet
+## în prima jumătate de secundă (owner 27.11). Nodul nu e rotit, deci punctul de emisie local = -ASCUNS.
+func _pune_emitatorul(p: CPUParticles3D, punct: Vector3) -> void:
+	p.global_position = punct + ASCUNS
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_POINTS
+	p.emission_points = PackedVector3Array([-ASCUNS])
 
 
 ## Gata: particulele se sting, balta rămâne în scenă (urcă la părinte).
